@@ -647,7 +647,7 @@ namespace Universe.Shell
                         double u = Math.Abs(Math.Sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453) % 1;
                         ex.Mass = Math.Exp(Math.Log(lo) + (Math.Log(hi) - Math.Log(lo)) * u);
                     }
-                    ex.Lines.Add("mass: " + (ex.Mass > 0 ? ex.Mass.ToString(ex.Mass >= 1e4 ? "0.##E+0" : "0.#") : e.Get("mass-sol", "")) + " times the Sun's");
+                    ex.Lines.Add("mass: " + (ex.Mass > 0 ? ex.Mass.ToString(ex.Mass >= 1e4 ? "0.##E+0" : "0.#") : e.Get("mass-sol", "")) + " solar masses");
                 }
                 if (e.Kind == "star" && e.Id == "neutron-star" && ex.Mass > 0)
                 {
@@ -1314,7 +1314,7 @@ namespace Universe.Shell
         private string HoleWords()
         {
             if (_tKind != 6 || _tIndex < 0 || _tIndex >= _extras.Count || !_extras[_tIndex].Hole) return "A black hole";
-            var ex = _extras[_tIndex]; string rs = ScaleHud.Words(Physics.HorizonKm(ex.Mass) * 2), mass = (ex.Mass >= 1e4 ? ex.Mass.ToString("0.#E+0") : ex.Mass.ToString("0.#")) + " times the Sun's mass";
+            var ex = _extras[_tIndex]; string rs = ScaleHud.Words(Physics.HorizonKm(ex.Mass) * 2), mass = (ex.Mass >= 1e4 ? ex.Mass.ToString("0.#E+0") : ex.Mass.ToString("0.#")) + " solar masses";
             string eat = ex.Eating ? "; a star torn into a stream and eaten" : "";
             return ex.Feeding == 2 ? "Two jets from its poles, flung out at nearly the speed of light, reach far beyond the galaxy's heart: a horizon " + rs + " across, " + mass + eat
                  : ex.Feeding == 1 ? "Feeding, without jets: a disc of gas going down into a horizon " + rs + " across, " + mass + eat
@@ -1351,7 +1351,7 @@ namespace Universe.Shell
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
-                        if (st.Pan != 0 && _tKind >= 0) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes
+                        if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
                         if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
@@ -3091,7 +3091,7 @@ namespace Universe.Shell
                 L.Add(g.Name); L.Add("id: G-" + (g.Seed & 0xFFFFFF).ToString("X6"));
                 L.Add("type: " + g.Type); L.Add("width: about " + Units.Describe(g.Scale));
                 L.Add("stars: about 100 billion"); L.Add("distance: " + Units.Describe(dist));
-                if (_darkMatter > 0) { L.Add("mass: about " + (1e11 / (1 - _darkMatter)).ToString("0.#E+0") + " Suns, " + (_darkMatter * 100).ToString("0") + "% of it dark matter"); L.Add("its stars orbit at a flat " + _rimSpeed.ToString("0") + " km/s out to its rim, held by the dark halo (without it they would slow outward like planets)"); }
+                if (_darkMatter > 0) { L.Add("mass: about " + (1e11 / (1 - _darkMatter)).ToString("0.#E+0") + " solar masses, " + (_darkMatter * 100).ToString("0") + "% of it dark matter"); L.Add("its stars orbit at a flat " + _rimSpeed.ToString("0") + " km/s out to its rim, held by the dark halo (without it they would slow outward like planets)"); }
             }
             else if (_tKind == 1)
             {
@@ -3101,8 +3101,8 @@ namespace Universe.Shell
                 if (open)
                 {
                     var sy = _system;
-                    L.Add("surface: " + sy.TempK.ToString("N0") + " K"); L.Add("mass: " + sy.MassSol.ToString("0.##") + " times the Sun's, width " + sy.RadiusSol.ToString("0.##") + " times the Sun's");
-                    L.Add("brightness: " + sy.Luminosity.ToString(sy.Luminosity < 0.1 ? "0.###" : "0.##") + " times the Sun's");
+                    L.Add("surface: " + sy.TempK.ToString("N0") + " K"); L.Add("mass: " + sy.MassSol.ToString("0.##") + " solar masses, width " + sy.RadiusSol.ToString("0.##") + " solar radii");
+                    L.Add("brightness: " + sy.Luminosity.ToString(sy.Luminosity < 0.1 ? "0.###" : "0.##") + " solar luminosities");
                     L.Add("planets and moons: " + sy.Bodies.Count + " (" + sy.Planets + " planets)");
                     L.Add("habitable zone: " + (sy.HabitableAu * 0.75).ToString("0.##") + " to " + (sy.HabitableAu * 1.4).ToString("0.##") + " AU");
                     L.Add("frost line: " + sy.FrostLineAu.ToString("0.##") + " AU");

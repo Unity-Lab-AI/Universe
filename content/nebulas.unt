@@ -30,7 +30,7 @@ example: the Horsehead Nebula, the Coalsack
 name: Planetary nebula
 real: yes
 color: blue-green and red
-says: the glowing shell a dying Sun-like star throws off; nothing to do with planets
+says: the glowing shell a dying star of about one solar mass throws off; nothing to do with planets
 example: the Helix Nebula
 
 @nebula supernova-remnant
@@ -92,7 +92,7 @@ says: molecular clouds and their globules and pillars collapse into new stars an
 
 @rule nebula-death
 real: rule
-says: dying Sun-like stars leave planetary nebulas; exploding heavy stars leave supernova remnants that seed new clouds with heavy elements
+says: dying stars of about one solar mass leave planetary nebulas; exploding heavy stars leave supernova remnants that seed new clouds with heavy elements
 
 @rule nebula-place
 real: rule

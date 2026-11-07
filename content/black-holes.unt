@@ -22,14 +22,14 @@ real: yes
 mass-sol: 100..100000
 made-by: black holes merging, or a dense star cluster collapsing
 says: rare and hard to find; candidates are still debated
-example: the remnant of the merger GW190521, about 142 Sun masses
+example: the remnant of the merger GW190521, about 142 solar masses
 
 @blackhole supermassive
 name: Supermassive black hole
 real: yes
 mass-sol: 1e6..1e10
 where: the center of most big galaxies
-example: Sagittarius A*, about 4 million Sun masses
+example: Sagittarius A*, about 4 million solar masses
 
 @blackhole ultramassive
 name: Ultramassive black hole
@@ -190,7 +190,7 @@ name: Sagittarius A*
 real: yes
 type: supermassive
 where: the center of the Milky Way
-note: about 4 million Sun masses, no detected jet
+note: about 4 million solar masses, no detected jet
 
 @example m87
 name: M87*
@@ -203,7 +203,7 @@ note: the first black hole ever photographed (2019), with a jet about 5,000 ligh
 name: V404 Cygni
 real: yes
 type: stellar
-note: feeding on a Sun-like companion star
+note: feeding on a companion star of about one solar mass
 
 @example ngc-1068
 name: NGC 1068

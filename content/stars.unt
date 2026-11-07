@@ -115,7 +115,7 @@ name: Red giant
 surface-kind: giant
 real: yes
 color: red-orange
-stage: late life of a Sun-like star
+stage: late life of a star of about one solar mass
 tags: swollen, cool surface
 radius-sol: 10..100
 temp-k: 3300..5000
@@ -174,7 +174,7 @@ name: T Tauri star
 surface-kind: normal
 spots: yes
 real: yes
-stage: a young Sun-like star, not yet steady
+stage: a young star of about one solar mass, not yet steady
 tags: young, flaring, variable
 radius-sol: 1.5..3
 temp-k: 3000..5000
@@ -200,7 +200,7 @@ surface-kind: white-dwarf
 remnant: yes
 real: yes
 color: white
-stage: the leftover core of a Sun-like star
+stage: the leftover core of a star of about one solar mass
 tags: small, dense, cooling
 radius-sol: 0.008..0.02
 temp-k: 4000..40000
@@ -289,7 +289,7 @@ says: a star just starting to swell into a giant
 @class main-sequence
 name: Main-sequence star (class V)
 real: yes
-says: a star steadily burning hydrogen, like the Sun
+says: a star steadily burning hydrogen, as most stars are
 
 @class subdwarf
 name: Subdwarf (class VI)

@@ -369,7 +369,7 @@ real: yes
 type: barred-spiral
 width-ly: 100000
 stars: 1e11..4e11
-center: Sagittarius A*, a black hole of about 4 million Sun masses
+center: Sagittarius A*, a black hole of about 4 million solar masses
 note: our home galaxy, the Sun is in one of its arms
 
 @example andromeda

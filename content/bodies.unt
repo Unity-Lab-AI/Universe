@@ -35,7 +35,7 @@ swarm-stars: 40
 swarm-rs: 12..120
 eating-share: 0.5
 colour: 1 0.7 0.35
-says: millions to billions of times the Sun's mass at the galaxy's heart, its disc of hot gas glowing as it falls in
+says: millions to billions of solar masses at the galaxy's heart, its disc of hot gas glowing as it falls in
 
 @place stellar-black-hole
 # feeding only with a close companion star to pull gas from (X-ray binaries), a few in a hundred; a third of those fire jets
@@ -52,7 +52,7 @@ inner-orbit-seconds: 5
 swarm-stars: 0
 eating-share: 0
 colour: 0.9 0.55 0.3
-says: what is left of a star of more than about twenty times the Sun's mass; it may still feed on a companion
+says: what is left of a star of more than about twenty solar masses; it may still feed on a companion
 
 @place neutron-star
 name: A neutron star
@@ -61,7 +61,7 @@ per-cubic-ly: 4e-6
 entry: star neutron-star
 size-km: 20
 colour: 0.75 0.85 1
-says: a star's collapsed core, a city across, about one and a half times as heavy as the Sun
+says: a star's collapsed core, a city across, about one and a half solar masses
 
 @place rogue-planet
 name: A rogue planet

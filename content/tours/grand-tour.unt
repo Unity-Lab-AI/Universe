@@ -313,9 +313,9 @@ caption: Down to its atoms, in a pattern repeated billions of times
 do: arc
 rate: 0
 until-km: 0
-turn: 10
-seconds: 8
-caption: Round the atoms of the crystal, its lattice repeated billions of times
+turn: 15
+seconds: 24
+caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
 
 @stop into-lattice
 do: arc
@@ -345,11 +345,24 @@ caption: An atom is not a ball
 
 @stop round-atom
 do: arc
-rate: 0.05
+rate: 0.03
 until-km: 2.5e-13
-turn: 10
-seconds: 8
-caption: A tiny nucleus, its electrons round it, each in its own orbital's shape
+turn: 14
+seconds: 26
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
+
+@stop through-electrons
+do: zoom
+rate: 0.3
+until-km: 5e-14
+pan: 12
+caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
+
+@stop inner-shells
+do: orbit
+turn: 15
+seconds: 24
+caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
 
 @stop to-neighbour
 do: pick
@@ -361,7 +374,7 @@ do: arc
 rate: 0
 until-km: 0
 turn: 8
-seconds: 6
+seconds: 9
 caption: Across the bond to its neighbour: atoms share their outer electrons
 
 @stop choose-electron
@@ -374,7 +387,7 @@ do: arc
 rate: 0
 until-km: 0
 turn: 10
-seconds: 6
+seconds: 10
 caption: An electron: a point, and a wave spread through its cloud
 
 @stop choose-nucleus
@@ -392,8 +405,8 @@ caption: Inward: an atom is almost all empty space
 do: arc
 rate: 0
 until-km: 0
-turn: 10
-seconds: 7
+turn: 15
+seconds: 18
 caption: Its nucleus: protons and neutrons bound by the strong force
 
 @stop choose-proton
@@ -411,8 +424,8 @@ caption: Into a single proton
 do: arc
 rate: 0
 until-km: 0
-turn: 10
-seconds: 8
+turn: 12
+seconds: 12
 caption: Three quarks in a storm of gluons
 
 @stop choose-quark
@@ -429,7 +442,7 @@ caption: One quark
 @stop at-quark
 do: orbit
 turn: 8
-seconds: 6
+seconds: 9
 caption: The smallest thing we know
 
 @stop let-go

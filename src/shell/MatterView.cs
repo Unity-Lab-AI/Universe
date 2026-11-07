@@ -1770,10 +1770,21 @@ namespace Universe.Shell
                 _picked = nb; _tfx = nb.X; _tfz = nb.Z; _tfy = nb.Y; PickCount++; return;
             }
             int kind = what == "grain" ? 0 : what == "spot" ? 2 : what == "atom" ? 1 : what == "electron" ? 3 : what == "nucleus" ? 7 : what == "proton" ? 5 : what == "quark" ? 4 : -1; if (kind < 0) return;
+            // an atom: the mineral's elements in turn (its oxygen is three atoms in five of every silicate and two in three of ice,
+            // and the face's top layer is mostly its oxygen, so the nearest atom was oxygen every time); each pick takes the next
+            // element the face has, and the nearest atom of that
+            string wantSym = null;
+            if (kind == 1)
+            {
+                var syms = new List<string>();
+                foreach (var b in _bodies) if (b.Kind == 1 && b.Sym != null && !syms.Contains(b.Sym)) syms.Add(b.Sym);
+                if (syms.Count > 1) { syms.Sort(string.CompareOrdinal); wantSym = syms[(int)(((long)PickCount + (long)(_seed & 0xFFFF)) % syms.Count)]; }
+            }
             Body best = null; double bd = double.MaxValue;
             foreach (var b in _bodies)
             {
                 if (b.Kind != kind || (kind == 5 && b.J != 1) || b == _picked) continue;
+                if (wantSym != null && b.Sym != wantSym) continue;
                 double dx = b.X - _fx, dy = b.Y - _yOff - _fy, dz = b.Z - _fz, d = dx * dx + dy * dy + dz * dz;
                 if (kind == 3) d -= b.I * 1e-40;                                             // (the outer, valence, shell first, among equals)
                 if (d < bd) { bd = d; best = b; }

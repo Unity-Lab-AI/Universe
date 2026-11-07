@@ -523,7 +523,7 @@ namespace Universe.Shell
                 string focus = _focusStar < 0 && fromCore > _dist * 0.5
                     ? "looking at a part of the galaxy " + Units.Describe(fromCore) + " from its centre" + (_pendingStar >= 0 ? " · flying to the star in the ring" : " · roll in to go there, or click a star")
                     : _focusStar < 0
-                    ? string.Format("focus: the core's supermassive black hole, {0:0.0e0} Sun masses{1} · {2} star clusters, {3} nebulas",
+                    ? string.Format("focus: the core's supermassive black hole, {0:0.0e0} solar masses{1} · {2} star clusters, {3} nebulas",
                         _bh.MassSol, _bh.Active ? ", feeding (jets on)" : ", quiet", _clusters, _nebulas)
                     : _focusBody >= 0 ? "focus: " + _system.Bodies[_focusBody].Kind + " (keep rolling the wheel in to fly down to it)"
                     : string.Format("focus: {0} star · {1} planets · frost line {2:0.0} au · habitable zone {3:0.00} au",

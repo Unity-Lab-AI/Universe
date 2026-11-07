@@ -101,7 +101,7 @@ ground: 99 0.14 0.13 0.13 tinted
 | `forms` | `rocky` (inside the frost line), `giant` (past it) or `hot-jupiter` (the closest orbit of a hot-Jupiter system) |
 | `orbit-hz` | Where its orbit lies against the middle of the **liquid-water zone**: `1` is the middle, `0.5` half as far out, `2` twice as far. The zone moves out for brighter stars |
 | `orbit-frost` | Where its orbit lies against the **frost line**, where ices can form |
-| `star-brightness` | Only round stars this bright (the Sun is `1`; red dwarfs are below `0.08`) |
+| `star-brightness` | Only round stars this bright, in solar luminosities (a star of one solar mass is about `1`; red dwarfs are below `0.08`) |
 | `weight` | When several kinds fit the same orbit, how often this one is chosen |
 | `moon-weight` | How often a **moon** is of this kind. Moons are worlds too: any kind with a moon-weight can be one, by where its planet circles the star. `@terrain moon` and `@terrain icy-moon` are the usual airless rock and ice |
 | `grains` | The ground its matter is made of, down to the atoms (a mix in `content/minerals.unt`) |
@@ -172,7 +172,7 @@ share-of-stars: rare
 |---|---|
 | `color` | `blue`, `blue-white`, `white`, `yellow-white`, `yellow`, `orange`, `red` or `magenta-red` |
 | `temp-k` | Surface temperature in kelvin. With `radius-sol`, it sets how bright the star shines, and so where its liquid-water zone and frost line fall |
-| `mass-sol`, `radius-sol` | Mass and size against the Sun's |
+| `mass-sol`, `radius-sol` | Mass and size in solar masses and solar radii |
 | `share-of-stars` | How common it is: `most common`, `common`, `uncommon`, `rare` or `rarest` |
 | `remnant: yes` | A dead star (a white dwarf, a neutron star) |
 
@@ -228,7 +228,7 @@ spacing: 1.25..1.4
 | `planets` | How many worlds |
 | `first-orbit-au`, `first-orbit-spread` | The first world's orbit in AU, times a value in the spread |
 | `scales-with-star` | `yes`: orbits move out with the square root of the star's brightness |
-| `spacing` | Each orbit over the one before (the Sun's worlds, about 1.4 to 2) |
+| `spacing` | Each orbit over the one before (in our own system, about 1.4 to 2) |
 | `share-in-universe` | How often a system in the universe is of this kind |
 | `tilt-spread` | How far its worlds' orbits lie out of the system's plane, in degrees. Born in one flat disc they stay within a few (ours: 1.5); a **stirred** system, pulled at by a passing star or a second star, scatters them tens of degrees apart |
 | `wild-tilt-share`, `wild-tilt` | The share of its worlds far out of line, and how far |
@@ -245,7 +245,7 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 
 | Force | What it does in Universe | Its numbers |
 |---|---|---|
-| **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass), and each body's speed everywhere follows from its orbit (vis-viva). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per Sun), and the light of stars behind it bends into an **Einstein ring**. **Relativity** turns every orbit's closest point round its star (6πGM/c²a(1−e²) an orbit: Mercury's 43 arcseconds a century, whole turns near a black hole) and slows clocks in a gravity well; the cards say by how much | `@law gravity`: `gm-sun-m3-s2` (the Sun's pull, G times its mass), `earth-g-m-s2` |
+| **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass), and each body's speed everywhere follows from its orbit (vis-viva). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per solar mass), and the light of stars behind it bends into an **Einstein ring**. **Relativity** turns every orbit's closest point round its star (6πGM/c²a(1−e²) an orbit: Mercury's 43 arcseconds a century, whole turns near a black hole) and slows clocks in a gravity well; the cards say by how much | `@law gravity`: `gm-sun-m3-s2` (G times one solar mass: the pull of a star of one solar mass), `earth-g-m-s2` |
 | **Electromagnetism** | Each atom's **electrons** fill their shells and orbitals in their real order (1s 2s 2p 3s ...). **Bonds** are shared electrons. A star's **colour** comes from its temperature the way a glowing body's does (Planck's law). Inside the nucleus, the **protons push each other apart** | `@law coulomb`: `k-mev-fm` (the push between two protons), `@law light`: `speed-m-s` |
 | **Strong nuclear force** | **Packs the nucleus**: protons and neutrons pull together just beyond a hard core where they push apart, and feel nothing past a few femtometres. It glues the **quarks** in every proton and neutron. A nucleus's **binding energy** comes from the strong pull against the electric push | `@law nuclear-force`: `core-fm`, `spacing-fm`, `range-fm`; `@law mass-formula`: the five terms of the Bethe–Weizsäcker formula |
 | **Weak nuclear force** | Decides **which nuclei are stable** and how the rest decay: too many neutrons and one turns into a proton (beta-minus), too many protons and one turns into a neutron (beta-plus). Past lead, the biggest nuclei throw out alpha particles. Every nucleus's card says which | `@law beta-stability`: `c` (the valley of stability), `alpha-above-z` |
@@ -255,7 +255,7 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 | Law | What it sets |
 |---|---|
 | `@law orbits` | Orbits from speeds, as the laws of motion have it: each body moves at some share of the circular speed where it was placed (`planet-speed-spread`, `wild-share` and `wild-speed` for the share flung into long loops, `moon-close-speed` and `moon-far-speed`), and its ellipse, its period and its speed everywhere follow. Near escape speed a body flies through its closest point ultra-fast and crawls through its farthest |
-| `@law tidal-lock` | How close to a star a world turns once each orbit, one face always toward it (`lock-au-sun`: half an AU for a star of the Sun's mass, growing with the cube root of the star's mass) |
+| `@law tidal-lock` | How close to a star a world turns once each orbit, one face always toward it (`lock-au-sun`: half an AU for a star of one solar mass, growing with the cube root of the star's mass) |
 | `@law air-density` | How many molecules are in each cubic centimetre of air at about one bar, so you meet the right number going into an air |
 | `@gas ...` | The atoms in each molecule of each gas, so an air's make-up gives the atoms you find in it |
 | `@law star-plasma` | What a star's surface is made of, and how dense it is |

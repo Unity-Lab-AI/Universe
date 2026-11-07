@@ -125,7 +125,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **The waveform** | Our own **CDF 9/7 wavelet** engine (the maths family behind JPEG 2000) stores shapes as waves; zooming in adds the next octave |
 | **Mode-E** | Past the stored waves, detail keeps growing (Newton's method on *z³ − K*) and never repeats |
 | **Real steps** | Close in, a grain's face steps in single **atomic layers**, then shows its **atoms**, before the atoms themselves arrive |
-| **No floor** | Past the quark, which shows no size down to 10⁻¹⁹ m, the zoom in keeps going: past the Planck length, as far as a number can count. The scale bar says where you are and the card says what is known there, which is nothing. Outward you are held inside the visible universe, because that is all there is to see |
+| **No floor** | Past the quark, which shows no size down to 10⁻¹⁹ m, the zoom in keeps going: past the Planck length, as far as a number can count. The scale bar says where you are and the card says what is known there, which is nothing. Outward there is no edge: what you see ends at your horizon, which is centred on you and moves with you |
 
 ---
 

@@ -396,7 +396,7 @@ says: civilizations climb the forces in order: fire and chemistry (electromagnet
 name: A star's surface (its photosphere): plasma
 makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.05%, carbon 0.03%, neon 0.01%, nitrogen 0.007%, iron 0.003%
 per-cc: 1e17
-says: so hot (thousands of degrees) that the atoms have lost their electrons: bare nuclei and free electrons, about 0.2 micrometres apart (the Sun's photosphere: about 2e-7 grams a cubic centimetre)
+says: so hot (thousands of degrees) that the atoms have lost their electrons: bare nuclei and free electrons, about 0.2 micrometres apart (a star's photosphere: about 2e-7 grams a cubic centimetre)
 
 @law air-density
 name: Molecules in a cubic centimetre of air at about one bar

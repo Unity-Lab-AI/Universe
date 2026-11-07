@@ -13,7 +13,7 @@
 #   orbits lie out of its plane, degrees (a spread; born in one flat disc, ours within a few); wild-tilt-share and wild-tilt: the
 #   share of its worlds far out of line, and how far.
 @system sun-like
-name: Sun-like system
+name: System of a one-solar-mass star
 real: yes
 star: g-type or k-type
 shape: small rocky planets close in, gas and ice giants further out, belts and an icy outer shell
@@ -110,7 +110,7 @@ shape: a grown star with a wide belt of dust and rock left over
 name: White-dwarf system
 real: yes
 star: white dwarf
-shape: the survivors of a dead Sun-like star, often with rubble falling in
+shape: the survivors of a dead star of about one solar mass, often with rubble falling in
 
 @system pulsar
 name: Pulsar system
@@ -150,7 +150,7 @@ planets: at least one planet in the habitable zone
 name: 51 Pegasi
 real: yes
 star: g-type
-planets: 51 Pegasi b, the first planet found around a Sun-like star, a hot Jupiter
+planets: 51 Pegasi b, the first planet found around a star of about one solar mass, a hot Jupiter
 
 # ── Zones a system is built from ──
 

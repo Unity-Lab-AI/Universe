@@ -1243,6 +1243,14 @@ namespace Universe.Shell
                     if (made == null && cands.Count > 0) made = cands[cands.Count - 1].Key;
                 }
                 if (made == null) { var en0 = pl.Entry.Split(' '); if (en0.Length == 2) foreach (var e in _content.Entries) if (e.Kind == en0[0] && e.Id == en0[1] && e.Props.ContainsKey("mix")) { made = e; break; } }
+                if (made == null && pl.Shape == "rock")
+                {
+                    // a kind by the kinds' shares at mid-belt, from where the body is: a rock always has a kind, its minerals and a ground
+                    double u2 = Math.Abs(Math.Sin(x * 3.7 + y * 11.3 + z * 5.9) * 27182.8) % 1, sum2 = 0; var c2 = new List<KeyValuePair<ContentEntry, double>>();
+                    foreach (var e in _content.OfKind("small-bodies.unt", "asteroid")) { double lo, hi; if (!e.TryRange("belt-share", out lo, out hi) || !e.Props.ContainsKey("mix")) continue; double wgt = (lo + hi) / 2; if (wgt <= 0) continue; c2.Add(new KeyValuePair<ContentEntry, double>(e, wgt)); sum2 += wgt; }
+                    double pick2 = u2 * sum2; foreach (var c in c2) { pick2 -= c.Value; if (pick2 <= 0) { made = c.Key; break; } }
+                    if (made == null && c2.Count > 0) made = c2[c2.Count - 1].Key;
+                }
                 if (made != null) Compose(ex, made);
             }
             var en = pl.Entry.Split(' ');
@@ -1461,8 +1469,9 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 && !ex.Hole) continue;
-                double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
-                if (d > 0 && d < best) best = d;
+                double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 1.6;
+                if (d <= 0) d = ex.R * 0.01;
+                if (d < best) best = d;
             }
             return best;
         }
@@ -3557,8 +3566,9 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 && !ex.Hole) continue;
-                double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
-                if (d > 0 && d < reach) reach = d;
+                double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 1.6;
+                if (d <= 0) d = ex.R * 0.01;                                        // (beside it or over it: the near plane a hundredth of its radius, never leaping out past the stone; within two radii it had dropped out of the reckoning, the near plane leapt out to the next thing, and the stone was clipped away as you came in)
+                if (d < reach) reach = d;
             }
             Mat4 proj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)(reach * 1e-3), (float)(_uRadius * 2.2));   // out to the far side of the visible universe
             Mat4 vp = view * proj;

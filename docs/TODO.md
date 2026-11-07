@@ -147,6 +147,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The ghost discs beside a rock gone (the far glows only the bodies not drawn as stone); the dive's state in the log:** (built: DNA-AND DESIGN 642; waits on the test and its log) "same fucking problem i got pics on first zoom in the astroid instanly disappears like it went zooming past it or astroids dont have something planets do to where the astroid is ghosting us on zoom in or it something about being too mall idk we need to build the astroids to proprly have the full zoom ability and not like ghost physics that doesnt hold up... i got pics"
 
+- [~] **The near plane never leaping out past a body you are beside, so the stone is not clipped away; every rock with a kind and a ground to dive onto:** (built: DNA-AND DESIGN 643; waits on the test) "same issue and i got picks directly before i didappears and directly after not a framwe skipped" / "i got pics"
+
 ---
 
 ## Pending

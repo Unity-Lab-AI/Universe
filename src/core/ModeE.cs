@@ -1,4 +1,4 @@
-// DNA-AND · core · mode-E N³: the endless-detail generator, ported from the lab's own engine (Deviant 3D src/field/fractalize.ts,
+// Universe · core · mode-E N³: the endless-detail generator, ported from the lab's own engine (Deviant 3D src/field/fractalize.ts,
 // the signed-off mode E of the Uni Vs Matics archive). Where a field runs out of stored detail (past its finest wavelet
 // level), mode-E grows NEW self-similar detail of the same character, forever, with no bottom-out:
 //   1. Newton–Raphson on z³ − K (Cayley's fractal) to convergence,
@@ -9,7 +9,7 @@
 // K bias and plane rotation come from the field's own character, so the growth carries it.
 using System;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal static class ModeE
     {

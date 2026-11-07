@@ -1,4 +1,4 @@
-// DNA-AND · simulation · a planet's air and climate, on the planet's own clock (content/physics.dnat: pressure, greenhouse,
+// Universe · simulation · a planet's air and climate, on the planet's own clock (content/physics.dnat: pressure, greenhouse,
 // runaway greenhouse, air escaping). Gases are kept relative to Earth's air before industry (pressure 1 bar, carbon
 // dioxide 280 parts per million = 1, oxygen 21%, methane 0.7 parts per million = 1).
 // What changes the air: volcanoes breathe out carbon dioxide; rain on rock draws it back out, faster when it is warm and when
@@ -7,9 +7,9 @@
 // faster on small worlds. The surface temperature follows the greenhouse; too hot and the seas boil into a runaway
 // greenhouse, too cold and the world freezes over.
 using System;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class PlanetAir
     {

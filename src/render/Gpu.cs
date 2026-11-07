@@ -1,9 +1,9 @@
-// DNA-AND · render · the Direct3D 12 device, swap chain and frame loop.
+// Universe · render · the Direct3D 12 device, swap chain and frame loop.
 // Display safety: always windowed, Alt+Enter blocked, vsync on, every GPU wait has a timeout.
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal sealed class Gpu : IDisposable
     {

@@ -1,10 +1,10 @@
-// DNA-AND · render · screenshots as PNG files, written by the game's own code (the picture's rows packed with the
+// Universe · render · screenshots as PNG files, written by the game's own code (the picture's rows packed with the
 // framework's own Deflate, the PNG chunks, checksums and header written here).
 using System;
 using System.IO;
 using System.IO.Compression;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal static class PngWriter
     {

@@ -1,10 +1,10 @@
-// DNA-AND · platform · the landing page: a real window before the universe is made. Its name, one line, the seed (typed or
+// Universe · platform · the landing page: a real window before the universe is made. Its name, one line, the seed (typed or
 // chosen at random), Begin or the tour (filmed if you like), the clips filmed so far to play or find, a few settings, the guide and wiki. Windows' own controls, in Segoe UI, dark.
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal static class Launcher
     {
@@ -53,12 +53,12 @@ namespace DnaAnd.Platform
             }
             float s = Math.Max(1f, SafeDpi(owner) / 96f);
             int W = (int)(560 * s), H = (int)(660 * s), sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1);
-            _wnd = Win32.CreateWindowEx(0, "UniverseLanding", DnaAnd.Shell.PreviewText.AppName, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, (sw - W) / 2, (sh - H) / 2, W, H, owner, IntPtr.Zero, inst, IntPtr.Zero);
+            _wnd = Win32.CreateWindowEx(0, "UniverseLanding", Universe.Shell.PreviewText.AppName, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, (sw - W) / 2, (sh - H) / 2, W, H, owner, IntPtr.Zero, inst, IntPtr.Zero);
             _big = CreateFont(-(int)(46 * s), 0, 0, 0, 300, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI Light");
             _font = CreateFont(-(int)(16 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");
             _small = CreateFont(-(int)(14 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");
             int pad = (int)(32 * s), x = pad, y = (int)(24 * s), cw = W - pad * 2 - (int)(16 * s), row = (int)(34 * s);
-            Child("STATIC", DnaAnd.Shell.PreviewText.AppName, 0, 0, x, y, cw, (int)(60 * s), _big); y += (int)(64 * s);
+            Child("STATIC", Universe.Shell.PreviewText.AppName, 0, 0, x, y, cw, (int)(60 * s), _big); y += (int)(64 * s);
             Child("STATIC", "From the cosmic web down to the quarks.", 0, 0, x, y, cw, (int)(24 * s), _font); y += (int)(48 * s);
             Child("STATIC", "Seed", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _font);
             _seed = Child("EDIT", "", ES_NUMBER | ES_AUTOHSCROLL | WS_TABSTOP, 0, x + (int)(64 * s), y, cw - (int)(64 * s) - (int)(110 * s), row, _font, WS_EX_CLIENTEDGE);

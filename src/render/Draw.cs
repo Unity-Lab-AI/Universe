@@ -1,8 +1,8 @@
-// DNA-AND · render · GPU buffers and the draw calls for billboards (stars, glow, points).
+// Universe · render · GPU buffers and the draw calls for billboards (stars, glow, points).
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct StarVertex

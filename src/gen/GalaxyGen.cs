@@ -1,11 +1,11 @@
-// DNA-AND · gen · the live galaxy generator. Builds a galaxy from a seed and the content in
+// Universe · gen · the live galaxy generator. Builds a galaxy from a seed and the content in
 // content/galaxies.dnat and content/stars.dnat. Nothing is pre-built.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal sealed class StarKind
     {

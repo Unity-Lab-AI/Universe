@@ -1,4 +1,4 @@
-// DNA-AND · shell · the universe: a single camera that flies through every scale at any angle, with no views to switch.
+// Universe · shell · the universe: a single camera that flies through every scale at any angle, with no views to switch.
 // The universe of galaxies and each galaxy's own stars are drawn together; as you come closer to a galaxy its far glow
 // fades out while its real stars fade in, so it grows into its stars without a seam. Zooming moves the camera along the
 // line under the mouse by a share of the distance to whatever is nearest, so it slows by itself as things come close
@@ -7,12 +7,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class UniverseView : IDisposable
     {
@@ -2705,7 +2705,7 @@ namespace DnaAnd.Shell
         {
             try
             {
-                string f = System.IO.Path.Combine(System.IO.Path.GetTempPath(), PreviewText.AppName.ToLowerInvariant().Replace("-", "") + "_zoom.log");   // (the program's own name: universe_zoom.log, dnaand_zoom.log)
+                string f = System.IO.Path.Combine(System.IO.Path.GetTempPath(), PreviewText.AppName.ToLowerInvariant().Replace("-", "") + "_zoom.log");   // (the program's own name: universe_zoom.log)
                 if (System.IO.File.Exists(f) && new System.IO.FileInfo(f).Length > 200000) System.IO.File.Delete(f);
                 System.IO.File.AppendAllText(f, DateTime.Now.ToString("HH:mm:ss.f") + "  " + what + "  |  " + Title.Replace(PreviewText.AppName + " · ", "").Split(new[] { " · wheel:" }, StringSplitOptions.None)[0] + Environment.NewLine);
             }

@@ -19,7 +19,7 @@ Everything is worked out live from one number, the **seed**, by our own code. Th
 
 ## 💀 A dead universe, still alive
 
-There's no life here yet, but the worlds aren't frozen. Their insides cool, plates drift, volcanoes erupt, ice ages come and go, and rocks from space leave craters. Life comes later, in **DNA-AND**, the god game this universe is built for.
+There's no life here yet, but the worlds aren't frozen. Their insides cool, plates drift, volcanoes erupt, ice ages come and go, and rocks from space leave craters.
 
 ---
 

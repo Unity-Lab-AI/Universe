@@ -1,6 +1,6 @@
-// DNA-AND · installer · the programs' icons, drawn by our own code: Universe a spiral galaxy, DNA-AND a double helix. Writes
-// installer\universe.ico and installer\dna-and.ico (each 16, 24, 32, 48, 64 and 256 pixels, as PNGs inside the icon), which
-// the builds put in the programs (their windows, the taskbar, the Start menu and desktop shortcuts, the installers).
+// Universe · installer · the program's icon, drawn by our own code: a spiral galaxy. Writes
+// installer\universe.ico (each 16, 24, 32, 48, 64 and 256 pixels, as PNGs inside the icon), which
+// the build puts in the program (their windows, the taskbar, the Start menu and desktop shortcuts, the installers).
 // Build and run (only what comes with Windows): csc /out:MakeIcons.exe MakeIcons.cs && MakeIcons.exe <folder>
 using System;
 using System.IO;
@@ -12,8 +12,7 @@ internal static class MakeIcons
     {
         string dir = args.Length > 0 ? args[0] : ".";
         Write(Path.Combine(dir, "universe.ico"), Galaxy);
-        Write(Path.Combine(dir, "dna-and.ico"), Helix);
-        Console.WriteLine("Wrote universe.ico and dna-and.ico");
+        Console.WriteLine("Wrote universe.ico");
         return 0;
     }
 
@@ -46,7 +45,7 @@ internal static class MakeIcons
         if (h > 0.93) { double fx = (x + 1) * 9 - sx - 0.5, fy = (y + 1) * 9 - sy - 0.5, st = Math.Exp(-(fx * fx + fy * fy) / 0.02); r += st; g += st; b += st; }
     }
 
-    // DNA-AND: a double helix, its two strands (teal and green) crossing, joined by base pairs, on the dark sky
+    // a double helix (the other program's icon, not made here), its two strands (teal and green) crossing, joined by base pairs, on the dark sky
     private static void Helix(double x, double y, out double r, out double g, out double b, out double a)
     {
         double rim; a = Disc(x, y, out rim);

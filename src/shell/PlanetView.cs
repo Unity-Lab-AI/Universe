@@ -1,4 +1,4 @@
-// DNA-AND · shell · fly down to one planet: from orbit to the surface, then on down to microbe size.
+// Universe · shell · fly down to one planet: from orbit to the surface, then on down to microbe size.
 // The camera never goes into the ground: zooming in lands you on the surface, then keeps shrinking you toward it.
 // Water is passed through on the way down to the sea floor.
 // Mouse wheel: closer and further. Drag with the left button, or W A S D / arrow keys: move. Q and E: turn.
@@ -6,12 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class PlanetView : IDisposable
     {
@@ -26,12 +26,12 @@ namespace DnaAnd.Shell
         private double _time;
         private double _intoGround;
         // the planet's own life, kept for the whole game on each planet
-        private static readonly Dictionary<PlanetTerrain, DnaAnd.Sim.PlanetLife> Lives = new Dictionary<PlanetTerrain, DnaAnd.Sim.PlanetLife>();
-        private DnaAnd.Sim.PlanetLife _life;
+        private static readonly Dictionary<PlanetTerrain, Universe.Sim.PlanetLife> Lives = new Dictionary<PlanetTerrain, Universe.Sim.PlanetLife>();
+        private Universe.Sim.PlanetLife _life;
         private LandLife _land;
         /// <summary>The planet's inside (core, heat, plates, magnetic field), one per planet, on the same clock as its life.</summary>
-        public static readonly System.Collections.Generic.Dictionary<PlanetTerrain, DnaAnd.Sim.PlanetCore> Cores = new System.Collections.Generic.Dictionary<PlanetTerrain, DnaAnd.Sim.PlanetCore>();
-        private DnaAnd.Sim.PlanetCore _core; private DnaAnd.Sim.PlanetPlates _plates; private DnaAnd.Sim.PlanetAir _air; private DnaAnd.Sim.PlanetWeather _weather; private DnaAnd.Sim.PlanetSurface _surface; private DnaAnd.Sim.PlanetImpacts _impacts; private int _seenImpacts; private double _shapeSea, _shapeCheck, _shapeMoved, _swapFadeUntil; private int _seenSwaps; private int _shapeCraters; private double[] _shapeScales; private DnaAnd.Core.Chunk _loadedAir; private int _seenEvents; private DnaAnd.Core.Chunk _loadedCore; private string _coreNews = ""; private double _coreNewsUntil;
+        public static readonly System.Collections.Generic.Dictionary<PlanetTerrain, Universe.Sim.PlanetCore> Cores = new System.Collections.Generic.Dictionary<PlanetTerrain, Universe.Sim.PlanetCore>();
+        private Universe.Sim.PlanetCore _core; private Universe.Sim.PlanetPlates _plates; private Universe.Sim.PlanetAir _air; private Universe.Sim.PlanetWeather _weather; private Universe.Sim.PlanetSurface _surface; private Universe.Sim.PlanetImpacts _impacts; private int _seenImpacts; private double _shapeSea, _shapeCheck, _shapeMoved, _swapFadeUntil; private int _seenSwaps; private int _shapeCraters; private double[] _shapeScales; private Universe.Core.Chunk _loadedAir; private int _seenEvents; private Universe.Core.Chunk _loadedCore; private string _coreNews = ""; private double _coreNewsUntil;
         private SeaBodies _seaBodies;
         /// <summary>Test runs: start life and run it this many years forward at once.</summary>
         public double TestEvolveYears;
@@ -44,11 +44,11 @@ namespace DnaAnd.Shell
         private string _testNote = "";
         private string _lifeNote = ""; private double _lifeNoteUntil;
         private bool _wasUnderWater;
-        private readonly DnaAnd.Sim.SeaLife _sea = new DnaAnd.Sim.SeaLife();
+        private readonly Universe.Sim.SeaLife _sea = new Universe.Sim.SeaLife();
         private UploadBuffer _seaBuf, _veilBuf; private StarVertex[] _seaVerts = new StarVertex[2400];
         /// <summary>Part of the one journey from the galaxy: zooming out past the planet goes back up to its solar system.</summary>
         public bool Journey; public bool Ascend;
-        private DnaAnd.Sim.MicrobeWorld _microbes; private double _mx, _my, _mz;      // the living microbes on the spot below, once you are small enough
+        private Universe.Sim.MicrobeWorld _microbes; private double _mx, _my, _mz;      // the living microbes on the spot below, once you are small enough
         private Vec3 _mEast, _mNorth, _mUp; private double _microbeAccum;
         private UploadBuffer _microbeBuf; private StarVertex[] _microbeVerts;
         private bool _inside;
@@ -260,27 +260,27 @@ namespace DnaAnd.Shell
                 if (_underWater && (_sea.Animals.Count > 0 || (_seaBodies != null && _seaBodies.Here.Length > 0)))
                 {
                     var names = new System.Collections.Generic.List<string>();
-                    foreach (var an in _sea.Animals) { string nm = DnaAnd.Sim.SeaLife.Kinds[an.Kind].Name; if (!names.Contains(nm)) names.Add(nm); }
+                    foreach (var an in _sea.Animals) { string nm = Universe.Sim.SeaLife.Kinds[an.Kind].Name; if (!names.Contains(nm)) names.Add(nm); }
                     if (_seaBodies != null && _seaBodies.Here.Length > 0) names.Insert(0, _seaBodies.Here);
                     where += " · in the water around you: " + string.Join(", ", names.ToArray());
                 }
-                if (_core != null) where += " · PLANET: " + _core.Describe() + (_plates != null && _core.Plates ? ", " + _plates.Describe() : "") + (_air != null ? " · " + _air.Describe() : "") + (_weather != null ? ", " + _weather.Describe() : "") + (_surface != null ? ", " + _surface.Describe(_life) : "") + (_impacts != null ? ", " + _impacts.Describe() + ", " + _normal.Craters.Count + " craters on the ground (changed " + _normal.Swaps + " times" + (_normal.ChangeTerms != null ? ", " + _normal.ChangeTermCount.ToString("N0") + " wavelet terms for " + (12 * DnaAnd.Gen.PlanetTerrain.ChangeGrid * DnaAnd.Gen.PlanetTerrain.ChangeGrid).ToString("N0") + " cells" : "") + ")" : "") + (_time < _coreNewsUntil ? " · NEWS: " + _coreNews : "");
+                if (_core != null) where += " · PLANET: " + _core.Describe() + (_plates != null && _core.Plates ? ", " + _plates.Describe() : "") + (_air != null ? " · " + _air.Describe() : "") + (_weather != null ? ", " + _weather.Describe() : "") + (_surface != null ? ", " + _surface.Describe(_life) : "") + (_impacts != null ? ", " + _impacts.Describe() + ", " + _normal.Craters.Count + " craters on the ground (changed " + _normal.Swaps + " times" + (_normal.ChangeTerms != null ? ", " + _normal.ChangeTermCount.ToString("N0") + " wavelet terms for " + (12 * Universe.Gen.PlanetTerrain.ChangeGrid * Universe.Gen.PlanetTerrain.ChangeGrid).ToString("N0") + " cells" : "") + ")" : "") + (_time < _coreNewsUntil ? " · NEWS: " + _coreNews : "");
                 if (_life != null)
                 {
                     where += " · LIFE: " + (_life.Sparks == 0 ? "none yet (L: lightning, the first spark is free)" :
-                        _life.Alive + " species alive (" + _life.EverLived + " ever) in " + _life.RegionsWithLife() + " of " + _life.RegionCount + " regions, from " + _life.Sparks + " spark" + (_life.Sparks == 1 ? "" : "s") + ", " + (_life.Years / 1e6).ToString("0.0") + " million years, most advanced: " + DnaAnd.Sim.PlanetLife.StageNames[_life.TopStage]) +
+                        _life.Alive + " species alive (" + _life.EverLived + " ever) in " + _life.RegionsWithLife() + " of " + _life.RegionCount + " regions, from " + _life.Sparks + " spark" + (_life.Sparks == 1 ? "" : "s") + ", " + (_life.Years / 1e6).ToString("0.0") + " million years, most advanced: " + Universe.Sim.PlanetLife.StageNames[_life.TopStage]) +
                         " · souls " + _life.Souls.ToString("0.0");
                     if (_time < _lifeNoteUntil) where += " · " + _lifeNote;
                 }
                 if (_microbes != null) where += " · " + _microbes.Microbes.Count + " microbes in " + _microbes.Families + " families around you, " + _microbes.Viruses.Count + " viruses";
                 if (_terrain.Solid && _fieldHere >= 0 && !_terrain.Shell) where += " · field here: " + PlanetTerrain.Fields[_fieldHere].Name;
-                if (_centre) return "DNA-AND · " + _terrain.Name + " · THE VIEW FROM THE MIDDLE: the whole inner world wrapped around its star, the metal hull outside · drag to turn · C to go back";
+                if (_centre) return Universe.Shell.PreviewText.AppName + " · " + _terrain.Name + " · THE VIEW FROM THE MIDDLE: the whole inner world wrapped around its star, the metal hull outside · drag to turn · C to go back";
                 if (_terrain.Shell)
                     where += _inside ? " · INSIDE: the shell's spin holds you on its inner land, the star overhead (I or C to go back out, M for the view from the middle)"
                                      : (_terrain.Habitable ? " · outside the hull (I or C to go inside, M for the view from the middle)" : " · outside the hull");
                 if (_terrain == _fields) where += " · RESOURCE VIEW (R to switch off, Legend for colours)";
                 string loading = _shown > _alt * 1.01 ? " (finer ground still forming: going down to " + Size(_alt) + ")" : "";
-                return "DNA-AND · " + _terrain.Name + " · " + Size(_shown) + loading + " above the " + (_terrain.Shell && !_inside ? "hull" : _terrain.Solid ? (_overSea ? "sea floor" : "ground") : "deep cloud tops") + where +
+                return Universe.Shell.PreviewText.AppName + " · " + _terrain.Name + " · " + Size(_shown) + loading + " above the " + (_terrain.Shell && !_inside ? "hull" : _terrain.Solid ? (_overSea ? "sea floor" : "ground") : "deep cloud tops") + where +
                        (_terrain.Solid ? "" : " (a giant has no ground)") + (_inside ? " · W S: fly forward and back · A D: step sideways · drag: look around · wheel: fly forward and back · Esc: back"
                             : " · wheel: closer and further · drag or W A S D: move · Q E: turn · R: resource view · N: next field · Esc: back");
             }
@@ -292,7 +292,7 @@ namespace DnaAnd.Shell
         // a world's temperature from its star alone, before any greenhouse (Earth: 255 K), by kind of world
         private static double BaseKelvin(string kind)
         {
-            return DnaAnd.Gen.PlanetTerrain.TerrainKind(kind).BaseK;                         // content/terrain.dnat
+            return Universe.Gen.PlanetTerrain.TerrainKind(kind).BaseK;                         // content/terrain.dnat
         }
 
         // the ground you see follows the planet: seas falling in ice ages, mountains worn down or pushed up, new craters.
@@ -321,7 +321,7 @@ namespace DnaAnd.Shell
             var scales = (double[])_shapeScales.Clone();
             _plates.MovedYears = _shapeMoved;
             _normal.SeaDropKm = _shapeSea;
-            _normal.MountainScale = (x, y, z) => scales[DnaAnd.Sim.PlanetLife.RegionAt(x, y, z)];
+            _normal.MountainScale = (x, y, z) => scales[Universe.Sim.PlanetLife.RegionAt(x, y, z)];
             var newCraters = new System.Collections.Generic.List<double[]>(); foreach (var c in _impacts.Craters) if (c[3] >= 8) newCraters.Add(c);
             _normal.Craters = newCraters;
             _normal.BakeChanges();                                                   // the changes become wavelet terms
@@ -337,8 +337,8 @@ namespace DnaAnd.Shell
             _time += dt; _frameDt = dt;
             if (_life == null && _terrain.Solid && !_terrain.Shell)
             {
-                if (!Lives.TryGetValue(_normal, out _life)) { var tt = _normal; _life = new DnaAnd.Sim.PlanetLife((x, y, z) => tt.GroundAt(x, y, z), 77); Lives[_normal] = _life; }
-                if (TestLoadLife != null) { var saved = DnaAnd.Core.SaveFile.Read(TestLoadLife); foreach (var c0 in saved) { if (c0.Name == "LIFE") _life.Load(c0); if (c0.Name == "CORE") _loadedCore = c0; if (c0.Name == "AIR ") _loadedAir = c0; } _testNote = " · test: life loaded"; TestEvolveYears = Math.Max(TestEvolveYears, _life.Years); TestLoadLife = null; }
+                if (!Lives.TryGetValue(_normal, out _life)) { var tt = _normal; _life = new Universe.Sim.PlanetLife((x, y, z) => tt.GroundAt(x, y, z), 77); Lives[_normal] = _life; }
+                if (TestLoadLife != null) { var saved = Universe.Core.SaveFile.Read(TestLoadLife); foreach (var c0 in saved) { if (c0.Name == "LIFE") _life.Load(c0); if (c0.Name == "CORE") _loadedCore = c0; if (c0.Name == "AIR ") _loadedAir = c0; } _testNote = " · test: life loaded"; TestEvolveYears = Math.Max(TestEvolveYears, _life.Years); TestLoadLife = null; }
             }
             if (_life != null && TestEvolveYears > 0)
             {
@@ -348,7 +348,7 @@ namespace DnaAnd.Shell
                 var sw = System.Diagnostics.Stopwatch.StartNew();                        // a little each frame, so the window keeps answering
                 while (_life.Years < TestEvolveYears && sw.ElapsedMilliseconds < 120) _life.Step(1e6);
                 if (_life.Years >= TestEvolveYears) TestEvolveYears = 0;
-                if (TestEvolveYears == 0 && TestSaveLife != null) { DnaAnd.Core.SaveFile.Write(TestSaveLife, _core != null && _air != null ? new[] { _life.Save(), _core.Save(), _air.Save() } : new[] { _life.Save() }); _testNote = " · test: life saved"; TestSaveLife = null; }
+                if (TestEvolveYears == 0 && TestSaveLife != null) { Universe.Core.SaveFile.Write(TestSaveLife, _core != null && _air != null ? new[] { _life.Save(), _core.Save(), _air.Save() } : new[] { _life.Save() }); _testNote = " · test: life saved"; TestSaveLife = null; }
                 if (TestEvolveYears == 0 && TestGoToCiv)
                 {
                     TestGoToCiv = false; _testNote = " · test: no intelligent species on land";
@@ -372,23 +372,23 @@ namespace DnaAnd.Shell
                 // the planet's own clock: it formed about 200 million years before the game starts (the crust has just cooled)
                 if (_core == null && !Cores.TryGetValue(_normal, out _core))
                 {
-                    _core = new DnaAnd.Sim.PlanetCore(_terrain.Radius, _terrain.HasWater, _terrain.Traits.DayHours, 2e8, 991);
+                    _core = new Universe.Sim.PlanetCore(_terrain.Radius, _terrain.HasWater, _terrain.Traits.DayHours, 2e8, 991);
                     Cores[_normal] = _core;
                     if (_loadedCore != null) { _core.Load(_loadedCore); _loadedCore = null; }
                 }
                 _core.Age = 2e8 + _life.Years; _core.Update();
-                if (_plates == null) _plates = new DnaAnd.Sim.PlanetPlates(_terrain.Radius, 992);
-                if (_air == null) { _air = new DnaAnd.Sim.PlanetAir(_terrain.Traits.BaseK); if (_loadedAir != null) { _air.Load(_loadedAir); _loadedAir = null; } }
+                if (_plates == null) _plates = new Universe.Sim.PlanetPlates(_terrain.Radius, 992);
+                if (_air == null) { _air = new Universe.Sim.PlanetAir(_terrain.Traits.BaseK); if (_loadedAir != null) { _air.Load(_loadedAir); _loadedAir = null; } }
                 _air.Advance(_core, _life.Producers, _life.Microbes, _terrain.HasWater);
                 if (_air.Events.Length > 0) { _coreNews = _air.Events; _coreNewsUntil = _time + 8; }
                 _life.WarmerK = _air.TempK - 288; _life.Oxygen = _air.O2;
-                if (_weather == null) { _weather = new DnaAnd.Sim.PlanetWeather(_life.RegionCount, _terrain.Traits.Tides); /* a locked world has almost no tides */ _life.Weather = _weather; }
+                if (_weather == null) { _weather = new Universe.Sim.PlanetWeather(_life.RegionCount, _terrain.Traits.Tides); /* a locked world has almost no tides */ _life.Weather = _weather; }
                 double yps = _life.YearsPerSecond;
                 _weather.Update(_life, _air, _core.Age, _terrain.HasWater, yps < 3 ? (_core.Age % 1.0) : -1);
                 if (_weather.Events.Length > 0) { _coreNews = _weather.Events; _coreNewsUntil = _time + 8; }
-                if (_surface == null) { var tt2 = _normal; _surface = new DnaAnd.Sim.PlanetSurface(_life, _plates, (x, y, z) => tt2.GroundAt(x, y, z)); _life.Surface = _surface; }
+                if (_surface == null) { var tt2 = _normal; _surface = new Universe.Sim.PlanetSurface(_life, _plates, (x, y, z) => tt2.GroundAt(x, y, z)); _life.Surface = _surface; }
                 _surface.Advance(_core, _life, _weather);
-                if (_impacts == null) _impacts = new DnaAnd.Sim.PlanetImpacts(993);
+                if (_impacts == null) _impacts = new Universe.Sim.PlanetImpacts(993);
                 _impacts.Advance(_core, _life);
                 if (_impacts.Total != _seenImpacts) { _seenImpacts = _impacts.Total; _coreNews = _impacts.Last; _coreNewsUntil = _time + 8; }
                 _air.DarkK = _impacts.DarkYearsLeft > 0 ? 15 : 0;
@@ -644,15 +644,15 @@ namespace DnaAnd.Shell
                 // a patch here: its own seed from the place, so each spot has its own life
                 ulong seed = (ulong)(Math.Abs(ux * 1e7) + Math.Abs(uy * 3e7) + Math.Abs(uz * 7e7)) + 17;
                 // the planet's own species of this spot; where life has not reached, nothing lives
-                if (_life == null) _microbes = new DnaAnd.Sim.MicrobeWorld(seed);
+                if (_life == null) _microbes = new Universe.Sim.MicrobeWorld(seed);
                 else
                 {
                     var local = _life.At(ux, uy, uz);
                     if (local.Count == 0) return;
-                    _microbes = new DnaAnd.Sim.MicrobeWorld(seed, local);
+                    _microbes = new Universe.Sim.MicrobeWorld(seed, local);
                 }
                 _mx = cx; _my = cy; _mz = cz; _mEast = east; _mNorth = north; _mUp = up;   // around the camera, at its own height
-                _microbeVerts = new StarVertex[DnaAnd.Sim.MicrobeWorld.MaxMicrobes * 6 + DnaAnd.Sim.MicrobeWorld.MaxViruses + 16];
+                _microbeVerts = new StarVertex[Universe.Sim.MicrobeWorld.MaxMicrobes * 6 + Universe.Sim.MicrobeWorld.MaxViruses + 16];
                 if (_microbeBuf == null) _microbeBuf = new UploadBuffer(gpu.Device, (long)_microbeVerts.Length * Marshal.SizeOf(typeof(StarVertex)));
             }
             const double Um = 1e-9;                                                                 // one micrometre, in km
@@ -662,7 +662,7 @@ namespace DnaAnd.Shell
             foreach (var m in _microbes.Microbes)
             {
                 if (n > _microbeVerts.Length - 6) break;
-                double lx = (m.X - DnaAnd.Sim.MicrobeWorld.Width / 2) * Um, ly = (m.Y - DnaAnd.Sim.MicrobeWorld.Height / 2) * Um;
+                double lx = (m.X - Universe.Sim.MicrobeWorld.Width / 2) * Um, ly = (m.Y - Universe.Sim.MicrobeWorld.Height / 2) * Um;
                 // spread out ahead of you and to the sides; in water they float at many depths, on land they keep to the wet film
                 // in front of you at your own height, packed close so they read: a field about 60 micrometres wide, 6 to 46 ahead
                 double lift = (((m.Family * 37 + (int)(m.X * 7)) % 100) / 100.0 - 0.3) * (_underWater ? 12 : 3) * Um;
@@ -681,7 +681,7 @@ namespace DnaAnd.Shell
             foreach (var v in _microbes.Viruses)
             {
                 if (n >= _microbeVerts.Length) break;
-                double lx = (v.X - DnaAnd.Sim.MicrobeWorld.Width / 2) * Um, ly = (v.Y - DnaAnd.Sim.MicrobeWorld.Height / 2) * Um;
+                double lx = (v.X - Universe.Sim.MicrobeWorld.Width / 2) * Um, ly = (v.Y - Universe.Sim.MicrobeWorld.Height / 2) * Um;
                 _microbeVerts[n++] = SpaceGen.Star(new Vec3(ox, oy, oz) + _mEast * (float)(lx * 0.45) + _mNorth * (float)(60 * Um + ly * 0.25) + _mUp * (float)(-60 * Um * 0.8 + ly * 0.3), (float)(0.06 * Um), 0.95f, 0.9f, 0.85f, 0.8f);   // viruses: about a tenth of a micrometre
             }
             if (n == 0) return;

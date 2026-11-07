@@ -1,8 +1,8 @@
-// DNA-AND · render · our own declarations for Direct3D 12 and DXGI (Windows system files d3d12.dll, dxgi.dll).
+// Universe · render · our own declarations for Direct3D 12 and DXGI (Windows system files d3d12.dll, dxgi.dll).
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal static class D3D12
     {

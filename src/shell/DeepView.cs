@@ -1,15 +1,15 @@
-// DNA-AND · shell · deep zoom: one galaxy full-window, zoomable from the whole galaxy down to the core's
+// Universe · shell · deep zoom: one galaxy full-window, zoomable from the whole galaxy down to the core's
 // supermassive black hole, its clusters and nebulas, and any star's full system. Everything is generated live.
 // Precision: positions are kept relative to the current focus (a moving origin), so tiny things stay exact.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class DeepView : IDisposable
     {
@@ -528,7 +528,7 @@ namespace DnaAnd.Shell
                     : _focusBody >= 0 ? "focus: " + _system.Bodies[_focusBody].Kind + " (keep rolling the wheel in to fly down to it)"
                     : string.Format("focus: {0} star · {1} planets · frost line {2:0.0} au · habitable zone {3:0.00} au",
                         _system.StarName, _system.Planets, _system.FrostLineAu, _system.HabitableAu);
-                return string.Format("DNA-AND deep zoom · {0} · view {1} across · {2} · time {3} · wheel zoom, drag rotate, Enter visit middle star, click a star in the galaxy or a planet in a system to pick it, then wheel in to fly to it, H core, 1-5 speed, Space pause, Esc = back",
+                return string.Format(Universe.Shell.PreviewText.AppName + " deep zoom · {0} · view {1} across · {2} · time {3} · wheel zoom, drag rotate, Enter visit middle star, click a star in the galaxy or a planet in a system to pick it, then wheel in to fly to it, H core, 1-5 speed, Space pause, Esc = back",
                     _name, Units.Describe(_dist * 1.0), focus, _paused ? "paused" : _speed.ToString("N0") + "x");
             }
         }

@@ -1,12 +1,12 @@
-// DNA-AND · generators · the 118 elements as real samples, from content/elements.dnat.
+// Universe · generators · the 118 elements as real samples, from content/elements.dnat.
 // Solids are lumps with the element's real look, gases glow in their own colour inside a glass bulb,
 // liquids are drops, and lab-made elements are a faint flicker because they fall apart almost at once.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal sealed class ElementSample
     {

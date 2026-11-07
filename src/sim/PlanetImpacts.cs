@@ -1,12 +1,12 @@
-// DNA-AND · simulation · rocks from space hitting the planet, on its own clock: the 10 impact sizes of the space page.
+// Universe · simulation · rocks from space hitting the planet, on its own clock: the 10 impact sizes of the space page.
 // How often each size hits follows real counts for Earth today (a house-size rock about every 60 years, a 50 m one about
 // every 1,000, a 1 km one about every 500,000, a 10 km one about every 100 million), many times more often while the young
 // system is still full of leftover rock (the heavy bombardment), falling away over its first billion years.
 // What each does to life follows the table: from nothing, through flattening a region, to a mass extinction.
 using System;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class PlanetImpacts
     {

@@ -1,12 +1,12 @@
-// DNA-AND · simulation · the inside of a rocky planet, running on the planet's own clock whether or not anything lives on it.
+// Universe · simulation · the inside of a rocky planet, running on the planet's own clock whether or not anything lives on it.
 // Built from content/physics.dnat: core, mantle and crust; heat from forming and from radioactive rock that slowly runs out;
 // mantle convection; a magma ocean when young; plate tectonics or a stagnant lid; a geodynamo making the magnetic field
 // (it needs a liquid outer core and spin), which wanders and flips; and the shield that field gives the air and life.
 // Numbers are relative to Earth today (Earth: 6,371 km, 4.5 billion years old, heat flow 1, field 1).
 using System;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class PlanetCore
     {

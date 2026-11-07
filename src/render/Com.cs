@@ -1,8 +1,8 @@
-// DNA-AND · render · calling COM objects (Direct3D 12, DXGI) through their method tables. Our own code.
+// Universe · render · calling COM objects (Direct3D 12, DXGI) through their method tables. Our own code.
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal static class Com
     {

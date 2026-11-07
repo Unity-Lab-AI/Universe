@@ -1,15 +1,15 @@
-// DNA-AND · shell · the start of the journey: a mix of galaxies spread through space, each built live from content/galaxies.dnat.
+// Universe · shell · the start of the journey: a mix of galaxies spread through space, each built live from content/galaxies.dnat.
 // Click a galaxy (or Tab for the next one) to centre on it, then roll the wheel in to fly into it.
 // Drag to turn the view. Esc closes.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class GalaxiesView : IDisposable
     {
@@ -89,7 +89,7 @@ namespace DnaAnd.Shell
             get
             {
                 var g = Galaxies[_focus];
-                return "DNA-AND · the universe · " + Galaxies.Count + " galaxies in view · centred on: " + g.Name + " · view " + Units.Describe(_dist) +
+                return Universe.Shell.PreviewText.AppName + " · the universe · " + Galaxies.Count + " galaxies in view · centred on: " + g.Name + " · view " + Units.Describe(_dist) +
                        " across · click a galaxy or Tab to pick it · wheel in to fly into it · drag to turn · Esc: close";
             }
         }

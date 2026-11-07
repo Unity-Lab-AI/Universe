@@ -1,4 +1,4 @@
-// DNA-AND · shell · the ground's own matter, all the way down, at its real sizes: below the finest piece of ground the camera
+// Universe · shell · the ground's own matter, all the way down, at its real sizes: below the finest piece of ground the camera
 // carries on into what the ground is made of. Everything sits at a fixed place around the point you dive into, so zooming truly
 // scales it into view (nothing fades between pictures):
 //   grains (about 0.2 mm), each one mineral from its ground's own mix (content/minerals.dnat);
@@ -12,11 +12,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class MatterView : IDisposable
     {
@@ -426,7 +426,7 @@ namespace DnaAnd.Shell
         }
 
         // ── the ground's grains: the planet's own (GrainField), the same ones its ground is the top of ──
-        private DnaAnd.Gen.GrainField.Mix _gm; private ulong _gseed; private double _R, _sx, _sy, _sz, _ax, _ay, _az, _nx, _ny, _nz, _he, _hn;
+        private Universe.Gen.GrainField.Mix _gm; private ulong _gseed; private double _R, _sx, _sy, _sz, _ax, _ay, _az, _nx, _ny, _nz, _he, _hn;
         private sealed class GrainRec { public long Key; public double X, Y, Z, Rad; public Mineral M; public float Shade; public int Layer; }
         private readonly Dictionary<long, GrainRec> _grains = new Dictionary<long, GrainRec>();
         private double _gcx = double.NaN, _gcz, _greach; private readonly List<GrainRec> _gnear = new List<GrainRec>();
@@ -434,8 +434,8 @@ namespace DnaAnd.Shell
         /// ground uses) and the land's slope there (east and north, km per km), so the grains are the planet's own.</summary>
         public void SetGround(double radiusKm, double dx, double dy, double dz, string mixId, ulong grainSeed, double slopeE, double slopeN)
         {
-            _gm = DnaAnd.Gen.GrainField.For(mixId); _gseed = grainSeed; _R = radiusKm; _sx = dx; _sy = dy; _sz = dz; _he = slopeE; _hn = slopeN;
-            DnaAnd.Gen.GrainField.Axes(dx, dy, dz, out _ax, out _ay, out _az, out _nx, out _ny, out _nz);
+            _gm = Universe.Gen.GrainField.For(mixId); _gseed = grainSeed; _R = radiusKm; _sx = dx; _sy = dy; _sz = dz; _he = slopeE; _hn = slopeN;
+            Universe.Gen.GrainField.Axes(dx, dy, dz, out _ax, out _ay, out _az, out _nx, out _ny, out _nz);
             _grains.Clear(); _gcx = double.NaN; _gcx2 = double.NaN;
             if (_gm != null && !_noGrains) { Grain = _gm.Size; }
         }
@@ -451,7 +451,7 @@ namespace DnaAnd.Shell
             if (small) { _gcx = cx; _gcz = cz; _greach = reach; } else { _gcx2 = cx; _gcz2 = cz; _greach2 = reach; }
             outL.Clear();
             double px = _sx * _R + _ax * cx + _nx * cz, py = _sy * _R + _ay * cx + _ny * cz, pz = _sz * _R + _az * cx + _nz * cz, pl = Math.Sqrt(px * px + py * py + pz * pz);
-            var list = new List<DnaAnd.Gen.GrainField.Grain>(); DnaAnd.Gen.GrainField.Near(px / pl, py / pl, pz / pl, _R, reach, _gm, _gseed, list);
+            var list = new List<Universe.Gen.GrainField.Grain>(); Universe.Gen.GrainField.Near(px / pl, py / pl, pz / pl, _R, reach, _gm, _gseed, list);
             foreach (var g in list)
             {
                 GrainRec rec;
@@ -836,7 +836,7 @@ namespace DnaAnd.Shell
         // how far the grain's surface is from its middle, along the unit direction (dx, dy, dz), with detail down to 'cell' (km)
         private double GrainSurface(long gi, long gj, double rad, double dx, double dy, double dz, double cell)
         {
-            return DnaAnd.Gen.GrainField.Surface(gi, rad, dx, dy, dz, cell, _gseed);   // the same shape the planet's ground gives it
+            return Universe.Gen.GrainField.Surface(gi, rad, dx, dy, dz, cell, _gseed);   // the same shape the planet's ground gives it
         }
 
         // the point on top of a grain straight above (x, z), and false if (x, z) is off the grain
@@ -1183,7 +1183,7 @@ namespace DnaAnd.Shell
         // a far grain: eight faces, squashed and turned its own way
         private void Octa(List<StarVertex> l, long gi, long gj, double cx, double cy, double cz, double rad, float r, float g, float b, double s)
         {
-            double sx = (0.8 + 0.4 * DnaAnd.Gen.GrainField.Hash(gi, 16, 0, _gseed)) * rad, sy = (0.6 + 0.35 * DnaAnd.Gen.GrainField.Hash(gi, 17, 0, _gseed)) * rad, sz = (0.8 + 0.4 * DnaAnd.Gen.GrainField.Hash(gi, 18, 0, _gseed)) * rad, turn = DnaAnd.Gen.GrainField.Hash(gi, 19, 0, _gseed) * Math.PI * 2;   // the field's own shape
+            double sx = (0.8 + 0.4 * Universe.Gen.GrainField.Hash(gi, 16, 0, _gseed)) * rad, sy = (0.6 + 0.35 * Universe.Gen.GrainField.Hash(gi, 17, 0, _gseed)) * rad, sz = (0.8 + 0.4 * Universe.Gen.GrainField.Hash(gi, 18, 0, _gseed)) * rad, turn = Universe.Gen.GrainField.Hash(gi, 19, 0, _gseed) * Math.PI * 2;   // the field's own shape
             double ct = Math.Cos(turn), st = Math.Sin(turn);
             double[][] p = { new[] { sx, 0, 0.0 }, new[] { -sx, 0, 0.0 }, new[] { 0, sy, 0.0 }, new[] { 0, -sy, 0.0 }, new[] { 0, 0, sz }, new[] { 0, 0, -sz } };
             int[] f = { 0, 2, 4, 4, 2, 1, 1, 2, 5, 5, 2, 0, 0, 4, 3, 4, 1, 3, 1, 5, 3, 5, 0, 3 };

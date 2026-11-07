@@ -1,10 +1,10 @@
-// DNA-AND · render · root signature, shaders and pipeline state for drawing glowing billboards
+// Universe · render · root signature, shaders and pipeline state for drawing glowing billboards
 // (stars, galaxies, particles). Shaders are compiled by Windows' own d3dcompiler_47.dll.
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal sealed class BillboardPipeline : IDisposable
     {

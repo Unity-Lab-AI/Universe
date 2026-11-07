@@ -1,12 +1,12 @@
-// DNA-AND · simulation · one planet's life, all of it: a planet starts dead. A lightning strike (or the spark of life)
+// Universe · simulation · one planet's life, all of it: a planet starts dead. A lightning strike (or the spark of life)
 // at a spot makes the first cells there, and every strike starts its own family tree. Life then spreads region by region
 // across the seas and land, breeds with mutation into new species, and the ones that fit each place win.
 // What you see up close is drawn from this: the species of that spot, from that planet's own history.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class Species
     {

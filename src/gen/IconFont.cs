@@ -1,8 +1,8 @@
-// DNA-AND · generators · our own blocky letters and digits (5 wide, 7 tall), built as little raised squares,
+// Universe · generators · our own blocky letters and digits (5 wide, 7 tall), built as little raised squares,
 // so icons and labels can be drawn by the game itself.
 using System.Collections.Generic;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal static class IconFont
     {

@@ -1,14 +1,14 @@
-// DNA-AND · simulation · life in the sea at every size, shown at its own scale as you zoom:
+// Universe · simulation · life in the sea at every size, shown at its own scale as you zoom:
 // from megalodon-sized sharks down through fish, minnows, krill and drifting animals to amoebas.
 // (Bacteria and viruses below that come from MicrobeWorld.) Only the ones near your current size are kept,
 // around the camera: the game never simulates every animal in the sea.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
-using DnaAnd.Gen;
+using Universe.Core;
+using Universe.Render;
+using Universe.Gen;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class SeaLife
     {

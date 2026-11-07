@@ -1,16 +1,16 @@
-// DNA-AND · shell · the style sample for living and built things: nine subjects (one from each kingdom of life, a village
+// Universe · shell · the style sample for living and built things: nine subjects (one from each kingdom of life, a village
 // and a spaceship) all made by the body builder, shown in one of three looks. Keys 1, 2, 3: smooth, chunky, blocky.
 // Drag: turn them. Wheel: closer and further. Space: stop or start the slow turning. Right-click a tile: mark it as a keeper.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
-using DnaAnd.Sim;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
+using Universe.Sim;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class StyleView : IDisposable
     {
@@ -74,14 +74,14 @@ namespace DnaAnd.Shell
             {
                 var kept = new List<string>(); for (int i = 0; i < 9; i++) if (_marks[i]) kept.Add((i + 1).ToString());
                 if (_civ)
-                    return "DNA-AND samples · What an intelligent species builds, from its own genes · builds in " + CivGen.StyleNames[CivGen.Style(_genes[0])] + " · " + (_gens == 0 ? "as first made" : _gens + " generations evolved") +
+                    return Universe.Shell.PreviewText.AppName + " samples · What an intelligent species builds, from its own genes · builds in " + CivGen.StyleNames[CivGen.Style(_genes[0])] + " · " + (_gens == 0 ? "as first made" : _gens + " generations evolved") +
                            " · keepers: " + (kept.Count == 0 ? "none" : string.Join(", ", kept.ToArray())) +
                            " · 1-5: way of building · E: evolve the species · N: new species · drag: turn · wheel: zoom · Space: stop turning · right-click: mark keeper · Legend";
                 if (_family)
-                    return "DNA-AND samples · A family of " + GeneBody.KindNames[_kind] + ", built from their genes · " + (_gens == 0 ? "as first made" : _gens + " generations evolved") +
+                    return Universe.Shell.PreviewText.AppName + " samples · A family of " + GeneBody.KindNames[_kind] + ", built from their genes · " + (_gens == 0 ? "as first made" : _gens + " generations evolved") +
                            " · keepers: " + (kept.Count == 0 ? "none" : string.Join(", ", kept.ToArray())) +
                            " · 1-7: kind of life · E: evolve a generation · N: new family · drag: turn · wheel: zoom · Space: stop turning · right-click: mark keeper · Legend";
-                return "DNA-AND samples · Style of living and built things · look " + (_look + 1) + " of 3: " + BodyGen.LookNames[_look] +
+                return Universe.Shell.PreviewText.AppName + " samples · Style of living and built things · look " + (_look + 1) + " of 3: " + BodyGen.LookNames[_look] +
                        " · keepers: " + (kept.Count == 0 ? "none" : string.Join(", ", kept.ToArray())) +
                        " · 1 2 3: change look · drag: turn · wheel: zoom · Space: stop turning · right-click: mark keeper · Legend";
             }

@@ -1,14 +1,14 @@
-// DNA-AND · shell · the scale on screen: a bar of a round length (1, 2 or 5 of a unit) and its label, showing how big things are
+// Universe · shell · the scale on screen: a bar of a round length (1, 2 or 5 of a unit) and its label, showing how big things are
 // where you are looking, from light-years down to micrometres. Drawn in screen pixels on top of the picture, in the game's own
 // blocky letters. It can be turned on and off.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class ScaleHud : IDisposable
     {

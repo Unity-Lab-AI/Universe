@@ -1,8 +1,8 @@
-// DNA-AND · core · the laws of nature the universe is made by, read from content/physics.dnat (none written in code):
+// Universe · core · the laws of nature the universe is made by, read from content/physics.dnat (none written in code):
 // gravity's pull, the speed of light, and what follows from them (a black hole's horizon, an escape speed).
 using System;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal static class Physics
     {

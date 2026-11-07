@@ -1,12 +1,12 @@
-// DNA-AND · generators · a single star seen up close, built from content/stars.dnat.
+// Universe · generators · a single star seen up close, built from content/stars.dnat.
 // The star is a ball of faceted points (Populous-like) with surface detail that depends on the kind:
 // granulation and spots, giant convection cells, bands on brown dwarfs, beams on pulsars.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     /// <summary>A star's living surface: redrawn every frame so the plasma moves and only the near side is drawn.</summary>
     internal sealed class StarSurface

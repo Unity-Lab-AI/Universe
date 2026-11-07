@@ -1,11 +1,11 @@
-// DNA-AND · simulation · a live microscopic ecosystem: microbes with real genes, breeding with mutation,
+// Universe · simulation · a live microscopic ecosystem: microbes with real genes, breeding with mutation,
 // natural selection by light, food, temperature, predators and toxins, and viruses that infect by surface match.
 // Nothing is scripted: who wins comes out of the rules.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     /// <summary>A microbe's genes. Every number is a trait; copies are made with small mistakes (mutation).</summary>
     internal struct Genome

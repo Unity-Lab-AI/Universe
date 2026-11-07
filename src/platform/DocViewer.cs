@@ -1,4 +1,4 @@
-// DNA-AND · platform · the document viewer: a real window for the program's own documents (About, Readme, How it works, the
+// Universe · platform · the document viewer: a real window for the program's own documents (About, Readme, How it works, the
 // plain-words guide to the universe, the technical build guide, Credits), beside the game, never a pop-up. A contents list of
 // every document and its headings on the left (click one to go there); the page on the right, formatted (headings, bold,
 // lists, code, tables) with links that open in your browser; search across all the documents (Ctrl+F, Enter or F3 for the
@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal static class DocViewer
     {
@@ -71,11 +71,11 @@ namespace DnaAnd.Platform
             if (!_registered)
             {
                 _proc = Proc;
-                var wc = new Win32.WNDCLASSEX { cbSize = (uint)Marshal.SizeOf(typeof(Win32.WNDCLASSEX)), lpfnWndProc = _proc, hInstance = inst, hCursor = Win32.LoadCursor(IntPtr.Zero, (IntPtr)32512), hbrBackground = (IntPtr)16, lpszClassName = "DnaAndDocs" };
+                var wc = new Win32.WNDCLASSEX { cbSize = (uint)Marshal.SizeOf(typeof(Win32.WNDCLASSEX)), lpfnWndProc = _proc, hInstance = inst, hCursor = Win32.LoadCursor(IntPtr.Zero, (IntPtr)32512), hbrBackground = (IntPtr)16, lpszClassName = Universe.Shell.PreviewText.AppName.Replace("-", "") + "Docs" };
                 Win32.RegisterClassEx(ref wc); _registered = true;
             }
             int sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1), w = (int)(sw * 0.62), h = (int)(sh * 0.78);
-            _wnd = Win32.CreateWindowEx(0, "DnaAndDocs", DnaAnd.Shell.PreviewText.AppName + " · Documents", WS_OVERLAPPEDWINDOW, (sw - w) / 2, (sh - h) / 2, w, h, owner, IntPtr.Zero, inst, IntPtr.Zero);
+            _wnd = Win32.CreateWindowEx(0, Universe.Shell.PreviewText.AppName.Replace("-", "") + "Docs", Universe.Shell.PreviewText.AppName + " · Documents", WS_OVERLAPPEDWINDOW, (sw - w) / 2, (sh - h) / 2, w, h, owner, IntPtr.Zero, inst, IntPtr.Zero);
             float s = Scale();
             _font = CreateFont(-(int)(15 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");
             _list = Child(WS_EX_CLIENTEDGE, "LISTBOX", "", WS_VSCROLL | LBS_NOTIFY | LBS_NOINTEGRALHEIGHT | WS_TABSTOP, IdList);
@@ -153,7 +153,7 @@ namespace DnaAnd.Platform
                 SendMessage(_page, WM_USER + 97, ste, txt);
                 Marshal.FreeHGlobal(ste); Marshal.FreeHGlobal(txt);
                 SendMessage(_page, EM_SETZOOM, (IntPtr)_zoom, (IntPtr)100);
-                Win32.SetWindowText(_wnd, DnaAnd.Shell.PreviewText.AppName + " · " + _docs[d].Title);
+                Win32.SetWindowText(_wnd, Universe.Shell.PreviewText.AppName + " · " + _docs[d].Title);
             }
             int pos = 0;
             if (heading >= 0 && heading < _heads[d].Count) { int found = Find(_heads[d][heading], 0, true); if (found >= 0) pos = found; }

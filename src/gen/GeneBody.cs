@@ -1,11 +1,11 @@
-// DNA-AND · generators · bodies from genes: what the species in the running game look like.
+// Universe · generators · bodies from genes: what the species in the running game look like.
 // The stage of life decides what kind of thing a genome grows into (a virus, a cell, a plant, fungus or jelly, an animal);
 // the body-plan genes decide its shape. Every mutation shows, so a family keeps its resemblance as it changes.
 using System;
-using DnaAnd.Core;
-using DnaAnd.Sim;
+using Universe.Core;
+using Universe.Sim;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal static class GeneBody
     {

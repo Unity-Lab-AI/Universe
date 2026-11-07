@@ -1,4 +1,4 @@
-// DNA-AND · generators · the body builder: every living thing and built thing is put together from simple parts
+// Universe · generators · the body builder: every living thing and built thing is put together from simple parts
 // (round blobs, boxes and cones), and the same parts can be drawn in three looks:
 //   0 smooth: finely cut, so it reads as soft rounded clay
 //   1 chunky: few flat faces, the classic low-poly look
@@ -6,10 +6,10 @@
 // Every subject is made from a seed, so no two come out the same.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     /// <summary>One part of a body: a blob (0), box (1) or cone (2, base at -V, tip at +V), with its own axes and size.</summary>
     internal struct Part

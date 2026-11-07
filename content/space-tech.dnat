@@ -1,4 +1,4 @@
-# DNA-AND content · space tech: megastructures, stations, ships, drives, colonies
+# Universe content · space tech: megastructures, stations, ships, drives, colonies
 # researched: Wikipedia "Megastructure", "Dyson sphere"; NASA and Planetary Society propulsion
 #   overviews (ion, solar sail, nuclear thermal); Aerospace Corp "Emerging In-Space Propulsion";
 #   IEEE Spectrum on warp-drive physics; Kardashev scale (Kardashev 1964)
@@ -229,7 +229,7 @@ says: bends space around the ship instead of moving through it; allowed on paper
 @drive hyperdrive
 name: Hyperdrive
 real: game
-says: jumps through hyperspace between stars; in DNA-AND the step up from slower-than-light travel, growing into jump gates, wormhole networks and galaxy-to-galaxy jumps
+says: jumps through hyperspace between stars; in Universe the step up from slower-than-light travel, growing into jump gates, wormhole networks and galaxy-to-galaxy jumps
 
 @drive wormhole
 name: Wormhole travel

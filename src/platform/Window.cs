@@ -1,12 +1,12 @@
-// DNA-AND · platform · the game window, made with direct Windows calls.
+// Universe · platform · the game window, made with direct Windows calls.
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal sealed class Window
     {
-        private const string ClassName = "DnaAndWindow";
+        private static readonly string ClassName = Universe.Shell.PreviewText.AppName.Replace("-", "") + "Window";   // (its own: UniverseWindow)
         private readonly Win32.WndProc _proc; // kept alive so Windows can call it
         public IntPtr Handle { get; private set; }
         [DllImport("gdi32.dll")] private static extern IntPtr GetStockObject(int i);
@@ -109,7 +109,7 @@ namespace DnaAnd.Platform
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdHowItWorks, "How it works (waveform, infinite zoom)");
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdCredits, "Credits");
             Win32.AppendMenu(help, Win32.MF_SEPARATOR, IntPtr.Zero, null);
-            Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdAbout, "About " + DnaAnd.Shell.PreviewText.AppName);
+            Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdAbout, "About " + Universe.Shell.PreviewText.AppName);
             Win32.AppendMenu(bar, Win32.MF_STRING, (IntPtr)CmdExit, "Exit");
             Win32.AppendMenu(bar, Win32.MF_STRING, (IntPtr)CmdLanding, "Start page");   // back to the landing page: a new seed, the tour, the clips
             Win32.AppendMenu(bar, Win32.MF_POPUP, view, "View");

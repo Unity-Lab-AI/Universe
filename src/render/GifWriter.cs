@@ -1,11 +1,11 @@
-// DNA-AND · render · our own moving-picture writer: frames of the game saved as one looping GIF, which plays anywhere.
+// Universe · render · our own moving-picture writer: frames of the game saved as one looping GIF, which plays anywhere.
 // Each frame is coloured from a fixed palette of 252 colours (6 reds × 7 greens × 6 blues) and packed with LZW,
 // the way the GIF format asks. Nothing outside the game is used.
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal sealed class GifWriter
     {

@@ -1,11 +1,11 @@
-// DNA-AND · core · the job system: one worker thread per CPU core, all pulling jobs from one shared queue,
+// Universe · core · the job system: one worker thread per CPU core, all pulling jobs from one shared queue,
 // so heavy work (measuring a planet, building many bodies, packing clips) uses every core.
 // Jobs must not touch shared state without their own care: each writes only its own slots.
 using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal static class Jobs
     {
@@ -25,7 +25,7 @@ namespace DnaAnd.Core
                 var w = new Thread[Math.Max(1, Environment.ProcessorCount - 2)];   // (two cores left to the game's own frame and the card's driver: the background work never starves the frame)
                 for (int i = 0; i < w.Length; i++)
                 {
-                    w[i] = new Thread(Work) { IsBackground = true, Name = "DNA-AND worker " + (i + 1), Priority = ThreadPriority.BelowNormal };   // background: they never hold the game open
+                    w[i] = new Thread(Work) { IsBackground = true, Name = Universe.Shell.PreviewText.AppName + " worker " + (i + 1), Priority = ThreadPriority.BelowNormal };   // background: they never hold the game open
                     w[i].Start();
                 }
                 _workers = w;

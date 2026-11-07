@@ -1,4 +1,4 @@
-// DNA-AND · core · the waveform: every surface's fine detail, at every size, from the CDF 9/7 wavelet and mode-E.
+// Universe · core · the waveform: every surface's fine detail, at every size, from the CDF 9/7 wavelet and mode-E.
 //   The stored levels: a set of detail tiles, each made in the CDF 9/7 coefficient domain (white noise taken into the wavelet
 //   domain, every term weighted by its level so finer levels are fainter, as a natural rough surface is, then kept to its
 //   strongest terms: the waveform's own equations) and rebuilt from those terms. Each octave of detail is one of these
@@ -10,7 +10,7 @@
 //   from here, so one engine makes the detail of the land from the planet down to the face of a grain.
 using System;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal static class Waveform
     {

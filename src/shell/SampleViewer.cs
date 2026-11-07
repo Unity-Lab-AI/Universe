@@ -1,14 +1,14 @@
-// DNA-AND · shell · the live sample viewer: each sample set shown moving, with keepers marked from the menu.
+// Universe · shell · the live sample viewer: each sample set shown moving, with keepers marked from the menu.
 // Sample sets, each opened on its own: 1 galaxies, 2 solar systems, 3 stars, 4 planets. All in the game's style (Populous-like).
 using System;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class SampleViewer : IDisposable
     {
@@ -65,17 +65,17 @@ namespace DnaAnd.Shell
             get
             {
                 if (Set == 6)
-                    return "DNA-AND samples · Set 6: Dyson structures (Populous-like) · click a shell or ring to fly to it, then I goes inside · Legend for which is which · right-click marks a keeper";
+                    return Universe.Shell.PreviewText.AppName + " samples · Set 6: Dyson structures (Populous-like) · click a shell or ring to fly to it, then I goes inside · Legend for which is which · right-click marks a keeper";
                 if (Set == 5)
-                    return "DNA-AND samples · Set 5: Resource fields (every field lit in its own colour) · click or roll the wheel on a world to fly down · Legend for colours · right-click marks a keeper";
+                    return Universe.Shell.PreviewText.AppName + " samples · Set 5: Resource fields (every field lit in its own colour) · click or roll the wheel on a world to fly down · Legend for colours · right-click marks a keeper";
                 if (Set == 4)
-                    return "DNA-AND samples · Set 4: Planets and gas giants (Populous-like) · see the Legend menu for which is which · right-click marks a keeper";
+                    return Universe.Shell.PreviewText.AppName + " samples · Set 4: Planets and gas giants (Populous-like) · see the Legend menu for which is which · right-click marks a keeper";
                 if (Set == 3)
-                    return "DNA-AND samples · Set 3: Stars (Populous-like) · see the Legend menu for which star is which · right-click marks a keeper";
+                    return Universe.Shell.PreviewText.AppName + " samples · Set 3: Stars (Populous-like) · see the Legend menu for which star is which · right-click marks a keeper";
                 if (Set == 2)
-                    return "DNA-AND samples · Set 2: Solar systems (Populous-like) · rows: " + string.Join(", ", _systemNames) +
+                    return Universe.Shell.PreviewText.AppName + " samples · Set 2: Solar systems (Populous-like) · rows: " + string.Join(", ", _systemNames) +
                            " · click a planet to follow it, wheel to zoom · right-click marks a keeper";
-                return "DNA-AND samples · Set 1: Galaxies (Populous-like) · rows: " + string.Join(", ", _typeNames) +
+                return Universe.Shell.PreviewText.AppName + " samples · Set 1: Galaxies (Populous-like) · rows: " + string.Join(", ", _typeNames) +
                        " · click a galaxy to zoom deep into it · right-click marks a keeper";
             }
         }

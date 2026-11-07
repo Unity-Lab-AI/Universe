@@ -1,4 +1,4 @@
-// DNA-AND · generators · a whole planet's ground, from orbit down to a few metres.
+// Universe · generators · a whole planet's ground, from orbit down to a few metres.
 // The planet is a cube blown up into a ball. Each of the 6 faces is split into smaller and smaller square
 // patches near the camera (a patch splits into 4), so the land gets more detailed the closer you come.
 // Heights and colours come from our own layered noise worked out in double precision. No life is placed:
@@ -6,10 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal sealed class PlanetTerrain : IDisposable
     {

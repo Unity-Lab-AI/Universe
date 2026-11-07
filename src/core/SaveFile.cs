@@ -1,4 +1,4 @@
-// DNA-AND · core · the save file: our own versioned binary chunks.
+// Universe · core · the save file: our own versioned binary chunks.
 // A file starts with "DNAS" and the file version, then holds chunks: a four-letter name, the chunk's own version,
 // its length, then its bytes. A reader skips chunks it does not know, so newer saves still open in older games
 // as far as they can, and each part of the game (universe, planets, life, civilizations, player) owns its own chunk.
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal static class SaveFile
     {
@@ -39,7 +39,7 @@ namespace DnaAnd.Core
             {
                 var r = new BinaryReader(f);
                 var magic = r.ReadBytes(4);
-                if (magic.Length < 4 || magic[0] != 'D' || magic[1] != 'N' || magic[2] != 'A' || magic[3] != 'S') throw new InvalidDataException("not a DNA-AND save");
+                if (magic.Length < 4 || magic[0] != 'D' || magic[1] != 'N' || magic[2] != 'A' || magic[3] != 'S') throw new InvalidDataException("not a " + Universe.Shell.PreviewText.AppName + " save");
                 uint ver = r.ReadUInt32();
                 if (ver > FileVersion) throw new InvalidDataException("this save is from a newer game (file version " + ver + ")");
                 int n = r.ReadInt32();

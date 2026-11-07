@@ -1,9 +1,9 @@
-// DNA-AND · core · reads the game's content files (docs/CONTENT-FORMAT.md). Our own parser.
+// Universe · core · reads the game's content files (docs/CONTENT-FORMAT.md). Our own parser.
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal sealed class ContentEntry
     {

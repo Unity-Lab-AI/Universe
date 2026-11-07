@@ -1,4 +1,4 @@
-// DNA-AND · simulation · a planet's plates, and the earthquakes and eruptions along their edges, on the planet's own clock.
+// Universe · simulation · a planet's plates, and the earthquakes and eruptions along their edges, on the planet's own clock.
 // Each plate is the part of the surface nearest its middle point, and turns slowly about its own axis (a few centimetres
 // a year, like Earth's). Where two plates meet, how they move against each other makes the edge spreading (ridges, rifts),
 // crashing (trenches, mountain belts, the biggest quakes and explosive volcanoes) or sliding (faults).
@@ -6,9 +6,9 @@
 // eruptions (VEI 8) come about once in 50,000 years. With no moving plates (a stagnant lid), only hot spots erupt.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class PlanetPlates
     {

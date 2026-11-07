@@ -1,4 +1,4 @@
-// DNA-AND · core · the coefficient waveform engine: the CDF 9/7 biorthogonal wavelet (JPEG2000's wavelet), ported from the
+// Universe · core · the coefficient waveform engine: the CDF 9/7 biorthogonal wavelet (JPEG2000's wavelet), ported from the
 // lab's own Uni Vs Matics engine (UnityAILab/UniVsMatics, ftcore/reconstruct.py) so the numbers match it exactly.
 // A grid of values (a height field, a colour channel, a density field...) becomes a sparse sum of wavelet terms,
 //     value(x, y) = Σ_k c_k · ψ_k(x, y)
@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     internal static class Wavelet97
     {

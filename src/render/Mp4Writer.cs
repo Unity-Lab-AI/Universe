@@ -1,9 +1,9 @@
-// DNA-AND · render · recording clips as MP4 video (H.264), through Windows' own Media Foundation (part of Windows, as
+// Universe · render · recording clips as MP4 video (H.264), through Windows' own Media Foundation (part of Windows, as
 // Direct3D is; no outside code): each frame of the game handed to its sink writer, timed as it was shown.
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal sealed class Mp4Writer : IDisposable
     {

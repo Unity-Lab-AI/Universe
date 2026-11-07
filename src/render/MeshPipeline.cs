@@ -1,10 +1,10 @@
-// DNA-AND · render · solid faceted ground: triangles lit by one star, every face flat-shaded (the Populous-like look).
+// Universe · render · solid faceted ground: triangles lit by one star, every face flat-shaded (the Populous-like look).
 // Uses the same root signature as the billboards: [0] 32 root constants at b0, [1] the vertex list at t0.
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace DnaAnd.Render
+namespace Universe.Render
 {
     internal sealed class MeshPipeline : IDisposable
     {

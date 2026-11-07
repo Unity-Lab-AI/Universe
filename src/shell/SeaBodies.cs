@@ -1,15 +1,15 @@
-// DNA-AND · shell · the planet's own sea animals, swimming around you at their true size.
+// Universe · shell · the planet's own sea animals, swimming around you at their true size.
 // They are the water-going species of this region of the planet's life (jellies and finned animals), each built from its
 // own evolved genes, so the sea changes as its life evolves. Only a few of each swim near you; each stands for a crowd.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Render;
-using DnaAnd.Sim;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Render;
+using Universe.Sim;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class SeaBodies : IDisposable
     {

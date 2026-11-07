@@ -1,4 +1,4 @@
-// DNA-AND · installer · our own Windows setup wizard, built with the C# compiler and the forms that come with Windows (no
+// Universe · installer · our own Windows setup wizard, built with the C# compiler and the forms that come with Windows (no
 // outside tools). It carries the game packed inside itself. The wizard: welcome; the readme, the MIT License (accepted to go
 // on) and the privacy policy, read from the very files it installs; the requirements, each checked on this
 // computer (Windows 10 or 11, 64-bit; a Direct3D 12 graphics card; memory; disk space); where to install it (any folder,
@@ -21,8 +21,8 @@ internal static class Setup
     private const string AppName = "Universe";   // (AppName, never Name: inside the wizard Name is the window's own, empty)
     private const string Tagline = "One universe you can zoom through without a break: from the cosmic web of galaxies down to the quarks inside a proton.";
 #else
-    private const string AppName = "DNA-AND";
-    private const string Tagline = "The universe of DNA-AND, a 3D god game of life (universe preview): from the cosmic web of galaxies down to the quarks.";
+    private const string AppName = "Universe";
+    private const string Tagline = "The universe of Universe, a 3D god game of life (universe preview): from the cosmic web of galaxies down to the quarks.";
 #endif
     private const string Version = "0.1.0";
     private const string Publisher = "Unity AI Lab";

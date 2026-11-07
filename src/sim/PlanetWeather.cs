@@ -1,4 +1,4 @@
-// DNA-AND · simulation · a planet's water and weather, region by region, on the planet's own clock.
+// Universe · simulation · a planet's water and weather, region by region, on the planet's own clock.
 // Each of the 100 regions gets its own temperature (from the world's air, its latitude and its height), its own rain and
 // its own ice. Rain follows the real belts of the air's circulation: wet at the equator, dry deserts near 30 degrees, wet
 // again near 60, dry at the poles; warmer air carries more water. Ice ages come and go with the real wobbles of a planet's
@@ -7,7 +7,7 @@
 // (about 80 a year on Earth). Seasons come from the planet's tilt, and show at slow game speeds.
 using System;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class PlanetWeather
     {

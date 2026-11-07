@@ -1,16 +1,16 @@
-// DNA-AND · shell · the planet's own living things on land, at their true size, around wherever you are.
+// Universe · shell · the planet's own living things on land, at their true size, around wherever you are.
 // What grows and walks here is the species of this region of the planet's life: their bodies are built from their
 // own evolved genes, so as they evolve, what you see changes. Where an intelligent species lives, its village stands here.
 // Only a handful of each are drawn (each stands for a whole crowd), and only near the ground.
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Render;
-using DnaAnd.Sim;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Render;
+using Universe.Sim;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class LandLife : IDisposable
     {

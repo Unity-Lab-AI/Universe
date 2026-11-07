@@ -1,15 +1,15 @@
-// DNA-AND · shell · sample set 8: the microscopic world, alive. A patch of water and sediment under the microscope.
+// Universe · shell · sample set 8: the microscopic world, alive. A patch of water and sediment under the microscope.
 // Light falls from above; it is cold on the left and warm on the right. Every microbe has genes and breeds with mutation;
 // viruses infect the ones whose surface they fit. Wheel: zoom. Drag: move. Space: pause. 1-5: speed. Legend: what is going on.
 using System;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
-using DnaAnd.Sim;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
+using Universe.Sim;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class MicrobeView : IDisposable
     {
@@ -32,7 +32,7 @@ namespace DnaAnd.Shell
         {
             get
             {
-                return "DNA-AND samples · Set 8: The microscopic world · " + _world.Microbes.Count + " microbes in " + _world.Families + " families, " + _world.Viruses.Count + " viruses · " +
+                return Universe.Shell.PreviewText.AppName + " samples · Set 8: The microscopic world · " + _world.Microbes.Count + " microbes in " + _world.Families + " families, " + _world.Viruses.Count + " viruses · " +
                        "births " + _world.Births + ", deaths " + _world.Deaths + ", infections " + _world.Infections + " · thriving: " + _world.Leader +
                        " · " + (_paused ? "PAUSED" : "speed " + _speed + "x") + " · wheel or Q/E: zoom · drag, W A S D or arrows: move · Space: pause · 1-5: speed · Legend";
             }

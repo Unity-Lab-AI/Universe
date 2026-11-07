@@ -1,11 +1,11 @@
-// DNA-AND · generators · a planet's name and its rings, from content/planets.dnat and gas-giants.dnat.
+// Universe · generators · a planet's name and its rings, from content/planets.dnat and gas-giants.dnat.
 // The planet itself (ground, sea, clouds, air) is built by PlanetTerrain.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     /// <summary>Ring points around a planet, in planet radii, with how bright each one is.</summary>
     internal sealed class PlanetRings

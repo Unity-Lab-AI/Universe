@@ -1,12 +1,12 @@
-// DNA-AND · generators · what an intelligent species builds, from its own genes: its tribe's camp, villages, towns,
+// Universe · generators · what an intelligent species builds, from its own genes: its tribe's camp, villages, towns,
 // cities, spaceships, hyperdrive ships, space stations and colonies. Nothing is a fixed model. The builders' body plan
 // sets the way they build, so an insect-like species raises mounds and hive spires, a round soft-bodied one builds domes,
 // an armoured one builds spiked walls and roofs, and a sea-going one builds on stilts. Their colours run through all of it.
 using System;
-using DnaAnd.Core;
-using DnaAnd.Sim;
+using Universe.Core;
+using Universe.Sim;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal static class CivGen
     {

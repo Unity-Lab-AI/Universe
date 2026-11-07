@@ -1,4 +1,4 @@
-// DNA-AND · the grains of a planet's ground, one field for the whole world: where every grain is, how big, its shape and
+// Universe · the grains of a planet's ground, one field for the whole world: where every grain is, how big, its shape and
 // what mineral it is. The ground's finest detail is the top of these grains, and the matter view reads the same grains
 // when you go in, so the land carries on down as one surface: no layer of stones laid over it.
 //   Grains sit one to each cube of space a grain across (planet km), on the planet's shell: a grain's place on the ground
@@ -6,9 +6,9 @@
 //   Its mineral comes from its ground's mix (content/minerals.dnat @mix: shares and grain sizes).
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
+using Universe.Core;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal static class GrainField
     {

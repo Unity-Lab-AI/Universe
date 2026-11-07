@@ -1,7 +1,7 @@
-// DNA-AND · platform · keyboard and mouse, read from the window's own messages.
+// Universe · platform · keyboard and mouse, read from the window's own messages.
 using System;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal sealed class Input
     {

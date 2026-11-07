@@ -1,11 +1,11 @@
-// DNA-AND · gen · live generators for the deep zoom: galaxy structures (clusters, nebulas), the core's
+// Universe · gen · live generators for the deep zoom: galaxy structures (clusters, nebulas), the core's
 // supermassive black hole, and full star systems. All built from the seed and the content files.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     /// <summary>Distance units. One galaxy unit is 50,000 light-years (about a galaxy's radius).</summary>
     internal static class Units

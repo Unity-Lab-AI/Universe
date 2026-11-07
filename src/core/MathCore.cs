@@ -1,8 +1,8 @@
-// DNA-AND · core · vectors, matrices, seeded random numbers and noise. All our own.
+// Universe · core · vectors, matrices, seeded random numbers and noise. All our own.
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Core
+namespace Universe.Core
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct Vec3

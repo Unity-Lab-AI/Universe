@@ -1,4 +1,4 @@
-// DNA-AND · simulation · the planet's surface wearing down and building up, region by region, on the planet's own clock.
+// Universe · simulation · the planet's surface wearing down and building up, region by region, on the planet's own clock.
 // Mountains rise where plates crash (a few millimetres a year) and are worn down by rain and ice, faster the higher they
 // are, so a range wears away over tens of millions of years. Worn rock becomes soil (about a few centimetres per thousand
 // years where it is warm and wet, much faster under plants; steep slopes lose it). Rivers carry the worn rock to the sea,
@@ -6,7 +6,7 @@
 // Soil feeds land life; river mud feeds the seas off the coast.
 using System;
 
-namespace DnaAnd.Sim
+namespace Universe.Sim
 {
     internal sealed class PlanetSurface
     {
@@ -23,7 +23,7 @@ namespace DnaAnd.Sim
         {
             int n = life.RegionCount;
             ReliefKm = new double[n]; StartReliefKm = new double[n]; SoilM = new double[n]; MudM = new double[n]; RiverMud = new double[n]; _uplift = new bool[n];
-            var rng = new DnaAnd.Core.Rng(31337);
+            var rng = new Universe.Core.Rng(31337);
             for (int i = 0; i < n; i++)
             {
                 // the region's mountains to begin with: the highest of a few spots in it, above its lowest

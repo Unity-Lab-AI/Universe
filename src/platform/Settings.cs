@@ -1,14 +1,14 @@
-// DNA-AND · platform · the player's settings, kept between runs in their own folder (%LOCALAPPDATA%\DNA-AND\settings.txt),
+// Universe · platform · the player's settings, kept between runs in their own folder (%LOCALAPPDATA%\Universe\settings.txt),
 // one "name = value" per line.
 using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal static class Settings
     {
-        private static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DnaAnd.Shell.PreviewText.AppName, "settings.txt");
+        private static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Universe.Shell.PreviewText.AppName, "settings.txt");
         private static Dictionary<string, string> _v;
 
         private static Dictionary<string, string> V

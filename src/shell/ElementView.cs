@@ -1,4 +1,4 @@
-// DNA-AND · shell · sample set 7: the periodic table, each element a game icon built from solid shapes.
+// Universe · shell · sample set 7: the periodic table, each element a game icon built from solid shapes.
 // A tile with the element's symbol and number, and on it a model in its real state at the chosen temperature and pressure:
 // solids a faceted lump in their real colour (metals shine), liquids a drop, gases glowing inside a glass bulb,
 // lab-made elements a small glowing core. Up and Down arrows: temperature. Left and Right: pressure. Home: room conditions.
@@ -6,12 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using DnaAnd.Core;
-using DnaAnd.Gen;
-using DnaAnd.Platform;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Gen;
+using Universe.Platform;
+using Universe.Render;
 
-namespace DnaAnd.Shell
+namespace Universe.Shell
 {
     internal sealed class ElementView : IDisposable
     {
@@ -46,7 +46,7 @@ namespace DnaAnd.Shell
         {
             get
             {
-                string t = "DNA-AND samples · Set 7: Elements · " + _tempK.ToString("0") + " K (" + C(_tempK) + ") · pressure " + _atm.ToString(_atm < 0.01 ? "0.0000" : "0.00") + " atm";
+                string t = Universe.Shell.PreviewText.AppName + " samples · Set 7: Elements · " + _tempK.ToString("0") + " K (" + C(_tempK) + ") · pressure " + _atm.ToString(_atm < 0.01 ? "0.0000" : "0.00") + " atm";
                 int show = _hover >= 0 ? _hover : _picked;
                 if (show >= 0) { var e = _els[show]; t += " · " + e.Number + " " + e.Name + " (" + e.Symbol + "), " + e.Group + ", " + e.StateAt(_tempK, _atm) + " here"; }
                 return t + " · Up/Down: temperature · Left/Right: pressure · Home: room · wheel: zoom · drag: move · click: look closer · Legend for details";

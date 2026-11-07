@@ -1,13 +1,13 @@
-// DNA-AND · generators · Dyson structures around a star, from content/space-tech.dnat.
+// Universe · generators · Dyson structures around a star, from content/space-tech.dnat.
 // Shells and rings are hollow worlds (PlanetTerrain in shell mode): a hull outside, land inside, held on by the spin.
 // Swarms, bubbles, mirrors and engines are many pieces around the star. Docks sit on the hulls and ships fly
 // between them, because spaceships, docks and economies are built around Dyson spheres.
 using System;
 using System.Collections.Generic;
-using DnaAnd.Core;
-using DnaAnd.Render;
+using Universe.Core;
+using Universe.Render;
 
-namespace DnaAnd.Gen
+namespace Universe.Gen
 {
     internal sealed class DysonStructure
     {

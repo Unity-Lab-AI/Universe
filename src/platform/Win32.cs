@@ -1,9 +1,9 @@
-// DNA-AND · platform · direct calls into Windows' own system files.
+// Universe · platform · direct calls into Windows' own system files.
 // Our own declarations: no outside libraries.
 using System;
 using System.Runtime.InteropServices;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal static class Win32
     {

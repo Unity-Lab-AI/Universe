@@ -1,4 +1,4 @@
-// DNA-AND · platform · safety watchdog.
+// Universe · platform · safety watchdog.
 // If the main loop stops answering, or a timed test run overruns, the game shuts itself down
 // so the graphics card and the window are always released. The game never changes display
 // settings, so exiting the process is a full revert.
@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace DnaAnd.Platform
+namespace Universe.Platform
 {
     internal sealed class Watchdog
     {
@@ -22,7 +22,7 @@ namespace DnaAnd.Platform
         {
             _clock = clock; _stallSeconds = stallSeconds; _hardLimitSeconds = hardLimitSeconds;
             Beat();
-            var t = new Thread(Run) { IsBackground = true, Name = "DNA-AND watchdog" };
+            var t = new Thread(Run) { IsBackground = true, Name = Universe.Shell.PreviewText.AppName + " watchdog" };
             t.Start();
         }
 

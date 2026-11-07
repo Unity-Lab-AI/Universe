@@ -112,6 +112,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The tour's fall half a minute, not a minute and a half:** (built: DNA-AND DESIGN 622; waits on the test) "let make it faster 1 minute of falling with nothing to see but a grid cone is too much bore"
 
+- [~] **The quarks tight in one clump from afar, spreading only close in:** (built: DNA-AND DESIGN 623; waits on the test) "and it need to have the qwurks alot tighter currently i think i can count them"
+
 ---
 
 ## Pending

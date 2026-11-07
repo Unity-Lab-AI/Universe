@@ -408,7 +408,7 @@ namespace Universe
                     // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
                     gpu.CaptureHere();
                     if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);
-                    Universe.Shell.ScaleHud.TextScale = rec != null ? rec.Down : 1;   // (a clip made at half or a quarter size: its text drawn that much larger, so it reads at the clip's size)
+                    Universe.Shell.ScaleHud.TextScale = rec != null ? Math.Max(1f, 1080f * rec.Down / Math.Max(1, gpu.Height)) : 1;   // (a clip made smaller than 1080 high: its text drawn larger, so in the clip every letter cell is at least two of its pixels, as on a 1080 screen; a half clip of a 4K screen needs nothing)
                     if (Window.Recording != (rec != null) || (world != null && Window.Touring != world.Touring)) { Window.Recording = rec != null; Window.Touring = world != null && world.Touring; menuDirty = true; }
                 }
                 if (clipPath != null && clipAt >= 0 && clock.Total >= clipAt)

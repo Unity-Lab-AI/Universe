@@ -28,10 +28,10 @@ namespace Universe.Platform
         private const uint WM_CLOSE = 0x10, WM_SETFONT = 0x30, WM_COMMAND = 0x111, WM_CTLCOLORSTATIC = 0x138, WM_CTLCOLOREDIT = 0x133, BM_GETCHECK = 0xF0, BM_SETCHECK = 0xF1;
         private const uint CB_SETDROPPEDWIDTH = 0x160, CB_RESETCONTENT = 0x14B, CB_ADDSTRING = 0x143, CB_SETCURSEL = 0x14E, CB_GETCURSEL = 0x147, EM_SETCUEBANNER = 0x1501, EM_LIMITTEXT = 0xC5;
         private const uint Back = 0x140C0A, Ink = 0xF2EEEA, Dim = 0xB4AAA0;                 // (colours as 0x00BBGGRR)
-        private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13;
+        private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14;
 
         private static Win32.WndProc _proc; private static bool _registered;
-        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
+        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
         private static Choice? _done; private static Action _guide;
         /// <summary>The tour is to be filmed (an MP4 clip into the captures folder): ticked on the page.</summary>
         public static bool RecordTour;
@@ -66,7 +66,13 @@ namespace Universe.Platform
             Child("BUTTON", "Random", WS_TABSTOP, IdRandom, x + cw - (int)(100 * s), y, (int)(100 * s), row, _font); y += row + (int)(22 * s);
             Child("BUTTON", "Begin", BS_DEFPUSHBUTTON | WS_TABSTOP, IdBegin, x, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font);
             Child("BUTTON", "Take the tour", WS_TABSTOP, IdTour, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font); y += (int)(48 * s) + (int)(8 * s);
-            _record = Child("BUTTON", "Film the tour (an MP4 clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small); y += row + (int)(10 * s);
+            _record = Child("BUTTON", "Film the tour (an MP4 clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small);
+            // the clip's size against the screen (the same choice as View > Clip size in flight): auto, full, half or a quarter
+            Child("STATIC", "Clip size", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
+            _clipSize = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipSize, x + (int)(74 * s), y, (cw - (int)(12 * s)) / 2 - (int)(74 * s), (int)(300 * s), _small);
+            foreach (var nm in new[] { "Auto (full up to 1920 wide, half above)", "Full (the screen's size)", "Half (about a quarter of the file)", "Quarter (about a sixteenth)" }) SendMessage(_clipSize, CB_ADDSTRING, IntPtr.Zero, nm);
+            { int cd = Settings.Get("clip-down", 0); SendMessage(_clipSize, CB_SETCURSEL, (IntPtr)(cd == 1 ? 1 : cd == 2 ? 2 : cd == 4 ? 3 : 0), IntPtr.Zero); }
+            y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
             _clips = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClips, x + (int)(64 * s), y, cw - (int)(64 * s), (int)(300 * s), _small);   // the whole width, so a clip's name fits
@@ -106,6 +112,7 @@ namespace Universe.Platform
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
             RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
+            { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 1 : ci == 2 ? 2 : ci == 3 ? 4 : 0); }
             Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;
         }

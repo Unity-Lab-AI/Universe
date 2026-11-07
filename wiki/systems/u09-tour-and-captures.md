@@ -19,7 +19,7 @@ A tour is a plain-text list of stops in `content/tours/` (`grand-tour.unt`, 81 s
 |---|---|---|
 | Screenshots | F12, PNG, in `captures` beside the program | `PngWriter.cs` |
 | The tour's end | Its last caption ends with a true figure: the places the tour went to against every galaxy, star, world and moon there is, as a percentage written out in full (`{seen}`) | `UniverseView.SeenWords` |
-| The clip's text | While a clip is made at half or a quarter size, every letter and card is drawn that much larger, so in the clip the text reads at its on-screen size | `ScaleHud.TextScale`, `Program` |
+| The clip's size and text | Clip size on the landing page (beside Film the tour) or under View: auto, full, half, quarter. In a clip smaller than 1080 high every letter and card is drawn larger, so each letter cell is at least two of the clip's pixels, as on a 1080 screen | `Launcher`, `ScaleHud.TextScale`, `Program` |
 | Clips | F9 or Film the tour on the landing page: one MP4 for as long as it records, every other frame at 30 a second, H.264 through Media Foundation with rate control by quality (black space costs nothing), a REC notice on screen but off the tape; the clip's size against the screen from View > Clip size (auto, full, half, quarter) | `Mp4Writer.cs` |
 | Playback | The landing page's Clips list plays them back; Open folder shows where they are | `Launcher.cs` |
 | The readme's clip | Only from a take the creator approves; its highlights cut into `docs/img/journey.gif` and the social images | U12 |

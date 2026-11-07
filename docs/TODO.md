@@ -47,6 +47,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Your own clock against far clocks wherever you are; a world's pull on clocks and a satellite's gain on its card; the far watcher at the horizon:** (built: DESIGN 577; waits on the test) "rtemebre time speeds up further from gravity and slows whenin very high gravity and maybe even stops" / "its why we have time dialtion codes for satilights further from gravity time runs differnt"
 
+- [~] **Clip size on the landing page, the clip's text measured right:** (built: DNA-AND DESIGN 587; waits on the test) "the text isnt sclaed correctly and i didnt have a resolution selection i could see for the recording"
+
 ---
 
 ## Pending

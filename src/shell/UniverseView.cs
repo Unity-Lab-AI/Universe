@@ -2874,6 +2874,17 @@ namespace Universe.Shell
                     double au = b.OrbitUnits / Units.Au(1);
                     L.Add("orbit: " + Au(b.OrbitUnits) + ", year " + (b.Period >= 1 ? b.Period.ToString("0.#") + " years" : (b.Period * 365.25).ToString("0") + " days"));
                     L.Add("its orbit: " + (b.Ecc < 0.05 ? "near round" : b.Ecc < 0.25 ? "oval" : "a long ellipse") + " (eccentricity " + b.Ecc.ToString("0.00") + "), from " + Au(b.OrbitUnits * (1 - b.Ecc)) + " to " + Au(b.OrbitUnits * (1 + b.Ecc)));
+                    if (_tIndex + 1 < _bodyCount)
+                    {
+                        // its speed, by the laws of motion (vis-viva): now, from how far it is from its star this moment, and at its
+                        // closest point; and relativity: its closest point turning round the star, and clocks slowed by the star's pull
+                        double rx = _bodyVerts[_tIndex + 1].X - _bodyVerts[0].X, ry = _bodyVerts[_tIndex + 1].Y - _bodyVerts[0].Y, rz = _bodyVerts[_tIndex + 1].Z - _bodyVerts[0].Z;
+                        double rM = Math.Max(1, Math.Sqrt(rx * rx + ry * ry + rz * rz) / Units.Km(1) * 1000), aM = b.OrbitUnits / Units.Km(1) * 1000, gm = Physics.GmSun * sy.MassSol;
+                        double vNow = Math.Sqrt(Math.Max(0, gm * (2 / rM - 1 / aM))), vPeri = Math.Sqrt(gm * (1 + b.Ecc) / (aM * (1 - b.Ecc))), vApo = Math.Sqrt(gm * (1 - b.Ecc) / (aM * (1 + b.Ecc)));
+                        L.Add("speed now: " + (vNow / 1000).ToString("0.#") + " km/s; " + (vPeri / 1000).ToString("0.#") + " at its closest, " + (vApo / 1000).ToString("0.#") + " at its farthest");
+                        double arcsecCentury = b.PeriRate * (100 / Math.Max(1e-9, b.Period)) * 206264.8, slow = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gm / (rM * Physics.C * Physics.C)));
+                        L.Add("relativity: its closest point turns " + (arcsecCentury < 3600 ? arcsecCentury.ToString("0.#") + " arcseconds" : (arcsecCentury / 3600).ToString("0.#") + " degrees") + " a century; clocks here run slower by 1 part in " + (slow > 0 ? (1 / slow).ToString("0.##E+0") : "(none)"));
+                    }
                     L.Add(au >= sy.HabitableAu * 0.75 && au <= sy.HabitableAu * 1.4 ? "in the habitable zone" : au < sy.HabitableAu * 0.75 ? "inside the habitable zone: too hot" : "outside the habitable zone: too cold");
                     L.Add("moons: " + moons);
                     if (b.Locked) L.Add("tidally locked: one face always toward its star, its day as long as its year");
@@ -2925,6 +2936,7 @@ namespace Universe.Shell
                     double g = Physics.Pull(exk.Mass, rM), vesc = Physics.Escape(exk.Mass, rM);     // (Newton's gravity, content/physics.unt)
                     L.Add("its pull here: " + (g >= 0.01 ? g.ToString("0.###") : g.ToString("0.##E+0")) + " m/s2 (" + (g / Physics.EarthG).ToString(g / Physics.EarthG >= 0.01 ? "0.###" : "0.##E+0") + " of Earth's)");
                     L.Add("escape speed here: " + (vesc >= Physics.C ? "faster than light: inside, nothing gets out" : (vesc / 1000).ToString("N0") + " km/s (" + (vesc / Physics.C * 100).ToString("0.###") + "% of light)"));
+                    { double gmx = Physics.GmSun * exk.Mass, q = 1 - 2 * gmx / (rM * Physics.C * Physics.C); L.Add("relativity: clocks here run " + (q <= 0 ? "to a stop at its horizon" : "slower by " + ((1 - Math.Sqrt(q)) * 100 >= 0.01 ? ((1 - Math.Sqrt(q)) * 100).ToString("0.##") + "%" : "1 part in " + (1 / (1 - Math.Sqrt(q))).ToString("0.##E+0")))); }
                 }
             }
             else if (_tKind == 4 && _system != null)

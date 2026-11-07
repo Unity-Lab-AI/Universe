@@ -49,13 +49,15 @@ Below the finest ground, the camera goes on into what the ground is made of, eve
 
 Click any grain, atom, electron, proton, neutron or quark for its card.
 
+Below light's wavelength (about 400 to 700 nanometres) nothing has a colour, so from there down the grain's face and its stones are shown in greys, as an electron microscope sees them; the colours of the atoms and electrons are marks, not light.
+
 ## The four forces, for real
 
 Universe runs on the real laws of nature, with their real numbers (all in `content/physics.unt`):
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law; the card of anything with a known mass gives its pull and escape speed where you are; a black hole's horizon is 2GM/c², and it bends the light behind it into a ring |
+| **Gravity** | Orbits follow Kepler's law and each body's speed follows from its orbit; the card of anything with a known mass gives its pull and escape speed where you are; a black hole's horizon is 2GM/c², and it bends the light behind it into a ring; relativity turns each orbit's closest point round its star and slows clocks in a gravity well |
 | **Electromagnetism** | Electrons fill their shells and orbitals in their real order; bonds are shared electrons; a star's colour comes from its temperature; protons push apart in the nucleus |
 | **Strong nuclear force** | Packs protons and neutrons into the nucleus, with a hard core and a short reach; glues quarks into every proton and neutron; sets each nucleus's binding energy |
 | **Weak nuclear force** | Decides which nuclei are stable and how the rest decay: beta-minus, beta-plus, or alpha past lead |

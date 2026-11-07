@@ -66,18 +66,23 @@ earth-g-m-s2: 9.81
 #   Earth, most moons at their planets, worlds close to dim stars at their star); its day is then its year. Within about
 #   lock-au-sun AU of a star of the Sun's mass a world is locked over billions of years, the reach growing with the cube root
 #   of the star's mass (Gladman et al. 1996, Kasting et al. 1993: red dwarfs' habitable zones lie inside it).
-# orbits: no orbit is a perfect circle. Each is an ellipse, its eccentricity (0 a circle, near 1 a long thin loop) chosen
-#   for each body: most planets gently oval (spread as the surveys find: a Rayleigh spread of planet-ecc, the Solar System's
-#   0.01 to 0.21), a share of them wild (wild-share, wild-ecc: many found round other stars run 0.3 to 0.9); close moons
-#   near round (moon-close-ecc), far captured ones stretched (moon-far-ecc, beyond moon-far-radii of their planet). Each
-#   body moves by Kepler's second law: fast at its closest, slow at its farthest.
+# orbits: no orbit is a perfect circle; each follows from the body's speed where it was placed, as the laws of motion have
+#   it: a share f of the circular speed there (1 a circle; a little off an oval; near root 2, escape speed, a long thin loop
+#   flown ultra-fast through its closest point and crawled through its farthest). Faster than circular the place is its
+#   closest point (a = r / (2 - f^2), e = f^2 - 1), slower its farthest (e = 1 - f^2); its size, period and speed everywhere
+#   follow. planet-speed-spread: how far most planets' speeds stray from circular (a spread; the Solar System's ovals of 0.01
+#   to 0.21); wild-share and wild-speed: the share flung into long loops and how fast (1.15 to 1.38: ovals of 0.3 to 0.9, as
+#   many round other stars); moon-close-speed and moon-far-speed for moons near and far (beyond moon-far-radii of their
+#   planet, captured, stretched). Relativity turns each orbit's closest point round the star by 6 pi G M / (c^2 a (1 - e^2))
+#   an orbit (Mercury: 43 arcseconds a century; near a black hole whole turns each orbit), and clocks run slower deep in a
+#   gravity well by root (1 - 2 G M / (r c^2)).
 @law orbits
-name: The shapes of orbits
-planet-ecc: 0.12
+name: The shapes of orbits, from their speeds
+planet-speed-spread: 0.06
 wild-share: 0.08
-wild-ecc: 0.3..0.85
-moon-close-ecc: 0.04
-moon-far-ecc: 0.1..0.6
+wild-speed: 1.15..1.38
+moon-close-speed: 0.02
+moon-far-speed: 1.05..1.3
 moon-far-radii: 25
 
 @law tidal-lock

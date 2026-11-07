@@ -226,6 +226,8 @@ namespace Universe.Gen
             public double Incl, Node;
             /// <summary>Its orbit's eccentricity (0 a circle) and where its closest point lies along it, from where it crosses the plane (radians).</summary>
             public double Ecc, Peri;
+            /// <summary>How far its closest point turns round what it circles each orbit (radians): relativity's advance of the perihelion.</summary>
+            public double PeriRate;
             /// <summary>Where on its orbit it is at angle <paramref name="ang"/> from where it crosses the plane, from what it circles.</summary>
             public void At(double ang, out double x, out double y, out double z)
             {
@@ -233,7 +235,7 @@ namespace Universe.Gen
                 // at its closest point, slow at its farthest; its distance from what it circles follows
                 double e = Math.Min(0.95, Math.Max(0, Ecc)), M = ang % (2 * Math.PI), E = M + e * Math.Sin(M);
                 for (int it = 0; it < 12; it++) { double dE = (E - e * Math.Sin(E) - M) / (1 - e * Math.Cos(E)); E -= dE; if (Math.Abs(dE) < 1e-12) break; }
-                double nu = 2 * Math.Atan2(Math.Sqrt(1 + e) * Math.Sin(E / 2), Math.Sqrt(1 - e) * Math.Cos(E / 2)), r = OrbitUnits * (1 - e * Math.Cos(E)), u = nu + Peri;
+                double nu = 2 * Math.Atan2(Math.Sqrt(1 + e) * Math.Sin(E / 2), Math.Sqrt(1 - e) * Math.Cos(E / 2)), r = OrbitUnits * (1 - e * Math.Cos(E)), u = nu + Peri + PeriRate * (ang - Phase) / (2 * Math.PI);   // (its closest point turning on, by relativity, with each orbit)
                 double cu = Math.Cos(u), su = Math.Sin(u), cn = Math.Cos(Node), sn = Math.Sin(Node), ci = Math.Cos(Incl), si = Math.Sin(Incl);
                 x = r * (cn * cu - sn * su * ci); y = r * su * si; z = r * (sn * cu + cn * su * ci);
             }
@@ -350,16 +352,32 @@ namespace Universe.Gen
                     double far = b.OrbitUnits / Math.Max(1e-30, sys.Bodies[b.Parent].RadiusUnits);
                     b.Incl = far > 25 ? Math.Acos(1 - 2 * u1) : u1 * 2 * Math.PI / 180;    // close moons in the planet's plane; far ones captured, any tilt (past 90: backwards)
                 }
-                // its orbit's shape: an ellipse, from its own numbers (content/physics.unt orbits)
+                // its orbit from its speed, as the laws of motion have it (content/physics.unt orbits): where it was placed it
+                // moves at some share of the circular speed there (f); exactly 1 is a circle, a little off an oval, near escape
+                // speed (root 2) a long thin loop flown through its closest point ultra-fast and crawled through its farthest.
+                // Faster than circular, the place is its closest point: a = r / (2 - f^2), e = f^2 - 1; slower, its farthest:
+                // e = 1 - f^2. Everything else (its size, its period, its speed everywhere) follows
                 double u4 = Frac(Math.Sin(b.Phase * 7.7 + 2.3) * 31415.9265), u5 = Frac(Math.Sin(b.Phase * 3.1 + 7.9) * 27182.818), u6 = Frac(Math.Sin(b.Phase * 5.3 + 1.1) * 16180.339);
                 b.Peri = u5 * Math.PI * 2;
+                double f;
                 if (b.Parent < 0)
-                    b.Ecc = u6 < Orbit(content, "wild-share", 0.08) ? Orbit(content, "wild-ecc", 0.3) + (Orbit(content, "wild-ecc", 0.85, true) - Orbit(content, "wild-ecc", 0.3)) * u4
-                          : Math.Min(0.6, Orbit(content, "planet-ecc", 0.12) * Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, u4))));   // most gently oval, a share wild
+                    f = u6 < Orbit(content, "wild-share", 0.08) ? Orbit(content, "wild-speed", 1.15) + (Orbit(content, "wild-speed", 1.38, true) - Orbit(content, "wild-speed", 1.15)) * u4
+                      : 1 + Orbit(content, "planet-speed-spread", 0.06) * Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, u4))) * Math.Cos(u5 * Math.PI * 2);   // most near circular, a share wild
                 else
                 {
                     double far = b.OrbitUnits / Math.Max(1e-30, sys.Bodies[b.Parent].RadiusUnits);
-                    b.Ecc = far > Orbit(content, "moon-far-radii", 25) ? Orbit(content, "moon-far-ecc", 0.1) + (Orbit(content, "moon-far-ecc", 0.6, true) - Orbit(content, "moon-far-ecc", 0.1)) * u4 : Orbit(content, "moon-close-ecc", 0.04) * u4;
+                    f = far > Orbit(content, "moon-far-radii", 25) ? Orbit(content, "moon-far-speed", 1.05) + (Orbit(content, "moon-far-speed", 1.3, true) - Orbit(content, "moon-far-speed", 1.05)) * u4 : 1 + Orbit(content, "moon-close-speed", 0.02) * (u4 * 2 - 1);
+                }
+                f = Math.Max(0.3, Math.Min(1.39, f)); double f2 = f * f, r0 = b.OrbitUnits;
+                b.OrbitUnits = r0 / (2 - f2); b.Ecc = Math.Abs(f2 - 1);
+                b.Period *= Math.Pow(b.OrbitUnits / r0, 1.5);                                   // Kepler's third law, from the orbit's true size
+                if (f < 1) b.Peri += Math.PI;                                                     // (placed at its farthest: its closest point lies opposite)
+                // relativity: the orbit's closest point turns round the star, by 6 pi G M / (c^2 a (1 - e^2)) each orbit (Mercury's
+                // 43 arcseconds a century; whole turns each orbit close to a black hole)
+                if (b.Parent < 0)
+                {
+                    double aM = b.OrbitUnits / Units.Km(1) * 1000, gm = Physics.GmSun * sys.MassSol;
+                    b.PeriRate = 6 * Math.PI * gm / (Physics.C * Physics.C * aM * Math.Max(1e-9, 1 - b.Ecc * b.Ecc));
                 }
             }
 

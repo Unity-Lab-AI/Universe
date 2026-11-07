@@ -114,7 +114,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them |
+| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well |
 | **Electromagnetism** | Electrons in their real shells and orbitals, bonds as shared electrons, stars the colour of their heat |
 | **Strong force** | Packs every nucleus, and glues the quarks in every proton and neutron |
 | **Weak force** | Decides which nuclei are stable, and how the rest would decay |

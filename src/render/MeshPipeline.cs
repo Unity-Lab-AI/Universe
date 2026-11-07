@@ -320,6 +320,9 @@ float4 PS(VO i) : SV_Target
     float gl = max(i.glow, 0);
     float3 c = misc.z > 1.5 && misc.z < 2.5 ? i.col.rgb * max(lit, gl) * sc : baseCol * max(lit3, gl);
     c *= stain;
+    // below light's wavelength there is no colour: the grain's face and its stones go to greys as an electron microscope sees
+    // them (nightCol.r: how far below, 0 none, 1 wholly; only where no starlight colour is set)
+    if (sunCol.a <= 0 && nightCol.r > 0) c = lerp(c, dot(c, float3(0.299, 0.587, 0.114)).xxx, saturate(nightCol.r));
     float alpha = misc.z > 1.5 ? i.col.a : 1;
     if (misc.z > 1.5 && misc.z < 2.5 && detA.w > 0)
     {

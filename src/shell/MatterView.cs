@@ -99,6 +99,10 @@ namespace Universe.Shell
                         }
                     }
         }
+        /// <summary>How far the view is below light's wavelength (0 none, 1 wholly: no colour this small, greys as an electron
+        /// microscope sees; from 700 nanometres across the view down to 400).</summary>
+        private float Greyness { get { return (float)Math.Max(0, Math.Min(1, Math.Log10(7e-10 / Math.Max(1e-30, _scale * 2)) / Math.Log10(7.0 / 4.0))); } }
+        private int _viewH = 1080;                 // the view's height in pixels: what spans a pixel is drawn, what does not is not
         private bool _lifeHere;
         /// <summary>Whether this ground's world is alive (microbes on its grains).</summary>
         public void SetLife(bool alive) { _lifeHere = alive; }
@@ -1340,7 +1344,9 @@ namespace Universe.Shell
             {
                 // from about 40 atom spacings (some 10 nm) the crystal's real lattice fills the whole view, coming in as a fine
                 // grain of atoms over the surface and opening into its rows, layers and bonds as you come in
-                float f = (float)Fade(s, AtomSpacing * 40, AtomSpacing * 20);
+                // no fading in: an atom is there at its real size, and is drawn once it spans about a pixel (the face's own dots,
+                // worked out per pixel on the card, stand for the atoms too small to draw); a bond once it spans a few
+                double px = 2.0 * s / Math.Max(1, _viewH); float f = 1;
                 var drawnAt = new List<CAtom>(); double bondReach = Math.Min(1.2 * s, AtomSpacing * 22);
                 double depth = s < AtomSpacing * 14 ? AtomSpacing * 9 : AtomSpacing * 3;     // close in, deep: solid every way you look
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
@@ -1351,19 +1357,21 @@ namespace Universe.Shell
                     float sh = (float)(1 + 0.6 * at.Y / AtomSpacing * 0.25); sh = Math.Max(0.45f, sh);
                     // from afar a ball in its colour, growing up out of the face; close in the ball gives way to the atom's own system
                     // (its nucleus and its electrons on their paths), as the electrons are what an atom's size really is
-                    double ball = 1 - Fade(s, AtomSpacing * 4, AtomSpacing * 2);
-                    if (ball > 0.03) AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, (long)(at.X / 1e-14) ^ (long)(at.Z / 1e-14) * 31, (float)(ball * f * sh));   // each atom at its own size, its colour coming in   // ball and stick: the balls small, so the bonds show
+                    if (ar < px * 0.5) continue;                                                 // (too small to show yet: the face's dots stand for it)
+                    long akey = (long)(at.X / 1e-14) ^ (long)(at.Z / 1e-14) * 31;   // each atom at its own size, its colour coming in   // ball and stick: the balls small, so the bonds show
                     if ((at.X - _fx) * (at.X - _fx) + (at.Z - _fz) * (at.Z - _fz) < bondReach * bondReach) drawnAt.Add(new CAtom { E = at.E, X = at.X, Y = ay, Z = at.Z });
-                    if (s < AtomSpacing * 4 && !NearLook(at.X, ay, at.Z, s)) AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, 0, (float)Fade(s, AtomSpacing * 4, AtomSpacing * 2));
-                    if (s < AtomSpacing * 4 && NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, (long)(at.X / 1e-14) ^ (long)(at.Z / 1e-14) * 31, (float)Fade(s, AtomSpacing * 4, AtomSpacing * 2));
+                    // one drawing of each atom at every size (its nucleus and its electrons, each shown once big enough to see):
+                    // the ones near where you look with their electrons' paths too
+                    if (s < AtomSpacing * 4 && NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
+                    else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
                     { int nb = _bodies.Count; AddBody(1, 0, 0, at.X, ay, at.Z, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = at.E.Symbol; }   // every layer's atoms
                 }
-                Bonds(glow, drawnAt, s, time, (float)Fade(s, AtomSpacing * 30, AtomSpacing * 16) * (float)(1 - Fade(s, AtomSpacing * 4, AtomSpacing * 2) * 0.6));
+                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, s < AtomSpacing * 3 ? 0.4f : 1f);   // (bonds once they span a few pixels; dimmer among the electrons close in)
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
                 double a = SiteA(fm); long n = (long)Math.Min(60, Math.Ceiling(2.4 * s / a) + 1), ai0 = FocusAI, aj0 = FocusAJ;
-                float f = (float)Fade(s, AtomSpacing * 40, AtomSpacing * 20);
+                double px = 2.0 * s / Math.Max(1, _viewH); float f = 1;                               // (no fading in: drawn once big enough to see)
                 for (long i = ai0 - n; i <= ai0 + n; i++)
                     for (long j = aj0 - n; j <= aj0 + n; j++)
                         for (long k = 0; k >= -7; k--)
@@ -1390,10 +1398,9 @@ namespace Universe.Shell
                             }
                             else
                             {
-                                double ball = 1 - Fade(s, AtomSpacing * 4, AtomSpacing * 2);
-                                if (ball > 0.03) AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, (float)(ball * sh * f));
-                                if (s < AtomSpacing * 4 && !NearLook(sx, sy - ar - _yOff, sz, s)) AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, 0, (float)Fade(s, AtomSpacing * 4, AtomSpacing * 2));
-                                if (s < AtomSpacing * 4 && NearLook(sx, sy - ar - _yOff, sz, s)) Cloud(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, (float)Fade(s, AtomSpacing * 4, AtomSpacing * 2));
+                                if (ar < px * 0.5) continue;
+                                if (s < AtomSpacing * 4 && NearLook(sx, sy - ar - _yOff, sz, s)) Cloud(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f);
+                                else AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f);
                             }
                             { int nb = _bodies.Count; AddBody(1, i, j, sx, sy - ar - _yOff, sz, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = el.Symbol; }   // every layer's atoms
                         }
@@ -1541,6 +1548,7 @@ namespace Universe.Shell
         /// <summary>Draws the matter; with <paramref name="overlay"/>, only its grains, lying over the ground still drawn below.</summary>
         public void Draw(Mat4 view, double scaleKm, int w, int h, double time, MeshPipes pipes, bool overlay)
         {
+            _viewH = h;
             Universe.Render.GpuLog.Pass = overlay ? "the grains over the ground" : "the matter (a grain's face, crystals, atoms)";
             _lastH = h;
             // the point you dive into eases across to what you picked
@@ -1595,7 +1603,7 @@ namespace Universe.Shell
                     var k2 = (float[])sc0.Clone();
                     double sx0 = (_fx - st[3]) / rad - _ex * sr2, sy0 = (_fy - _yOff - st[4]) / rad - _ey * sr2, sz0 = (_fz - st[5]) / rad - _ez * sr2;
                     k2[40] = (float)sx0; k2[41] = (float)sy0; k2[42] = (float)sz0; k2[43] = (float)sr2; k2[19] = (float)(sx0 - k2[40]); k2[23] = (float)(sy0 - k2[41]); k2[31] = (float)(sz0 - k2[42]);
-                    k2[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)((long)st[2] & 0xFFFFFFFF)), 0); k2[45] = (float)(rad / Math.Max(1e-30, _scale)); k2[46] = 0; k2[47] = 1;   // (no atomic terraces or atoms on a stone: that slot is the layer's height, 0 none)
+                    k2[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)((long)st[2] & 0xFFFFFFFF)), 0); k2[45] = (float)(rad / Math.Max(1e-30, _scale)); k2[46] = 0; k2[47] = 1; k2[36] = Greyness;   // (no atomic terraces or atoms on a stone: that slot is the layer's height, 0 none)
                     pipes.Solid.Draw(_stoneBuf, (int)st[0], (int)st[1], k2, 0, 0, w, h);
                 }
             }
@@ -1610,7 +1618,7 @@ namespace Universe.Shell
                 double ox0 = (_fx - _patchGX) / _patchRad - _ex * sr, oy0 = (_fy - _yOff - _patchGY) / _patchRad - _ey * sr, oz0 = (_fz - _patchGZ) / _patchRad - _ez * sr;
                 pc[40] = (float)ox0; pc[41] = (float)oy0; pc[42] = (float)oz0; pc[43] = (float)sr;
                 pc[19] = (float)(ox0 - pc[40]); pc[23] = (float)(oy0 - pc[41]); pc[31] = (float)(oz0 - pc[42]);   // the low halves
-                pc[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)(_patchKey & 0xFFFFFFFF)), 0); pc[45] = (float)(_patchRad / Math.Max(1e-30, _scale)); pc[46] = (float)(3e-13 / Math.Max(1e-30, _patchRad)); pc[47] = 1;   // (one atomic layer, 0.3 nm, in the grain's own units: its terraces)
+                pc[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)(_patchKey & 0xFFFFFFFF)), 0); pc[45] = (float)(_patchRad / Math.Max(1e-30, _scale)); pc[46] = (float)(3e-13 / Math.Max(1e-30, _patchRad)); pc[47] = 1; pc[36] = Greyness;   // (one atomic layer, 0.3 nm, in the grain's own units: its terraces)
                 Put(_patchMesh, ref _patchArr, ref _patchBuf);
                 Universe.Render.GpuLog.Pass = "a grain's face, its detail worked out per pixel";
                 pipes.Solid.Draw(_patchBuf, _patchMesh.Count, pc, 0, 0, w, h);
@@ -1729,7 +1737,17 @@ namespace Universe.Shell
         public void Unpick() { _picked = null; _tfx = _fx; _tfz = _fz; _tfy = _fy; }
 
         /// <summary>The information card: what you are in, and what you picked.</summary>
+        /// <summary>The card of what you are at or have picked; below light's wavelength it says there is no colour this small.</summary>
         public List<string> Card()
+        {
+            var L = CardLines();
+            // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
+            // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
+            // is for later)
+            if (!_space && Greyness > 0 && L.Count > 0) L.Add(Greyness >= 1 ? "no colour this small: below light's wavelength, in greys as an electron microscope sees; the atoms' and electrons' colours are marks, not light" : "colour is going: the view is nearing light's wavelength");
+            return L;
+        }
+        private List<string> CardLines()
         {
             var L = new List<string>();
             // a grain you are now at the face of: it is where you are, not a pick any more
@@ -1790,7 +1808,7 @@ namespace Universe.Shell
             if (_picked != null && _picked.Kind == 5)
             {
                 bool pr = _picked.Sym == "proton";
-                L.Add("a " + _picked.Sym + " of the nucleus");
+                { double fx0, fy0, fz0; var fe = Focus(out fx0, out fy0, out fz0); L.Add("a " + _picked.Sym + " of " + (fe != null ? "a nucleus of " + fe.Name.ToLowerInvariant() + " (" + fe.Z + " proton" + (fe.Z == 1 ? "" : "s") + ", " + (fe.A - fe.Z) + " neutron" + (fe.A - fe.Z == 1 ? "" : "s") + ")" : "the nucleus")); }
                 L.Add(pr ? "charge +1; quarks: up, up, down" : "charge 0; quarks: up, down, down");
                 L.Add("width: about 1.7 femtometres");
                 L.Add("held in the nucleus by the strong force");
@@ -1799,7 +1817,7 @@ namespace Universe.Shell
             if (_picked != null && _picked.Kind == 4)
             {
                 bool up = _picked.Sym == "up";
-                L.Add("a " + _picked.Sym + " quark");
+                { double fx0, fy0, fz0; var fe = Focus(out fx0, out fy0, out fz0); L.Add("a " + _picked.Sym + " quark" + (fe != null ? ", in a nucleon of a nucleus of " + fe.Name.ToLowerInvariant() : "")); }
                 L.Add(up ? "charge +2/3" : "charge -1/3");
                 L.Add("a point as far as measured; held by gluons");
                 L.Add("it has a colour charge (red, green or blue)");

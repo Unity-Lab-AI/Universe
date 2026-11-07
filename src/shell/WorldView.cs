@@ -200,7 +200,7 @@ namespace DnaAnd.Shell
             int took = 0;
             foreach (var g in _galaxies)
             {
-                var st = g.Pending; if (st == null || took >= 6) continue;
+                var st = g.Pending; if (st == null || took >= 24) continue;   // (each only a few thousand points: two dozen a frame, so the galaxies round you are never long missing)
                 if (g.Far != null) { g.Pending = null; continue; }                       // (already made at once when it was gone to)
                 g.Far = new UploadBuffer(_gpu.Device, (long)st.Length * Stride); g.Far.Write(st, st.Length); g.FarCount = st.Length; g.FarPts = st; g.FarKinds = g.PendingKinds; g.Pending = null; took++;
             }
@@ -270,7 +270,7 @@ namespace DnaAnd.Shell
                     {
                         // points through the whole sphere, each kept as often as the web is crowded there: the walls, filaments and
                         // clusters show, the voids stay dark; made on a thread of its own so nothing waits
-                        int want = _glowPoints; double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU * 1.5; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.15 + 0.6 + _webContrast) / _webMean; ulong sd = _seed;   // (top: a filament's density keeps every point; clusters, denser still, show by crowding; far fewer tries, so it is made in moments)
+                        int want = Math.Min(_glowPoints, 900000); double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU * 1.5; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.6 + 1.5) / _webMean; ulong sd = _seed;   // (top: a wall's density and a little more keeps every point (filaments and clusters show by crowding, voids two hundred times thinner): a quarter of the tries are kept, so it is made in a few seconds)
                         _glowMaker = new System.Threading.Thread(() =>
                         {
                             var rng = new Rng(sd ^ 0x6107UL); var list = new List<StarVertex>(want); long tries = 0;

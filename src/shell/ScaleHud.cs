@@ -124,6 +124,16 @@ namespace DnaAnd.Shell
         /// <summary>An information card on screen beside the thing you picked: just its lines of text, no box; the first line its name
         /// (brighter), then its facts. Placed at (x, y) in pixels, kept inside the screen.</summary>
         /// <summary>Letterbox bars across the top and bottom of the screen (each <paramref name="frac"/> of its height).</summary>
+        /// <summary>Fills the whole view with one colour (inside a giant's gas: nothing past it can be seen).</summary>
+        public void DrawFill(MeshPipes pipes, int w, int h, float r, float g, float b)
+        {
+            var l = new List<StarVertex>(); Quad(l, 0, 0, w, h, r, g, b);
+            var arr = l.ToArray(); var buf = Slot(arr, arr.Length);
+            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 0; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;
+            var c2 = new float[BillboardPipeline.ConstantCount];
+            c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
+            pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
+        }
         public void DrawBars(MeshPipes pipes, int w, int h, float frac)
         {
             var l = new List<StarVertex>(); float bh = h * frac;

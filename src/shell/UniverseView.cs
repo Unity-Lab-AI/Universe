@@ -2061,6 +2061,8 @@ namespace DnaAnd.Shell
         // it turns and speeds as it comes round, never starting or stopping all at once
         // in the matter, how far over what is picked the view is: the tour slows as it lines up (to a quarter, never stopped,
         // so it never looks frozen) and speeds again once over it
+        // below a giant's cloud tops (it has no ground: inside, only its gas)
+        private bool InsideGiant { get { if (_ground == null || _ground.Solid || _planet < 0) return false; double x, y, z; CamFromPlanet(out x, out y, out z); return Math.Sqrt(x * x + y * y + z * z) < _ground.Radius + _ground.CloudKm * 0.9; } }
         private double OverPick() { if (_matterScale <= 0 && _spaceScale <= 0) return 1; double u = Math.Max(0, Math.Min(1, (0.6 - _matter.PickOff) / 0.4)); u = u * u * (3 - 2 * u); return 0.25 + 0.75 * u; }
         private double OnCourse() { double u = Math.Max(0, Math.Min(1, (0.12 - OffTarget()) / 0.08)); return u * u * (3 - 2 * u); }
         private double OffTarget()
@@ -2306,8 +2308,8 @@ namespace DnaAnd.Shell
             double share = NearShare(), within = InsideShare();
             // the world you are falling to fills the whole view: everything behind it (the web, the galaxies, their clusters and
             // nebulae, the stars round you) cannot be seen, so none of it is drawn; what lies in front (its moons, its rings) still is
-            bool skyHidden = false;
-            if (_ground != null && _planet >= 0)
+            bool skyHidden = InsideGiant;                                               // (inside a giant's gas nothing past it shows)
+            if (!skyHidden && _ground != null && _planet >= 0)
             {
                 double qx = _px - _ox, qy = _py - _oy, qz = _pz - _oz, qd = Math.Sqrt(qx * qx + qy * qy + qz * qz), pr = _ground.Radius * Units.Km(1) * (_ground.Solid ? 0.999 : 0.97);
                 if (qd > pr)
@@ -2501,7 +2503,16 @@ namespace DnaAnd.Shell
                 _ground.ViewDir[0] = lk.X; _ground.ViewDir[1] = lk.Y; _ground.ViewDir[2] = lk.Z;
                 _ground.ViewHalfAngle = Math.Atan(Math.Tan(0.45) * Math.Sqrt(1 + (w / (double)Math.Max(1, h)) * (w / (double)Math.Max(1, h))));
                 PlanetTerrain.Power = Window.Detail;
-                _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), 0, 0, 0, 0, 0, 0, w, h, 400);   // detail scales with the GPU use
+                if (InsideGiant)
+                {
+                    // inside a giant, below its cloud tops: no shell to see from in here, only its own gas all round, its air's
+                    // colour, dimming as you go deeper (sunlight dies away within a few hundred km), lit on its day side
+                    double cr = Math.Sqrt(x * x + y * y + z * z), depth = Math.Max(0, _ground.Radius + _ground.CloudKm - cr);
+                    double day = cr > 0 ? Math.Max(0.15, Math.Min(1, (x * _ground.StarDir[0] + y * _ground.StarDir[1] + z * _ground.StarDir[2]) / cr * 1.5 + 0.4)) : 1;
+                    float lit = (float)(Math.Exp(-depth / 300.0) * day), deep = 0.05f;
+                    _hud.DrawFill(_meshes, w, h, _ground.AirR * (deep + 0.55f * lit), _ground.AirG * (deep + 0.55f * lit), _ground.AirB * (deep + 0.55f * lit));
+                }
+                else _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), 0, 0, 0, 0, 0, 0, w, h, 400);   // detail scales with the GPU use
             }
             double overAlt = _ground != null && _matterScale <= 0 ? AboveGround() / Units.Km(1) : 1e30;
             if (overAlt < MatterView.OverlayKm)

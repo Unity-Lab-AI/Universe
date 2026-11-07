@@ -213,6 +213,13 @@ namespace DnaAnd
                 int cmd = window.MenuCommand; window.MenuCommand = 0;
                 bool askNow = false;
                 if (cmd == Window.CmdExit) { endReason = "closed with the Exit button"; window.Close(); }
+                else if (cmd == Window.CmdLanding)
+                {
+                    // back to the start page: the program opens afresh on it (a new universe, the tour, the clips) and this one closes
+                    if (rec != null) { rec.Dispose(); rec = null; }
+                    try { System.Diagnostics.Process.Start(System.Reflection.Assembly.GetEntryAssembly().Location); } catch (Exception ex) { WriteLog("start page error · " + ex.Message); }
+                    endReason = "back to the start page"; window.Close();
+                }
                 else if (cmd == Window.CmdAskNow) askNow = true;
                 else if (cmd == Window.CmdLegend) window.Tell(style != null ? style.Legend() : microbes != null ? microbes.Legend() : elements != null ? elements.Legend() : planet != null ? planet.Legend() : viewer.Legend(), "DNA-AND · Legend");
                 else if (cmd == Window.CmdPause && world != null) world.TogglePause();

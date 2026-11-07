@@ -983,7 +983,7 @@ namespace DnaAnd.Shell
                 list.Add(new TourStop { Name = e.Id, Do = e.Get("do", "orbit"), Target = e.Get("target", "none"), Caption = e.Get("caption", ""), Rate = num(e.Get("rate", "0.3"), 0.3),
                     UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes", Pan = num(e.Get("pan", "0"), 0) });
             if (list.Count == 0) return false;
-            _tour = list; _tourAt = 0; _tourT = 0; _tourRate = 0; _tourClock = 0;
+            _tour = list; _tourAt = 0; _tourT = 0; _tourRate = 0; _tourClock = 0; _shotRng = new Rng((ulong)Environment.TickCount ^ _seed); NewShot();
             if (TimeStep == 0) SetTime(1);                                              // time runs on the tour (the planets turn, the electrons move)
             return true;
         }
@@ -991,6 +991,14 @@ namespace DnaAnd.Shell
         /// <summary>Stops the tour; the controls are yours again.</summary>
         public void StopTour() { _tour = null; _pressed = false; }
         private double _tourH0, _tourLookFrom; private bool _tourWaiting;
+        // the director's choices for the shot under way, made afresh for each shot of each viewing (so no two tours are the same):
+        // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
+        // the last galaxy's kind, so the next is another kind
+        private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
+        private void NewShot()
+        {
+            _shotDir = _shotRng.NextDouble() < 0.5 ? -1 : 1; _shotMul = 0.75 + 0.5 * _shotRng.NextDouble(); _shotCrane = (_shotRng.NextDouble() * 2 - 1) * 1.5;
+        }
         // how fast the tour may go now: never faster than the world round you is made (slower when the frames a second drop below
         // about 45, and while many pieces of ground are still waiting to be built), eased so it never jerks
         private double _tourPace = 1;
@@ -1048,7 +1056,7 @@ namespace DnaAnd.Shell
                         // toward level first, gently
                         { double lp = LocalPitch(); if (st.Do == "orbit" && Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
                         double ease = Math.Min(1, _tourT / 2.5) * Math.Min(1, Math.Max(0, st.Seconds - _tourT) / 2.5); ease = ease * ease * (3 - 2 * ease);
-                        double yaw = st.Turn * Math.PI / 180 * dt * ease;
+                        double yaw = st.Turn * _shotDir * _shotMul * Math.PI / 180 * dt * ease;
                         if (st.Do == "look")
                         {
                             // a look: up to its tilt above the horizon (on a world, the sky with its stars and galaxies) or down below it,
@@ -1058,7 +1066,7 @@ namespace DnaAnd.Shell
                             double aim = Math.Max(-1.45, Math.Min(1.45, (_ground != null ? 0 : _tourLookFrom) + st.Tilt * Math.PI / 180));
                             TourTurn(yaw, 0); TourPitchToward(_tourLookFrom + (aim - _tourLookFrom) * ee, 0.5);
                         }
-                        else TourTurn(yaw, Math.Sin(_tourClock * 0.2) * 0.25 * Math.PI / 180 * dt * ease);   // an orbit's gaze drifts barely
+                        else TourTurn(yaw, (_ground == null ? _shotCrane : Math.Sin(_tourClock * 0.2) * 0.25) * Math.PI / 180 * dt * ease);   // out in space a slow crane up or down; on a world its gaze drifts barely
                         if (_tourT >= st.Seconds) done = true;
                     }
                     break;
@@ -1073,7 +1081,7 @@ namespace DnaAnd.Shell
                         double ease = Math.Min(1, _tourT / 3) * Math.Min(1, Math.Max(0.15, left)); ease = ease * ease * (3 - 2 * ease);
                         if (!there && OffTarget() < 0.07) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
                         { double lp = LocalPitch(); if (Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
-                        TourTurn(st.Turn * Math.PI / 180 * dt * Math.Max(ease, 0.4), 0);
+                        TourTurn(st.Turn * _shotDir * _shotMul * Math.PI / 180 * dt * Math.Max(ease, 0.4), (_ground == null && _matterScale <= 0 ? _shotCrane : 0) * Math.PI / 180 * dt * ease);
                         if (_tourT >= st.Seconds && (there || st.UntilKm <= 0 || Math.Abs(st.Rate) <= 0 || _tourT >= st.Seconds * 2)) done = true;   // (circling on to its distance for at most twice its seconds: never held there; the next stop carries on)
                     }
                     break;
@@ -1138,7 +1146,7 @@ namespace DnaAnd.Shell
             // it keeps circling what it shows, and the caption says what it is waiting for
             _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _ground.Backlog > 80);
             if (WebNotMade) TourTurn(10 * Math.PI / 180 * dt, 0);                   // (out among the galaxies only: by a world it never circles while it waits)
-            if (done) { _tourAt++; _tourT = 0; }
+            if (done) { _tourAt++; _tourT = 0; NewShot(); }
         }
         // what a stop picks, as a click would
         private void TourPick(string what)
@@ -1183,10 +1191,10 @@ namespace DnaAnd.Shell
                             var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                             if (d < 3 || d > _nearUnits * 1.7) continue;
                             double ahead = (dx * lk.X + dy * lk.Y + dz * lk.Z) / d; if (ahead < 0.5) continue;
-                            double score = d * (0.85 + 0.3 * rng.NextDouble());
+                            double score = d * (0.85 + 0.3 * rng.NextDouble()) * (g.Type == _lastGalaxyType ? 0.6 : 1);   // (another kind than the last, where it can)
                             if (score > bs) { bs = score; bi = i; }
                         }
-                        if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; break; }
+                        if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; _lastGalaxyType = _galaxies[bi].Type; break; }
                     }
                     goto case "galaxy";                                                    // (none far ahead yet: one some way off)
                 case "galaxy":
@@ -1240,7 +1248,12 @@ namespace DnaAnd.Shell
                         var rng = new Rng(_seed ^ (ulong)(Environment.TickCount + 31)); var opts = new List<int>();
                         for (int i = 0; i < _system.Bodies.Count; i++) if (_system.Bodies[i].Parent < 0 && !_system.Bodies[i].Kind.Contains("giant") && !_system.Bodies[i].Kind.Contains("Jupiter")) opts.Add(i);
                         if (opts.Count == 0) for (int i = 0; i < _system.Bodies.Count; i++) if (_system.Bodies[i].Parent < 0) opts.Add(i);
-                        if (opts.Count > 0) { int pick = opts[rng.Below(opts.Count)]; _tKind = 2; _tIndex = pick; _tName = _system.Bodies[pick].Kind; }
+                        // the director's eye: a world with seas and air most of all, then any solid world, by chance among them
+                        double total = 0; var wts = new double[opts.Count];
+                        for (int q = 0; q < opts.Count; q++) { string k = _system.Bodies[opts[q]].Kind; wts[q] = k == "Temperate world" ? 6 : k == "Ice world" || k == "Lava planet" ? 2.5 : 2; total += wts[q]; }
+                        double pickAt = rng.NextDouble() * total; int pick = opts.Count > 0 ? opts[opts.Count - 1] : -1;
+                        for (int q = 0; q < opts.Count; q++) { pickAt -= wts[q]; if (pickAt <= 0) { pick = opts[q]; break; } }
+                        if (pick >= 0) { _tKind = 2; _tIndex = pick; _tName = _system.Bodies[pick].Kind; }
                     }
                     break;
                 default: _matter.PickNearest(what); break;                                     // a grain, a spot on its face, an atom, electron, nucleus, proton, quark

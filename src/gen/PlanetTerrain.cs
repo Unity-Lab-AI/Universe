@@ -18,6 +18,8 @@ namespace Universe.Gen
         public readonly bool Solid;             // false for gas and ice giants: no ground, only cloud tops
         public double[] StarDir = { 0.78, 0.35, 0.52 };
         public float[] SunColour, NightColour;
+        /// <summary>Whether the ground's sand is worked out per pixel on the card (not once the real grains are drawn over it).</summary>
+        public bool SandOnCard = true;
         /// <summary>The detail the ground is built for (1 = the usual): its upload time a frame and its builders scale with it.</summary>
         public static double Power = 1;
         /// <summary>Pieces waiting to be built or put on the card: when this is large, the ground is not keeping up.</summary>
@@ -1294,7 +1296,7 @@ namespace Universe.Gen
             _gg = false;
             {
                 double cl = Math.Sqrt(camX * camX + camY * camY + camZ * camZ); var gm = Solid && !Shell && cl > 0 ? GrainMix(camY / cl) : null;
-                if (gm != null && gm.Size > 0 && cl - Radius < gm.Size * 4000)
+                if (gm != null && gm.Size > 0 && SandOnCard && cl - Radius < gm.Size * 4000)
                 {
                     double gs = gm.Size, ux = camX / cl, uy = camY / cl, uz = camZ / cl;
                     long bi = (long)Math.Floor(ux * Radius / gs), bj = (long)Math.Floor(uy * Radius / gs), bk = (long)Math.Floor(uz * Radius / gs);

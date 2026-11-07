@@ -248,8 +248,10 @@ float4 PS(VO i) : SV_Target
             n = normalize(n - gv);
         }
         float lim = min(maxF * 0.8, 16384);
-        float iron = woctavesD(L, key * 7u + 300u, 2.0, 1, 0.6, lim), clay = woctavesD(L + double3(9, 0, -4), key * 7u + 400u, 2.0, 1, 0.6, lim);
-        float crk = woctavesD(L * 1.7, key * 7u + 500u, 2.0, 1, 0.6, lim), dark = clamp(0.5 - abs(crk) * 3, 0, 0.6);
+        // its stains and cracks in single precision (colour needs no more, and doubles run many times slower on most cards)
+        float3 Lf = (float3)L;
+        float iron = woctaves(Lf, key * 7u + 300u, 2.0, 1, 0.6, lim), clay = woctaves(Lf + float3(9, 0, -4), key * 7u + 400u, 2.0, 1, 0.6, lim);
+        float crk = woctaves(Lf * 1.7, key * 7u + 500u, 2.0, 1, 0.6, lim), dark = clamp(0.5 - abs(crk) * 3, 0, 0.6);
         float ir = clamp(iron / 2.4 * 2.4 - 0.15, 0, 0.6), cl = clamp(clay / 2.4 * 2.4 - 0.2, 0, 0.5);
         stain = float3(1 + ir * 0.25 + cl * 0.3, 1 - ir * 0.35 + cl * 0.3, 1 - ir * 0.55 + cl * 0.25) * (1 - dark) * (1 - 0.3 * stepE);   // (each step's edge a fine shaded line)
         // and closer still, the face is its atoms: rows of them 0.25 nm apart in the crystal's plane, coming in as soon as a pixel

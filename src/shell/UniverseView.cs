@@ -1369,7 +1369,7 @@ namespace Universe.Shell
                         bool got = st.Target == "none" || (st.Target == "planet" && _tKind == 2 && _system != null) || (_tKind >= 0 && (_tKind != k0 || _tIndex != i0 || _tx != x0)) || _matter.PickCount != p0;
                         // while it looks (what it wants still being made round you, or none there at all) it never sits still: it looks
                         // round slowly, eased in, and goes on after a few seconds at most
-                        if (!got) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);
+                        if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
                         if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5)) done = true;   // (a system with none of them: on at once)
                     }
                     break;
@@ -2616,6 +2616,7 @@ namespace Universe.Shell
                 _ground.ViewDir[0] = lk.X; _ground.ViewDir[1] = lk.Y; _ground.ViewDir[2] = lk.Z;
                 _ground.ViewHalfAngle = Math.Atan(Math.Tan(0.45) * Math.Sqrt(1 + (w / (double)Math.Max(1, h)) * (w / (double)Math.Max(1, h))));
                 PlanetTerrain.Power = Window.Detail;
+                _ground.SandOnCard = AboveGround() / Units.Km(1) >= MatterView.OverlayKm;   // (below a centimetre the real grains are drawn over the ground: no sand worked out per pixel under them too)
                 if (InsideGiant)
                 {
                     // inside a giant, below its cloud tops: no shell to see from in here, only its own gas all round, its air's

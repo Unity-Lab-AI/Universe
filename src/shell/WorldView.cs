@@ -258,17 +258,19 @@ namespace DnaAnd.Shell
         private void MakeGlow()
         {
             double reachU = 3.0e9 / Units.LightYearsPerUnit;
-            if (_glowAll != null && _glowMaker == null && Math.Sqrt((_cx - _glowCX) * (_cx - _glowCX) + (_cy - _glowCY) * (_cy - _glowCY) + (_cz - _glowCZ) * (_cz - _glowCZ)) > reachU * 0.3) { _glowAll = null; _glowReady = null; }   // far from where they were made: made again round you
-            if (_glowAll == null)
+            // made round where you are, half again past the reach it is drawn to, and made again round you (on its own thread)
+            // once you have gone a quarter of that reach; the old light stays drawn till the new is ready, so it is never dark
+            // and never has an edge in view
+            if (_glowReady != null && _glowMaker != null) { bool first = _glowAll == null; _glowAll = _glowReady; _glowReady = null; _glowMaker = null; if (first) _glowCameAt = System.Diagnostics.Stopwatch.GetTimestamp(); }
+            bool moved = _glowAll != null && Math.Sqrt((_cx - _glowCX) * (_cx - _glowCX) + (_cy - _glowCY) * (_cy - _glowCY) + (_cz - _glowCZ) * (_cz - _glowCZ)) > reachU * 0.25;
+            if (_glowAll == null || moved)
             {
-                if (_glowReady != null) { _glowAll = _glowReady; _glowMaker = null; _glowCameAt = System.Diagnostics.Stopwatch.GetTimestamp(); }
-                else
                 {
                     if (_glowMaker == null)
                     {
                         // points through the whole sphere, each kept as often as the web is crowded there: the walls, filaments and
                         // clusters show, the voids stay dark; made on a thread of its own so nothing waits
-                        int want = _glowPoints; double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.15 + 0.6 + _webContrast + _webContrast * 8) / _webMean; ulong sd = _seed;
+                        int want = _glowPoints; double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU * 1.5; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.15 + 0.6 + _webContrast) / _webMean; ulong sd = _seed;   // (top: a filament's density keeps every point; clusters, denser still, show by crowding; far fewer tries, so it is made in moments)
                         _glowMaker = new System.Threading.Thread(() =>
                         {
                             var rng = new Rng(sd ^ 0x6107UL); var list = new List<StarVertex>(want); long tries = 0;
@@ -285,7 +287,7 @@ namespace DnaAnd.Shell
                         }) { IsBackground = true, Priority = System.Threading.ThreadPriority.BelowNormal };
                         _glowMaker.Start();
                     }
-                    return;
+                    if (_glowAll == null) return;
                 }
             }
             // the whole web's light goes to the card once; the card leaves out the points near you (where the galaxies are made in
@@ -2099,13 +2101,13 @@ namespace DnaAnd.Shell
             float others = (float)(1 - 0.85 * Math.Max(0, Math.Min(1, within)));
             {
                 // the rest of the universe's galaxies, a glow along the cosmic web (remade without the near ones as you move far)
-                if (double.IsNaN(_glowAtX) || (_glowAll == null && _glowReady != null) || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
+                if (double.IsNaN(_glowAtX) || _glowReady != null || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
                 var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
                 float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);
                 webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
                 if (webFade > 0.01)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
-                _web[0] = (float)(1.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)(_nearUnits * 1.0);   // (from where the galaxies made in full begin to fade, so the two overlap: no gap)
+                _web[0] = (float)(1.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)(_nearUnits * 0.4);   // (well inside where the galaxies made in full are drawn: the two overlap, so where they are still being made it is never dark)
                 DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f, w, h, time, 0.007f, others * webFade, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd

@@ -814,9 +814,22 @@ namespace Universe.Shell
         private Element FocusAtom() { double x, y, z; return Focus(out x, out y, out z); }
 
         // the atom you dive into and where it is: the nearest atom of the top layer to the point you dive into
+        private Element _lockE; private double _lockX, _lockY, _lockZ;   // the atom the pick belongs to, held while the pick is it or part of it
         private Element Focus(out double x, out double y, out double z)
         {
             var m = FocusMineral; x = FocusAI * AtomSpacing; z = FocusAJ * AtomSpacing; y = 0;
+            // the atom you picked is the atom in focus: picked itself (or its nucleus), or by one of its electrons (the atom it belongs
+            // to is on the pick), and held through its proton and its quark; the atom nearest the dive point otherwise (the tour had
+            // picked one atom's nucleus and drawn another's, the one under the dive point two nanometres off, so at thirty femtometres
+            // there was no proton in view to pick and the quark stops were skipped)
+            if (_picked != null && !_space)
+            {
+                if ((_picked.Kind == 1 || _picked.Kind == 7) && _picked.Sym != null) { var pe = El(_picked.Sym); if (pe != null) { _lockE = pe; _lockX = _picked.X; _lockY = _picked.Y; _lockZ = _picked.Z; } }
+                else if (_picked.Kind == 3 && _picked.Sym != null) { var bits = _picked.Sym.Split(':'); var pe = bits.Length > 1 ? El(bits[1]) : null; if (pe != null) { _lockE = pe; _lockX = _picked.AX; _lockY = _picked.AY + _yOff; _lockZ = _picked.AZ; } }
+                else if (_picked.Kind != 5 && _picked.Kind != 4) _lockE = null;
+                if (_lockE != null && (_picked.Kind == 1 || _picked.Kind == 7 || _picked.Kind == 3 || _picked.Kind == 5 || _picked.Kind == 4)) { x = _lockX; y = _lockY; z = _lockZ; return _lockE; }
+            }
+            else _lockE = null;
             if (_space) { x = y = z = 0; return GasAtom(0, 0, 0); }                     // in the gas: the atom right where you dive
             if (m == null) return null;
             if (Structured(m))
@@ -1744,7 +1757,7 @@ namespace Universe.Shell
                         double u = Hash(k, tick, 401, _seed), v = Hash(k, tick, 402, _seed), wq = Hash(k, tick, 403, _seed);
                         double rr = s * Math.Exp(Math.Log(0.15) + wq * Math.Log(4 / 0.15)), th = Math.Acos(1 - 2 * u), ph = v * 2 * Math.PI;
                         double dens = Math.Exp(-2 * rr / a1s); if (dens < 0.02) continue;
-                        float b = (float)(0.2 * dens);
+                        float b = (float)(0.7 * dens);   // (bright enough to read: at a picometre the shimmer had been too dim to see)
                         Add(glow, ax0 + rr * Math.Sin(th) * Math.Cos(ph), cy + rr * Math.Cos(th), az0 + rr * Math.Sin(th) * Math.Sin(ph), s * 0.004, b * 0.6f, b * 0.75f, b, s);
                     }
                 }
@@ -1935,15 +1948,6 @@ namespace Universe.Shell
             c[16] = right.X; c[17] = right.Y; c[18] = right.Z; c[20] = up.X; c[21] = up.Y; c[22] = up.Z;
             c[24] = (float)time; c[25] = 1; c[28] = w; c[29] = h; c[30] = 0.0012f;
             // (solid things are drawn as lit shapes below, never as glowing dots, which add up to white)
-            c[26] = 0; if (glow.Count > 0) _dots.Draw(_glowBuf, glow.Count, c, 0, 0, w, h);      // electrons, their shells and the nucleus's spark: glows
-            if (_orbRecs.Count > 0)
-            {
-                // the orbitals' clouds: each record drawn as its points, placed by the card
-                Put(_orbRecs, ref _orbArr, ref _orbBuf);
-                int per = Math.Max(6, Math.Min(OrbitalPoints, 4000000 / Math.Max(1, _orbRecs.Count)));   // with many atoms on screen, fewer points to each orbital: the shapes stay, the frame rate too
-                var oc = (float[])c.Clone(); oc[41] = 1; oc[42] = per; oc[30] = 0.0028f;
-                _dots.Draw(_orbBuf, _orbRecs.Count * per, oc, 0, 0, w, h);
-            }
             if (mesh != null && mesh.Count > 0)
             {
                 // the near grains as lit stones (flat facets), in the starlight of where you are
@@ -1984,6 +1988,18 @@ namespace Universe.Shell
                 Put(_patchMesh, ref _patchArr, ref _patchBuf);
                 Universe.Render.GpuLog.Pass = "a grain's face, its detail worked out per pixel";
                 pipes.Solid.Draw(_patchBuf, _patchMesh.Count, pc, 0, 0, w, h);
+            }
+            // the glows after every opaque face (the grain's face, its sheet, the stones): they test the depth the faces wrote and
+            // never write it, so a glow behind a face is hidden and one in front shows (drawn first, the faces had landed on top of
+            // them wherever they covered the screen, and from above that is everywhere: the lattice's level was black)
+            c[26] = 0; if (glow.Count > 0) _dots.Draw(_glowBuf, glow.Count, c, 0, 0, w, h);      // electrons, their shells and the nucleus's spark: glows
+            if (_orbRecs.Count > 0)
+            {
+                // the orbitals' clouds: each record drawn as its points, placed by the card
+                Put(_orbRecs, ref _orbArr, ref _orbBuf);
+                int per = Math.Max(6, Math.Min(OrbitalPoints, 4000000 / Math.Max(1, _orbRecs.Count)));   // with many atoms on screen, fewer points to each orbital: the shapes stay, the frame rate too
+                var oc = (float[])c.Clone(); oc[41] = 1; oc[42] = per; oc[30] = 0.0028f;
+                _dots.Draw(_orbBuf, _orbRecs.Count * per, oc, 0, 0, w, h);
             }
         }
 

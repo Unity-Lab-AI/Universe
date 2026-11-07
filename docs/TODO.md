@@ -124,6 +124,11 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The asteroid's dive all the way down to a quark:** (built: DNA-AND DESIGN 628; waits on the test) "and the astroid zoom into the the material need to go to subatomic levels as it goes down the the white and black crystaline structures and dots but then backs off beforee ever getting to atoms and elctrons and nucleus and qwerks"
 - [~] **The tour's supernova logged twice a second, so a blank stop can be read:** (built: DNA-AND DESIGN 629; waits on the test and its log) "the suprer novas still and blank focal points no black hole no nutron start no exploasion"
 
+- [~] **The faces drawn before the glows, the lattice's level no longer black:** (built: DNA-AND DESIGN 630; waits on the test) "check the images the problems are obvious like pitch black while zooming into levels of the of attoms as all the near upper zooms ar all black and i tried to capture tem all in screen shots"
+- [~] **The atom you picked the atom in focus, the proton and quark stops no longer skipped:** (built: DNA-AND DESIGN 631; waits on the test) "and it neverr got to querk level where did my planet zoom do with the qwerks"
+- [~] **The stats card never wider than a wrapped line:** (built: DNA-AND DESIGN 632; waits on the test) seen in the shots: the stats card over the matter's card
+- [~] **The inner cloud at a picometre bright enough to see:** (built: DNA-AND DESIGN 633; waits on the test) "and just above and at 1 picometer shit is too dim"
+
 ---
 
 ## Pending

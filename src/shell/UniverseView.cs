@@ -3866,7 +3866,7 @@ namespace Universe.Shell
                 bool stats = Settings.Get("show-stats", true);
                 var sl = new List<string> { Window.Fps.ToString("0") + " FPS" + (stats && Window.Fps > 0 ? ", " + (1000 / Window.Fps).ToString("0.0") + " ms a frame" : "") };
                 if (stats) sl.AddRange(Stats.Lines);
-                int longest = 0; foreach (var l in sl) longest = Math.Max(longest, l.Length);
+                int longest = 0; foreach (var l in sl) longest = Math.Max(longest, l.Length); longest = Math.Min(longest, _hud.WrapAt);   // (the card wraps its lines: never wider than a wrapped line, else a long line pushed it left over the pick's card)
                 double spx = Math.Max(1, h / 540.0), scw = longest * 6.6 * spx + 12 * spx;
                 double sy0 = _tour != null ? h * 0.11 : 12 * Math.Max(1, h / 1080.0);
                 _hud.DrawCard(_meshes, sl, w - scw - 8 * spx, sy0, w, h);
@@ -3893,7 +3893,7 @@ namespace Universe.Shell
         private double _matterMs;
         private void MatterDrawTimed(Mat4 view, double scaleKm, int w, int h, double time, MeshPipes pipes, bool overlay) { var sw = System.Diagnostics.Stopwatch.StartNew(); _matter.Draw(view, scaleKm, w, h, time, pipes, overlay); _matterMs = sw.Elapsed.TotalMilliseconds; }
         /// <summary>The processor's part of the frame by phase: the ground's pieces chosen, drawn and taken in, the matter; for the stats card.</summary>
-        public string CpuPhases { get { return (_ground != null && _ground.FrameStats != null ? _ground.FrameStats + "; " : "") + "matter " + _matterMs.ToString("0.0") + " ms; bodies " + _extras.Count; } }
+        public string CpuPhases { get { return (_ground != null && _ground.FrameStats != null ? _ground.FrameStats + ", " : "") + "matter " + _matterMs.ToString("0.0") + " ms, bodies " + _extras.Count; } }
         private double ViewDistanceKm()
         {
             if (_spaceScale > 0) return _spaceScale * 0.6;

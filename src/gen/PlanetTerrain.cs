@@ -1338,7 +1338,7 @@ namespace Universe.Gen
             double tRest = swf.Elapsed.TotalMilliseconds;
             StartBuilding();
             Trim();
-            FrameStats = "ground " + groundPieces + " pieces: take " + tTake.ToString("0.0") + " ms (" + _uploadsLast + " up), choose " + (tChoose - tTake).ToString("0.0") + " ms, draw " + (tDraw - tChoose).ToString("0.0") + " ms, sea-clouds-air " + (tRest - tDraw).ToString("0.0") + " ms, build " + (swf.Elapsed.TotalMilliseconds - tRest).ToString("0.0") + " ms";
+            FrameStats = "ground " + groundPieces + " pieces: take " + tTake.ToString("0.0") + " (" + _uploadsLast + " up), choose " + (tChoose - tTake).ToString("0.0") + ", draw " + (tDraw - tChoose).ToString("0.0") + ", rest " + (tRest - tDraw).ToString("0.0") + ", build " + (swf.Elapsed.TotalMilliseconds - tRest).ToString("0.0") + " ms";
         }
 
         private int _camF; private double _camS, _camT;

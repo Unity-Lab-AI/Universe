@@ -1,6 +1,8 @@
 # How it works
 
-> One camera, about 42 factors of ten from the edge of the visible universe to a quark, and on down without a floor. Nothing is swapped in between.
+> One camera, about 42 factors of ten from your horizon to a quark, and on down without a floor. Nothing is swapped in between.
+
+The universe has no edge. What you see ends at a horizon, the distance from which light has had time to reach you, and it is centred on you: move a light-year and you see a light-year further. Galaxies are made wherever you go. The farthest light comes reddened, because the space it crossed was stretching as it came; past the horizon, space stretches away faster than light can cross it, sped by dark energy.
 
 ## One camera, infinite zoom
 
@@ -61,7 +63,7 @@ Universe runs on the real laws of nature, with their real numbers (all in `conte
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law and each body's speed follows from its orbit; the card of anything with a known mass gives its pull and escape speed where you are; a black hole's horizon is 2GM/c², and it bends the light behind it into a ring; relativity turns each orbit's closest point round its star and slows clocks in a gravity well |
+| **Gravity** | Orbits follow Kepler's law and each body's speed follows from its orbit; the card of anything with a known mass gives its pull and escape speed where you are; a black hole's horizon is 2GM/c², and it bends the light behind it into a ring; a feeding hole's disc is gas on Kepler orbits (the inner edge fastest, so it shears into spirals), brightened on the side coming at you by its near-light speed, with stars swept round the hole on tight ellipses and, at some, a star torn into a stream and swallowed; a galaxy's stars orbit at a flat speed out to its rim, held by its dark-matter halo; relativity turns each orbit's closest point round its star and slows clocks in a gravity well |
 | **Electromagnetism** | Electrons fill their shells and orbitals in their real order; bonds are shared electrons; a star's colour comes from its temperature; protons push apart in the nucleus |
 | **Strong nuclear force** | Packs protons and neutrons into the nucleus, with a hard core and a short reach; glues quarks into every proton and neutron; sets each nucleus's binding energy |
 | **Weak nuclear force** | Decides which nuclei are stable and how the rest decay: beta-minus, beta-plus, or alpha past lead |

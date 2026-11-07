@@ -283,7 +283,7 @@ Make the strong force reach further and nuclei pack differently. Change gravity'
 
 | Trait | Means |
 |---|---|
-| `across-ly` | How wide the visible universe is, in light-years |
+| `across-ly` | How far you see, in light-years: your horizon, centred on you wherever you go (the universe has no edge) |
 | `galaxies` | How many galaxies it holds |
 | `web-ly`, `web-wall-ly`, `web-contrast` | The cosmic web: the size of its cells, its walls, and how much galaxies crowd onto it |
 | `region-ly`, `near-ly` | How finely galaxies are made round you, and how far out they're made in full |
@@ -349,6 +349,8 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 | A new trait for worlds | Read it in `PlanetTerrain.Build` (`src/gen/PlanetTerrain.cs`), use it where the ground is shaped or coloured |
 | A new rule for where worlds form | `SpaceGen.WorldKind` (`src/gen/SpaceGen.cs`) |
 | A new kind of thing in space | `src/gen/BodyGen.cs` and `content/bodies.unt` |
+| A black hole's disc, swarm and torn star | `content/bodies.unt`: `disc-rs` (its disc's reach in horizon radii), `inner-orbit-seconds` (how long its inner edge takes round, as watched), `swarm-stars` and `swarm-rs` (stars on tight ellipses round it), `eating-share` (how many feeding holes are tearing a star apart now). Every motion is worked out on the card from these |
+| Dark matter and dark energy | `content/physics.unt` `@law cosmos`: `dark-matter-share` and `rim-speed-km-s` (a galaxy's card: its mass with its halo, its stars' flat speed), `dark-energy-share` and `hubble-km-s-mpc` (the horizon's words) |
 | A new galaxy shape | `src/gen/GalaxyGen.cs` |
 | New controls or camera moves | `UniverseView.Update` and the tour's `TourStep` (`src/shell/UniverseView.cs`) |
 | What the info cards say | `UniverseView.Card` |

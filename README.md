@@ -201,7 +201,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 |---|---|
 | **Shot afresh every time** | Each shot picks its own way round, speed and crane |
 | **A true crossing** | Billions of light-years, straight to one far galaxy, made from its own place before you set off |
-| **A feeding black hole** | It crosses to a galaxy whose heart is feeding, flies down to it, round its accretion disc, edge-on through the light it bends, in to the shadow at its horizon, and back out: with its jets, if it fires them |
+| **A feeding black hole** | It crosses to a galaxy whose heart is feeding, flies down to it, round its accretion disc and skims it in its own plane, edge-on through the light it bends, in to the shadow at its horizon, and back out: with its jets, if it fires them. The disc is gas on its own orbits, the inner ones round fastest, brighter on the side coming at you; stars are swept round the hole on tight ellipses; and a star that came too close is torn into a stream and swallowed |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
 | **Film it** | Tick **Film the tour** on the landing page; the **Clips** list plays them back |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |

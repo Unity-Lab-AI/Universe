@@ -33,13 +33,13 @@ to-km: 5e21
 rise: 20
 max-rate: 0.35
 seconds: 8
-caption: Pulling back: every point of light out here is a whole galaxy
+caption: Pulling back: every point of light out here is a whole galaxy; the far ones redden, their light stretched by the space it crossed
 
 @stop web
 do: orbit
 turn: 4
 seconds: 10
-caption: The cosmic web: galaxies along filaments and walls, round vast thin voids
+caption: The cosmic web, shaped by dark matter's gravity: galaxies along filaments and walls, round vast thin voids. {horizon}
 
 @stop choose-galaxy
 do: pick
@@ -85,7 +85,16 @@ sweep: 60
 rise: 40
 max-rate: 0.4
 seconds: 10
-caption: Its accretion disc: gas spiralling in at a good share of the speed of light, white-hot at the inner edge, red at the rim
+caption: Its accretion disc: gas on its own orbits, the inner ones round fastest, sheared into spirals; white-hot inside, red at the rim; stars swept round it on tight ellipses
+
+@stop skim
+do: shot
+to-radii: 14
+sweep: 150
+rise: 3
+max-rate: 0.3
+seconds: 12
+caption: Skimming the disc in its own plane: gas at a good share of light speed, brighter on the side coming at you; a star torn into a stream and swallowed
 
 @stop lens
 do: shot

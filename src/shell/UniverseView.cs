@@ -97,6 +97,7 @@ namespace Universe.Shell
             {
                 var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float; double v;
                 if (double.TryParse(e.Get("across-ly", "1.34e10"), fs, ci, out v)) _uRadius = v * 0.5 / Units.LightYearsPerUnit;
+                foreach (var law in _content.OfKind("physics.unt", "law")) if (law.Id == "cosmos") { if (double.TryParse(law.Get("dark-matter-share", "0"), fs, ci, out v)) _darkMatter = Math.Max(0, Math.Min(0.99, v)); if (double.TryParse(law.Get("rim-speed-km-s", "220"), fs, ci, out v)) _rimSpeed = v; if (double.TryParse(law.Get("dark-energy-share", "0"), fs, ci, out v)) _darkEnergy = v; if (double.TryParse(law.Get("hubble-km-s-mpc", "70"), fs, ci, out v)) _hubble = v; }
                 if (double.TryParse(e.Get("galaxies", "1e11"), fs, ci, out v)) _uGalaxies = v;
                 if (double.TryParse(e.Get("web-ly", "2e8"), fs, ci, out v)) _webUnits = v / Units.LightYearsPerUnit;
                 if (double.TryParse(e.Get("web-contrast", "6"), fs, ci, out v)) _webContrast = v;
@@ -136,6 +137,7 @@ namespace Universe.Shell
         private List<string> _types, _typeNames; private ulong _seed;
         private double _farScale;                                                         // how far out the wheel has zoomed (universe units): out grows it, in brings it back
         private double _uRadius = 134000, _uGalaxies = 1e11, _webUnits = 4000, _webContrast = 6, _regionUnits = 20, _nearUnits = 400; private int _glowPoints = 300000;
+        private double _darkMatter, _rimSpeed = 220, _darkEnergy, _hubble = 70;   // the dark universe (content/physics.unt @law cosmos): for the galaxies' cards and the horizon's words
         private readonly HashSet<long> _regions = new HashSet<long>(); private long _lastRegionCell = long.MinValue;
         private UploadBuffer _glowBuf; private int _glowCount; private StarVertex[] _glowAll, _glowShown = new StarVertex[0]; private long _glowCameAt; private double _glowAtT = -10, _glowAtX = double.NaN, _glowAtY, _glowAtZ;
         private void AddGalaxy(int t, ulong gseed, double x, double y, double z, float tilt, float turn, float scale)
@@ -256,7 +258,7 @@ namespace Universe.Shell
         private int SpawnRegion(long i, long j, long k)
         {
             double R = _regionUnits, mx = (i + 0.5) * R, my = (j + 0.5) * R, mz = (k + 0.5) * R;
-            if (mx * mx + my * my + mz * mz > _uRadius * _uRadius) return 0;                // past the edge: nothing
+            // (no edge: galaxies are made wherever you go; what you see of them ends only at your horizon, which moves with you)
             long key = i * 73856093L ^ j * 19349663L ^ k * 83492791L; if (!_regions.Add(key)) return 0; _addingRegion = key;
             var rng = new Rng((ulong)key * 0x9E3779B97F4A7C15UL ^ _seed); int made = 0;
             double lambda = MeanPerUnit3 * R * R * R * Web(mx, my, mz);
@@ -336,32 +338,38 @@ namespace Universe.Shell
             }
             _glowAtX = cx; _glowAtY = cy; _glowAtZ = cz;
         }
-        // the edge of the visible universe cannot be passed: you are held just inside it
-        private void HoldInside()
-        {
-            double x = _cx, y = _cy, z = _cz, l = Math.Sqrt(x * x + y * y + z * z), lim = _uRadius * 0.985;
-            if (l <= lim) return;
-            double k = lim / l; _ox = x * k - _ax; _oy = y * k - _ay; _oz = z * k - _az;
-        }
+        // the universe has no edge to be held inside: only a horizon, centred on you (move a light-year and you see a light-year
+        // further); nothing holds you
+        private void HoldInside() { }
 
         // ── every other kind of body, made round you from content/bodies.unt, drawn and clickable: a supermassive black hole at
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
-        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi; public int Shown; public float R, G, B; }
-        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; }   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8; public int Shown, Swarm; public float R, G, B; }   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; }   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
-        private UploadBuffer _bhDisc, _bhJets; private int _bhDiscN, _bhJetsN;
-        private void MakeBlackHoleParts()
+
+        // a feeding black hole's parts, made once for each kind of hole (content/bodies.unt: its disc's reach in horizon radii, its
+        // swarm of stars, how fast its inner edge turns as watched), in its own frame (its horizon's radius 1, its disc level); every
+        // motion in them is worked out on the card each frame (Pipeline: the gas on Kepler orbits, the stars on their ellipses, the
+        // torn star's stream flowing)
+        private sealed class HoleParts { public UploadBuffer Disc, Jets, Swarm, Stream; public int DiscN, JetsN, SwarmN, StreamN; public float K; }
+        private readonly Dictionary<string, HoleParts> _holeParts = new Dictionary<string, HoleParts>();
+        private HoleParts PartsFor(Place pl)
         {
-            var rng = new Rng(0xB1AC4UL); var disc = new List<StarVertex>(); var jets = new List<StarVertex>();
-            for (int k = 0; k < 6000; k++)
+            HoleParts hp; string id = pl != null ? pl.Id : ""; if (_holeParts.TryGetValue(id, out hp)) return hp;
+            double lo = pl != null ? pl.DiscLo : 3, hi = pl != null ? pl.DiscHi : 60, secs = pl != null ? pl.OrbitSeconds : 8;
+            var rng = new Rng(0xB1AC4UL); var disc = new List<StarVertex>(); var jets = new List<StarVertex>(); var swarm = new List<StarVertex>(); var stream = new List<StarVertex>();
+            for (int k = 0; k < 7000; k++)
             {
-                // from the innermost stable orbit (3 radii) out to about 60, more of it close in; hottest and brightest inside
-                // (blue-white), cooling outward (yellow, orange, red), thin
-                double r = 3 * Math.Pow(20, Math.Pow(rng.NextDouble(), 1.6)), a = rng.NextDouble() * Math.PI * 2, t = Math.Pow(3 / r, 0.75);
-                float br = (float)Math.Min(1, 1.4 * Math.Pow(3 / r, 1.1) + 0.06);
+                // the disc's gas from the innermost stable orbit out to its rim, more of it close in; hottest and brightest inside
+                // (blue-white), cooling outward (yellow, orange, red), thin, with denser streams through it (sheared into spirals
+                // by the rotation, since each point goes round at its own rate)
+                double r = lo * Math.Pow(hi / lo, Math.Pow(rng.NextDouble(), 1.6)), a = rng.NextDouble() * Math.PI * 2, t = Math.Pow(lo / r, 0.75);
+                double dens = 0.75 + 0.45 * Math.Cos(2 * a - 2.5 * Math.Log(r / lo)) + 0.2 * (rng.NextDouble() - 0.5);
+                float br = (float)(Math.Min(1, 1.4 * Math.Pow(lo / r, 1.1) + 0.06) * dens);
                 float cr = (float)(1.0 * br), cg = (float)((0.45 + 0.55 * t) * br), cb = (float)((0.15 + 0.85 * t * t) * br);
                 disc.Add(new StarVertex { X = (float)(Math.Cos(a) * r), Y = (float)(rng.Gaussian() * r * 0.02), Z = (float)(Math.Sin(a) * r), Size = (float)(0.6 + r * 0.03), R = cr, G = cg, B = cb, A = 1 });
             }
@@ -372,8 +380,28 @@ namespace Universe.Shell
                 float br = (float)(0.25 + 0.75 * f); int side = (k & 1) == 0 ? 1 : -1;
                 jets.Add(new StarVertex { X = (float)(Math.Cos(a) * w * rng.NextDouble()), Y = (float)(side * y), Z = (float)(Math.Sin(a) * w * rng.NextDouble()), Size = (float)(1 + y * 0.01), R = 0.55f * br, G = 0.6f * br, B = 1f * br, A = 1 });
             }
-            _bhDiscN = disc.Count; _bhDisc = new UploadBuffer(_gpu.Device, (long)disc.Count * Stride); _bhDisc.Write(disc.ToArray(), disc.Count);
-            _bhJetsN = jets.Count; _bhJets = new UploadBuffer(_gpu.Device, (long)jets.Count * Stride); _bhJets.Write(jets.ToArray(), jets.Count);
+            int nsw = pl != null ? pl.Swarm : 0;
+            for (int k = 0; k < nsw; k++)
+            {
+                // a star of the swarm round the hole: its ellipse (size, shape, timing) and its orientation in its record, its path
+                // worked out on the card; in the colours of stars
+                double sa = pl.SwarmLo * Math.Pow(pl.SwarmHi / pl.SwarmLo, rng.NextDouble()), ecc = 0.2 + 0.7 * rng.NextDouble(), ph = rng.NextDouble() * Math.PI * 2;
+                uint seed = (uint)rng.Below(0x7F000000); float heat = (float)rng.NextDouble();
+                swarm.Add(new StarVertex { X = (float)sa, Y = (float)ecc, Z = (float)ph, Size = BitConverter.ToSingle(BitConverter.GetBytes(seed), 0), R = 1f, G = 0.75f + 0.25f * heat, B = 0.55f + 0.45f * heat, A = 1 });
+            }
+            for (int k = 0; k < 1800; k++)
+            {
+                // the torn star: each point a share of the way along its stream (denser at the head, the star's remains), with its
+                // own small offset across the stream; its brightness in R
+                double u = Math.Pow(rng.NextDouble(), 1.4);
+                stream.Add(new StarVertex { X = (float)u, Y = (float)(rng.Gaussian() * 0.35), Z = (float)(rng.Gaussian() * 0.35), Size = (float)(0.5 + rng.NextDouble()), R = (float)(0.6 + 0.4 * rng.NextDouble()), G = 1, B = 1, A = 1 });
+            }
+            hp = new HoleParts { DiscN = disc.Count, JetsN = jets.Count, SwarmN = swarm.Count, StreamN = stream.Count, K = (float)(2 * Math.PI * Math.Pow(lo, 1.5) / secs) };
+            hp.Disc = new UploadBuffer(_gpu.Device, (long)disc.Count * Stride); hp.Disc.Write(disc.ToArray(), disc.Count);
+            hp.Jets = new UploadBuffer(_gpu.Device, (long)jets.Count * Stride); hp.Jets.Write(jets.ToArray(), jets.Count);
+            if (swarm.Count > 0) { hp.Swarm = new UploadBuffer(_gpu.Device, (long)swarm.Count * Stride); hp.Swarm.Write(swarm.ToArray(), swarm.Count); }
+            hp.Stream = new UploadBuffer(_gpu.Device, (long)stream.Count * Stride); hp.Stream.Write(stream.ToArray(), stream.Count);
+            _holeParts[id] = hp; return hp;
         }
         private void DrawBlackHoles(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
@@ -382,13 +410,20 @@ namespace Universe.Shell
                 if (!ex.Hole || ex.Feeding == 0 || ex.Mass <= 0) continue;
                 double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                 if (rs * 600 / Math.Max(1e-30, d) * h < 2) continue;                      // (too small on screen to show yet)
-                if (_bhDisc == null) MakeBlackHoleParts();
-                float sc = (float)rs, spin = (float)(time * 0.6 + ex.Turn), ct = (float)Math.Cos(ex.Tilt), st = (float)Math.Sin(ex.Tilt);
-                var m = Mat4.RotationY(spin); var tilt = Mat4.Identity; tilt.M22 = ct; tilt.M23 = st; tilt.M32 = -st; tilt.M33 = ct;
+                var hp = PartsFor(ex.Pl);
+                // its frame: tilted its own way, its horizon's radius 1; nothing turns as a plate: every point moves on its own
+                // orbit on the card (the hole's own turn is only a phase of the time)
+                float sc = (float)rs, ct = (float)Math.Cos(ex.Tilt), st = (float)Math.Sin(ex.Tilt);
+                var tilt = Mat4.Identity; tilt.M22 = ct; tilt.M23 = st; tilt.M32 = -st; tilt.M33 = ct;
                 var scale = Mat4.Identity; scale.M11 = sc; scale.M22 = sc; scale.M33 = sc;
-                var place = m * tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz);
-                DrawPoints(_bhDisc, _bhDiscN, place * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 1f, 2f);   // (sizes in its own units: the placing scales them, and the view-distance limits are in its units too)
-                if (ex.Feeding == 2) DrawPoints(_bhJets, _bhJetsN, tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz) * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 1f, 2f);
+                var place = tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz);
+                // where the camera is in that frame (for the beaming: which side of the disc comes toward you)
+                double cx = -dx / rs, cy0 = -dy / rs, cz0 = -dz / rs; float hx = (float)cx, hy = (float)(cy0 * ct + cz0 * st), hz = (float)(-cy0 * st + cz0 * ct);
+                double tt = time + ex.Turn * 10;
+                DrawPoints(hp.Disc, hp.DiscN, place * vp, right, up, 1f, 0.0012f / sc, w, h, tt, 0.02f / sc, 1f, 2f, hp.K, 1, hx, hy, hz);
+                if (ex.Feeding == 2) DrawPoints(hp.Jets, hp.JetsN, place * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 1f, 2f);
+                if (hp.SwarmN > 0) DrawPoints(hp.Swarm, hp.SwarmN, place * vp, right, up, 1f, 0.0018f / sc, w, h, tt, 0.03f / sc, 1f, 2f, hp.K, 2, hx, hy, hz);
+                if (ex.Eating) DrawPoints(hp.Stream, hp.StreamN, place * vp, right, up, 1f, 0.0012f / sc, w, h, tt, 0.02f / sc, 1f, 2f, hp.K, 3, hx, hy, hz);
             }
         }
         // -- asteroids and comets close in: a lumpy cratered rock lit from its star's side, made once (radius about 1) and drawn for
@@ -574,6 +609,8 @@ namespace Universe.Shell
                 { double lo, hi; if (e.TryRange("coma-km", out lo, out hi)) { pl.ComaLo = lo; pl.ComaHi = hi; } if (e.TryRange("tail-km", out lo, out hi)) { pl.TailLo = lo; pl.TailHi = hi; } }   // (a comet's coma and tail at their real sizes)
                 if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; if (double.TryParse(e.Get("size-km", "1000"), fs, ci, out v)) pl.SizeKm = v;
                 int n; if (int.TryParse(e.Get("shown", "0"), out n)) pl.Shown = n;
+                { double lo, hi; if (e.TryRange("disc-rs", out lo, out hi)) { pl.DiscLo = Math.Max(1.5, lo); pl.DiscHi = Math.Max(pl.DiscLo + 1, hi); } if (e.TryRange("swarm-rs", out lo, out hi)) { pl.SwarmLo = Math.Max(2, lo); pl.SwarmHi = Math.Max(pl.SwarmLo + 1, hi); } }
+                if (int.TryParse(e.Get("swarm-stars", "0"), out n)) pl.Swarm = n; if (double.TryParse(e.Get("eating-share", "0"), fs, ci, out v)) pl.EatShare = v; if (double.TryParse(e.Get("inner-orbit-seconds", "8"), fs, ci, out v)) pl.OrbitSeconds = Math.Max(0.5, v);
                 var c = e.Get("colour", "1 1 1").Split(' '); float r = 1, g = 1, b = 1; if (c.Length == 3) { float.TryParse(c[0], fs, ci, out r); float.TryParse(c[1], fs, ci, out g); float.TryParse(c[2], fs, ci, out b); }
                 pl.R = r; pl.G = g; pl.B = b; _places.Add(pl);
             }
@@ -629,7 +666,8 @@ namespace Universe.Shell
                     ex.Lines.Add("shadow: " + ScaleHud.Words(rs * 5.2) + " across");
                     // feeding or quiet, by its kind's shares (content/bodies.unt), from its place
                     double u2 = Math.Abs(Math.Sin(x * 3.7 + y * 91.1 + z * 13.3) * 24634.6345) % 1, u3 = Math.Abs(Math.Sin(x * 17.9 + y * 5.3 + z * 47.1) * 15731.743) % 1;
-                    ex.Feeding = u2 < pl.FeedShare ? (u3 < pl.JetShare ? 2 : 1) : 0;
+                    ex.Feeding = u2 < pl.FeedShare ? (u3 < pl.JetShare ? 2 : 1) : 0; ex.Pl = pl;
+                    { double u4 = Math.Abs(Math.Sin(x * 7.3 + y * 29.7 + z * 61.1) * 9173.513) % 1; ex.Eating = ex.Feeding > 0 && u4 < pl.EatShare; }   // (a star being torn apart and eaten now, by its kind's share, from its place)
                     ex.Tilt = (float)(u3 * Math.PI); ex.Turn = (float)(u2 * 37 % (Math.PI * 2));
                     ex.Lines.Add(ex.Feeding == 0 ? "quiet: not feeding, only its shadow and the light it bends" : ex.Feeding == 1 ? "feeding: a disc of gas spiralling in, heated to millions of degrees" : "feeding, and firing jets from its poles at nearly the speed of light");
                 }
@@ -1277,11 +1315,14 @@ namespace Universe.Shell
         {
             if (_tKind != 6 || _tIndex < 0 || _tIndex >= _extras.Count || !_extras[_tIndex].Hole) return "A black hole";
             var ex = _extras[_tIndex]; string rs = ScaleHud.Words(Physics.HorizonKm(ex.Mass) * 2), mass = (ex.Mass >= 1e4 ? ex.Mass.ToString("0.#E+0") : ex.Mass.ToString("0.#")) + " times the Sun's mass";
-            return ex.Feeding == 2 ? "Two jets from its poles, flung out at nearly the speed of light, reach far beyond the galaxy's heart: a horizon " + rs + " across, " + mass
-                 : ex.Feeding == 1 ? "Feeding, without jets: a disc of gas going down into a horizon " + rs + " across, " + mass
+            string eat = ex.Eating ? "; a star torn into a stream and eaten" : "";
+            return ex.Feeding == 2 ? "Two jets from its poles, flung out at nearly the speed of light, reach far beyond the galaxy's heart: a horizon " + rs + " across, " + mass + eat
+                 : ex.Feeding == 1 ? "Feeding, without jets: a disc of gas going down into a horizon " + rs + " across, " + mass + eat
                  : "Quiet: no disc, only its shadow and the light it bends; a horizon " + rs + " across, " + mass;
         }
-        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        // your horizon, for a caption written as "{horizon}": how far you see each way, and why it ends there (the expansion of space, sped by dark energy)
+        private string HorizonWords() { return "It ends only at your horizon, " + Units.Describe(_uRadius) + " each way, which moves with you: past it space stretches away faster than light can cross it, sped by dark energy (" + (_darkEnergy * 100).ToString("0") + "% of everything, " + _hubble.ToString("0") + " km/s a megaparsec)"; }
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()).Replace("{horizon}", HorizonWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {
@@ -1328,7 +1369,7 @@ namespace Universe.Shell
                         if (_tourT <= dt * 1.5 || _shotT < 0)
                         {
                             // its frame, from where the camera is: up the level up, round from where it stands now
-                            var up = LevelUp(); double ux = up.X, uy = up.Y, uz = up.Z;
+                            var up = ShotUp(); double ux = up.X, uy = up.Y, uz = up.Z;
                             double cx = -tdx / tl, cy = -tdy / tl, cz = -tdz / tl, ce = cx * ux + cy * uy + cz * uz;
                             double hx = cx - ux * ce, hy = cy - uy * ce, hz = cz - uz * ce, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz);
                             if (hl < 1e-6) { hx = Math.Abs(ux) < 0.9 ? 1 : 0; hy = 0; hz = Math.Abs(ux) < 0.9 ? 0 : 1; double d0 = hx * ux + hz * uz; hx -= ux * d0; hy -= uy * d0; hz -= uz * d0; hl = Math.Sqrt(hx * hx + hy * hy + hz * hz); }
@@ -2356,6 +2397,13 @@ namespace Universe.Shell
             }
             _camUp = u; _camUp = ViewUp();
         }
+        // the frame a shot is set in: level up, or at a feeding black hole its disc's axis, so a shot's rise is measured from the
+        // disc (rise 0 skims it, a small rise grazes over it, a dive below sees its underside)
+        private Vec3 ShotUp()
+        {
+            if (_tKind == 6 && _tIndex >= 0 && _tIndex < _extras.Count && _extras[_tIndex].Hole) { var ex = _extras[_tIndex]; return new Vec3(0, (float)Math.Cos(ex.Tilt), (float)Math.Sin(ex.Tilt)); }
+            return LevelUp();
+        }
         private Vec3 LevelUp()
         {
             var wu = new Vec3(0, 1, 0);
@@ -2925,7 +2973,7 @@ namespace Universe.Shell
 
         private float _sky = 1;                                                           // how much of space shows behind (fades away at the very small)
         private int _comaN, _tailN; private UploadBuffer _tailBuf;
-        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2)
+        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0)
         {
             if (buf == null || count <= 0) return;
             float b = bright * _sky; if (b <= 0.003f) return;
@@ -2936,6 +2984,7 @@ namespace Universe.Shell
             c[24] = (float)time; c[25] = sizeScale; c[26] = style; c[27] = 4; c[28] = w; c[29] = h; c[30] = minSize; c[31] = maxSize; c[32] = 1 - Math.Min(1, b);
             c[36] = _lens[0]; c[37] = _lens[1]; c[38] = _lens[2]; c[39] = _lens[3]; c[40] = w / (float)Math.Max(1, h);
             c[43] = _web[0]; c[44] = _web[1]; c[45] = _web[2]; c[46] = _web[3]; c[47] = _web[4];   // the web's light, sifted on the card (0: not the web)
+            if (holeK > 0) { c[33] = holeK; c[35] = holeMode; c[43] = 0; c[44] = hx; c[45] = hy; c[46] = hz; c[47] = 0; }   // a feeding black hole's parts: moved on the card in its own frame (the pace, which part, where the camera is in that frame)
             _dots.Draw(buf, count, c, 0, 0, w, h);
         }
 
@@ -3029,6 +3078,7 @@ namespace Universe.Shell
                 L.Add(g.Name); L.Add("id: G-" + (g.Seed & 0xFFFFFF).ToString("X6"));
                 L.Add("type: " + g.Type); L.Add("width: about " + Units.Describe(g.Scale));
                 L.Add("stars: about 100 billion"); L.Add("distance: " + Units.Describe(dist));
+                if (_darkMatter > 0) { L.Add("mass: about " + (1e11 / (1 - _darkMatter)).ToString("0.#E+0") + " Suns, " + (_darkMatter * 100).ToString("0") + "% of it dark matter"); L.Add("its stars orbit at a flat " + _rimSpeed.ToString("0") + " km/s out to its rim, held by the dark halo (without it they would slow outward like planets)"); }
             }
             else if (_tKind == 1)
             {

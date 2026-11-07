@@ -11,6 +11,13 @@
 #   millions of km), each comet its own in the range: a comet shows by its tail across its whole system.
 # shape: what it is drawn as close in: rock (a lumpy body lit by its star, cratered), comet (a dark nucleus in its coma of
 #   gas and dust, its tail pushed straight away from the star); without one, a point of light.
+# A feeding black hole's own parts, every motion worked out on the card: disc-rs, its accretion disc's reach in horizon radii
+#   (from the innermost stable orbit, 3, out), each point of gas on its own Kepler orbit (the inner ones round fastest, so the
+#   disc shears into spirals) and brightened on the side coming toward you by its near-light speed; inner-orbit-seconds, how
+#   long the inner edge takes to go round as watched (the real time is minutes to hours for a supermassive hole: scaled to be
+#   seen); swarm-stars and swarm-rs, stars swept round the hole on tight ellipses of those sizes (as the S stars at the Milky
+#   Way's heart); eating-share, how many feeding holes are tearing a star apart right now: a star that came too close,
+#   stretched along its orbit into a stream of gas that winds in and feeds the disc (a tidal disruption).
 # Spec: docs/CONTENT-FORMAT.md · content/black-holes.unt · content/small-bodies.unt · content/stars.unt
 
 @place supermassive-black-hole
@@ -22,6 +29,11 @@ name: A supermassive black hole
 where: galaxy-heart
 entry: blackhole supermassive
 size-km: 3e9
+disc-rs: 3..60
+inner-orbit-seconds: 8
+swarm-stars: 40
+swarm-rs: 12..120
+eating-share: 0.5
 colour: 1 0.7 0.35
 says: millions to billions of times the Sun's mass at the galaxy's heart, its disc of hot gas glowing as it falls in
 
@@ -35,6 +47,10 @@ where: galaxy
 per-cubic-ly: 4e-6
 entry: blackhole stellar
 size-km: 2e5
+disc-rs: 3..40
+inner-orbit-seconds: 5
+swarm-stars: 0
+eating-share: 0
 colour: 0.9 0.55 0.3
 says: what is left of a star of more than about twenty times the Sun's mass; it may still feed on a companion
 

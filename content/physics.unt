@@ -428,3 +428,16 @@ atoms: Na
 atoms: K
 @gas silicon monoxide
 atoms: Si O
+
+# ── The dark universe: what the galaxies and the horizon show of it ──
+# dark-matter-share: how much of a galaxy's mass is dark matter (about 85%: its stars orbit at a flat speed out to the rim,
+#   held by the dark halo; without it they would slow outward like planets); rim-speed-km-s: that flat speed for a galaxy like
+#   ours; dark-energy-share: how much of the universe's energy is dark energy (about 68%), which speeds the expansion and
+#   sets the horizon beyond which light will never arrive; hubble-km-s-mpc: how fast space stretches, per megaparsec.
+@law cosmos
+name: Dark matter and dark energy
+dark-matter-share: 0.85
+rim-speed-km-s: 220
+dark-energy-share: 0.68
+hubble-km-s-mpc: 70
+

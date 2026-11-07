@@ -473,12 +473,12 @@ namespace Universe.Shell
             { var p = ax * (float)((T - tCam) * PerTenfold); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.04f, R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all squeezes down to, at the cone's end
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
-            float lz = _lens[2]; _lens[2] = 0;                                                  // (a reference, not light: never bent by the hole's lens)
+            float lz = _lens[2]; _lens[2] = 0; float sky0 = _sky; _sky = 1;                      // (a reference, not light: never bent by the hole's lens, and never faded with the sky at the very small: the sky's fade below ten microns had taken the grid with it, gone before the atoms' scales)
             // drawn through the matter's own projection (positions in units of your scale, the near plane a thousandth of it): the
             // universe's projection cut the grid off at its near plane once the fall was deep
             var fv = Mat4.LookAt(new Vec3(0, 0, 0), Look, ViewUp()); var fvp = fv * Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), 0.001f, 1e9f);
             DrawPoints(_fallBuf, arr.Length, fvp, new Vec3(fv.M11, fv.M21, fv.M31), new Vec3(fv.M12, fv.M22, fv.M32), 1f, 0.0012f, w, h, time, 0, 1f, 2f);
-            _lens[2] = lz;
+            _lens[2] = lz; _sky = sky0;
         }
         private UploadBuffer _wellBuf; private int _wellN;
         private void MakeWell()

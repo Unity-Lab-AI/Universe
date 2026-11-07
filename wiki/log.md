@@ -25,3 +25,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the tour looking round the funnel): DNA-AND DESIGN 599.
 - 2026-11-07 (every hole's photon ring): DNA-AND DESIGN 600.
 - 2026-11-07 (the well rings and straight spokes, the look up then down): DNA-AND DESIGN 601.
+- 2026-11-07 (the fall's grid at every scale): DNA-AND DESIGN 602.

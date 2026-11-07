@@ -30,7 +30,7 @@ namespace Universe.Shell
 
         public ElementView(Gpu gpu, MeshPipes pipes, ContentLibrary content)
         {
-            foreach (var fe in content.OfKind("elements.dnat", "family"))
+            foreach (var fe in content.OfKind("elements.unt", "family"))
             {
                 var w = fe.Get("colour", "").Split(' '); float r, g, b; var ci = System.Globalization.CultureInfo.InvariantCulture;
                 if (w.Length == 3 && float.TryParse(w[0], System.Globalization.NumberStyles.Float, ci, out r) && float.TryParse(w[1], System.Globalization.NumberStyles.Float, ci, out g) && float.TryParse(w[2], System.Globalization.NumberStyles.Float, ci, out b)) Family[fe.Name] = new[] { r, g, b };
@@ -161,7 +161,7 @@ namespace Universe.Shell
             Tri(l, c + shape(a) * rad, c + shape(b) * rad, c + shape(d) * rad, r * k, g * k, bl * k, al, glow);
         }
 
-        // each family's colour on the table (content/elements.dnat @family)
+        // each family's colour on the table (content/elements.unt @family)
         private readonly Dictionary<string, float[]> Family = new Dictionary<string, float[]>();
 
         private void Text(List<StarVertex> l, string s, Vec3 topLeft, float cell, float r, float g, float b)

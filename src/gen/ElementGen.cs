@@ -1,4 +1,4 @@
-// Universe · generators · the 118 elements as real samples, from content/elements.dnat.
+// Universe · generators · the 118 elements as real samples, from content/elements.unt.
 // Solids are lumps with the element's real look, gases glow in their own colour inside a glass bulb,
 // liquids are drops, and lab-made elements are a faint flicker because they fall apart almost at once.
 using System;
@@ -54,7 +54,7 @@ namespace Universe.Gen
         public static List<ElementSample> Load(ContentLibrary content)
         {
             var list = new List<ElementSample>();
-            foreach (var e in content.OfKind("elements.dnat", "element"))
+            foreach (var e in content.OfKind("elements.unt", "element"))
             {
                 int z; if (!int.TryParse(e.Get("number", "0"), out z) || z < 1) continue;
                 var s = new ElementSample { Number = z, Symbol = e.Get("symbol", "?"), Name = e.Name, Group = e.Get("group", ""),
@@ -66,7 +66,7 @@ namespace Universe.Gen
                 bool metal = s.Group.Contains("metal") || s.Group == "Transition" || s.Group == "Post-transition" || s.Group == "Lanthanide" || s.Group == "Actinide";
                 s.R = 0.72f; s.G = 0.73f; s.B = 0.76f; s.Shiny = metal;
                 float[] look;
-                look = Rgb(e.Get("look", "")); if (look != null) { s.R = look[0]; s.G = look[1]; s.B = look[2]; s.Shiny = e.Get("shiny", "no") == "yes"; }   // elements.dnat
+                look = Rgb(e.Get("look", "")); if (look != null) { s.R = look[0]; s.G = look[1]; s.B = look[2]; s.Shiny = e.Get("shiny", "no") == "yes"; }   // elements.unt
                 else if (!metal && s.State == "solid") { s.R = 0.6f; s.G = 0.58f; s.B = 0.55f; }
                 float[] glow;
                 glow = Rgb(e.Get("glow-colour", "")); if (s.State == "gas" && glow != null) { s.R = glow[0]; s.G = glow[1]; s.B = glow[2]; }

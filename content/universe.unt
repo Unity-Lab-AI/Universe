@@ -11,7 +11,7 @@
 # region-ly: the regions galaxies are made in round you, a million light-years across; near-ly: how far round you galaxies are
 #   made in full; glow-points: how many faint points show the rest of the universe's galaxies along the web (each stands
 #   for tens of thousands; they are made in the background at start).
-# Spec: docs/CONTENT-FORMAT.md · content/galaxies.dnat
+# Spec: docs/CONTENT-FORMAT.md · content/galaxies.unt
 
 @universe visible
 name: The visible universe

@@ -1,7 +1,7 @@
 # Universe content · planets (rocky, watery and small worlds)
 # researched: Wikipedia "List of planet types"; The Planetary Society "The Different Kinds of Exoplanets";
 #   Britannica "super-Earth"; EarthSky (super-Earth vs mini-Neptune vs sub-Neptune)
-# Gas and ice giants: content/gas-giants.dnat. Physics of interiors and air: content/physics.dnat.
+# Gas and ice giants: content/gas-giants.unt. Physics of interiors and air: content/physics.unt.
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md
 
 # ── By size ──
@@ -172,7 +172,7 @@ says: every planet is generated live from the world seed; nothing is pre-built
 
 @rule planet-size-air
 real: rule
-says: bigger, colder planets keep more air; small hot ones lose it (content/physics.dnat)
+says: bigger, colder planets keep more air; small hot ones lose it (content/physics.unt)
 
 @rule planet-zone
 real: rule

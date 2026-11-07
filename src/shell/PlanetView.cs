@@ -292,7 +292,7 @@ namespace Universe.Shell
         // a world's temperature from its star alone, before any greenhouse (Earth: 255 K), by kind of world
         private static double BaseKelvin(string kind)
         {
-            return Universe.Gen.PlanetTerrain.TerrainKind(kind).BaseK;                         // content/terrain.dnat
+            return Universe.Gen.PlanetTerrain.TerrainKind(kind).BaseK;                         // content/terrain.unt
         }
 
         // the ground you see follows the planet: seas falling in ice ages, mountains worn down or pushed up, new craters.
@@ -636,7 +636,7 @@ namespace Universe.Shell
         // at microbe size, the living microbes of set 8 on the spot below (a patch of ground or water about 0.4 mm across)
         private void DrawMicrobes(Gpu gpu, Mat4 view, Mat4 proj, double cx, double cy, double cz, double ux, double uy, double uz, double ground, Vec3 up, Vec3 north, Vec3 east, int width, int height)
         {
-            if (!_terrain.Solid || !_terrain.Traits.Life) { _microbes = null; return; }       // nothing can live in molten rock (terrain.dnat life: no)
+            if (!_terrain.Solid || !_terrain.Traits.Life) { _microbes = null; return; }       // nothing can live in molten rock (terrain.unt life: no)
             double sz = _shown;
             if (sz > 2e-6) { if (sz > 5e-6) _microbes = null; return; }                            // only below about 2 mm
             if (_microbes == null)

@@ -74,7 +74,7 @@ namespace Universe.Gen
             // nebulae and remnants from its old stars.
             var rng = new Rng(seed ^ 0xC1u);
             var list = new List<StarVertex>();
-            // all from its kind's template (content/galaxies.dnat), never its name: whether its young things lie on arms, whether
+            // all from its kind's template (content/galaxies.unt), never its name: whether its young things lie on arms, whether
             // its bodies swarm in a ball or lie in a disc, how much it still makes stars, how much it holds, its old clusters
             bool spiral = GalaxyGen.Yes(galaxyType, "bodies-on-arms", false);
             bool elliptical = GalaxyGen.Word(galaxyType, "bodies-spread", "disc") == "ball";
@@ -164,10 +164,10 @@ namespace Universe.Gen
         {
             var rng = new Rng(seed ^ 0xB1ACu);
             double lo = 1e6, hi = 1e10;
-            foreach (var e in content.OfKind("black-holes.dnat", "blackhole"))
+            foreach (var e in content.OfKind("black-holes.unt", "blackhole"))
                 if (e.Id == "supermassive") e.TryRange("mass-sol", out lo, out hi);
             double mass = Math.Exp(Math.Log(lo) + rng.NextDouble() * (Math.Log(Math.Min(hi, 1e9)) - Math.Log(lo)));
-            Physics.Load(content); double rs = Units.Km(Physics.HorizonKm(mass));   // event horizon radius (2GM/c², content/physics.dnat)
+            Physics.Load(content); double rs = Units.Km(Physics.HorizonKm(mass));   // event horizon radius (2GM/c², content/physics.unt)
             var bh = new BlackHole { MassSol = mass, HorizonUnits = rs, Active = rng.NextDouble() < 0.5 };
 
             var disk = new List<StarVertex>();
@@ -216,7 +216,7 @@ namespace Universe.Gen
         public sealed class Body
         {
             public string Kind; public double OrbitUnits, RadiusUnits, Period, Phase; public float R, G, B;
-            /// <summary>Its kind's template in content/terrain.dnat (null for a moon), and whether it is a giant (no ground).</summary>
+            /// <summary>Its kind's template in content/terrain.unt (null for a moon), and whether it is a giant (no ground).</summary>
             public string Terrain; public bool Giant, Rings;
             /// <summary>What it is made of, for its card; and how much the tour's director wants to visit it.</summary>
             public string[] MakeUp, MakeUpDry; public double Interest = 1;
@@ -248,31 +248,31 @@ namespace Universe.Gen
             var rng = new Rng(seed);
             var sys = new StarSystem { StarName = kind.Name, SR = kind.R, SG = kind.G, SB = kind.B };
             double massLo = 1, massHi = 1;
-            foreach (var e in content.OfKind("stars.dnat", "star"))
+            foreach (var e in content.OfKind("stars.unt", "star"))
                 if (e.Id == kind.Id) e.TryRange("mass-sol", out massLo, out massHi);
             double mass = Math.Max(0.08, massLo + rng.NextDouble() * (massHi - massLo));
             sys.Luminosity = Math.Pow(mass, 3.5); sys.MassSol = mass;
             // its real size, from content (giants and supergiants are far wider than their mass alone would make them)
             double rLo = -1, rHi = -1;
-            foreach (var e in content.OfKind("stars.dnat", "star")) if (e.Id == kind.Id) e.TryRange("radius-sol", out rLo, out rHi);
+            foreach (var e in content.OfKind("stars.unt", "star")) if (e.Id == kind.Id) e.TryRange("radius-sol", out rLo, out rHi);
             double radiusSol = rLo > 0 ? rLo + rng.NextDouble() * (rHi - rLo) : Math.Pow(mass, 0.8);
             sys.StarRadius = Units.Km(696000 * radiusSol);
             // how bright it shines, from its size and surface temperature (the Sun: 1 radius, 5772 K), when both are known
             double tLo = -1, tHi = -1;
-            foreach (var e in content.OfKind("stars.dnat", "star")) if (e.Id == kind.Id) e.TryRange("temp-k", out tLo, out tHi);
+            foreach (var e in content.OfKind("stars.unt", "star")) if (e.Id == kind.Id) e.TryRange("temp-k", out tLo, out tHi);
             if (tLo > 0 && rLo > 0) { double tk = tLo + rng.NextDouble() * (tHi - tLo); sys.Luminosity = radiusSol * radiusSol * Math.Pow(tk / 5772, 4); }
             sys.RadiusSol = radiusSol; sys.TempK = 5772 * Math.Pow(sys.Luminosity / (radiusSol * radiusSol), 0.25);   // its surface temperature, from its brightness and size
             double frostSun = ZoneAu(content, "frost-line", 2.7), hzSun = ZoneAu(content, "habitable", 1.0);
             double scale = Math.Sqrt(sys.Luminosity);
             sys.FrostLineAu = frostSun * scale; sys.HabitableAu = hzSun * scale;
 
-            // its layout from the system kinds in content/solar-systems.dnat (none named here): the usual one (sun-like) first,
+            // its layout from the system kinds in content/solar-systems.unt (none named here): the usual one (sun-like) first,
             // then the kind asked for over it, each trait it gives taking the place of the usual one's; planets: how many,
             // first-orbit-au and first-orbit-spread: the first world's orbit, scales-with-star: moved out by the star's
             // brightness, spacing: each orbit over the one before; share-in-universe: how often a system is of that kind
             int count; double a, step; double lo, hi;
-            Func<string, string, double, double, double[]> sysT = (id, key, l0, h0) => { foreach (var e in content.OfKind("solar-systems.dnat", "system")) if (e.Id == id && e.TryRange(key, out lo, out hi)) return new[] { lo, hi }; return null; };
-            Func<string, bool> scales = id => { foreach (var e in content.OfKind("solar-systems.dnat", "system")) if (e.Id == id && e.Props.ContainsKey("scales-with-star")) return e.Get("scales-with-star", "yes") == "yes"; return true; };
+            Func<string, string, double, double, double[]> sysT = (id, key, l0, h0) => { foreach (var e in content.OfKind("solar-systems.unt", "system")) if (e.Id == id && e.TryRange(key, out lo, out hi)) return new[] { lo, hi }; return null; };
+            Func<string, bool> scales = id => { foreach (var e in content.OfKind("solar-systems.unt", "system")) if (e.Id == id && e.Props.ContainsKey("scales-with-star")) return e.Get("scales-with-star", "yes") == "yes"; return true; };
             Action<string, bool> layoutOf = (id, first) =>
             {
                 var pl = sysT(id, "planets", 0, 0); var fo = sysT(id, "first-orbit-au", 0, 0); var fs2 = sysT(id, "first-orbit-spread", 0, 0); var sp = sysT(id, "spacing", 0, 0);
@@ -290,7 +290,7 @@ namespace Universe.Gen
             {
                 var b = new Body { OrbitUnits = Units.Au(a), Phase = rng.NextDouble() * Math.PI * 2, Period = Math.Sqrt(a * a * a / mass) };
                 bool giant = a > sys.FrostLineAu || (hotJupiter && i == 0);
-                // which kind of world forms here: every kind in content/terrain.dnat whose rules fit this orbit (where it lies
+                // which kind of world forms here: every kind in content/terrain.unt whose rules fit this orbit (where it lies
                 // against the habitable zone and the frost line, how bright its star is), one chosen by their weights; its
                 // size, moons, colour and make-up from its template
                 var k = WorldKind(content, giant ? (hotJupiter && i == 0 ? "hot-jupiter" : "giant") : "rocky", a / sys.HabitableAu, a / sys.FrostLineAu, sys.Luminosity, rng);
@@ -353,7 +353,7 @@ namespace Universe.Gen
             return sys;
         }
 
-        // ── the kinds of world a system can make: templates in content/terrain.dnat, each with the rules for where it forms ──
+        // ── the kinds of world a system can make: templates in content/terrain.unt, each with the rules for where it forms ──
         public sealed class WorldKindRule
         {
             public string Id, Label, Forms; public double HzLo = -1, HzHi = -1, FrostLo = -1, FrostHi = -1, LumLo = -1, LumHi = -1, Weight = 1, Interest = 1;
@@ -365,7 +365,7 @@ namespace Universe.Gen
         {
             if (_kinds != null) return _kinds;
             var list = new List<WorldKindRule>(); var ci = global::System.Globalization.CultureInfo.InvariantCulture; var nf = global::System.Globalization.NumberStyles.Float;
-            foreach (var e in content.OfKind("terrain.dnat", "terrain"))
+            foreach (var e in content.OfKind("terrain.unt", "terrain"))
             {
                 if (!e.Props.ContainsKey("forms")) continue;
                 var k = new WorldKindRule { Id = e.Id, Label = e.Get("label", e.Name), Forms = e.Get("forms", "rocky") };
@@ -412,7 +412,7 @@ namespace Universe.Gen
 
         private static double ZoneAu(ContentLibrary content, string id, double fallback)
         {
-            foreach (var e in content.OfKind("solar-systems.dnat", "zone"))
+            foreach (var e in content.OfKind("solar-systems.unt", "zone"))
                 if (e.Id == id)
                 {
                     string v = e.Get("solar-system-au", "").Replace("about", "").Trim();

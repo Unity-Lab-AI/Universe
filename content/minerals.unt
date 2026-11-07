@@ -21,7 +21,7 @@
 #   how far apart its molecules are (liquid water 0.31 nm: 1 g per cubic centimetre, 18 g a mole).
 # lustre: how its surface takes light (mineral reference tables: vitreous like glass, metallic, pearly, resinous, waxy,
 #   earthy (dull), wet); clarity: clear, translucent or opaque. Every grain, stone and thing is drawn by these, never by name.
-# Spec: docs/CONTENT-FORMAT.md · content/elements.dnat · content/geology.dnat
+# Spec: docs/CONTENT-FORMAT.md · content/elements.unt · content/geology.unt
 
 @mineral quartz
 name: Quartz

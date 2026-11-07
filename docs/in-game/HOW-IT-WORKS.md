@@ -51,7 +51,7 @@ Click any grain, atom, electron, proton, neutron or quark for its card.
 
 ## ⚛️ The four forces, for real
 
-Universe runs on the real laws of nature, with their real numbers (all in `content/physics.dnat`):
+Universe runs on the real laws of nature, with their real numbers (all in `content/physics.unt`):
 
 | Force | What it does here |
 |---|---|

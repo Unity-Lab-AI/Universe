@@ -1,7 +1,7 @@
 # Universe content · resource fields (on planets and in space)
 # researched: earthsci.org "Classification of Mineral Deposits"; TU Clausthal economic geology notes;
 #   USGS porphyry copper summary; standard geology for fossil fuels; space-resource summaries
-#   (asteroid and comet makeup in content/small-bodies.dnat, giants in content/gas-giants.dnat)
+#   (asteroid and comet makeup in content/small-bodies.unt, giants in content/gas-giants.unt)
 # The 100 space resources are listed on the public space page.
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · wiki/systems/r10-space.md
 
@@ -189,7 +189,7 @@ says: lifted straight off a star by a very advanced civilization
 name: Black-hole energy
 real: hypothetical
 gives: energy
-says: drawn from a spinning black hole's ergosphere (content/black-holes.dnat)
+says: drawn from a spinning black hole's ergosphere (content/black-holes.unt)
 
 # ── Generator rules ──
 

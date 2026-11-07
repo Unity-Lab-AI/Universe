@@ -198,7 +198,7 @@ namespace Universe
                     recordTour = System.IO.Path.Combine(Universe.Platform.Launcher.Captures, "tour " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4");
                 }
             }
-            { int ti = Array.IndexOf(args, "--tour"); if (world != null && ti >= 0) world.StartTour(ti + 1 < args.Length && !args[ti + 1].StartsWith("--") ? args[ti + 1] : "grand-tour"); }   // a tour (content/tours/name.dnat)
+            { int ti = Array.IndexOf(args, "--tour"); if (world != null && ti >= 0) world.StartTour(ti + 1 < args.Length && !args[ti + 1].StartsWith("--") ? args[ti + 1] : "grand-tour"); }   // a tour (content/tours/name.unt)
             if (journey && Array.IndexOf(args, "--test-system") >= 0) { deep = new DeepView(gpu, pipeline, content, viewer.TypeOf(0), viewer.NameOf(0), Seed); deep.TestJourney(gpu.Width, gpu.Height); }
             if (testDeep >= 0) deep = new DeepView(gpu, pipeline, content, viewer.TypeOf(testDeep), viewer.NameOf(testDeep), Seed + (ulong)testDeep * 7919UL);
             while (window.Pump())

@@ -1,4 +1,4 @@
-// Universe · generators · Dyson structures around a star, from content/space-tech.dnat.
+// Universe · generators · Dyson structures around a star, from content/space-tech.unt.
 // Shells and rings are hollow worlds (PlanetTerrain in shell mode): a hull outside, land inside, held on by the spin.
 // Swarms, bubbles, mirrors and engines are many pieces around the star. Docks sit on the hulls and ships fly
 // between them, because spaceships, docks and economies are built around Dyson spheres.
@@ -22,19 +22,19 @@ namespace Universe.Gen
     internal static class DysonGen
     {
         public const double Au = 1.496e8;                     // km
-        /// <summary>The builds in order (content/space-tech.dnat @build), the first steps first.</summary>
-        public static List<string> Ids(ContentLibrary content) { var l = new List<string>(); foreach (var e in content.OfKind("space-tech.dnat", "build")) l.Add(e.Id); return l; }
+        /// <summary>The builds in order (content/space-tech.unt @build), the first steps first.</summary>
+        public static List<string> Ids(ContentLibrary content) { var l = new List<string>(); foreach (var e in content.OfKind("space-tech.unt", "build")) l.Add(e.Id); return l; }
 
         public static DysonStructure Build(IntPtr device, ContentLibrary content, string id, ulong seed)
         {
             var d = new DysonStructure { Id = id, Name = id, Outer = Au };
-            ContentEntry be = null; foreach (var e in content.OfKind("space-tech.dnat", "build")) if (e.Id == id) be = e;
+            ContentEntry be = null; foreach (var e in content.OfKind("space-tech.unt", "build")) if (e.Id == id) be = e;
             if (be == null) return d;
             var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
             // its name: its own, or the megastructure it is a step of, with what is added
             d.Name = be.Get("name", id);
-            string of = be.Get("of", ""); if (of.Length > 0) foreach (var e in content.OfKind("space-tech.dnat", "mega")) if (e.Id == of) d.Name = e.Name + be.Get("suffix", "");
+            string of = be.Get("of", ""); if (of.Length > 0) foreach (var e in content.OfKind("space-tech.unt", "mega")) if (e.Id == of) d.Name = e.Name + be.Get("suffix", "");
             d.StarBright = (float)num(be.Get("star-bright", "1"), 1); d.Outer = Au * num(be.Get("outer-au", "1"), 1);
             var rng = new Rng(seed);
             var pts = new List<StarVertex>();

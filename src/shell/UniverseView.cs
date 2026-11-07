@@ -56,7 +56,7 @@ namespace Universe.Shell
         public void TogglePause() { if (TimeStep == 0) TimeStep = _timeBeforePause; else { _timeBeforePause = TimeStep; TimeStep = 0; } MenuChanged = true; }
         public void SetTime(int step) { TimeStep = Math.Max(0, Math.Min(TimeSpeeds.Length - 1, step)); if (TimeStep > 0) _timeBeforePause = TimeStep; MenuChanged = true; }
 
-        // a body's day in hours, one turn of its spin: a world's from its own template (content/terrain.dnat day-hours, its own
+        // a body's day in hours, one turn of its spin: a world's from its own template (content/terrain.unt day-hours, its own
         // value in the kind's range, the same one its ground is lit by); moons turn once each orbit (one face to their planet)
         private double DayHours(int i)
         {
@@ -87,12 +87,12 @@ namespace Universe.Shell
 
         public UniverseView(Gpu gpu, BillboardPipeline pipe, MeshPipes meshes, ContentLibrary content, ulong seed)
         {
-            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content);   // (the laws of nature, content/physics.dnat)
+            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content);   // (the laws of nature, content/physics.unt)
             var types = new List<string>(); var names = new List<string>();
-            foreach (var e in content.OfKind("galaxies.dnat", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
+            foreach (var e in content.OfKind("galaxies.unt", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
             if (types.Count == 0) { types.Add("spiral"); names.Add("Spiral galaxy"); }
             _kinds = GalaxyGen.StarKinds(content); _types = types; _typeNames = names; _seed = seed;
-            foreach (var e in content.OfKind("universe.dnat", "universe"))
+            foreach (var e in content.OfKind("universe.unt", "universe"))
             {
                 var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float; double v;
                 if (double.TryParse(e.Get("across-ly", "1.34e10"), fs, ci, out v)) _uRadius = v * 0.5 / Units.LightYearsPerUnit;
@@ -126,7 +126,7 @@ namespace Universe.Shell
             LookAt(0, 0, 0);
         }
 
-        // ── the visible universe (content/universe.dnat): about 100 billion galaxies in a sphere 13.4 billion light-years
+        // ── the visible universe (content/universe.unt): about 100 billion galaxies in a sphere 13.4 billion light-years
         // across. They are made by regions round you (each region always holds the same ones, from its own place), at the real
         // average density, more of them in the cosmic web's filaments and walls and fewer in its voids; beyond, the rest show
         // as a glow of points along the same web; the edge cannot be passed ──
@@ -325,7 +325,7 @@ namespace Universe.Shell
             double k = lim / l; _ox = x * k - _ax; _oy = y * k - _ay; _oz = z * k - _az;
         }
 
-        // ── every other kind of body, made round you from content/bodies.dnat, drawn and clickable: a supermassive black hole at
+        // ── every other kind of body, made round you from content/bodies.unt, drawn and clickable: a supermassive black hole at
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
         private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare; public int Shown; public float R, G, B; }
@@ -468,7 +468,7 @@ namespace Universe.Shell
             }
             _cometN = cm.Count; _cometBuf = new UploadBuffer(_gpu.Device, (long)_cometN * Stride); _cometBuf.Write(cm.ToArray(), _cometN);
         }
-        // ── rings: round any world whose template gives it them (content/terrain.dnat rings-chance and its rings), made once
+        // ── rings: round any world whose template gives it them (content/terrain.unt rings-chance and its rings), made once
         // for each world of the system you are in, in the world's own radii, placed and scaled to it where it is now ──
         private readonly Dictionary<int, UploadBuffer> _ringBufs = new Dictionary<int, UploadBuffer>(); private readonly Dictionary<int, int> _ringCounts = new Dictionary<int, int>(); private object _ringSystem;
         private void DrawRings(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
@@ -533,7 +533,7 @@ namespace Universe.Shell
         private void LoadPlaces()
         {
             _places = new List<Place>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
-            foreach (var e in _content.OfKind("bodies.dnat", "place"))
+            foreach (var e in _content.OfKind("bodies.unt", "place"))
             {
                 double v; var pl = new Place { Id = e.Id, Name = e.Name, Where = e.Get("where", ""), Entry = e.Get("entry", ""), Says = e.Get("says", ""), Shape = e.Get("shape", "") };
                 if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; if (double.TryParse(e.Get("size-km", "1000"), fs, ci, out v)) pl.SizeKm = v;
@@ -576,7 +576,7 @@ namespace Universe.Shell
                     ex.Hole = true; double rs = 2.953 * ex.Mass; ex.R = Units.Km(rs * 2.6);
                     ex.Lines.Add("event horizon: " + ScaleHud.Words(rs * 2) + " across");
                     ex.Lines.Add("shadow: " + ScaleHud.Words(rs * 5.2) + " across");
-                    // feeding or quiet, by its kind's shares (content/bodies.dnat), from its place
+                    // feeding or quiet, by its kind's shares (content/bodies.unt), from its place
                     double u2 = Math.Abs(Math.Sin(x * 3.7 + y * 91.1 + z * 13.3) * 24634.6345) % 1, u3 = Math.Abs(Math.Sin(x * 17.9 + y * 5.3 + z * 47.1) * 15731.743) % 1;
                     ex.Feeding = u2 < pl.FeedShare ? (u3 < pl.JetShare ? 2 : 1) : 0;
                     ex.Tilt = (float)(u3 * Math.PI); ex.Turn = (float)(u2 * 37 % (Math.PI * 2));
@@ -1003,13 +1003,13 @@ namespace Universe.Shell
 
         // how far above the planet's ground the camera is (universe units)
         private double _surfaceCell, _lastAbove = 1;
-        // a giant's layers (content/gas-giants.dnat @layer: from-r, to-r, matter), and where its core begins
+        // a giant's layers (content/gas-giants.unt @layer: from-r, to-r, matter), and where its core begins
         private sealed class Layer { public string Id, Name, Matter, Says; public double From, To; public List<string> In; }   // In: the kinds of world that have it (none: every giant)
         private List<Layer> _layers;
         private List<Layer> Layers()
         {
             if (_layers != null) return _layers; _layers = new List<Layer>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
-            foreach (var e in _content.OfKind("gas-giants.dnat", "layer")) { double a, b; if (!double.TryParse(e.Get("from-r", ""), fs, ci, out a) || !double.TryParse(e.Get("to-r", ""), fs, ci, out b)) continue; _layers.Add(new Layer { Id = e.Id, Name = e.Name, Matter = e.Get("matter", "air"), Says = e.Get("says", ""), From = a, To = b, In = e.Props.ContainsKey("in") ? new List<string>(System.Linq.Enumerable.Select(e.Get("in", "").Split(','), x => x.Trim())) : null }); }
+            foreach (var e in _content.OfKind("gas-giants.unt", "layer")) { double a, b; if (!double.TryParse(e.Get("from-r", ""), fs, ci, out a) || !double.TryParse(e.Get("to-r", ""), fs, ci, out b)) continue; _layers.Add(new Layer { Id = e.Id, Name = e.Name, Matter = e.Get("matter", "air"), Says = e.Get("says", ""), From = a, To = b, In = e.Props.ContainsKey("in") ? new List<string>(System.Linq.Enumerable.Select(e.Get("in", "").Split(','), x => x.Trim())) : null }); }
             return _layers;
         }
         private double CoreShare { get { foreach (var l in Layers()) if (l.Matter == "core") return l.To; return 0.15; } }
@@ -1021,7 +1021,7 @@ namespace Universe.Shell
             foreach (var l in Layers())
             {
                 if (share < l.From || share > l.To) continue;
-                if (l.In != null && !l.In.Contains(_ground.Kind)) continue;              // only the layers its kind has (gas-giants.dnat in:)
+                if (l.In != null && !l.In.Contains(_ground.Kind)) continue;              // only the layers its kind has (gas-giants.unt in:)
                 if (best == null || l.To - l.From < best.To - best.From) best = l;
             }
             return best;
@@ -1071,16 +1071,16 @@ namespace Universe.Shell
         /// <summary>Test runs: the camera turns to the next thing on the way down (the galaxy, a star, a planet, its ground) each frame.</summary>
         public bool AutoPath, AutoNebula;
 
-        // ── a tour: a flight of stops read from content/tours/<name>.dnat, flown with the real controls (the wheel's zoom at one
+        // ── a tour: a flight of stops read from content/tours/<name>.unt, flown with the real controls (the wheel's zoom at one
         // steady rate, the drag's circling and looking, the same picks a click makes) so it shows the universe as it is ──
         private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds, Pan, ToRadii, ToKm, Sweep, Rise, MaxRate; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
         private List<TourStop> _tour; private int _tourAt; private double _tourClock, _tourStall, _tourLastD, _tourT, _tourRate;
-        /// <summary>Starts the tour of that name (content/tours/name.dnat); false if there is none.</summary>
+        /// <summary>Starts the tour of that name (content/tours/name.unt); false if there is none.</summary>
         public bool StartTour(string name)
         {
             var list = new List<TourStop>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
-            foreach (var e in _content.OfKind("tours/" + name + ".dnat", "stop"))
+            foreach (var e in _content.OfKind("tours/" + name + ".unt", "stop"))
                 list.Add(new TourStop { Name = e.Id, Do = e.Get("do", "orbit"), Target = e.Get("target", "none"), Caption = e.Get("caption", ""), Rate = num(e.Get("rate", "0.3"), 0.3),
                     UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes", Pan = num(e.Get("pan", "0"), 0),
                     ToRadii = num(e.Get("to-radii", "0"), 0), ToKm = num(e.Get("to-km", "0"), 0), Sweep = num(e.Get("sweep", "0"), 0), Rise = num(e.Get("rise", "0"), 0), MaxRate = num(e.Get("max-rate", "0.35"), 0.35) });
@@ -1332,7 +1332,7 @@ namespace Universe.Shell
                 case "asteroid":
                 case "comet":
                     {
-                        // one of the bodies round you (content/bodies.dnat): the nearest black hole, asteroid of the belt, or comet of
+                        // one of the bodies round you (content/bodies.unt): the nearest black hole, asteroid of the belt, or comet of
                         // the Oort cloud
                         int bi = -1; double bd = double.MaxValue;
                         for (int q = 0; q < _extras.Count; q++)
@@ -2683,7 +2683,7 @@ namespace Universe.Shell
         // what a kind of planet or moon is made of
         private static string[] MakeUp(SpaceGen.Body b, bool water)
         {
-            // from its kind's template (content/terrain.dnat makeup, and makeup-dry for one with no seas); a moon is rock and dust
+            // from its kind's template (content/terrain.unt makeup, and makeup-dry for one with no seas); a moon is rock and dust
             if (b.MakeUp != null) return !water && b.MakeUpDry != null ? b.MakeUpDry : b.MakeUp;
             if (b.Parent >= 0) return new[] { "rock and dust, iron-poor", "no air", "craters from strikes" };
             return new[] { "rock: silicate crust, iron core", "dust and stone", "air: thin carbon dioxide" };
@@ -2843,7 +2843,7 @@ namespace Universe.Shell
                 {
                     // its pull where you are, falling with the square of the distance; the speed you would need to get away
                     double rM = Math.Max(1, (dist + exk.R) / Units.Km(1) * 1000);                // metres
-                    double g = Physics.Pull(exk.Mass, rM), vesc = Physics.Escape(exk.Mass, rM);     // (Newton's gravity, content/physics.dnat)
+                    double g = Physics.Pull(exk.Mass, rM), vesc = Physics.Escape(exk.Mass, rM);     // (Newton's gravity, content/physics.unt)
                     L.Add("its pull here: " + (g >= 0.01 ? g.ToString("0.###") : g.ToString("0.##E+0")) + " m/s2 (" + (g / Physics.EarthG).ToString(g / Physics.EarthG >= 0.01 ? "0.###" : "0.##E+0") + " of Earth's)");
                     L.Add("escape speed here: " + (vesc >= Physics.C ? "faster than light: inside, nothing gets out" : (vesc / 1000).ToString("N0") + " km/s (" + (vesc / Physics.C * 100).ToString("0.###") + "% of light)"));
                 }

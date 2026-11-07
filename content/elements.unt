@@ -12,7 +12,7 @@
 #   one that pulls harder.
 # look: how a lump of it looks (its real colour) and shiny: a metal's shine; glow-colour: the colour the gas glows lit by
 #   electricity (neon orange-red, argon violet, hydrogen pink). The families' colours on the periodic table are @family below.
-# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.dnat
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.unt
 
 @element h
 name: Hydrogen
@@ -2079,7 +2079,7 @@ boil-k: unknown
 
 @rule element-protons
 real: rule
-says: an atom's proton count is its element number; neutrons give isotopes (content/physics.dnat)
+says: an atom's proton count is its element number; neutrons give isotopes (content/physics.unt)
 
 @rule element-paint
 real: rule

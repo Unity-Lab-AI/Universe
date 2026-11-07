@@ -61,7 +61,7 @@ Change the version at the top of `release.cmd`.
 
 | Folder | What it holds |
 |---|---|
-| `content/*.dnat` | **The templates** the universe grows from: the universe itself (`universe.dnat`), galaxies, stars, each kind of world and where it forms (`terrain.dnat`), zones such as the liquid-water zone and the frost line, the 118 elements, minerals and ground mixes, physics laws and gases, tours (`tours/`) |
+| `content/*.unt` | **The templates** the universe grows from: the universe itself (`universe.unt`), galaxies, stars, each kind of world and where it forms (`terrain.unt`), zones such as the liquid-water zone and the frost line, the 118 elements, minerals and ground mixes, physics laws and gases, tours (`tours/`) |
 | `src/core` | Maths: vectors, matrices, random numbers, the CDF 9/7 wavelet (`Wavelet97`), mode-E (`ModeE`), and the waveform that gives every surface its detail (`Waveform`); reading content (`Content`) |
 | `src/gen` | The making: galaxies (`GalaxyGen`), star systems and which kind of world forms where (`SpaceGen`), a world's ground and its own traits from its template (`PlanetTerrain`), bodies in space (`BodyGen`), grains (`GrainField`) |
 | `src/shell` | The universe view (`UniverseView`: camera, zoom, picking, info cards, time, days, the tour), the scale and cards on screen (`ScaleHud`), the matter below the ground (`MatterView`), the Help menu's documents (`PreviewText`) |
@@ -86,7 +86,7 @@ Change the version at the top of `release.cmd`.
 | 🪨 **Grains and matter** | `GrainField` is one field of loose rock for a whole world. `MatterView` places grains, crystals, atoms, electrons and nuclei at their real sizes round where you dive in |
 | 🌊 **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
 | ⏱️ **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
-| ⚛️ **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.dnat`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
+| ⚛️ **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.unt`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
 | 🕰️ **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
 
 ---
@@ -95,15 +95,15 @@ Change the version at the top of `release.cmd`.
 
 | You want to change | Go to |
 |---|---|
-| Kinds of worlds, stars, galaxies | `content/*.dnat` (see **Build your own universe**) |
+| Kinds of worlds, stars, galaxies | `content/*.unt` (see **Build your own universe**) |
 | A different universe | Change the seed: the same seed always makes the same universe |
 | The look of points | The pixel shader in `src/render/Pipeline.cs` |
 | Controls | `UniverseView.Update` |
 | The tour's camera | `UniverseView.TourStep`, and the stops in `content/tours/` |
 | The info cards | `UniverseView.Card` (what they say), `ScaleHud.DrawCard` (how they look) |
 | The Help documents | `docs/` (built in by `build.cmd`'s `/resource` lines), shown by `DocViewer` |
-| Minerals and elements | `content/minerals.dnat`, `content/elements.dnat` |
-| The laws of nature | `content/physics.dnat`, read by `Physics` and `MatterView` |
+| Minerals and elements | `content/minerals.unt`, `content/elements.unt` |
+| The laws of nature | `content/physics.unt`, read by `Physics` and `MatterView` |
 
 > **Keep it a toolkit:** read traits from templates, never test for a kind's name in code; give every trait a range; make things from their seed, never store them; and do heavy work on the graphics card.
 

@@ -41,7 +41,7 @@ namespace Universe.Core
         {
             var lib = new ContentLibrary();
             if (!Directory.Exists(folder)) return lib;
-            foreach (string path in Directory.GetFiles(folder, "*.dnat", SearchOption.AllDirectories))
+            foreach (string path in Directory.GetFiles(folder, "*.unt", SearchOption.AllDirectories))
             {
                 lib.Files.Add(path);
                 lib.ParseFile(path);

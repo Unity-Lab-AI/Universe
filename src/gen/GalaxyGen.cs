@@ -1,5 +1,5 @@
 // Universe · gen · the live galaxy generator. Builds a galaxy from a seed and the content in
-// content/galaxies.dnat and content/stars.dnat. Nothing is pre-built.
+// content/galaxies.unt and content/stars.unt. Nothing is pre-built.
 using System;
 using System.Collections.Generic;
 using Universe.Core;
@@ -15,11 +15,11 @@ namespace Universe.Gen
 
     internal static class GalaxyGen
     {
-        /// <summary>Main-sequence star types and how common each is, read from content/stars.dnat.</summary>
-        // each kind of galaxy's shape (content/galaxies.dnat layout:), read once
+        /// <summary>Main-sequence star types and how common each is, read from content/stars.unt.</summary>
+        // each kind of galaxy's shape (content/galaxies.unt layout:), read once
         private static readonly Dictionary<string, string> Shapes = new Dictionary<string, string>();
-        public static void LoadShapes(ContentLibrary content) { if (Shapes.Count == 0) foreach (var e in content.OfKind("galaxies.dnat", "galaxy")) { Shapes[e.Id] = e.Get("layout", "spiral"); Kinds[e.Id] = e; } }
-        // each kind of galaxy's template (content/galaxies.dnat): how it is grown is read from its traits, never its name
+        public static void LoadShapes(ContentLibrary content) { if (Shapes.Count == 0) foreach (var e in content.OfKind("galaxies.unt", "galaxy")) { Shapes[e.Id] = e.Get("layout", "spiral"); Kinds[e.Id] = e; } }
+        // each kind of galaxy's template (content/galaxies.unt): how it is grown is read from its traits, never its name
         private static readonly Dictionary<string, ContentEntry> Kinds = new Dictionary<string, ContentEntry>();
         /// <summary>A trait of a kind of galaxy for one galaxy of it: a range (a..b) gives each galaxy its own value from its seed.</summary>
         public static double Trait(string type, string key, double fallback, ulong seed)
@@ -38,11 +38,11 @@ namespace Universe.Gen
         {
             LoadShapes(content);
             var list = new List<StarKind>();
-            foreach (var e in content.OfKind("stars.dnat", "star"))
+            foreach (var e in content.OfKind("stars.unt", "star"))
             {
                 if (!e.Props.ContainsKey("share-of-stars") || (!e.Props.ContainsKey("color") && !e.Props.ContainsKey("temp-k"))) continue;
                 float r, g, b; ColorFor(e, out r, out g, out b);
-                bool remnant = e.Get("remnant", "no") == "yes";                        // from the data (stars.dnat)
+                bool remnant = e.Get("remnant", "no") == "yes";                        // from the data (stars.unt)
                 list.Add(new StarKind { Id = e.Id, Name = e.Name, R = r, G = g, B = b, Weight = ShareWeight(e.Get("share-of-stars", "common")), Remnant = remnant });
             }
             if (list.Count == 0) list.Add(new StarKind { Id = "g-type", Name = "G", R = 1, G = 0.95f, B = 0.8f, Weight = 1 });

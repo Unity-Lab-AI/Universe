@@ -89,7 +89,7 @@ namespace Universe.Shell
             // three galaxy types, taken from the content
             var wanted = new[] { "spiral", "barred-spiral", "elliptical" };
             var types = new List<string>(); var names = new List<string>();
-            foreach (var e in content.OfKind("galaxies.dnat", "galaxy"))
+            foreach (var e in content.OfKind("galaxies.unt", "galaxy"))
                 if (Array.IndexOf(wanted, e.Id) >= 0) { types.Add(e.Id); names.Add(e.Name); }
             while (types.Count < 3) { types.Add(wanted[types.Count]); names.Add(wanted[names.Count]); }
             _types = types.GetRange(0, 3).ToArray(); _typeNames = names.GetRange(0, 3).ToArray();
@@ -103,14 +103,14 @@ namespace Universe.Shell
                 _buffers[row].Write(stars, stars.Length);
             }
 
-            // set 2: three kinds of solar system, from content/solar-systems.dnat and content/stars.dnat
+            // set 2: three kinds of solar system, from content/solar-systems.unt and content/stars.unt
             for (int row = 0; row < 3; row++)
             {
                 string want = SystemStars[row];
                 StarKind kind = kinds.Find(k => k.Id == want) ?? kinds[0];
                 _systems[row] = SpaceGen.System(content, kind, seed * 13UL + (ulong)row, SystemLayouts[row]);
                 _systemNames[row] = SystemLayouts[row];
-                foreach (var e in content.OfKind("solar-systems.dnat", "system")) if (e.Id == SystemLayouts[row]) _systemNames[row] = e.Name;
+                foreach (var e in content.OfKind("solar-systems.unt", "system")) if (e.Id == SystemLayouts[row]) _systemNames[row] = e.Name;
                 _sysStatic[row] = new UploadBuffer(gpu.Device, (long)Math.Max(1, _systems[row].Static.Length) * stride);
                 _sysStaticShifted[row] = new StarVertex[_systems[row].Static.Length];
                 _sysVerts[row] = new StarVertex[(_systems[row].Bodies.Count + 1) * (1 + TrailPoints)];

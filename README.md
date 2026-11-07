@@ -83,7 +83,7 @@ It's one camera the whole way, about **42 factors of ten**, with nothing swapped
 | 🔴 **Strong nuclear force** | Packs protons and neutrons into every nucleus and glues quarks into every proton and neutron |
 | 🟣 **Weak nuclear force** | Decides which nuclei are stable, and how the rest would decay |
 
-Every law's numbers sit in `content/physics.dnat`, so you can change the physics itself. See **[Build your own universe](docs/GUIDE.md)**.
+Every law's numbers sit in `content/physics.unt`, so you can change the physics itself. See **[Build your own universe](docs/GUIDE.md)**.
 
 ---
 
@@ -136,7 +136,7 @@ A five-minute film of the scale of things: the cosmic web, a galaxy, a black hol
 - 🎞️ **Every viewing is shot afresh.** Each shot picks its own way round, speed and crane.
 - ⏸️ **Pause any time.** A note says why it paused; **T** carries on, **R** starts again.
 - 📹 **Film it.** Tick **Film the tour** on the landing page to save it as an MP4. The **Clips** list plays what you've filmed.
-- ✍️ **Write your own.** A tour is a plain text list of camera moves (`content/tours/grand-tour.dnat`).
+- ✍️ **Write your own.** A tour is a plain text list of camera moves (`content/tours/grand-tour.unt`).
 
 ---
 

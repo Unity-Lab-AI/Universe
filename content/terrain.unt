@@ -29,7 +29,7 @@
 #   from a moon torn apart inside its planet's pull); rings-colour: their colour; rings: how many specks make them; rings-radii: from and to, in its radii; rings-gap: a gap in them;
 #   rings-shade: banded (bright and banded, like Saturn's) or a number (faint and even, like Uranus's).
 # volcano-count: how many great volcanoes (30 usual); seafloor-volcanoes: volcanoes deep under the sea too; rivers: no for none.
-# Spec: docs/CONTENT-FORMAT.md · content/planets.dnat
+# Spec: docs/CONTENT-FORMAT.md · content/planets.unt
 
 @terrain default
 name: An Earth-like world

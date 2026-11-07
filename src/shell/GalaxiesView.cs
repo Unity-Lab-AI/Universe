@@ -1,4 +1,4 @@
-// Universe · shell · the start of the journey: a mix of galaxies spread through space, each built live from content/galaxies.dnat.
+// Universe · shell · the start of the journey: a mix of galaxies spread through space, each built live from content/galaxies.unt.
 // Click a galaxy (or Tab for the next one) to centre on it, then roll the wheel in to fly into it.
 // Drag to turn the view. Esc closes.
 using System;
@@ -31,7 +31,7 @@ namespace Universe.Shell
         {
             _dots = new BillboardDrawer(gpu.CommandList, pipe);
             var types = new List<string>(); var names = new List<string>();
-            foreach (var e in content.OfKind("galaxies.dnat", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
+            foreach (var e in content.OfKind("galaxies.unt", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
             if (types.Count == 0) { types.Add("spiral"); names.Add("Spiral galaxy"); }
             var rng = new Rng(seed ^ 0x6A1AUL);
             var kinds = GalaxyGen.StarKinds(content);

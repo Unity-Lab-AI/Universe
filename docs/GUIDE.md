@@ -22,7 +22,7 @@ So one template makes millions of worlds, and no two are the same. **The same se
 
 ## ✍️ The content format in five minutes
 
-Every template lives in `content/`, in our own plain-text format (`.dnat`). One file per subject.
+Every template lives in `content/`, in our own plain-text format (`.unt`). One file per subject.
 
 ```
 @terrain lava
@@ -49,7 +49,7 @@ The files are read at start-up. **Change a file, start the program, see the chan
 
 ## 🌍 Add a new kind of world
 
-Worlds are templates in `content/terrain.dnat`. Each one says **where it forms** and **what it looks like**.
+Worlds are templates in `content/terrain.unt`. Each one says **where it forms** and **what it looks like**.
 
 ### 1. Copy an entry close to what you want
 
@@ -138,7 +138,7 @@ Start Universe and fly to stars until you find one. Every star's worlds are chos
 
 ## ⭐ Add a new kind of star
 
-Stars are templates in `content/stars.dnat`.
+Stars are templates in `content/stars.unt`.
 
 ```
 @star my-blue-giant
@@ -164,7 +164,7 @@ Its worlds follow from its brightness: a hot bright star pushes the liquid-water
 
 ## 🌀 Add a new kind of galaxy
 
-Galaxies are templates in `content/galaxies.dnat`.
+Galaxies are templates in `content/galaxies.unt`.
 
 ```
 @galaxy my-spiral
@@ -193,7 +193,7 @@ Every number can be a range, and each galaxy of the kind gets its own size, tilt
 
 ## ☀️ Lay out star systems
 
-The kinds of star system are templates in `content/solar-systems.dnat`. The usual one, `sun-like`, is the base, and other kinds give only what differs.
+The kinds of star system are templates in `content/solar-systems.unt`. The usual one, `sun-like`, is the base, and other kinds give only what differs.
 
 ```
 @system compact
@@ -219,7 +219,7 @@ Which kind of world forms in each orbit then follows from the world templates ab
 
 ## ⚛️ The laws of nature
 
-Universe runs on the real laws of physics, and their numbers are templates too. They live in `content/physics.dnat`, so you can read every one, and change them to build a universe with different physics.
+Universe runs on the real laws of physics, and their numbers are templates too. They live in `content/physics.unt`, so you can read every one, and change them to build a universe with different physics.
 
 ### The four forces
 
@@ -257,7 +257,7 @@ Make the strong force reach further and nuclei pack differently. Change gravity'
 
 ## 🔭 Change the whole universe
 
-`content/universe.dnat` holds the universe itself:
+`content/universe.unt` holds the universe itself:
 
 | Trait | Means |
 |---|---|
@@ -277,9 +277,9 @@ Below the ground, everything is real matter at its real size.
 
 | File | What it holds |
 |---|---|
-| `content/elements.dnat` | All 118 elements: their atoms, shells and most common isotopes |
-| `content/minerals.dnat` | Minerals (their crystal from its published unit cell) and the **mix** each kind of ground is made of |
-| `content/physics.dnat` | The laws of nature, gases and particles (see *The laws of nature* above) |
+| `content/elements.unt` | All 118 elements: their atoms, shells and most common isotopes |
+| `content/minerals.unt` | Minerals (their crystal from its published unit cell) and the **mix** each kind of ground is made of |
+| `content/physics.unt` | The laws of nature, gases and particles (see *The laws of nature* above) |
 
 Add a mineral, then put it in a ground's mix, and its grains appear on every world of that kind.
 
@@ -287,7 +287,7 @@ Add a mineral, then put it in a ground's mix, and its grains appear on every wor
 
 ## 🎬 Write a tour
 
-Tours are lists of camera moves in `content/tours/`. The grand tour is `grand-tour.dnat`. Copy it and make your own:
+Tours are lists of camera moves in `content/tours/`. The grand tour is `grand-tour.unt`. Copy it and make your own:
 
 ```
 @stop pick-a-galaxy
@@ -324,7 +324,7 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 |---|---|
 | A new trait for worlds | Read it in `PlanetTerrain.Build` (`src/gen/PlanetTerrain.cs`), use it where the ground is shaped or coloured |
 | A new rule for where worlds form | `SpaceGen.WorldKind` (`src/gen/SpaceGen.cs`) |
-| A new kind of thing in space | `src/gen/BodyGen.cs` and `content/bodies.dnat` |
+| A new kind of thing in space | `src/gen/BodyGen.cs` and `content/bodies.unt` |
 | A new galaxy shape | `src/gen/GalaxyGen.cs` |
 | New controls or camera moves | `UniverseView.Update` and the tour's `TourStep` (`src/shell/UniverseView.cs`) |
 | What the info cards say | `UniverseView.Card` |

@@ -104,7 +104,7 @@ namespace Universe.Gen
             _tk = tk;
         }
 
-        // ── each kind of world is a template in content/terrain.dnat (none named in code): any number may be a range
+        // ── each kind of world is a template in content/terrain.unt (none named in code): any number may be a range
         // (a..b) and any colour a range (r g b .. r g b); every world of the kind takes its own values from its seed, so no
         // two are the same, and the same seed always gives the same world ──
         public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
@@ -130,8 +130,8 @@ namespace Universe.Gen
         }
         private static void LoadKinds(ContentLibrary content)
         {
-            _defEntry = null; foreach (var e in content.OfKind("terrain.dnat", "terrain")) if (e.Id == "default") _defEntry = e;
-            foreach (var e in content.OfKind("terrain.dnat", "terrain")) { KindEntries[e.Id] = e; Kinds[e.Id] = Build(e, 0, true); }
+            _defEntry = null; foreach (var e in content.OfKind("terrain.unt", "terrain")) if (e.Id == "default") _defEntry = e;
+            foreach (var e in content.OfKind("terrain.unt", "terrain")) { KindEntries[e.Id] = e; Kinds[e.Id] = Build(e, 0, true); }
         }
         private static TerrainKindData Build(ContentEntry e, uint seed, bool middle)
         {
@@ -321,7 +321,7 @@ namespace Universe.Gen
             return h;
         }
 
-        /// <summary>Which ground's grains this world has (content/minerals.dnat @mix): its kind, or what it is set to (a moon's
+        /// <summary>Which ground's grains this world has (content/minerals.unt @mix): its kind, or what it is set to (a moon's
         /// regolith); the same grains the matter view goes into.</summary>
         public string MixId;
         public ulong GrainSeed { get { return (ulong)_seed * 0x9E3779B97F4A7C15UL + 0x6A1u; } }
@@ -512,7 +512,7 @@ namespace Universe.Gen
             double land, h;
             switch (Kind)
             {
-                default: land = Shell && Habitable ? cont + _shellLand : cont + _tk.LandShare; break;   // (a shell: each terraformed section its own share of land)   // from its kind (terrain.dnat): Earth-like about a third land
+                default: land = Shell && Habitable ? cont + _shellLand : cont + _tk.LandShare; break;   // (a shell: each terraformed section its own share of land)   // from its kind (terrain.unt): Earth-like about a third land
             }
             double mtn = ridge * ridge * Smooth(0, 0.35, land) * (Shell && Habitable ? _shellMtn : 1);
             _land = land; _mtn = mtn; _tint = tint;
@@ -523,7 +523,7 @@ namespace Universe.Gen
                 h += dune * 0.06 * Smooth(0.0, 0.3, 0.9 - ridge);
             }
             float tv = (float)(0.9 + 0.2 * tint);
-            // the ground of this kind of world (terrain.dnat): molten, frozen seas, a locked day and night side, then its colours by height
+            // the ground of this kind of world (terrain.unt): molten, frozen seas, a locked day and night side, then its colours by height
             if (_tk.Molten)
             {
                 double crack = Ridged(x, y, z, _seed + 900u, 5, 4 + Math.Min(fine, 8));
@@ -540,7 +540,7 @@ namespace Universe.Gen
             }
             if (_tk.Ground != null && !(_tk.Locked) && !(HasWater && h < 0))
             {
-                // its ground's colours by height (terrain.dnat), each band shading into the next across a fifth of a km, never a
+                // its ground's colours by height (terrain.unt), each band shading into the next across a fifth of a km, never a
                 // hard line (a hard line lands on the ground's corners and shows as jagged patches)
                 r = g = b = 0.5f; var gb = _tk.Ground;
                 for (int q = 0; q < gb.Length; q++)
@@ -593,7 +593,7 @@ namespace Universe.Gen
             double band = Math.Sin(yy * _tk.Bands + curl * 4) * 0.5 + 0.5;
             double fine = 0.5 + 0.5 * Waveform.Octaves(x + wx, y * 6, z + wz, _seed + 14u, 12, 1, 0.5, 12 * Math.Pow(2, 2 + extra));
             band = band * 0.8 + fine * 0.2;
-            // its dark belts and light zones, in this kind's colours (terrain.dnat)
+            // its dark belts and light zones, in this kind's colours (terrain.unt)
             r = (float)(_tk.BandLow[0] + (_tk.BandHigh[0] - _tk.BandLow[0]) * band); g = (float)(_tk.BandLow[1] + (_tk.BandHigh[1] - _tk.BandLow[1]) * band); b = (float)(_tk.BandLow[2] + (_tk.BandHigh[2] - _tk.BandLow[2]) * band);
             // storms: round swirling ovals, one great one and many small ones
             var rng = new Rng(_seed ^ 0x570CUL);
@@ -643,7 +643,7 @@ namespace Universe.Gen
             { 0.65f, 0.65f, 0.25f }, { 0.55f, 0.55f, 0.58f }, { 0.95f, 0.2f, 0.95f }, { 0.2f, 0.75f, 0.25f }, { 0.75f, 0.97f, 1f } };
         private static readonly bool[] FieldBuried = { false, false, false, true, false, true, true, false, false, false, false, true, true, true, true, true, false };
 
-        /// <summary>Reads every field's name and where it is found from content/resource-fields.dnat.</summary>
+        /// <summary>Reads every field's name and where it is found from content/resource-fields.unt.</summary>
         public static void LoadFields(ContentLibrary content)
         {
             if (Kinds.Count == 0) LoadKinds(content);
@@ -725,7 +725,7 @@ namespace Universe.Gen
                 {
                     _river = (line - width) / (1 - width);
                     h -= 0.03 + 0.05 * _river;
-                    r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2];                  // river water, or a dry bed (terrain.dnat)
+                    r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2];                  // river water, or a dry bed (terrain.unt)
                 }
                 else if (line > width - 0.006) _river = -1;                               // the river banks
             }
@@ -886,7 +886,7 @@ namespace Universe.Gen
             }
             double c = Fbm(x, y, z, _seed + 500u, 2.4, 7) + 0.1 * Math.Cos(y * 7);
             if (Shell) c -= 0.1;                                     // shells: scattered clouds, so the land shows
-            c += _tk.CloudShift;                                     // more cloud or less, by its kind (terrain.dnat)
+            c += _tk.CloudShift;                                     // more cloud or less, by its kind (terrain.unt)
             if (_tk.Locked) { double day = x * StarDir[0] + y * StarDir[1] + z * StarDir[2]; c += 0.25 * Smooth(-0.3, 0.3, day) - 0.18; }
             return Smooth(0.54, 0.7, c);
         }
@@ -1027,7 +1027,7 @@ namespace Universe.Gen
                     else
                     {
                         h = 0; gl = 0; al = (float)(CloudCover(x, y, z) * 0.92);
-                        r = _tk.Cloud[0]; g = _tk.Cloud[1]; bl = _tk.Cloud[2]; al *= (float)_tk.CloudThick;   // the clouds of this kind of world (terrain.dnat)
+                        r = _tk.Cloud[0]; g = _tk.Cloud[1]; bl = _tk.Cloud[2]; al *= (float)_tk.CloudThick;   // the clouds of this kind of world (terrain.unt)
                     }
                     double rad = Shell && layer != Hull ? baseR - h : baseR + h;   // a shell's land rises inward, toward the star
                     int k = b * (Grid + 1) + a;
@@ -1046,7 +1046,7 @@ namespace Universe.Gen
                         double slope = Math.Max(Math.Abs(_hh[ka] - _hh[k]), Math.Abs(_hh[kb] - _hh[k])) / spacing;
                         float rock = (float)Math.Max(0, Math.Min(1, (slope - 0.7) * 2.0));
                         if (rock <= 0) continue;
-                        float rr = _tk.Rock[0], rg = _tk.Rock[1], rb = _tk.Rock[2];                   // steep bare rock of this kind (terrain.dnat)
+                        float rr = _tk.Rock[0], rg = _tk.Rock[1], rb = _tk.Rock[2];                   // steep bare rock of this kind (terrain.unt)
                         _cr[k] += (rr - _cr[k]) * rock; _cg[k] += (rg - _cg[k]) * rock; _cb[k] += (rb - _cb[k]) * rock;
                     }
             }

@@ -1,12 +1,12 @@
 // Universe · shell · the ground's own matter, all the way down, at its real sizes: below the finest piece of ground the camera
 // carries on into what the ground is made of. Everything sits at a fixed place around the point you dive into, so zooming truly
 // scales it into view (nothing fades between pictures):
-//   grains (about 0.2 mm), each one mineral from its ground's own mix (content/minerals.dnat);
+//   grains (about 0.2 mm), each one mineral from its ground's own mix (content/minerals.unt);
 //   the grain's surface, its detail at every size fixed in place;
 //   the mineral's atoms in rows about 0.25 nm apart, its real elements in their real ratio, one atom right under you;
 //   that atom: its electrons in their real shells (worked out from its atomic number), moving round it;
 //   inside it: mostly empty, the nucleus a spark at its middle;
-//   the nucleus: its real protons and neutrons (from the element's most common isotope, content/elements.dnat).
+//   the nucleus: its real protons and neutrons (from the element's most common isotope, content/elements.unt).
 // (Microbes, bacteria and viruses join when life is built.)
 using System;
 using System.Linq;
@@ -103,7 +103,7 @@ namespace Universe.Shell
         /// <summary>Whether this ground's world is alive (microbes on its grains).</summary>
         public void SetLife(bool alive) { _lifeHere = alive; }
         private bool _plasma; private string _plasmaMake = "hydrogen 91.2%, helium 8.7%"; private double _plasmaPerCc = 1e17;
-        /// <summary>Into a star's surface: its plasma (content/physics.dnat star-plasma): bare nuclei of its elements in their
+        /// <summary>Into a star's surface: its plasma (content/physics.unt star-plasma): bare nuclei of its elements in their
         /// shares, at its density, with free electrons darting between them (too hot for any atom to keep its electrons).</summary>
         public void SetPlasma(ulong spot)
         {
@@ -161,10 +161,10 @@ namespace Universe.Shell
         public MatterView(Gpu gpu, BillboardPipeline pipe, ContentLibrary content)
         {
             _gpu = gpu; _dots = new BillboardDrawer(gpu.CommandList, pipe);
-            foreach (var e in content.OfKind("elements.dnat", "element"))
+            foreach (var e in content.OfKind("elements.unt", "element"))
             {
                 int z, a; if (!int.TryParse(e.Get("number", ""), out z) || !int.TryParse(e.Get("mass-number", ""), out a)) continue;
-                // every atom's colour and sizes from content/elements.dnat (none named in code)
+                // every atom's colour and sizes from content/elements.unt (none named in code)
                 string sym = e.Get("symbol", e.Id); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
                 var cs = e.Get("colour", "0.7 0.6 0.8").Split(' '); float cr = 0.7f, cg = 0.6f, cb = 0.8f;
                 if (cs.Length == 3) { float.TryParse(cs[0], fs, ci, out cr); float.TryParse(cs[1], fs, ci, out cg); float.TryParse(cs[2], fs, ci, out cb); }
@@ -172,7 +172,7 @@ namespace Universe.Shell
                 if (!double.TryParse(e.Get("atomic-a", ""), fs, ci, out rad)) rad = cov;
                 _elements[sym] = new Element { Symbol = sym, Name = e.Name, Z = z, A = a, R = cr, G = cg, B = cb, Radius = rad * 1e-13, Cov = cov * 1e-13, Chi = TryD(e.Get("electronegativity", "0"), 0), Shells = Shells(z) };
             }
-            foreach (var e in content.OfKind("minerals.dnat", "mineral"))
+            foreach (var e in content.OfKind("minerals.unt", "mineral"))
             {
                 var col = e.Get("colour", "0.7 0.7 0.7").Split(' ');
                 var m = new Mineral { Id = e.Id, Name = e.Name, Formula = e.Get("formula", ""), Atoms = e.Get("atoms", "Si O O").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries) };
@@ -181,7 +181,7 @@ namespace Universe.Shell
                 m.Lat = Lattice.From(e); m.Structure = e.Get("structure", ""); m.Liquid = e.Get("state", "") == "liquid"; m.Spacing = TryD(e.Get("spacing-nm", "0"), 0) * 1e-12; m.Molecule = MoleculeFrom(e.Get("molecule", ""));
                 _minerals[m.Id] = m;
             }
-            foreach (var e in content.OfKind("minerals.dnat", "surface"))
+            foreach (var e in content.OfKind("minerals.unt", "surface"))
             {
                 Mineral om; bool fromGround = e.Get("mineral", "") == "ground"; if (!_minerals.TryGetValue(e.Get("mineral", ""), out om) && !fromGround) continue;
                 double lo, hi; if (!e.TryRange("size-km", out lo, out hi)) continue;
@@ -192,8 +192,8 @@ namespace Universe.Shell
                 _surf.Add(new SurfThing { Id = e.Id, Name = e.Name, M = om, Lo = lo, Hi = hi, Chance = ch, Flat = shape == "flat", Molecule = shape == "molecule",
                     Bond = bl * 1e-12, Angle = ang, FromGround = fromGround, Thick = TryD(e.Get("thickness", "0.05"), 0.05), Cell = TryD(e.Get("spacing", "4"), 4), Aspect = TryD(e.Get("aspect", "1"), 1), Life = e.Get("life", "no") == "yes", About = e.Get("about", "").Split('|').Select(q => q.Trim()).Where(q => q.Length > 0).ToArray() });
             }
-            foreach (var e in content.OfKind("physics.dnat", "gas")) _gasAtoms[e.Id.ToLowerInvariant()] = e.Get("atoms", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (var e in content.OfKind("physics.dnat", "law"))
+            foreach (var e in content.OfKind("physics.unt", "gas")) _gasAtoms[e.Id.ToLowerInvariant()] = e.Get("atoms", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var e in content.OfKind("physics.unt", "law"))
             {
                 if (e.Id == "air-density") _airPerCc = TryD(e.Get("number-density", "2.5e19"), 2.5e19);
                 if (e.Id == "star-plasma") { _plasmaMake = e.Get("makeup", _plasmaMake); _plasmaPerCc = TryD(e.Get("per-cc", "1e17"), 1e17); }
@@ -202,7 +202,7 @@ namespace Universe.Shell
                 if (e.Id == "mass-formula") { _aV = TryD(e.Get("volume-mev", "15.75"), 15.75); _aS = TryD(e.Get("surface-mev", "17.8"), 17.8); _aC = TryD(e.Get("coulomb-mev", "0.711"), 0.711); _aA = TryD(e.Get("asymmetry-mev", "23.7"), 23.7); _aP = TryD(e.Get("pairing-mev", "11.18"), 11.18); }
                 if (e.Id == "beta-stability") { _betaC = TryD(e.Get("c", "0.0155"), 0.0155); _alphaZ = (int)TryD(e.Get("alpha-above-z", "82"), 82); }
             }
-            foreach (var e in content.OfKind("minerals.dnat", "mix"))
+            foreach (var e in content.OfKind("minerals.unt", "mix"))
             {
                 var list = new List<KeyValuePair<Mineral, double>>();
                 foreach (var part in e.Get("minerals", "").Split(','))
@@ -586,7 +586,7 @@ namespace Universe.Shell
 
         // ── real crystal structures, where they are in: rock salt (halite) and the silica network (quartz) ──
         private sealed class CAtom { public Element E; public double X, Y, Z; }
-        // a crystal from its data (content/minerals.dnat): its unit cell (edges in angstroms, angles in degrees) and every atom
+        // a crystal from its data (content/minerals.unt): its unit cell (edges in angstroms, angles in degrees) and every atom
         // site in it (fractional positions; a site shared by several kinds of atom holds each as often as the data says)
         private sealed class Lattice
         {
@@ -715,7 +715,7 @@ namespace Universe.Shell
             if (e.Radius > 0) return e.Radius;
             return (0.7 + 0.5 * Math.Min(1, e.Z / 30.0)) * 1e-13;                  // the rest: a rough size from its number
         }
-        // ── the nucleus by the real forces (content/physics.dnat) ──
+        // ── the nucleus by the real forces (content/physics.unt) ──
         private static double _coreFm = 1.7, _spacingFm = 1.8, _rangeFm = 2.6, _kCoulomb = 1.44, _aV = 15.75, _aS = 17.8, _aC = 0.711, _aA = 23.7, _aP = 11.18, _betaC = 0.0155; private static int _alphaZ = 82;
         private static readonly Dictionary<string, double[][]> _nuclei = new Dictionary<string, double[][]>();
         // where each of the nucleus's protons and neutrons sits (fm from its middle; [3] = 1 for a proton): settled by the
@@ -968,7 +968,7 @@ namespace Universe.Shell
         }
 
         // ── what sits on a grain's surface, each at its real size, fixed in place (from its cell), each pickable ──
-        // (all of them from content/minerals.dnat @surface: what it is made of, its sizes, how common, its shape, what it is)
+        // (all of them from content/minerals.unt @surface: what it is made of, its sizes, how common, its shape, what it is)
         private sealed class SurfThing { public string Id, Name; public Mineral M; public double Lo, Hi, Chance, Bond, Angle; public bool Flat, Molecule, FromGround, Life; public double Thick = 0.05, Cell = 4, Aspect = 1; public string[] About; }
         private readonly List<SurfThing> _surf = new List<SurfThing>();
         private double _clock;                                                             // the matter's time, for the electrons of things drawn here
@@ -1065,7 +1065,7 @@ namespace Universe.Shell
 
         // a bond as it really is: not a stick but the two atoms' outer electrons shared between them. A soft cloud of electron
         // density along the line between them, densest between, with the shared pair moving in it; pulled toward the atom that
-        // pulls harder (electronegativity, content/elements.dnat). Atoms that differ by 1.7 or more share nothing: one has given
+        // pulls harder (electronegativity, content/elements.unt). Atoms that differ by 1.7 or more share nothing: one has given
         // its electron to the other and they hold as ions (salt), so nothing is drawn between them.
         private void SharedPair(List<StarVertex> glow, CAtom a, CAtom b, double s, double time, int n, float f)
         {

@@ -1,4 +1,4 @@
-// Universe · core · the laws of nature the universe is made by, read from content/physics.dnat (none written in code):
+// Universe · core · the laws of nature the universe is made by, read from content/physics.unt (none written in code):
 // gravity's pull, the speed of light, and what follows from them (a black hole's horizon, an escape speed).
 using System;
 
@@ -18,7 +18,7 @@ namespace Universe.Core
         {
             if (_loaded || content == null) return; _loaded = true;
             var ci = System.Globalization.CultureInfo.InvariantCulture; var nf = System.Globalization.NumberStyles.Float; double v;
-            foreach (var e in content.OfKind("physics.dnat", "law"))
+            foreach (var e in content.OfKind("physics.unt", "law"))
             {
                 if (e.Id == "gravity")
                 {

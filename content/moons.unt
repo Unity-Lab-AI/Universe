@@ -125,7 +125,7 @@ says: tides from the planet and from neighboring moons heat moons from inside, p
 
 @rule moon-hill-sphere
 real: rule
-says: a moon only stays inside its planet's sphere of pull (content/solar-systems.dnat)
+says: a moon only stays inside its planet's sphere of pull (content/solar-systems.unt)
 
 @rule moon-capture
 real: rule

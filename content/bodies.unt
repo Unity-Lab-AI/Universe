@@ -9,7 +9,7 @@
 # entry: the content entry it is (its card); size-km: how big it is drawn (a black hole: its glowing disc); colour.
 # shape: what it is drawn as close in: rock (a lumpy body lit by its star, cratered), comet (a dark nucleus in its coma of
 #   gas and dust, its tail pushed straight away from the star); without one, a point of light.
-# Spec: docs/CONTENT-FORMAT.md · content/black-holes.dnat · content/small-bodies.dnat · content/stars.dnat
+# Spec: docs/CONTENT-FORMAT.md · content/black-holes.unt · content/small-bodies.unt · content/stars.unt
 
 @place supermassive-black-hole
 # feeding-share: how many are feeding (a glowing accretion disc; counting the dim, slow-feeding ones, as most galaxies' are);

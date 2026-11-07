@@ -1,4 +1,4 @@
-// Universe · generators · a planet's name and its rings, from content/planets.dnat and gas-giants.dnat.
+// Universe · generators · a planet's name and its rings, from content/planets.unt and gas-giants.unt.
 // The planet itself (ground, sea, clouds, air) is built by PlanetTerrain.
 using System;
 using System.Collections.Generic;
@@ -16,10 +16,10 @@ namespace Universe.Gen
 
     internal static class PlanetGen
     {
-        /// <summary>The colour of a kind of world's rings (content/terrain.dnat rings-colour; icy grey-cream when none is given).</summary>
+        /// <summary>The colour of a kind of world's rings (content/terrain.unt rings-colour; icy grey-cream when none is given).</summary>
         public static float[] RingColour(ContentLibrary content, string id)
         {
-            foreach (var e in content.OfKind("terrain.dnat", "terrain"))
+            foreach (var e in content.OfKind("terrain.unt", "terrain"))
                 if (e.Id == id)
                 {
                     var w = e.Get("rings-colour", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); float r, g, b; var ci = System.Globalization.CultureInfo.InvariantCulture; var nf = System.Globalization.NumberStyles.Float;
@@ -30,14 +30,14 @@ namespace Universe.Gen
         public static PlanetRings Build(ContentLibrary content, string id, ulong seed, out string name)
         {
             name = id;
-            foreach (var e in content.OfKind("planets.dnat", "planet")) if (e.Id == id) name = e.Name;
-            foreach (var e in content.OfKind("gas-giants.dnat", "giant")) if (e.Id == id) name = e.Name;
+            foreach (var e in content.OfKind("planets.unt", "planet")) if (e.Id == id) name = e.Name;
+            foreach (var e in content.OfKind("gas-giants.unt", "giant")) if (e.Id == id) name = e.Name;
             var rings = new PlanetRings();
             var rng = new Rng(seed);
-            // rings, from its kind's template (content/terrain.dnat): rings (how many specks), rings-radii (from and to, in the
+            // rings, from its kind's template (content/terrain.unt): rings (how many specks), rings-radii (from and to, in the
             // planet's radii), rings-gap (a gap, in radii), rings-shade (banded, bright and banded like Saturn's, or a number:
             // faint and even)
-            ContentEntry k = null; foreach (var e in content.OfKind("terrain.dnat", "terrain")) if (e.Id == id) k = e;
+            ContentEntry k = null; foreach (var e in content.OfKind("terrain.unt", "terrain")) if (e.Id == id) k = e;
             double count, c2, from, to, gapA = 0, gapB = 0;
             if (k != null && k.TryRange("rings", out count, out c2) && count > 0 && k.TryRange("rings-radii", out from, out to))
             {

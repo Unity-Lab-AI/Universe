@@ -3,7 +3,7 @@
 // when you go in, so the land carries on down as one surface: no layer of stones laid over it.
 //   Grains sit one to each cube of space a grain across (planet km), on the planet's shell: a grain's place on the ground
 //   is its cube's point (jittered) pushed out to the surface; it lies sunk into the ground by most of its height.
-//   Its mineral comes from its ground's mix (content/minerals.dnat @mix: shares and grain sizes).
+//   Its mineral comes from its ground's mix (content/minerals.unt @mix: shares and grain sizes).
 using System;
 using System.Collections.Generic;
 using Universe.Core;
@@ -42,13 +42,13 @@ namespace Universe.Gen
             if (Mixes.Count > 0) return;
             var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             var col = new Dictionary<string, float[]>();
-            foreach (var e in content.OfKind("minerals.dnat", "mineral"))
+            foreach (var e in content.OfKind("minerals.unt", "mineral"))
             {
                 var w = e.Get("colour", "0.7 0.7 0.7").Split(' '); float r = 0.7f, g = 0.7f, b = 0.7f;
                 if (w.Length == 3) { float.TryParse(w[0], fs, ci, out r); float.TryParse(w[1], fs, ci, out g); float.TryParse(w[2], fs, ci, out b); }
                 col[e.Id] = new[] { r, g, b };
             }
-            foreach (var e in content.OfKind("minerals.dnat", "mix"))
+            foreach (var e in content.OfKind("minerals.unt", "mix"))
             {
                 var ids = new List<string>(); var sh = new List<double>(); var cs = new List<float[]>();
                 foreach (var part in e.Get("minerals", "").Split(','))

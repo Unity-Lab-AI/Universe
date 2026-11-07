@@ -1,4 +1,4 @@
-// Universe · generators · a single star seen up close, built from content/stars.dnat.
+// Universe · generators · a single star seen up close, built from content/stars.unt.
 // The star is a ball of faceted points (Populous-like) with surface detail that depends on the kind:
 // granulation and spots, giant convection cells, bands on brown dwarfs, beams on pulsars.
 using System;
@@ -52,7 +52,7 @@ namespace Universe.Gen
         public static StarVertex[] Build(ContentLibrary content, string id, ulong seed, out string name, out StarSurface surfaceOut)
         {
             name = id; float r = 1, g = 1, b = 1; string sk = "normal"; bool spotty = false;
-            foreach (var e in content.OfKind("stars.dnat", "star"))
+            foreach (var e in content.OfKind("stars.unt", "star"))
                 if (e.Id == id) { name = e.Name; GalaxyGen.ColorFor(e, out r, out g, out b); sk = e.Get("surface-kind", "normal"); spotty = e.Get("spots", "no") == "yes"; }   // its colour from its surface temperature; its kind of face from the data
             var rng = new Rng(seed);
             var list = new List<StarVertex>();

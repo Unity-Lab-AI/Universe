@@ -99,6 +99,7 @@ Change the version at the top of `release.cmd`.
 | **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
 | **Clouds and patterns** | A world's cloud cover is worked out for each pixel on the card, so cloud edges are soft at any distance; every layer of noise, on the card and on the processor, is turned to its own angle, so no pattern lines up in rows |
 | **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
+| **Processor and card at once** | A frame is handed to the card and not waited for until the next frame's commands are recorded (`Gpu.BeginFrame`), so the next frame's game work runs while the card draws; freed buffers are held back eight frames, so the card never reads one let go |
 | **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.unt`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
 | **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
 | **Tidal locking** | A world close enough to its star (`tidal-lock` in `content/physics.unt`) turns once each orbit: its day is its year, one face always lit |

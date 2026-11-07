@@ -185,6 +185,10 @@ namespace Universe.Render
         /// <summary>Starts a frame and clears the screen to a color.</summary>
         public void BeginFrame(float r, float g, float b)
         {
+            // the card finishes the last frame while the next one's game work runs (the world, the tour, the simulation): only
+            // here, before the frame's commands are recorded again, is it waited for, so the processor and the card work at once
+            // instead of taking turns
+            if (_pending != 0) { WaitFor(_pending); _pending = 0; ReadTiming(); }
             Com.Check(_allocReset(_allocator), "Allocator.Reset");
             Com.Check(_listReset(_list, _allocator, IntPtr.Zero), "CommandList.Reset");
             var toTarget = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
@@ -243,17 +247,10 @@ namespace Universe.Render
             Com.Check(_close(_list), "CommandList.Close");
             _execute(_queue, 1, new[] { _list });
             Com.Check(_present(_swapChain, 1, 0), "Present");
-            WaitForGpu();
-            if (_timing)
-            {
-                IntPtr data;
-                if (Com.Method<MapFn>(_queryRead, 8)(_queryRead, 0, IntPtr.Zero, out data) >= 0)
-                {
-                    long t0 = Marshal.ReadInt64(data, 0), t1 = Marshal.ReadInt64(data, 8);
-                    Com.Method<UnmapFn2>(_queryRead, 9)(_queryRead, 0, IntPtr.Zero);
-                    if (t1 > t0) GpuMs = (t1 - t0) * 1000.0 / _tsFreq;
-                }
-            }
+            // the frame is handed to the card and not waited for here (the next frame's game work runs meanwhile), unless its
+            // picture is wanted back now (a screenshot or a clip's frame)
+            _pending = ++_fenceValue; Com.Check(_signal(_queue, _fence, _pending), "Queue.Signal");
+            if (readback != IntPtr.Zero) { WaitFor(_pending); _pending = 0; ReadTiming(); }
             _frameIndex = _getIndex(_swapChain);
             if (readback != IntPtr.Zero) { if (capture != null) SaveBmp(readback, pitch, capture); if (grab) Grabbed = Rgb(readback, pitch); }   // (the buffer is kept for the next grab)
         }
@@ -348,10 +345,27 @@ namespace Universe.Render
         {
             ulong value = ++_fenceValue;
             Com.Check(_signal(_queue, _fence, value), "Queue.Signal");
+            WaitFor(value); _pending = 0;
+        }
+        private ulong _pending;                                   // the frame handed to the card and not yet waited for (0: none)
+        private void WaitFor(ulong value)
+        {
             if (_completed(_fence) < value)
             {
                 Com.Check(_onCompletion(_fence, value, _fenceEvent), "Fence.SetEventOnCompletion");
                 WaitForSingleObject(_fenceEvent, GpuWaitMs); // timeout: never hang forever
+            }
+        }
+        // how long the card worked on the frame just finished (its two timestamps)
+        private void ReadTiming()
+        {
+            if (!_timing) return;
+            IntPtr data;
+            if (Com.Method<MapFn>(_queryRead, 8)(_queryRead, 0, IntPtr.Zero, out data) >= 0)
+            {
+                long t0 = Marshal.ReadInt64(data, 0), t1 = Marshal.ReadInt64(data, 8);
+                Com.Method<UnmapFn2>(_queryRead, 9)(_queryRead, 0, IntPtr.Zero);
+                if (t1 > t0) GpuMs = (t1 - t0) * 1000.0 / _tsFreq;
             }
         }
 

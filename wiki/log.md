@@ -45,3 +45,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the climb out as fast as the fall): DNA-AND DESIGN 626.
 - 2026-11-07 (the asteroid's caption its own make-up, its dive to a quark, the supernova logged): DNA-AND DESIGN 627-629.
 - 2026-11-07 (the faces before the glows, the picked atom in focus, the stats card's width, the inner cloud brighter): DNA-AND DESIGN 630-633.
+- 2026-11-07 (the orbit lines continuous, no rows of dots): DNA-AND DESIGN 634.

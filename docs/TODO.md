@@ -129,6 +129,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The stats card never wider than a wrapped line:** (built: DNA-AND DESIGN 632; waits on the test) seen in the shots: the stats card over the matter's card
 - [~] **The inner cloud at a picometre bright enough to see:** (built: DNA-AND DESIGN 633; waits on the test) "and just above and at 1 picometer shit is too dim"
 
+- [~] **The orbit lines faint continuous lines, never rows of evenly spaced dots:** (built: DNA-AND DESIGN 634; waits on the test) "im still seeing that patterning in solar syastem of planets lik being designed in straight lines"
+
 ---
 
 ## Pending

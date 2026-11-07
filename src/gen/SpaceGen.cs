@@ -386,10 +386,12 @@ namespace Universe.Gen
             // orbit lines
             foreach (var b in sys.Bodies)
                 if (b.Parent < 0)
-                    for (int k = 0; k < 240; k++)
+                    for (int k = 0; k < 1200; k++)
                     {
-                        double t = k / 240.0 * Math.PI * 2;
-                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.12f)); rates.Add(0); }   // (faint: a guide to the orbit, never a drawn ring of bodies)
+                        // a faint continuous line, its points at random along the orbit, never evenly spaced dots: two hundred and forty
+                        // evenly spaced dots on every orbit had read, from the system's edge, as rows of bodies set out in straight lines
+                        double t = rng.NextDouble() * Math.PI * 2;
+                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.025f)); rates.Add(0); }   // (faint: a guide to the orbit, never a drawn ring of bodies)
                     }
             // asteroid belt in the gap between the rocky planets and the giants
             if (firstGiant > 0 && lastRocky > 0)

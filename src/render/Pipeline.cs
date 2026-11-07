@@ -92,13 +92,18 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
     float4 cc0 = mul(float4(s.pos, 1), viewProj);
     float size = max(s.size * misc.y, cc0.w * screen.z); // never smaller than screen.z of the view distance
     if (screen.w > 0) size = min(size, cc0.w * screen.w);   // and, when asked, never bigger than screen.w of it (points of light stay points up close)
-    size = min(size, cc0.w * 0.35);                               // and never more than most of the view, for every point (a soft glow right up close
-                                                                  // looks the same, but thousands of them each covering the whole screen are more work
-                                                                  // than the card may take in a frame, and Windows resets it)
     if (cc0.w <= 0) o0 = true;
     float3 world = s.pos + (right.xyz * c.x + up.xyz * c.y) * size;
     VO o;
     o.pos = mul(float4(world, 1), viewProj);
+    if (!o0 && o.pos.w > 0)
+    {
+        // never more than about a third of the screen out from its middle, measured on the screen itself (so it holds however the
+        // points are scaled: a comet's tail, a black hole's disc, a galaxy): a soft glow right up close looks the same, but thousands
+        // each covering the whole screen are more work than the card may take in a frame, and Windows resets it
+        float2 cn = cc0.xy / cc0.w, dl = o.pos.xy / o.pos.w - cn; float L = max(abs(dl.x), abs(dl.y));
+        if (L > 0.7) o.pos.xy = (cn + dl * (0.7 / L)) * o.pos.w;
+    }
     if (webOut || o0) o.pos = float4(2, 2, 2, 1);                 // (outside the view, or behind you: not drawn)
     if (lensA.z > 0 && cc0.w > lensA.w)
     {

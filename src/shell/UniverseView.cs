@@ -527,8 +527,9 @@ namespace Universe.Shell
                     double dc = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     Func<double, Mat4> sized = km => { float k = (float)Units.Km(km); var mm = m; mm.M11 = xs.X * k; mm.M12 = xs.Y * k; mm.M13 = xs.Z * k; mm.M21 = y2.X * k; mm.M22 = y2.Y * k; mm.M23 = y2.Z * k; mm.M31 = z2.X * k; mm.M32 = z2.Y * k; mm.M33 = z2.Z * k; return mm; };
                     float inC = (float)Math.Max(0.06, Math.Min(1, Math.Sqrt(dc / Math.Max(1e-30, Units.Km(ex.ComaKm) * 1.5))));
-                    DrawPoints(_cometBuf, _comaN, sized(ex.ComaKm) * vp, right, up, 1f, 0.0008f, w, h, time, 0f, inC, 0f);
-                    DrawPoints(_tailBuf, _tailN, sized(ex.TailKm) * vp, right, up, 1f, 0.0008f, w, h, time, 0f, 1f, 0f);
+                    // (the smallest a point may be is a share of the view's distance, in the points' own units: divided by their scale)
+                    DrawPoints(_cometBuf, _comaN, sized(ex.ComaKm) * vp, right, up, 1f, 0.0008f / (float)Units.Km(ex.ComaKm), w, h, time, 0f, inC, 0f);
+                    DrawPoints(_tailBuf, _tailN, sized(ex.TailKm) * vp, right, up, 1f, 0.0008f / (float)Units.Km(ex.TailKm), w, h, time, 0f, 1f, 0f);
                 }
                 // the body itself, solid stone lit from its star (its camera's place in its own frame, for which faces show)
                 {

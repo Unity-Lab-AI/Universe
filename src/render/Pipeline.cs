@@ -72,7 +72,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         // orbital's real shape about its shell's distance, sampled afresh a few times a second (it shimmers: a wave, not a dot)
         uint code = (uint)(s.color.a * 64 + 0.5), l = code / 8u, m = code % 8u;
         uint key = asuint(s.pos.x) ^ (asuint(s.pos.y) * 7919u) ^ (asuint(s.pos.z) * 104729u) ^ (code * 31u);
-        uint tick = (uint)floor(misc.x * 6);
+        uint tick = 0;                                                    // (a steady cloud: sampled once, never flickering like static)
         float3 dir = float3(0, 1, 0); float best = -1;
         for (uint t = 0; t < 6u; t++)
         {

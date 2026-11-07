@@ -268,7 +268,7 @@ namespace DnaAnd.Shell
             // of a crystal at once, their lobes would hang everywhere as pairs of glowing blobs; farther ones show their nucleus
             // and their electrons on their paths
             double fdx = x - _fx, fdy = y + _yOff - _fy, fdz = z - _fz;
-            if (fdx * fdx + fdy * fdy + fdz * fdz < Math.Pow(Math.Max(AtomSpacing * 3, s * 0.6), 2)) Orbitals(glow, e, x, y, z, s, time, key, f);
+            if (fdx * fdx + fdy * fdy + fdz * fdz < Math.Pow(AtomSpacing * 0.6, 2)) Orbitals(glow, e, x, y, z, s, time, key, f);   // (only the atom you are at: the clouds of every atom in view at once read as static)
             // its electrons, each going round on its own path tilted its own way in three dimensions (never all in one plane),
             // the inner shells faster, the valence shell (the one it bonds with) in gold
             double ar = AtomRadius(e), dot = s * 0.0035; int shells = e.Shells.Length;
@@ -1411,7 +1411,7 @@ namespace DnaAnd.Shell
                     // inside its electron cloud it is not empty: the innermost electrons (1s) are densest at the nucleus itself,
                     // |psi|^2 falling as exp(-2Zr/a0), so all the way down to the nucleus you are inside their cloud: a shimmer of
                     // where they may be found, as bright as that density, sampled afresh a few times a second
-                    double a1s = 5.29e-14 / Math.Max(1, focus.Z); long tick = (long)Math.Floor(time * 6);
+                    double a1s = 5.29e-14 / Math.Max(1, focus.Z); long tick = 0;                                         // (steady: never a flicker)
                     for (int k = 0; k < 400; k++)
                     {
                         double u = Hash(k, tick, 401, _seed), v = Hash(k, tick, 402, _seed), wq = Hash(k, tick, 403, _seed);
@@ -1521,7 +1521,7 @@ namespace DnaAnd.Shell
                     { _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz; _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz; }
                 }
             }
-            Orbitals(glow, e, x, y, z, s, time, key, f);                                     // and where its electrons may be: their orbitals, as clouds
+            { double odx = x - _fx, ody = y + _yOff - _fy, odz = z - _fz; if (odx * odx + ody * ody + odz * odz < Math.Pow(AtomSpacing * 0.6, 2)) Orbitals(glow, e, x, y, z, s, time, key, f); }   // and where its electrons may be, as steady clouds: only for the atom you are at
             Add(glow, x, y, z, Math.Max(NucleusRadius(e), s * 0.0014), 1f * f, 0.95f * f, 0.9f * f, s);   // its nucleus: a sharp point of light at the middle
             { int nb = _bodies.Count; AddBody(7, 0, 0, x, y, z, ar * 0.08, s); if (_bodies.Count > nb) _bodies[nb].Sym = e.Symbol; }   // and its nucleus can be picked
         }

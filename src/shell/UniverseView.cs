@@ -274,17 +274,31 @@ namespace DnaAnd.Shell
                         int want = Math.Min(_glowPoints, 900000); double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU * 1.5; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.6 + 1.5) / _webMean; ulong sd = _seed;   // (top: a wall's density and a little more keeps every point (filaments and clusters show by crowding, voids two hundred times thinner): a quarter of the tries are kept, so it is made in a few seconds)
                         _glowMaker = new System.Threading.Thread(() =>
                         {
-                            var rng = new Rng(sd ^ 0x6107UL); var list = new List<StarVertex>(want); long tries = 0;
-                            while (list.Count < want && tries++ < (long)want * 60)
+                            // made on every core but one at once, each its own share from its own seed (the same points every time),
+                            // so it shows a few seconds after you start, never only after you have been out among the galaxies
+                            int parts = Math.Max(2, Environment.ProcessorCount - 1), each = (want + parts - 1) / parts;
+                            var lists = new List<StarVertex>[parts]; var workers = new System.Threading.Thread[parts];
+                            for (int pi = 0; pi < parts; pi++)
                             {
-                                double x = gcx + (rng.NextDouble() * 2 - 1) * gr, y = gcy + (rng.NextDouble() * 2 - 1) * gr, z = gcz + (rng.NextDouble() * 2 - 1) * gr;
-                                if (x * x + y * y + z * z > R * R) continue;                         // inside the visible universe
-                                if ((x - gcx) * (x - gcx) + (y - gcy) * (y - gcy) + (z - gcz) * (z - gcz) > gr * gr) continue;   // within reach of where you are
-                                double wv = Web(x, y, z); if (rng.NextDouble() * top * top > wv * wv) continue;   // kept by the web's density squared: its filaments and clusters stand out bright, its voids go dark (by the density alone it reads as an even dust)
-                                float warm = (float)rng.NextDouble();
-                                list.Add(new StarVertex { X = (float)x, Y = (float)y, Z = (float)z, Size = 1.2f, R = 0.75f + 0.25f * warm, G = 0.72f + 0.1f * warm, B = 1f - 0.3f * warm, A = 1 });
+                                int me = pi;
+                                workers[pi] = new System.Threading.Thread(() =>
+                                {
+                                    var rng = new Rng(sd ^ 0x6107UL ^ ((ulong)(me + 1) * 0x9E3779B97F4A7C15UL)); var list = new List<StarVertex>(each); long tries = 0;
+                                    while (list.Count < each && tries++ < (long)each * 60)
+                                    {
+                                        double x = gcx + (rng.NextDouble() * 2 - 1) * gr, y = gcy + (rng.NextDouble() * 2 - 1) * gr, z = gcz + (rng.NextDouble() * 2 - 1) * gr;
+                                        if (x * x + y * y + z * z > R * R) continue;                         // inside the visible universe
+                                        if ((x - gcx) * (x - gcx) + (y - gcy) * (y - gcy) + (z - gcz) * (z - gcz) > gr * gr) continue;   // within reach of where you are
+                                        double wv = Web(x, y, z); if (rng.NextDouble() * top * top > wv * wv) continue;   // kept by the web's density squared: its filaments and clusters stand out bright, its voids go dark
+                                        float warm = (float)rng.NextDouble();
+                                        list.Add(new StarVertex { X = (float)x, Y = (float)y, Z = (float)z, Size = 1.2f, R = 0.75f + 0.25f * warm, G = 0.72f + 0.1f * warm, B = 1f - 0.3f * warm, A = 1 });
+                                    }
+                                    lists[me] = list;
+                                }) { IsBackground = true, Priority = System.Threading.ThreadPriority.BelowNormal };
+                                workers[pi].Start();
                             }
-                            _glowReady = list.ToArray();
+                            var all = new List<StarVertex>(want); for (int pi = 0; pi < parts; pi++) { workers[pi].Join(); all.AddRange(lists[pi]); }
+                            _glowReady = all.ToArray();
                         }) { IsBackground = true, Priority = System.Threading.ThreadPriority.BelowNormal };
                         _glowMaker.Start();
                     }

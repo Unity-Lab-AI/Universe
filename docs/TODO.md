@@ -70,7 +70,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The tour's fall at a pace that does not take forever: the clock's stretch eight seconds, a tenfold and a half a second to the point:** (built: DNA-AND DESIGN 598; waits on the test) "so make sure the tore propley falls at speeds needed to not take forever"
 
-- [~] **The tour looking round the funnel as it falls: the mouth, the walls, the point, in a cycle:** (built: DNA-AND DESIGN 599; waits on the test) "and looks arounfd at the funnel to get its scope and shape and porints of refrence" / "as we fall in"
+- [~] **The tour's one look round the funnel as it falls, the mouth, the walls, then the point, about a minute:** (built: DNA-AND DESIGN 599; waits on the test) "and looks arounfd at the funnel to get its scope and shape and porints of refrence" / "as we fall in" / "not cycle just a once look around its not going to be a long process about a minute"
 
 ---
 

@@ -1986,17 +1986,16 @@ namespace Universe.Shell
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
                         {
-                            // the fall, on the tour: looking round the funnel as you go, for its scope, its shape and its points of
-                            // reference, in a cycle of twelve seconds: back up at the mouth (the opening you came in by, farther behind
-                            // each time), then round at the walls beside you (a full turn, so they pass on every side, closer each
-                            // time), then down at the point below (nearer each time); and near the end the point alone, as the walls
-                            // meet at it. Eased from one to the next, and the whole slowly wheeling, so the grid turns past
+                            // the fall, on the tour: one look round the funnel as you go, for its scope, its shape and its points of
+                            // reference: back up at the mouth for the first seconds (the opening you came in by), then one full turn
+                            // round at the walls beside you (so they pass on every side), then down at the point below for the rest of
+                            // the fall, the walls closing in round the view and meeting at it. Eased from one to the next, and the
+                            // whole slowly wheeling, so the grid turns past; the fall itself about a minute
                             double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / MatterView.FallTenfolds));
-                            double cyc = _tourT % 12, thAim = cyc < 3 ? Math.PI - 0.3 : cyc < 8 ? Math.PI / 2 : 0.18;
-                            thAim = thAim * (1 - tf * tf) + 0.1 * tf * tf;                            // (the last stretch: the point alone)
+                            double cyc = _tourT, thAim = cyc < 7 ? Math.PI - 0.3 : cyc < 20 ? Math.PI / 2 : 0.12;
                             if (_tourT <= dt * 1.5) _fallTh = Math.PI - 0.3;
                             _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 1.2));
-                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * (cyc >= 3 && cyc < 8 ? 0.9 : 0.25) + 0.15 * Math.Sin(_tourT * 0.7);
+                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * (cyc >= 7 && cyc < 20 ? 0.55 : 0.15) + 0.12 * Math.Sin(_tourT * 0.7);
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
                             var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
                             var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;

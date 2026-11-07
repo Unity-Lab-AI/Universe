@@ -72,6 +72,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The tour's one look round the funnel as it falls, the mouth, the walls, then the point, about a minute:** (built: DNA-AND DESIGN 599; waits on the test) "and looks arounfd at the funnel to get its scope and shape and porints of refrence" / "as we fall in" / "not cycle just a once look around its not going to be a long process about a minute"
 
+- [~] **The tour's hole a feeding one, the whole disc flyby; every hole's photon ring:** (built: DNA-AND DESIGN 600; waits on the test) "something broke black hole isnt there" / "i took screen shot" / "its suppose to be going to one thats feeding" / "the whole acrestion disk fly by"
+
 ---
 
 ## Pending

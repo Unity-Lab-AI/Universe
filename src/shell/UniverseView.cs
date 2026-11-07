@@ -377,8 +377,21 @@ namespace Universe.Shell
                 if (th < Math.PI / 2 && Math.Tan(th) * h / (2 * Math.Tan(0.45)) < 0.6) continue;   // (smaller than a pixel: nothing to draw)
                 double ux = dx / d, uy = dy / d, uz = dz / d;
                 _hud.DrawCone(_meshes, w, h, ux * _viewRight.X + uy * _viewRight.Y + uz * _viewRight.Z, ux * _viewUp.X + uy * _viewUp.Y + uz * _viewUp.Z, ux * lk.X + uy * lk.Y + uz * lk.Z, th);
+                // its photon ring: the thin circle of bent light at the shadow's edge, where light from everything behind and around
+                // it has looped the hole on its way to you (the ring the Event Horizon Telescope photographed): faint, there on every
+                // hole, feeding or quiet, so a quiet hole on an empty sky is still there to be seen, a black disc in a ring of light
+                if (th < Math.PI / 2)
+                {
+                    var u = new Vec3((float)ux, (float)uy, (float)uz); var e1 = Vec3.Cross(u, Math.Abs(u.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(u, e1).Normalized;
+                    double thr = th * 1.04; float ct = (float)Math.Cos(thr), st = (float)Math.Sin(thr); const int N = 240; float dist = (float)Math.Min(d, 1e-3);
+                    if (_photonV.Length < N) _photonV = new StarVertex[N];
+                    for (int q = 0; q < N; q++) { double a = q * Math.PI * 2 / N; var dir = u * ct + (e1 * (float)Math.Cos(a) + e2 * (float)Math.Sin(a)) * st; _photonV[q] = new StarVertex { X = dir.X * dist, Y = dir.Y * dist, Z = dir.Z * dist, Size = 0, R = 0.55f, G = 0.6f, B = 0.7f, A = 1 }; }
+                    if (_photonBuf == null) _photonBuf = new UploadBuffer(_gpu.Device, (long)N * Stride); _photonBuf.Write(_photonV, N);
+                    var vp0 = _lastVp; DrawPoints(_photonBuf, N, vp0, _viewRight, _viewUp, 1f, 0.0016f, w, h, 0, 0.0016f, 0.45f);
+                }
             }
         }
+        private UploadBuffer _photonBuf; private StarVertex[] _photonV = new StarVertex[0];
         private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap; private Extra _fallHole; private double _fallTau, _fallRate = 1; private bool _fallDeep;   // the fall's clock: proper time since the horizon, its rate against real time; deep: past a thousandth of a radius, the zoom carries on to the quarks   // the hole you are falling into: the camera itself travels down the axis toward its middle
         /// <summary>Inside the horizon, the fall's one reference: the gravity well itself, in the world. The sheet of space round the
         /// hole as a square grid (the rubber sheet), bent into Flamm's paraboloid outside the horizon (its depth 2 root(rs (r - rs)),
@@ -1923,12 +1936,12 @@ namespace Universe.Shell
                 double px = _cx + ax / al * d, py = _cy + ay / al * d, pz = _cz + az / al * d;
                 if (px * px + py * py + pz * pz > Math.Pow(_uRadius * 0.9, 2)) continue;    // (inside the visible universe, well in from its edge)
                 long ci = (long)Math.Floor(px / R), cj = (long)Math.Floor(py / R), ck = (long)Math.Floor(pz / R);
-                int best = -1; double bs = double.MinValue;
-                for (long i = ci - 1; i <= ci + 1; i++) for (long j = cj - 1; j <= cj + 1; j++) for (long k = ck - 1; k <= ck + 1; k++)
-                {
-                    int before = _galaxies.Count; SpawnRegion(i, j, k);                   // (the region's own galaxies, if it is not made yet)
-                    for (int g = before; g < _galaxies.Count; g++) { var gg = _galaxies[g]; double score = rng.NextDouble() + (HeartFeeds(gg) ? 10 : 0) + (gg.Type != _lastGalaxyType ? 1 : 0); if (score > bs) { bs = score; best = g; } }
-                }
+                int best = -1; double bs = double.MinValue; var keys = new HashSet<long>();
+                for (long i = ci - 1; i <= ci + 1; i++) for (long j = cj - 1; j <= cj + 1; j++) for (long k = ck - 1; k <= ck + 1; k++) { SpawnRegion(i, j, k); keys.Add(i * 73856093L ^ j * 19349663L ^ k * 83492791L); }   // (the regions' own galaxies, made if they are not yet)
+                // the tour flies by a feeding hole's disc: a galaxy whose heart is feeding is required (a quiet one only if sixteen
+                // tries round the aim find none, which with a third of hearts feeding they do not); every galaxy of the regions
+                // counts, not only the ones made this moment
+                for (int g = 0; g < _galaxies.Count; g++) { var gg = _galaxies[g]; if (!keys.Contains(gg.Region)) continue; if (!HeartFeeds(gg) && attempt < 15) continue; double score = rng.NextDouble() + (HeartFeeds(gg) ? 10 : 0) + (gg.Type != _lastGalaxyType ? 1 : 0); if (score > bs) { bs = score; best = g; } }
                 if (best < 0) continue;
                 var gb = _galaxies[best]; _tKind = 0; _tIndex = best; _tName = gb.Name; _lastGalaxyType = gb.Type; _heldRegion = gb.Region; _heldX = gb.X; _heldY = gb.Y; _heldZ = gb.Z;
                 ZoomLog("far galaxy " + gb.Name + " at " + Units.Describe(Math.Sqrt((gb.X - _cx) * (gb.X - _cx) + (gb.Y - _cy) * (gb.Y - _cy) + (gb.Z - _cz) * (gb.Z - _cz))) + (HeartFeeds(gb) ? " (its heart feeding)" : ""));
@@ -2261,9 +2274,10 @@ namespace Universe.Shell
                             if (d < 3 || d > _nearUnits * 1.7) continue;
                             double ahead = (dx * lk.X + dy * lk.Y + dz * lk.Z) / d; if (ahead < 0.5) continue;
                             double score = d * (0.85 + 0.3 * rng.NextDouble()) * (g.Type == _lastGalaxyType ? 0.6 : 1);   // (another kind than the last, where it can)
-                            if (HeartFeeds(g)) score += 1e6;                                       // (one whose heart is feeding, where there is one: the tour flies by its disc)
+                            if (HeartFeeds(g)) score += 1e6;                                       // (one whose heart is feeding: the tour flies by its disc; a quiet one only if none in view feeds)
                             if (score > bs) { bs = score; bi = i; }
                         }
+                        if (bi >= 0 && !HeartFeeds(_galaxies[bi])) { int fb = -1; double fd = double.MaxValue; for (int i = 0; i < _galaxies.Count; i++) { var g = _galaxies[i]; if (!HeartFeeds(g)) continue; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = dx * dx + dy * dy + dz * dz; if (d > 9 && d < fd) { fd = d; fb = i; } } if (fb >= 0) bi = fb; }   // (none feeding ahead: the nearest feeding one anywhere round you, before a quiet one)
                         if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; _lastGalaxyType = _galaxies[bi].Type; break; }
                     }
                     goto case "galaxy";                                                    // (none far ahead yet: one some way off)

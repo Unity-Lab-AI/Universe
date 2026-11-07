@@ -23,3 +23,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (millions of light-years from the horizon to the singularity, a law): DNA-AND DESIGN 597.
 - 2026-11-07 (the way in by mass; the fall's pace): DNA-AND DESIGN 597, 598.
 - 2026-11-07 (the tour looking round the funnel): DNA-AND DESIGN 599.
+- 2026-11-07 (every hole's photon ring): DNA-AND DESIGN 600.

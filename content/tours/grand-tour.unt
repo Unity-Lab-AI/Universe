@@ -95,7 +95,7 @@ sweep: 150
 rise: 3
 max-rate: 0.3
 seconds: 12
-caption: Skimming the disc in its own plane: gas at a good share of light speed, brighter on the side coming at you; a star torn into a stream and swallowed
+caption: Skimming it in the plane of its disc: a feeding one's gas at a good share of light speed, brighter on the side coming at you, a star torn into a stream and swallowed; a quiet one a black disc in its ring of bent light
 
 @stop lens
 do: shot
@@ -104,7 +104,7 @@ sweep: 90
 rise: -45
 max-rate: 0.4
 seconds: 10
-caption: Edge on, its gravity bends the light of the disc's far side up and over it, and the stars behind it into a ring
+caption: Edge on, its gravity bends the light behind it into a thin ring round its shadow (the photon ring), and a feeding one's disc's far side up and over it
 
 @stop horizon
 do: shot

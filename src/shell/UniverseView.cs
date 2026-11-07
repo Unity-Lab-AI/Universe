@@ -136,6 +136,7 @@ namespace Universe.Shell
         // as a glow of points along the same web; the edge cannot be passed ──
         private List<string> _types, _typeNames; private ulong _seed;
         private double _farScale;                                                         // how far out the wheel has zoomed (universe units): out grows it, in brings it back
+        private bool _matterCardDrawn;                                                 // this frame: a card of the matter is up, so no other card is drawn over it
         private double _statsLeft = double.MaxValue, _statsBottom;   // the frame counter and stats card's left edge and bottom on screen, so no other card lands on it
         private double _uRadius = 134000, _uGalaxies = 1e11, _webUnits = 4000, _webContrast = 6, _regionUnits = 20, _nearUnits = 400; private int _glowPoints = 300000;
         private double _darkMatter, _rimSpeed = 220, _darkEnergy, _hubble = 70;   // the dark universe (content/physics.unt @law cosmos): for the galaxies' cards and the horizon's words
@@ -2861,8 +2862,8 @@ namespace Universe.Shell
                             _matter.SetGround(exd.R / Units.Km(1), ux, uy, uz, exd.Mix, dspot * 0x9E3779B97F4A7C15UL + 0x51UL, 0, 0);
                             _matter.SetAirAbove(null);
                             _bodyUp = new[] { ux, uy, uz }; _bodyStar = sl > 0 ? new[] { sx / sl, sy / sl, sz / sl } : new[] { ux, uy, uz };
-                            _spaceScale = MatterView.OverlayKm / 0.6; _spaceTop = _spaceScale * 1.1;
-                            ZoomLog("DIVE onto " + exd.Name + ": its ground " + exd.Mix); return true;
+                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, (ql - qr) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
+                            ZoomLog("DIVE onto " + exd.Name + ": its ground " + exd.Mix + " from " + ScaleHud.Words(_spaceScale * 0.6) + " up"); return true;
                         }
                     }
                 }
@@ -3586,6 +3587,7 @@ namespace Universe.Shell
                     _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), fogKm, fr, fg, fb, 0, 0, w, h, 400);   // detail scales with the GPU use
                 }
             }
+            _matterCardDrawn = false;
             double overAlt = _ground != null && _matterScale <= 0 ? AboveGround() / Units.Km(1) : 1e30;
             if (overAlt < MatterView.OverlayKm)
             {
@@ -3596,7 +3598,7 @@ namespace Universe.Shell
                 {
                     // a grain picked over the ground: ringed, with its card, as anything picked anywhere
                     _gpu.ClearDepth(); double gqx, gqy, gqr;
-                    if (_matter.PickedOnScreen(out gqx, out gqy, out gqr)) { _hud.DrawRing(_meshes, gqx, gqy, Math.Min(gqr, h * 0.45), w, h); if (_hud.Visible) _hud.DrawCard(_meshes, _matter.Card(), gqx + gqr + 12 * Math.Max(1, h / 1080.0), gqy - gqr, w, h); }
+                    if (_matter.PickedOnScreen(out gqx, out gqy, out gqr)) { _hud.DrawRing(_meshes, gqx, gqy, Math.Min(gqr, h * 0.45), w, h); if (_hud.Visible) { _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 24 * Math.Max(1, h / 1080.0), w, h); _matterCardDrawn = true; } }   // (the card at the left edge, as every card: beside the ring it ran into the other cards)
                 }
             }
             if (_spaceScale > 0)
@@ -3608,15 +3610,17 @@ namespace Universe.Shell
                 if (!_matter.InSpace && _bodyUp != null) sv = MatterFrameFor(new Vec3((float)_bodyUp[0], (float)_bodyUp[1], (float)_bodyUp[2]), new Vec3((float)_bodyStar[0], (float)_bodyStar[1], (float)_bodyStar[2]), look);   // on a small body's ground: its own up and its star's light, as on a world's
                 else
                 {
-                    if (_matter.SpaceKind == 12) { _hud.DrawFill(_meshes, w, h, 0, 0, 0); _gpu.ClearDepth(); DrawFallGrid(vp, right, up, w, h, time); _gpu.ClearDepth(); }   // inside a black hole: pitch black, all the way down, the well's grid the one reference
+                    if (_matter.SpaceKind == 12) { _hud.DrawFill(_meshes, w, h, 0, 0, 0); _gpu.ClearDepth(); }   // inside a black hole: pitch black, all the way down, the well's grid the one reference
                     _matter.Light[0] = 0.4f; _matter.Light[1] = 0.7f; _matter.Light[2] = 0.6f;
                     var slk = Look; _matter.SetEye(slk.X, slk.Y, slk.Z);                     // in the gas too: your eye goes round the point you dive into
                     sv = Mat4.LookAt(new Vec3(0, 0, 0), slk, ViewUp());                // (the camera's own up: never flipping)
                 }
+                _matter.Floor = _matter.InSpace ? false : _spaceScale <= 1e-7;             // (a body's ground: its face is the floor only once you are down at it; in space or a hole, none: it had been drawn over the fall's grid)
                 _matter.Draw(sv, _spaceScale, w, h, _matterClock, _meshes, false);
+                if (_matter.SpaceKind == 12) { _gpu.ClearDepth(); DrawFallGrid(vp, right, up, w, h, time); }   // the fall's well, over everything but the ring and the card
                 _gpu.ClearDepth();
                 double qx, qy, qr; if (_matter.PickedOnScreen(out qx, out qy, out qr)) _hud.DrawRing(_meshes, qx, qy, Math.Min(qr, h * 0.45), w, h);
-                if (_hud.Visible) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), 24 * Math.Max(1, h / 1080.0), w, h);
+                if (_hud.Visible) { _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 24 * Math.Max(1, h / 1080.0), w, h); _matterCardDrawn = true; }   // (on the tour below its top bar, which had hidden the card's first lines)
             }
             if (_matterScale > 0)
             {
@@ -3627,7 +3631,7 @@ namespace Universe.Shell
                 _matter.Draw(mview, _matterScale, w, h, _matterClock, _meshes, false);
                 _gpu.ClearDepth();                                                     // its ring and card on top of the grains
                 double qx, qy, qr; if (_matter.PickedOnScreen(out qx, out qy, out qr)) _hud.DrawRing(_meshes, qx, qy, Math.Min(qr, h * 0.45), w, h);   // what you picked, ringed
-                if (_hud.Visible) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), 24 * Math.Max(1, h / 1080.0), w, h);   // what you are in, and what you picked
+                if (_hud.Visible) { _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 24 * Math.Max(1, h / 1080.0), w, h); _matterCardDrawn = true; }   // (on the tour below its top bar, which had hidden the card's first lines)   // what you are in, and what you picked
             }
             _gpu.ClearDepth();                                                         // the scale, cards and rings always on top of everything
             DrawScale(w, h);
@@ -3691,7 +3695,7 @@ namespace Universe.Shell
                 if (!fills) _hud.DrawRing(_meshes, msx, msy, rpx, w, h);
                 // its card at the left edge, under the top, never over what you look at (beside the ring it sat across the middle of the
                 // view, a wall of text over the hole); on the tour too, where the caption at the foot says what the shot is and the card what the thing is
-                if (_hud.Visible) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), 72 * Math.Max(1, h / 1080.0), w, h);
+                if (_hud.Visible && !_matterCardDrawn) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 72 * Math.Max(1, h / 1080.0), w, h);   // (one card at a time: when the matter's is up, the world's waits; on the tour below its top bar)
             }
         }
 

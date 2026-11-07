@@ -10,7 +10,7 @@
   <a href="https://github.com/Unity-Lab-AI/Universe/releases" title="Download Universe-Setup.exe from GitHub"><b>Download · GitHub</b></a>
 </p>
 
-<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks &nbsp;·&nbsp; built from scratch</p>
+<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.7 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks &nbsp;·&nbsp; built from scratch</p>
 
 <p align="center">
   <a href="docs/GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
@@ -52,10 +52,29 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 
 ---
 
-## Nothing is stored. Everything is grown.
+## A whole universe in under 2 MB
 
 | | |
 |---|---|
+| **Download** | 0.59 MB installer |
+| **The program** | 0.86 MB |
+| **Every template** | 0.26 MB of plain text |
+| **Everything installed** | 1.7 MB |
+| **What it holds** | About 100 billion galaxies of about 100 billion stars each: some 10²² stars, every one with its own worlds, and every world down to its grains and their atoms |
+
+That's less than one photo from a phone. It fits because **nothing in it is stored. Everything is grown.**
+
+| | |
+|---|---|
+| **A seed, not a save** | The whole universe comes from one starting number. Every galaxy, star and pebble is worked out from that number and where it is, so it never needs to be kept: come back to a star and it's worked out again, exactly the same |
+| **Templates, not copies** | A lava world isn't a picture of a lava world. It's a dozen lines of rules (where it forms, how big, what colours, how fast it spins), and every lava world in the universe is grown from those same lines |
+| **Equations, not pictures** | The roughness of a mountain, a stone or a grain's face is a few waves of the waveform engine, kept as their equations, not as images. Zooming in just works out the next, finer wave |
+| **Only what you can see** | Galaxies are made in the regions round you, stars in the cubes round you, ground in pieces finer the closer you are, atoms round the point you dive into. What you leave behind is let go, and made again if you return |
+| **The graphics card does the work** | The fine detail, the stars' colours, the web of galaxies' light are worked out on the card for each pixel, every frame, instead of being loaded from disk |
+
+So the 1.7 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
+
+---|---|
 | **One seed makes it all** | No photos, no painted skies, no pre-made maps |
 | **Same seed, same universe** | Fly away from a star and come back: the same star. It was never thrown away, only worked out again |
 | **Made where you are** | No computer could hold a hundred billion stars, so it makes the ones round you, at a real galaxy's density |

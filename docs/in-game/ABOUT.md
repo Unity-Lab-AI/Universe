@@ -13,9 +13,11 @@ A whole universe you can fly through, in one unbroken zoom:
 | The ground | Stones, grains, the crystal of their mineral |
 | The matter | Atoms, their electrons, the nucleus, protons, neutrons and quarks |
 
-## Made, not stored
+## A whole universe in under 2 MB
 
-Everything is worked out live from one number, the **seed**, by our own code. There are no photos, no painted backdrops and no outside code. The same seed always gives the same universe.
+About 100 billion galaxies of about 100 billion stars each, every star with its worlds, every world down to its atoms, and all of it installed in **1.7 MB**: less than one photo from a phone.
+
+It fits because nothing is stored. Everything is worked out live from one number, the **seed**, and a few hundred kilobytes of **templates** (the rules for each kind of galaxy, star and world), only where you are looking. The same seed always gives the same universe, so nothing ever needs saving.
 
 ## A dead universe, still alive
 

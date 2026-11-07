@@ -139,7 +139,7 @@ internal static class Setup
         private readonly Panel[] _pages = new Panel[9]; private readonly CheckBox _accept = new CheckBox(); private int _page;
         private readonly Button _back = new Button(), _next = new Button(), _cancel = new Button();
         private readonly TextBox _dir = new TextBox(); private readonly Label _space = new Label(), _file = new Label();
-        private readonly CheckBox _desktop = new CheckBox(), _start = new CheckBox(), _launch = new CheckBox();
+        private readonly CheckBox _desktop = new CheckBox(), _start = new CheckBox(), _launch = new CheckBox(), _clearClips = new CheckBox();
         private readonly ProgressBar _bar = new ProgressBar(); private readonly bool _update; private bool _blocked, _installed; private string _installedDir;
         private readonly long _need;
 
@@ -193,6 +193,19 @@ internal static class Setup
             Add(6, "Shortcuts", "Where you would like shortcuts to " + AppName + ":");
             _desktop.Text = "On the desktop"; _desktop.Checked = true; _desktop.Location = new Point(28, 110); _desktop.AutoSize = true; _pages[6].Controls.Add(_desktop);
             _start.Text = "On the Start menu"; _start.Checked = true; _start.Location = new Point(28, 140); _start.AutoSize = true; _pages[6].Controls.Add(_start);
+            // clips filmed by an earlier copy: offered to be cleared out (screenshots are always kept)
+            try
+            {
+                string caps = Path.Combine(dir, "captures");
+                var clips = Directory.Exists(caps) ? Directory.GetFiles(caps, "*.mp4") : new string[0];
+                if (clips.Length > 0)
+                {
+                    long bytes = 0; foreach (var c in clips) bytes += new FileInfo(c).Length;
+                    _clearClips.Text = "Delete my old clips (" + clips.Length + " clip" + (clips.Length == 1 ? "" : "s") + ", " + (bytes / 1048576.0).ToString("N0") + " MB; screenshots are kept)";
+                    _clearClips.Checked = true; _clearClips.Location = new Point(28, 190); _clearClips.AutoSize = true; _pages[6].Controls.Add(_clearClips);
+                }
+            }
+            catch { }
             // 4 installing
             Add(7, "Installing", "Please wait while " + AppName + " is installed.");
             _bar.Location = new Point(24, 120); _bar.Size = new Size(580, 26); _pages[7].Controls.Add(_bar);
@@ -262,6 +275,12 @@ internal static class Setup
                         if (Directory.Exists(p)) Directory.Delete(p, true); else if (File.Exists(p)) File.Delete(p);
                     }
                 Directory.CreateDirectory(dir);
+                if (_clearClips.Checked)
+                {
+                    // the old clips, if chosen: only the videos in the captures folder (screenshots kept)
+                    string caps = Path.Combine(dir, "captures");
+                    if (Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps, "*.mp4")) { try { File.Delete(c); } catch { } }
+                }
                 using (var s = Payload()) using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
                 {
                     _bar.Maximum = zip.Entries.Count + 3; int n = 0;

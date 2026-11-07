@@ -757,6 +757,7 @@ namespace Universe.Shell
         private readonly List<int> _localKind = new List<int>(); private readonly List<long> _localId = new List<long>();
         private UploadBuffer _localBuf; private StarVertex[] _localDrawn = new StarVertex[0]; private int _localCount;
         private long _localKey = long.MinValue; private long _localCX, _localCY, _localCZ;
+        private double _localOX, _localOY, _localOZ;   // the list's origin (the corner of the cube it was built round), galaxy frame: every star an offset from it, so the float positions are exact to a fraction of an AU and nothing snaps to a lattice
 
         // the galaxy's density of real stars at a point of its own frame (stars per galaxy unit cubed)
         private double Density(double lx, double ly, double lz)
@@ -781,7 +782,7 @@ namespace Universe.Shell
             bool fast = _localKey != long.MinValue && (Math.Abs(cx - _localCX) > 2 || Math.Abs(cy - _localCY) > 2 || Math.Abs(cz - _localCZ) > 2);
             _localCX = cx; _localCY = cy; _localCZ = cz;
             if (fast) { _localKey = long.MinValue + 1; _localCount = 0; _localCells.Clear(); return; }
-            _localKey = key;
+            _localKey = key; _localOX = cx * LocalCell; _localOY = cy * LocalCell; _localOZ = cz * LocalCell;
             _localList.Clear(); _localKind.Clear(); _localId.Clear(); _localVersion++;   // (remade: put on the card again)
             var keep = new Dictionary<long, StarVertex[]>();
             // every cube within the reach of where you are (not of your cube: the sky is as deep in stars on every side), the ones
@@ -803,12 +804,13 @@ namespace Universe.Shell
                     {
                         var kind = PickKind(rng);
                         var kc = _kinds[kind];
-                        cell[k] = new StarVertex { X = (float)((x + rng.NextDouble()) * LocalCell), Y = (float)((y + rng.NextDouble()) * LocalCell), Z = (float)((z + rng.NextDouble()) * LocalCell),
+                        cell[k] = new StarVertex { X = (float)(rng.NextDouble() * LocalCell), Y = (float)(rng.NextDouble() * LocalCell), Z = (float)(rng.NextDouble() * LocalCell),   // (within its cube)
                             Size = (float)Units.Km(696000), R = kc.R, G = kc.G, B = kc.B, A = kind };      // A carries the kind's index
                     }
                 }
                 keep[id] = cell;
-                for (int k = 0; k < cell.Length; k++) { _localList.Add(cell[k]); _localKind.Add((int)cell[k].A); _localId.Add(id * 4096 + k); }
+                float ox2 = (float)((x - cx) * LocalCell), oy2 = (float)((y - cy) * LocalCell), oz2 = (float)((z - cz) * LocalCell);   // its cube's corner from the origin
+                for (int k = 0; k < cell.Length; k++) { var v = cell[k]; v.X += ox2; v.Y += oy2; v.Z += oz2; _localList.Add(v); _localKind.Add((int)cell[k].A); _localId.Add(id * 4096 + k); }
             }
             _localCells.Clear(); foreach (var kv in keep) _localCells[kv.Key] = kv.Value;
             _localCount = _localList.Count;
@@ -832,7 +834,7 @@ namespace Universe.Shell
             double lx, ly, lz; ToGalaxy(_galaxies[_near], _cx, _cy, _cz, out lx, out ly, out lz);
             // the real stars of this space (index from 1,000,000 up), then the galaxy's sample stars
             int bestL = -1; double bl = double.MaxValue;
-            for (int k = 0; k < _localCount; k++) { var s0 = _localList[k]; double dx = s0.X - lx, dy = s0.Y - ly, dz = s0.Z - lz, d = dx * dx + dy * dy + dz * dz; if (d < bl) { bl = d; bestL = k; } }
+            for (int k = 0; k < _localCount; k++) { var s0 = _localList[k]; double dx = s0.X + _localOX - lx, dy = s0.Y + _localOY - ly, dz = s0.Z + _localOZ - lz, d = dx * dx + dy * dy + dz * dz; if (d < bl) { bl = d; bestL = k; } }
             int gx = Cell(lx), gy = Cell(ly), gz = Cell(lz), best = -1; double bd = double.MaxValue;
             for (int ox = -1; ox <= 1; ox++) for (int oy = -1; oy <= 1; oy++) for (int oz = -1; oz <= 1; oz++)
             {
@@ -859,7 +861,8 @@ namespace Universe.Shell
         private void StarPos(int k, out double x, out double y, out double z)
         {
             if (k >= 2000000) { var cs = _cstars[k - 2000000]; x = cs[0]; y = cs[1]; z = cs[2]; return; }   // a cluster's star: already in universe units
-            var s = k >= 1000000 ? _localList[k - 1000000] : _nearLocal[k]; ToUniverse(_galaxies[_near], s.X, s.Y, s.Z, out x, out y, out z);
+            if (k >= 1000000) { var sl = _localList[k - 1000000]; ToUniverse(_galaxies[_near], sl.X + _localOX, sl.Y + _localOY, sl.Z + _localOZ, out x, out y, out z); return; }   // (a real star: its offset from the list's origin)
+            var s = _nearLocal[k]; ToUniverse(_galaxies[_near], s.X, s.Y, s.Z, out x, out y, out z);
         }
         // a cluster star's kind: in a globular, red giants, orange K and yellow G stars; in an open cluster, blue-white B and white A stars
         private int ClusterKind(double[] cs)
@@ -1697,7 +1700,7 @@ namespace Universe.Shell
                     double tight = Math.Pow(16 * Math.Max(1, _lastH / 1080.0), 2);
                     for (int k = 0; k < _localCount; k++)
                     {
-                        var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X, s0.Y, s0.Z, out ux, out uy, out uz);
+                        var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X + _localOX, s0.Y + _localOY, s0.Z + _localOZ, out ux, out uy, out uz);
                         if (near((ux - _ax) - _ox, (uy - _ay) - _oy, (uz - _az) - _oz) < tight) { _tKind = 1; _tx = ux; _ty = uy; _tz = uz; _tRadius = Units.Km(696000); _tName = "a " + _kinds[_localKind[k]].Name; return; }
                     }
                     double cdx, cdy, cdz, crad; TargetFromCamera(out cdx, out cdy, out cdz, out crad);
@@ -1767,7 +1770,7 @@ namespace Universe.Shell
                 var g = _galaxies[_near];
                 for (int k = 0; k < _localCount; k++)
                 {
-                    var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X, s0.Y, s0.Z, out ux, out uy, out uz);
+                    var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X + _localOX, s0.Y + _localOY, s0.Z + _localOZ, out ux, out uy, out uz);
                     double d2 = near((ux - _ax) - _ox, (uy - _ay) - _oy, (uz - _az) - _oz);
                     if (d2 < best) { best = d2; kind = 1; tx = ux; ty = uy; tz = uz; trad = Units.Km(696000); name = "a " + _kinds[_localKind[k]].Name; }
                 }
@@ -2205,7 +2208,7 @@ namespace Universe.Shell
             var g = _galaxies[_near];
             for (int k = 0; k < _localCount; k++)
             {
-                var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X, s0.Y, s0.Z, out ux, out uy, out uz);
+                var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X + _localOX, s0.Y + _localOY, s0.Z + _localOZ, out ux, out uy, out uz);
                 double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                 if (l <= 0) continue;
                 double c = (dx * dir.X + dy * dir.Y + dz * dir.Z) / l;
@@ -2638,13 +2641,23 @@ namespace Universe.Shell
             if (_near >= 0 && _localCount > 0 && inside > 0 && !skyHidden)
             {
                 // the real stars of this space at their real sizes (a small point from afar, never smaller than a dot on screen)
-                float lf = (float)(inside * inside * (3 - 2 * inside));
-                if (Math.Abs(lf - _localLf) > 0.002f || _localVersion != _localWritten || _localCount != _localWrittenN)   // (put on the card again only when they change)
+                // and only while the view is near their own size: wider than a few times the reach they are made in, the galaxy's
+                // own field stands for them (a block of thousands round the eye, each a dot, would be a fuzz of light at those views)
+                double viewLy = ViewDistanceKm() / 9.4607e12, reachLy = LocalReach * 50000.0, far = Math.Max(0, Math.Min(1, (viewLy / reachLy - 3) / 12));
+                float lf = (float)(inside * inside * (3 - 2 * inside) * (1 - far * far * (3 - 2 * far)));
+                if (lf > 0.003f)
                 {
-                    for (int k = 0; k < _localCount; k++) { var v = _localList[k]; v.A = 1; v.R *= lf; v.G *= lf; v.B *= lf; _localDrawn[k] = v; }
-                    _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
+                    if (Math.Abs(lf - _localLf) > 0.002f || _localVersion != _localWritten || _localCount != _localWrittenN)   // (put on the card again only when they change)
+                    {
+                        for (int k = 0; k < _localCount; k++) { var v = _localList[k]; v.A = 1; v.R *= lf; v.G *= lf; v.B *= lf; _localDrawn[k] = v; }
+                        _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
+                    }
+                    // placed from the list's origin: its place in the universe less the camera's worked out in double, so the stars
+                    // round you are exact on the card (the galaxy's own frame in float snapped them to a lattice 190 AU wide)
+                    var pm = Placement(_galaxies[_near]); double oux, ouy, ouz; ToUniverse(_galaxies[_near], _localOX, _localOY, _localOZ, out oux, out ouy, out ouz);
+                    pm.M41 = (float)((oux - _ax) - _ox); pm.M42 = (float)((ouy - _ay) - _oy); pm.M43 = (float)((ouz - _az) - _oz);
+                    DrawPoints(_localBuf, _localCount, pm * vp, right, up, 1f, 0.0022f, w, h, time);
                 }
-                DrawPoints(_localBuf, _localCount, Placement(_galaxies[_near]) * vp, right, up, 1f, 0.0022f, w, h, time);
             }
             Render.GpuLog.Pass = "the star system";
             if (_system != null)

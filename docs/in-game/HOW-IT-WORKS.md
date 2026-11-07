@@ -68,7 +68,7 @@ Universe runs on the real laws of nature, with their real numbers (all in `conte
 
 ## A galaxy that fills in round you
 
-A galaxy holds about a hundred billion stars, and the game keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide, every cube within about 60 light-years of you (both are traits of the universe template), so the sky is as deep in stars on every side. Each cube is made from its own position, so they are the same stars whenever you come back.
+A galaxy holds about a hundred billion stars, and the game keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide, every cube within about 60 light-years of you (both are traits of the universe template), so the sky is as deep in stars on every side. Each cube is made from its own position, so they are the same stars whenever you come back, and each star is placed exactly, to a fraction of an AU, however far across the galaxy you are.
 
 ## A living world, even a dead one
 

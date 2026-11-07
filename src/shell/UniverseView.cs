@@ -376,7 +376,7 @@ namespace Universe.Shell
                 _hud.DrawCone(_meshes, w, h, ux * _viewRight.X + uy * _viewRight.Y + uz * _viewRight.Z, ux * _viewUp.X + uy * _viewUp.Y + uz * _viewUp.Z, ux * lk.X + uy * lk.Y + uz * lk.Z, th);
             }
         }
-        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap;
+        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap; private Extra _fallHole;   // the hole you are falling into: the camera itself travels down the axis toward its middle
         /// <summary>Inside the horizon, the fall's one reference: the gravity well itself, in the world. The sheet of space round the
         /// hole as a square grid (the rubber sheet), bent into Flamm's paraboloid outside the horizon (its depth 2 root(rs (r - rs)),
         /// the exact shape of a still slice of Schwarzschild space, flat far out, vertical at the horizon's throat) and, inside the
@@ -2722,6 +2722,16 @@ namespace Universe.Shell
                 if (input.Wheel != 0) _spaceScale *= Math.Pow(0.87, input.Wheel);
                 if (input.Wheel > 0) _matter.Landmarks(_spaceScale);                      // (on a body's ground: the wheel comes down onto an atom, its nucleus, a nucleon, a quark, as on a world's)
                 if (_spaceScale > _spaceTop) _spaceScale = 0; else _spaceScale = Math.Max(MatterView.BottomKm, _spaceScale);
+                if (_matter.SpaceKind == 12 && _fallHole != null)
+                {
+                    // the fall is travel as well as a zoom: from the horizon to the middle the camera itself goes down the axis it came in
+                    // on, always at the view's own distance from the middle, the scale shrinking with it (both at once); climbing out it
+                    // comes back up the same way, and leaves the dive just outside the horizon
+                    double rr = Units.Km(Math.Max(_spaceScale, MatterView.BottomKm) * 0.6);
+                    if (_spaceScale <= 0) rr = Units.Km(_spaceTop * 0.6);
+                    _ox = (_fallHole.X - _ax) - _fallAxis.X * rr; _oy = (_fallHole.Y - _ay) - _fallAxis.Y * rr; _oz = (_fallHole.Z - _az) - _fallAxis.Z * rr;
+                    if (_spaceScale <= 0) _fallHole = null;
+                }
                 if (input.WasPressed(0x20)) TogglePause();
                 if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);
                 if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);
@@ -2814,7 +2824,7 @@ namespace Universe.Shell
                         if (exd.Hole && exd.Mass > 0)
                         {
                             double rsKm = Physics.HorizonKm(exd.Mass);
-                            _matter.SetHole(dspot, rsKm, exd.Mass); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1;
+                            _matter.SetHole(dspot, rsKm, exd.Mass); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1; _fallHole = exd;
                             { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }

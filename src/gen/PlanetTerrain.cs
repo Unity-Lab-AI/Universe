@@ -1502,9 +1502,26 @@ namespace Universe.Gen
             if ((layer == Ground && (!Shell || _camInside) || layer == Hull && (!_camInside || !Habitable)) && f == _camF)
             {
                 double sz = 2.0 / Math.Pow(2, level), s0 = -1 + i * sz, t0 = -1 + j * sz;
-                if (_camS >= s0 && _camS <= s0 + sz && _camT >= t0 && _camT <= t0 + sz) ReadyStep = p.Edge / Grid;
+                if (_camS >= s0 && _camS <= s0 + sz && _camT >= t0 && _camT <= t0 + sz)
+                {
+                    ReadyStep = p.Edge / Grid;
+                    // the finer pieces under you asked for ahead of the camera (four levels down, all four of each, as the piece
+                    // descends only when all four are made), so coming down they are built before you get there and the floor
+                    // never holds you waiting at each level (the lock-and-hand-off on the way down to the ground)
+                    Prefetch(layer, f, level, i, j, PrefetchLevels);
+                }
             }
             _drawList.Add(p);
+        }
+        /// <summary>How many levels of finer ground are asked for ahead of the camera, under it.</summary>
+        public static int PrefetchLevels = 4;
+        private void Prefetch(int layer, int f, int level, long i, long j, int depth)
+        {
+            if (depth <= 0 || level >= MaxLevel[layer]) return;
+            double size = 2.0 / Math.Pow(2, level + 1);
+            long ci0 = (long)Math.Floor((_camS + 1) / size), cj0 = (long)Math.Floor((_camT + 1) / size);
+            for (long a = i * 2; a <= i * 2 + 1; a++) for (long b = j * 2; b <= j * 2 + 1; b++) Get(layer, f, level + 1, a, b, true);
+            if (ci0 >= i * 2 && ci0 <= i * 2 + 1 && cj0 >= j * 2 && cj0 <= j * 2 + 1) Prefetch(layer, f, level + 1, ci0, cj0, depth - 1);
         }
 
         private void Trim()

@@ -1595,7 +1595,7 @@ namespace Universe.Shell
                     var k2 = (float[])sc0.Clone();
                     double sx0 = (_fx - st[3]) / rad - _ex * sr2, sy0 = (_fy - _yOff - st[4]) / rad - _ey * sr2, sz0 = (_fz - st[5]) / rad - _ez * sr2;
                     k2[40] = (float)sx0; k2[41] = (float)sy0; k2[42] = (float)sz0; k2[43] = (float)sr2; k2[19] = (float)(sx0 - k2[40]); k2[23] = (float)(sy0 - k2[41]); k2[31] = (float)(sz0 - k2[42]);
-                    k2[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)((long)st[2] & 0xFFFFFFFF)), 0); k2[45] = (float)(rad / Math.Max(1e-30, _scale)); k2[46] = 1; k2[47] = 1;
+                    k2[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)((long)st[2] & 0xFFFFFFFF)), 0); k2[45] = (float)(rad / Math.Max(1e-30, _scale)); k2[46] = 0; k2[47] = 1;   // (no atomic terraces or atoms on a stone: that slot is the layer's height, 0 none)
                     pipes.Solid.Draw(_stoneBuf, (int)st[0], (int)st[1], k2, 0, 0, w, h);
                 }
             }

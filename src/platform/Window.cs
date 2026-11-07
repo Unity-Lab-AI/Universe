@@ -202,8 +202,15 @@ namespace Universe.Platform
             if (Handle != IntPtr.Zero) Win32.DestroyWindow(Handle);
         }
 
+        [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr h);
+        [DllImport("user32.dll")] private static extern bool BringWindowToTop(IntPtr h);
         private IntPtr OnMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam)
         {
+            // a click anywhere in the window brings it to the front and gives it the keyboard (never left behind other windows
+            // after a click on it), and Windows' question "may I activate you on this click?" is answered yes outright
+            if (msg == 0x21 /* WM_MOUSEACTIVATE */) return (IntPtr)1;   // MA_ACTIVATE
+            if ((msg == Win32.WM_LBUTTONDOWN || msg == Win32.WM_RBUTTONDOWN || msg == 0x207 /* WM_MBUTTONDOWN */) && GetForegroundWindow() != hWnd) { BringWindowToTop(hWnd); SetForegroundWindow(hWnd); }
             if (Input.OnMessage(msg, wParam, lParam)) return IntPtr.Zero;
             if (msg == Win32.WM_SIZE) Resized = true;
             if (msg == Win32.WM_COMMAND) { MenuCommand = (int)((long)wParam & 0xFFFF); return IntPtr.Zero; }

@@ -39,7 +39,7 @@ namespace DnaAnd.Platform
         private const uint LBS_NOTIFY = 0x1, LBS_NOINTEGRALHEIGHT = 0x100;
         private const uint WM_DESTROY = 0x2, WM_SIZE = 0x5, WM_CLOSE = 0x10, WM_SETFONT = 0x30, WM_NOTIFY = 0x4E, WM_COMMAND = 0x111, WM_KEYDOWN = 0x100, WM_SETTEXT = 0xC, WM_LBUTTONUP = 0x202;
         private const uint LB_ADDSTRING = 0x180, LB_RESETCONTENT = 0x184, LB_SETCURSEL = 0x186, LB_GETCURSEL = 0x188, LBN_SELCHANGE = 1, BN_CLICKED = 0;
-        private const uint EM_SETSEL = 0xB1, EM_SCROLLCARET = 0xB7, EM_GETFIRSTVISIBLELINE = 0xCE, EM_LINESCROLL = 0xB6, EM_LINEFROMCHAR = 0xC9, EM_SETCUEBANNER = 0x1501;
+        private const uint EM_SETRECT = 0xB3, EM_SETSEL = 0xB1, EM_SCROLLCARET = 0xB7, EM_GETFIRSTVISIBLELINE = 0xCE, EM_LINESCROLL = 0xB6, EM_LINEFROMCHAR = 0xC9, EM_SETCUEBANNER = 0x1501;
         private const uint WM_USER = 0x400, EM_EXGETSEL = WM_USER + 52, EM_EXSETSEL = WM_USER + 55, EM_SETEVENTMASK = WM_USER + 69, EM_SETBKGNDCOLOR = WM_USER + 67;
         private const uint EM_GETTEXTRANGE = WM_USER + 75, EM_AUTOURLDETECT = WM_USER + 91, EM_FINDTEXTEXW = WM_USER + 124, EM_SETZOOM = WM_USER + 225;
         private const int ENM_LINK = 0x04000000, EN_LINK = 0x070B, FR_DOWN = 1;
@@ -141,7 +141,13 @@ namespace DnaAnd.Platform
                 _doc = d;
                 // the page as formatted text, said outright (EM_SETTEXTEX: default flags, the ANSI code page); handed over as plain
                 // window text the box can take the formatting itself for words and show it raw
-                byte[] rtf = Encoding.ASCII.GetBytes(ToRtf(_docs[d].Text) + "\0");
+                // the page's margins, and its tables fitted to the width between them
+                Win32.RECT pr; Win32.GetClientRect(_page, out pr); int m = (int)(Math.Max(24, pr.Right * 0.05)), mt = (int)(18 * Scale());
+                Win32.RECT fr = new Win32.RECT { Left = m, Top = mt, Right = Math.Max(m + 50, pr.Right - m), Bottom = Math.Max(mt + 50, pr.Bottom - mt) };
+                IntPtr frp = Marshal.AllocHGlobal(16); Marshal.StructureToPtr(fr, frp, false); SendMessage(_page, EM_SETRECT, IntPtr.Zero, frp); Marshal.FreeHGlobal(frp);
+                int twips = (int)((fr.Right - fr.Left) * 1440.0 / (96 * Scale()) * 100 / Math.Max(60, _zoom)) - 240;
+                _links.Clear();
+                byte[] rtf = Encoding.ASCII.GetBytes(ToRtf(_docs[d].Text, Math.Max(4000, twips)) + "\0");
                 IntPtr ste = Marshal.AllocHGlobal(8), txt = Marshal.AllocHGlobal(rtf.Length);
                 Marshal.WriteInt32(ste, 0, 0); Marshal.WriteInt32(ste, 4, 0); Marshal.Copy(rtf, 0, txt, rtf.Length);
                 SendMessage(_page, WM_USER + 97, ste, txt);
@@ -223,7 +229,14 @@ namespace DnaAnd.Platform
         {
             switch (msg)
             {
-                case WM_SIZE: if (_page != IntPtr.Zero) Layout(); return IntPtr.Zero;
+                case WM_SIZE:
+                    if (_page != IntPtr.Zero)
+                    {
+                        Layout();
+                        // laid out again to the new width (its tables and margins), at the same place
+                        if (_doc >= 0) { int d = _doc, first = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero); _doc = -1; Open(d, -1, false); int now = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero); SendMessage(_page, EM_LINESCROLL, IntPtr.Zero, (IntPtr)(first - now)); }
+                    }
+                    return IntPtr.Zero;
                 case WM_COMMAND:
                     {
                         int id = (int)((long)w & 0xFFFF), code = (int)(((long)w >> 16) & 0xFFFF);
@@ -255,7 +268,12 @@ namespace DnaAnd.Platform
                                 Marshal.WriteInt32(tr, 0, a); Marshal.WriteInt32(tr, 4, b); Marshal.WriteIntPtr(tr, 8, buf);
                                 SendMessage(_page, EM_GETTEXTRANGE, IntPtr.Zero, tr);
                                 string url = Marshal.PtrToStringUni(buf); Marshal.FreeHGlobal(buf); Marshal.FreeHGlobal(tr);
-                                if (url.StartsWith("http://") || url.StartsWith("https://")) ShellExecute(IntPtr.Zero, "open", url, null, null, 1);
+                                // a bare address, a link's hidden address (HYPERLINK "address"), or a link's words
+                                string go = null; int q = url.IndexOf("\"http");
+                                if (url.StartsWith("http://") || url.StartsWith("https://")) go = url;
+                                else if (q >= 0) { int q2 = url.IndexOf('"', q + 1); go = q2 > q ? url.Substring(q + 1, q2 - q - 1) : null; }
+                                else _links.TryGetValue(url.Trim(), out go);
+                                if (go != null) ShellExecute(IntPtr.Zero, "open", go, null, null, 1);
                             }
                             return (IntPtr)1;
                         }
@@ -267,9 +285,14 @@ namespace DnaAnd.Platform
             return Win32.DefWindowProc(h, msg, w, l);
         }
 
-        // ── a small part of Markdown, into rich text ──
+        // ── Markdown, into rich text: headings with a rule under them, bold, italic, code, links that show their words and open
+        // in the browser, bullet and numbered lists, quotes in a shaded box, dividers, and real tables with borders and a
+        // shaded header row, laid out to the page's width ──
 
         private static string Plain(string s) { return s.Replace("**", "").Replace("`", ""); }
+
+        // the links on the page: the words shown, and where they go (a click finds the address from the words)
+        private static readonly Dictionary<string, string> _links = new Dictionary<string, string>();
 
         private static string Esc(string s)
         {
@@ -283,30 +306,45 @@ namespace DnaAnd.Platform
             return b.ToString();
         }
 
-        // **bold**, `code`, and [text](link) as "text (link)"
+        // **bold**, *italic*, `code`, and [words](address) as a link showing its words
         private static string Inline(string s)
         {
-            var b = new StringBuilder(); bool bold = false, code = false;
+            var b = new StringBuilder(); bool bold = false, ital = false, code = false;
             for (int i = 0; i < s.Length; i++)
             {
                 if (!code && i + 1 < s.Length && s[i] == '*' && s[i + 1] == '*') { b.Append(bold ? "\\b0 " : "\\b "); bold = !bold; i++; continue; }
-                if (s[i] == '`') { b.Append(code ? "\\f0\\cf1 " : "\\f1\\cf3 "); code = !code; continue; }
+                if (!code && s[i] == '*' && (ital || (i + 1 < s.Length && s[i + 1] != ' '))) { b.Append(ital ? "\\i0 " : "\\i "); ital = !ital; continue; }
+                if (s[i] == '`') { b.Append(code ? "\\f0\\highlight0\\cf1 " : "\\f1\\highlight4\\cf3 "); code = !code; continue; }
+                if (!code && s[i] == '!' && i + 1 < s.Length && s[i + 1] == '[') continue;   // (a picture's words shown as a link)
                 if (!code && s[i] == '[')
                 {
                     int close = s.IndexOf("](", i), end = close > 0 ? s.IndexOf(')', close) : -1;
-                    if (close > i && end > close) { b.Append(Esc(s.Substring(i + 1, close - i - 1))).Append(" (").Append(Esc(s.Substring(close + 2, end - close - 2))).Append(")"); i = end; continue; }
+                    if (close > i && end > close)
+                    {
+                        string words = s.Substring(i + 1, close - i - 1), url = s.Substring(close + 2, end - close - 2).Trim();
+                        if (url.StartsWith("http://") || url.StartsWith("https://"))
+                        {
+                            _links[Plain(words)] = url;
+                            b.Append("{\\field{\\*\\fldinst{HYPERLINK \"").Append(Esc(url)).Append("\"}}{\\fldrslt{\\ul\\cf2 ").Append(Inline(words)).Append("}}}");
+                        }
+                        else b.Append(Inline(words));   // (a page of the project, not on the web: its words alone)
+                        i = end; continue;
+                    }
                 }
                 b.Append(Esc(s[i].ToString()));
             }
-            if (bold) b.Append("\\b0 "); if (code) b.Append("\\f0\\cf1 ");
+            if (bold) b.Append("\\b0 "); if (ital) b.Append("\\i0 "); if (code) b.Append("\\f0\\highlight0\\cf1 ");
             return b.ToString();
         }
 
-        public static string ToRtf(string md)
+        /// <summary>The page in rich text, its tables fitted to <paramref name="widthTwips"/>.</summary>
+        public static string ToRtf(string md, int widthTwips = 11000)
         {
+            const string Body = "\\pard\\sl300\\slmult1\\sa140\\f0\\fs22\\cf1 ";
             var o = new StringBuilder();
-            o.Append("{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Segoe UI;}{\\f1\\fmodern Consolas;}}");
-            o.Append("{\\colortbl;\\red28\\green28\\blue36;\\red30\\green70\\blue160;\\red120\\green60\\blue40;\\red238\\green236\\blue232;}");
+            o.Append("{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Segoe UI;}{\\f1\\fmodern Consolas;}{\\f2\\fswiss Segoe UI Semibold;}}");
+            // 1 text, 2 accent (headings, links), 3 code, 4 code ground, 5 rules, 6 quote ground, 7 table header ground, 8 quiet text
+            o.Append("{\\colortbl;\\red32\\green33\\blue40;\\red52\\green84\\blue178;\\red150\\green62\\blue40;\\red240\\green238\\blue234;\\red206\\green208\\blue216;\\red236\\green241\\blue252;\\red226\\green231\\blue243;\\red104\\green108\\blue120;}");
             o.Append("\\viewkind4\\uc1\\f0\\fs22\\cf1 ");
             var lines = md.Replace("\r", "").Split('\n');
             bool fence = false; var table = new List<string[]>();
@@ -314,20 +352,35 @@ namespace DnaAnd.Platform
             {
                 if (table.Count == 0) return;
                 int cols = 0; foreach (var r in table) cols = Math.Max(cols, r.Length);
-                var wid = new int[cols]; foreach (var r in table) for (int c = 0; c < r.Length; c++) wid[c] = Math.Max(wid[c], Plain(r[c]).Length);
+                // each column as wide as its longest words want (within reason), the whole table the page's width
+                var want = new double[cols]; double sum = 0;
+                for (int c = 0; c < cols; c++) { int m = 4; foreach (var r in table) if (c < r.Length) m = Math.Max(m, Plain(r[c]).Length); want[c] = Math.Min(60, m) + 6; sum += want[c]; }
                 for (int ri = 0; ri < table.Count; ri++)
                 {
-                    var r = table[ri]; var line = new StringBuilder();
-                    for (int c = 0; c < cols; c++) { string cell = c < r.Length ? Plain(r[c]) : ""; line.Append(cell.PadRight(wid[c] + 3)); }
-                    o.Append("\\pard\\li280\\sa20\\f1\\fs19\\highlight4 ").Append(ri == 0 ? "\\b " : "").Append(Esc(line.ToString().TrimEnd())).Append(ri == 0 ? "\\b0" : "").Append("\\highlight0\\f0\\fs22\\par ");
+                    var r = table[ri]; bool head = ri == 0;
+                    o.Append("\\trowd\\trgaph120\\trleft0\\trpaddt60\\trpaddb60\\trpaddft3\\trpaddfb3 ");
+                    double x = 0;
+                    for (int c = 0; c < cols; c++)
+                    {
+                        x += want[c] / sum * widthTwips;
+                        o.Append("\\clbrdrt\\brdrs\\brdrw10\\brdrcf5\\clbrdrl\\brdrs\\brdrw10\\brdrcf5\\clbrdrb\\brdrs\\brdrw10\\brdrcf5\\clbrdrr\\brdrs\\brdrw10\\brdrcf5");
+                        if (head) o.Append("\\clcbpat7");
+                        o.Append("\\cellx").Append((int)x).Append(' ');
+                    }
+                    for (int c = 0; c < cols; c++)
+                    {
+                        string cell = c < r.Length ? r[c] : "";
+                        o.Append("\\pard\\intbl\\sl260\\slmult1\\sa0\\fs20 ").Append(head ? "\\f2\\cf2 " : "").Append(Inline(cell)).Append(head ? "\\f0\\cf1 " : "").Append("\\cell ");
+                    }
+                    o.Append("\\row ");
                 }
-                o.Append("\\pard\\sa120\\par "); table.Clear();
+                o.Append("\\pard\\sa200\\fs8\\par\\fs22 "); table.Clear();
             };
             foreach (var raw in lines)
             {
                 string line = raw.TrimEnd();
-                if (line.StartsWith("```")) { flushTable(); fence = !fence; if (!fence) o.Append("\\pard\\sa60\\par "); continue; }
-                if (fence) { o.Append("\\pard\\li280\\sa0\\f1\\fs19\\highlight4 ").Append(Esc(line.Length == 0 ? " " : line)).Append("\\highlight0\\f0\\fs22\\par "); continue; }
+                if (line.StartsWith("```")) { flushTable(); fence = !fence; if (!fence) o.Append("\\pard\\sa100\\fs8\\par\\fs22 "); continue; }
+                if (fence) { o.Append("\\pard\\li240\\ri240\\sa0\\sl240\\slmult1\\cbpat4\\f1\\fs19\\cf1 ").Append(Esc(line.Length == 0 ? " " : line)).Append("\\f0\\fs22\\par "); continue; }
                 if (line.StartsWith("|"))
                 {
                     var cells = line.Trim('|').Split('|'); for (int c = 0; c < cells.Length; c++) cells[c] = cells[c].Trim();
@@ -337,14 +390,17 @@ namespace DnaAnd.Platform
                 }
                 flushTable();
                 if (line.Length == 0) continue;
-                if (line.StartsWith("# ")) { o.Append("\\pard\\sb120\\sa200\\b\\fs40\\cf2 ").Append(Inline(line.Substring(2))).Append("\\b0\\fs22\\cf1\\par "); continue; }
-                if (line.StartsWith("## ")) { o.Append("\\pard\\sb300\\sa120\\b\\fs30\\cf2 ").Append(Inline(line.Substring(3))).Append("\\b0\\fs22\\cf1\\par "); continue; }
-                if (line.StartsWith("### ")) { o.Append("\\pard\\sb200\\sa80\\b\\fs25 ").Append(Inline(line.Substring(4))).Append("\\b0\\fs22\\par "); continue; }
                 string t = line.TrimStart(); int indent = line.Length - t.Length;
-                if (t.StartsWith("- ") || t.StartsWith("* ")) { o.Append("\\pard\\fi-260\\li").Append(420 + indent * 120).Append("\\sa60\\'95\\tab ").Append(Inline(t.Substring(2))).Append("\\par "); continue; }
+                if (t == "---" || t == "***" || t == "___") { o.Append("\\pard\\sb60\\sa260\\brdrb\\brdrs\\brdrw10\\brdrcf5\\fs8\\par\\fs22 "); continue; }
+                if (t.StartsWith("# ")) { o.Append("\\pard\\sb80\\sa240\\brdrb\\brdrs\\brdrw30\\brsp100\\brdrcf2\\f2\\fs48\\cf2 ").Append(Inline(t.Substring(2))).Append("\\f0\\fs22\\cf1\\par "); continue; }
+                if (t.StartsWith("## ")) { o.Append("\\pard\\sb360\\sa160\\brdrb\\brdrs\\brdrw10\\brsp60\\brdrcf5\\f2\\fs32\\cf2 ").Append(Inline(t.Substring(3))).Append("\\f0\\fs22\\cf1\\par "); continue; }
+                if (t.StartsWith("### ")) { o.Append("\\pard\\sb240\\sa100\\f2\\fs26\\cf1 ").Append(Inline(t.Substring(4))).Append("\\f0\\fs22\\par "); continue; }
+                if (t.StartsWith("#### ")) { o.Append("\\pard\\sb160\\sa80\\f2\\fs23\\cf8 ").Append(Inline(t.Substring(5))).Append("\\f0\\fs22\\cf1\\par "); continue; }
+                if (t.StartsWith(">")) { o.Append("\\pard\\li300\\ri300\\sb60\\sa180\\sl300\\slmult1\\brdrl\\brdrs\\brdrw40\\brsp160\\brdrcf2\\cbpat6\\cf1 ").Append(Inline(t.TrimStart('>').Trim())).Append("\\par "); continue; }
+                if (t.StartsWith("- ") || t.StartsWith("* ")) { o.Append("\\pard\\fi-280\\li").Append(480 + indent * 140).Append("\\sl280\\slmult1\\sa80\\cf2\\u8226?\\cf1\\tab ").Append(Inline(t.Substring(2))).Append("\\par "); continue; }
                 int dot = t.IndexOf(". "); int num;
-                if (dot > 0 && dot < 4 && int.TryParse(t.Substring(0, dot), out num)) { o.Append("\\pard\\fi-300\\li").Append(460 + indent * 120).Append("\\sa60 ").Append(num).Append(".\\tab ").Append(Inline(t.Substring(dot + 2))).Append("\\par "); continue; }
-                o.Append("\\pard\\sa120 ").Append(Inline(line)).Append("\\par ");
+                if (dot > 0 && dot < 4 && int.TryParse(t.Substring(0, dot), out num)) { o.Append("\\pard\\fi-340\\li").Append(520 + indent * 140).Append("\\sl280\\slmult1\\sa80\\f2\\cf2 ").Append(num).Append(".\\f0\\cf1\\tab ").Append(Inline(t.Substring(dot + 2))).Append("\\par "); continue; }
+                o.Append(Body).Append(Inline(line)).Append("\\par ");
             }
             flushTable();
             o.Append("}");

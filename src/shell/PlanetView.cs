@@ -372,17 +372,17 @@ namespace DnaAnd.Shell
                 // the planet's own clock: it formed about 200 million years before the game starts (the crust has just cooled)
                 if (_core == null && !Cores.TryGetValue(_normal, out _core))
                 {
-                    _core = new DnaAnd.Sim.PlanetCore(_terrain.Radius, _terrain.HasWater, DnaAnd.Gen.PlanetTerrain.TerrainKind(_terrain.Kind).DayHours, 2e8, 991);
+                    _core = new DnaAnd.Sim.PlanetCore(_terrain.Radius, _terrain.HasWater, _terrain.Traits.DayHours, 2e8, 991);
                     Cores[_normal] = _core;
                     if (_loadedCore != null) { _core.Load(_loadedCore); _loadedCore = null; }
                 }
                 _core.Age = 2e8 + _life.Years; _core.Update();
                 if (_plates == null) _plates = new DnaAnd.Sim.PlanetPlates(_terrain.Radius, 992);
-                if (_air == null) { _air = new DnaAnd.Sim.PlanetAir(BaseKelvin(_terrain.Kind)); if (_loadedAir != null) { _air.Load(_loadedAir); _loadedAir = null; } }
+                if (_air == null) { _air = new DnaAnd.Sim.PlanetAir(_terrain.Traits.BaseK); if (_loadedAir != null) { _air.Load(_loadedAir); _loadedAir = null; } }
                 _air.Advance(_core, _life.Producers, _life.Microbes, _terrain.HasWater);
                 if (_air.Events.Length > 0) { _coreNews = _air.Events; _coreNewsUntil = _time + 8; }
                 _life.WarmerK = _air.TempK - 288; _life.Oxygen = _air.O2;
-                if (_weather == null) { _weather = new DnaAnd.Sim.PlanetWeather(_life.RegionCount, DnaAnd.Gen.PlanetTerrain.TerrainKind(_terrain.Kind).Tides); /* a locked world has almost no tides */ _life.Weather = _weather; }
+                if (_weather == null) { _weather = new DnaAnd.Sim.PlanetWeather(_life.RegionCount, _terrain.Traits.Tides); /* a locked world has almost no tides */ _life.Weather = _weather; }
                 double yps = _life.YearsPerSecond;
                 _weather.Update(_life, _air, _core.Age, _terrain.HasWater, yps < 3 ? (_core.Age % 1.0) : -1);
                 if (_weather.Events.Length > 0) { _coreNews = _weather.Events; _coreNewsUntil = _time + 8; }
@@ -636,7 +636,7 @@ namespace DnaAnd.Shell
         // at microbe size, the living microbes of set 8 on the spot below (a patch of ground or water about 0.4 mm across)
         private void DrawMicrobes(Gpu gpu, Mat4 view, Mat4 proj, double cx, double cy, double cz, double ux, double uy, double uz, double ground, Vec3 up, Vec3 north, Vec3 east, int width, int height)
         {
-            if (!_terrain.Solid || !DnaAnd.Gen.PlanetTerrain.TerrainKind(_terrain.Kind).Life) { _microbes = null; return; }       // nothing can live in molten rock (terrain.dnat life: no)
+            if (!_terrain.Solid || !_terrain.Traits.Life) { _microbes = null; return; }       // nothing can live in molten rock (terrain.dnat life: no)
             double sz = _shown;
             if (sz > 2e-6) { if (sz > 5e-6) _microbes = null; return; }                            // only below about 2 mm
             if (_microbes == null)

@@ -1,66 +1,141 @@
 # Universe
 
-**One camera. One world. A visible universe 13.4 billion light-years across, about 100 billion galaxies, down to the quarks inside the protons of the atoms of a grain of sand, without a single loading screen.**
+> **One camera. One universe. A visible universe 13.4 billion light-years across, about 100 billion galaxies, down to the quarks inside the protons of the atoms of a grain of sand, without a single loading screen.**
 
-## What is this?
+**⬇️ [Download for Windows](https://git.unityailab.com/GFourteen/Universe/releases)** · **🛠️ [Build your own universe](docs/GUIDE.md)** · **⚙️ [Technical guide](docs/HOW-TO-BUILD.md)** · **👥 [Credits](CREDITS.md)**
 
-Universe is a whole universe you can fly through: a visible universe 13.4 billion light-years across, holding about 100 billion galaxies gathered along the cosmic web (filaments and walls of galaxies, knotted into clusters, round great thin voids). Pull back far enough and galaxies are pinpoints of light along that web. Roll the mouse wheel, and one of those specks grows into a spinning island of stars. Keep going and you're among its stars, then circling one of them, then watching its planets swing around it. Pick a planet and fall toward it: oceans, mountains, clouds. Keep falling and the ground becomes grains, the grains become crystal, the crystal becomes atoms, and on inside an atom: its electrons, each element's own (in their real subshells and orbital shapes, the inner ones of a heavy atom held tight and fast), a nucleus of protons and neutrons, and inside those, quarks.
+---
 
-You never "change level." It's one long dive, and you can turn around at any point and fly all the way back out.
+## ✨ Two things in one
 
-## Nothing is stored. Everything is grown.
+| | |
+|---|---|
+| 🚀 **A universe to fly through** | Install it, press **T**, and watch a five-minute film from the cosmic web down to a quark. Then take the controls and go anywhere. |
+| 🧰 **A toolkit to build universes** | Every galaxy, star, world and grain is grown from **templates** in plain text files. Add a kind of world, a kind of star, a new galaxy, and use it for your own **game or simulation**. |
 
-No photos, no painted backdrops, no pre-made maps. Every galaxy, star, planet and pebble is worked out on the spot from a single starting number, the seed. Same seed, same universe, every time. Fly away from a star and come back, and it's the same star, because it was never thrown away; it was simply worked out again.
+---
 
-A galaxy holds about a hundred billion stars. Your computer could never keep them all, so it doesn't try: it makes the stars around you as you go, at the real density stars have in a real galaxy.
+## 🔭 What is this?
 
-## How does the zoom go on, from the universe to the quarks?
+Pull back far enough and galaxies are pinpoints of light, strung along the **cosmic web**: filaments and walls of galaxies knotted into clusters round great thin voids.
 
-It is one camera the whole way, from the edge of the visible universe to a quark, about 42 factors of ten, with nothing swapped in between. Four things make it work.
+Roll the mouse wheel and one of those specks grows into a spinning island of stars. Keep going:
 
-**The moving anchor.** Computers lose precision with huge numbers: measuring an atom in units of "width of the universe" just doesn't work. So the camera always measures itself from something nearby: a galaxy's centre, then a star, then a planet's ground, then the grain you are on, then the atom. Everything near you is exact, whether you are light-years or atoms away. Depth uses reversed floating point, so near and far never fight.
+1. 🌀 You're **among its stars**, about a hundred billion of them.
+2. ☀️ You're **circling one star**, watching its worlds swing round it.
+3. 🌍 You **fall toward a world**: oceans, mountains, clouds.
+4. 🪨 The ground becomes **stones**, then **grains**, then **crystal**.
+5. ⚛️ The crystal becomes **atoms**: electrons in their real orbitals, a nucleus of protons and neutrons, and inside those, **quarks**.
 
-**Everything is made where you are.** Galaxies are made in regions round you (each region always holds the same ones, from its place); stars in cubes round you at a galaxy's real density; a planet's ground in pieces finer the closer you are; grains, crystals and atoms round the point you dive into. Nothing is stored, so there is nothing to run out of.
+You never "change level". It's one long dive, and you can turn round at any point and fly all the way back out.
 
-**The waveform.** Our own CDF 9/7 wavelet engine (the same family of math behind JPEG 2000) stores a shape as a list of waves: big waves are the big shapes, small waves the fine detail. The detail of every surface at every size comes from it: a set of waveforms made in the wavelet's own terms and kept as its equations, one for each finer octave, so zooming in adds the next octave of waves. The planet's ground and the face of every grain and stone take their roughness, steps and stains from these.
+---
 
-**Mode-E, past the stored waves.** Where the stored octaves run out, mode-E carries on: Newton's method on z³ − K with cellular octaves that subdivide as the zoom rises, so detail of the same character keeps growing, finer and finer, without repeating. That is what makes the zoom endless rather than only very deep.
+## 🌱 Nothing is stored. Everything is grown.
 
-**Where it stops today.** The surfaces' detail has no floor. The bodies do: below the quarks (about 10⁻¹⁹ km) there is nothing further built yet; what lies beyond, the fields the particles are waves in, is still to come.
+No photos, no painted backdrops, no pre-made maps. Every galaxy, star, world and pebble is worked out on the spot from one starting number, the **seed**.
 
-## Black holes, comets and the bodies between
+> **Same seed, same universe, every time.** Fly away from a star and come back, and it's the same star. It was never thrown away, just worked out again.
 
-Black holes sit among a galaxy's stars, and a giant one at every galaxy's heart. Each is feeding or quiet: a feeding one glows with its accretion disc, white-hot at the inner edge and cooling to red further out, and some fire jets from their poles at nearly the speed of light; a quiet one is only its shadow and the starlight it bends. Asteroids fill a star's belts, lumpy cratered rocks lit from their star's side when you come close (only the few big enough, a couple of hundred kilometres across, pulled round by their own gravity); a few comets fall past their star, a dark nucleus in its glowing coma with its ion tail straight away from the star and its curved dust tail; more icy bodies drift in its far Oort cloud; neutron stars and rogue planets wander among the stars, and every one of them can be clicked for its card: its mass, its size, its pull and escape speed where you are.
+A galaxy holds about a hundred billion stars. Your computer could never keep them all, so it doesn't try: it makes the stars round you as you go, at the density stars have in a real galaxy.
 
-## A dead universe that's still alive
+---
 
-There's no life here yet, but the planets aren't frozen. Their insides cool, plates drift, volcanoes erupt, the magnetic field flips, ice ages come and go, mountains wear down and rocks from space leave craters. Every planet runs on its own clock.
+## 🧬 Templates, not things
 
-## Start
+Each kind of thing is a **template** with ranges, and every one made from it gets its own values:
+
+```
+@terrain lava
+name: A lava world
+forms: rocky
+orbit-hz: 0..0.085
+day-hours: 10..40
+air-colour: 1 0.42 0.18
+molten: yes
+```
+
+That one entry makes a lava world wherever an orbit is close enough to its star, each with its own size, spin and colours. Write a new entry and your new kind appears across every universe you make. **[Build your own universe](docs/GUIDE.md)** shows you how, step by step.
+
+---
+
+## 🎥 How does the zoom go on, from the universe to the quarks?
+
+It's one camera the whole way, about **42 factors of ten**, with nothing swapped in between. Four things make it work.
+
+| | |
+|---|---|
+| ⚓ **The moving anchor** | Computers lose precision with huge numbers. So the camera always measures itself from something nearby (a galaxy's centre, a star, a world's ground, a grain, an atom), and everything near you is exact. |
+| 📍 **Made where you are** | Galaxies are made in regions round you, stars in cubes round you, a world's ground in pieces finer the closer you are, and grains and atoms round the point you dive into. Nothing is stored, so there's nothing to run out of. |
+| 🌊 **The waveform** | Our own **CDF 9/7 wavelet** engine (the maths family behind JPEG 2000) stores shapes as waves: big waves are big shapes, small waves fine detail. Zooming in adds the next octave of waves. |
+| ♾️ **Mode-E** | Where the stored waves run out, mode-E carries on (Newton's method on *z³ − K*, with cells that split as you zoom), so detail keeps growing and never repeats. |
+
+> **Where it stops today:** surface detail has no floor. The bodies stop at the quarks, about 10⁻¹⁹ km. What lies beyond, the fields particles are waves in, is still to come.
+
+---
+
+## 🕳️ Black holes, comets and the bodies between
+
+| | |
+|---|---|
+| 🕳️ **Black holes** | Among a galaxy's stars, and a giant one at every galaxy's heart. A feeding one glows with its accretion disc, and some fire jets from their poles. A quiet one is only its shadow and the starlight it bends. |
+| 🪨 **Asteroids** | Lumpy, cratered rock in a star's belts, lit from their star's side. |
+| ☄️ **Comets** | A dark nucleus in a glowing coma, an ion tail straight away from the star and a curved dust tail. |
+| 🧊 **The far cloud** | Icy bodies in a star's far Oort cloud. |
+| 🌑 **Wanderers** | Neutron stars and rogue planets drifting between the stars. |
+
+Click any of them for its card: its mass, its size, its pull and escape speed where you are.
+
+---
+
+## 🌋 A dead universe that's still alive
+
+There's no life here yet, but the worlds aren't frozen. Their insides cool, plates drift, volcanoes erupt, the magnetic field flips, ice ages come and go, mountains wear down, and rocks from space leave craters. **Every world runs on its own clock.**
+
+---
+
+## 🚀 Start
 
 The landing page opens first. Type a seed (or press **Random**, or leave it blank for a new universe), then **Begin**, or **Take the tour**. Your settings and the **Guide and wiki** are there too.
 
-## How to fly
+## 🖱️ How to fly
 
-- **Mouse wheel:** fly toward what the mouse points at. You slow down as you get close, so you never crash and never stop.
-- **Ctrl + wheel:** eight times faster.
-- **W A S D, Q and E:** fly like in a first-person game: forward, back, left, right, down and up. The speed scales to whatever is nearest, so crossing between galaxies feels the same as skimming a metre over the ground. Hold Shift to go four times faster.
-- **Click** a galaxy, star, planet or spot on the ground: the camera turns to it and the wheel flies you straight there.
-- **Right click:** let go of what you picked.
-- **Space:** pause time. **Comma** and **full stop:** slow it down or speed it up, from real time to ten years a second (the Time menu has them too). Every planet turns on its own day, so you can sit on the ground and watch its star rise and set.
-- **Drag:** with something picked, circle round it at the distance you are at, to see a solar system from above or a galaxy edge-on. With nothing picked, look around.
-- **Info cards:** whatever you pick gets a card beside it: what it is, its id, and its facts (a star's temperature, planets and habitable zone; a planet's orbit, year and what it's made of; the ground's height and whether it's land or sea).
-- **H:** show or hide the cards and the scale bar, which tells you how big what you're looking at is, from light-years to picometres.
-- **Help menu:** Readme, How it works, Credits, About.
-- **B (among atoms):** glide across the bond to the next atom, through the outer electrons the two share.
-- **F12:** a screenshot (PNG). **F9:** start or stop recording a clip (MP4 video). Both go in the `captures` folder.
-- **View menu:** drag speed, show FPS (frames a second, top right), invert either drag direction, GPU use.
-- **The grand tour (T, or Take the tour on the landing page):** a five-minute film that shows the scale of things, from the whole visible universe down to the quarks: the cosmic web, a galaxy, a black hole, two star systems with an asteroid and a comet, a world and a glide over its land, the sky from the ground, its stones and grains, one grain and a spot on its face, a flight through a crystal's lattice of atoms, an atom and its neighbours, an electron, the nucleus, a proton and its quarks, and back out the whole way to end over the cosmic web, circling each as it goes, picking something new at every scale, and never stopping on the way down from the ground to the atoms. Its captions tell the story and name what is in view. Any key or click takes the controls back. Time > Always day keeps the worlds in daylight. Every viewing is shot afresh: each circling shot picks its own way round, speed and crane, and the world it goes down to is chosen by eye. Start page, on the menu bar, opens the landing page again. Tick Film the tour on the landing page to save the whole tour as an MP4 clip; the page's Clips list plays any clip filmed so far, and Open folder shows where they are. The tour is a plain text list of stops (`content/tours/grand-tour.dnat`), so you can write your own.
+| Control | What it does |
+|---|---|
+| **Mouse wheel** | Fly toward what the mouse points at. You slow as you come close, so you never crash and never stop |
+| **Ctrl + wheel** | Eight times faster |
+| **W A S D, Q / E** | Fly like in a first-person game, at a speed that suits what is nearest. **Shift** for four times faster |
+| **Left click** | Pick a galaxy, star, world, spot on the ground, grain or atom. The wheel flies you straight there |
+| **Right click** | Let go of what you picked |
+| **Drag** | With something picked, circle round it. With nothing picked, look around |
+| **Space** / **,** / **.** | Pause time, slower, faster (real time up to ten years a second) |
+| **H** | Show or hide the scale bar and info cards |
+| **B** | Among atoms: glide across the bond to the next atom |
+| **T** | The grand tour. A click, the wheel or a key pauses it; **T** carries on, **R** starts again |
+| **F12** / **F9** | A screenshot (PNG) / start or stop a clip (MP4), in the `captures` folder |
 
-## Want to build your own?
+The **Time** menu has **Always day**, the **View** menu has drag speed, FPS, render scale and GPU use, and **Help** has every document.
 
-Everything needed to build, change and ship your own copy is in this project. See the technical guide in `HOW-TO-BUILD.md`, which comes from `docs/release/UNIVERSE-HOW-TO-BUILD.md` here.
+## 🎬 The grand tour
 
-## Who made it
+A five-minute film of the scale of things: the cosmic web, a galaxy, a black hole, star systems with an asteroid and a comet, a world and a glide over its land, the sky from the ground, its stones and grains, a crystal's lattice of atoms, an electron, the nucleus, a proton and its quarks, and all the way back out to the web.
 
-The Unity AI Lab: four people, open-source, built on stubbornness. https://unityailab.com
+- 🎞️ **Every viewing is shot afresh.** Each shot picks its own way round, speed and crane.
+- ⏸️ **Pause any time.** A note says why it paused; **T** carries on, **R** starts again.
+- 📹 **Film it.** Tick **Film the tour** on the landing page to save it as an MP4. The **Clips** list plays what you've filmed.
+- ✍️ **Write your own.** A tour is a plain text list of camera moves (`content/tours/grand-tour.dnat`).
+
+---
+
+## 🛠️ Make it yours
+
+| Start here | |
+|---|---|
+| 🧰 **[Build your own universe](docs/GUIDE.md)** | Add kinds of worlds, stars and galaxies, change the whole universe, write tours, add features |
+| ⚙️ **[Technical guide](docs/HOW-TO-BUILD.md)** | Build it, make the installer, find your way round the code |
+
+Plain **C# 5 on Direct3D 12**, built with the compiler that comes with Windows. No packages, no outside libraries, no stored art.
+
+## 👥 Who made it
+
+The **Unity AI Lab**: four people, open-source, built on stubbornness. [unityailab.com](https://unityailab.com) · [Credits](CREDITS.md)

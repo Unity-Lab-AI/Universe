@@ -34,7 +34,7 @@ cbuffer C : register(b0)
     float4 extra;   // x: how much dimmer (0 full bright, 1 gone), so things fade in and out, never switch
     float4 lensA;   // a black hole's light bending: xy where it is on screen (-1..1), z its Einstein ring (same units, up the screen), w its distance
     float4 lensB;   // x: width over height of the screen; y: 1 = orbital clouds (each record an orbital, its points placed here); z: points per orbital; w: the web's fade distance (0: not the web)
-    float4 webA;    // the cosmic web's light, sifted here on the card: xyz where you are (in the points' own frame), w how near round you is left out (the galaxies made in full stand there)
+    float4 webA;    // the cosmic web's light, sifted here on the card: xyz where you are (in the points' own frame), w how near round you is left out (the galaxies made in full stand there; it fades in over half again past that, as they fade out)
 };
 struct Star { float3 pos; float size; float4 color; };
 StructuredBuffer<Star> stars : register(t0);
@@ -64,7 +64,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         // fading with distance otherwise (seen through the whole web at once it would stack into an even dust)
         float wl = length(s.pos - webA.xyz);
         webOut = wl < webA.w || wl > lensB.w * 3;
-        s.color.rgb *= 4.0 * exp(-wl / lensB.w);                        // each point a galaxy's whole light, bright enough that the web's strands read across hundreds of millions of light-years
+        s.color.rgb *= 4.0 * exp(-wl / lensB.w) * saturate((wl - webA.w) / (webA.w * 0.5));   // faded in over half again past where it starts: just where the galaxies made in full fade out, so the two never show at once                        // each point a galaxy's whole light, bright enough that the web's strands read across hundreds of millions of light-years
     }
     if (lensB.y > 0.5)
     {

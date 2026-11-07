@@ -1,5 +1,5 @@
 # DNA-AND content · the grand tour: one flight from the whole visible universe down to the quarks, for watching
-# Run it: Universe.exe --tour grand-tour (or DNA-AND.exe --tour grand-tour). Any key or click takes the controls back.
+# Run it: Universe.exe --tour grand-tour (or DNA-AND.exe --tour grand-tour). A click, the wheel or a key pauses it; T carries on, R starts again.
 # Edit the stops to make your own. Each stop: do (shot, zoom, orbit, look, arc, fly, glide, pick) and its numbers. A shot
 # frames what is picked by its own size: to-radii (how many of its sizes away) or to-km, sweep (degrees round it), rise
 # (degrees up or down), seconds, max-rate (tenfolds of scale a second at most: never streaming past);

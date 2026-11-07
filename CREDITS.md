@@ -1,21 +1,38 @@
 # Credits
 
-Universe is made by the **Unity AI Lab**: four people, open-source, built on stubbornness.
+> Made by the **Unity AI Lab**: four people, six disciplines, open-source, built on stubbornness.
 
-- SpongeBong (Sponge, hackall360): co-founder, engineer, infrastructure
-- GFourteen (Gee): co-founder, engineer
-- Alfreddo: engineer, agentic systems
-- Red: engineer, security
+## 👥 The team
 
-https://unityailab.com
+| Who | What they do |
+|---|---|
+| **SpongeBong** (Sponge, hackall360) | Co-founder · engineer · infrastructure |
+| **GFourteen** (Gee) | Co-founder · engineer |
+| **Alfreddo** | Engineer · agentic systems · research |
+| **Red** | Engineer · security · sys admin |
 
-## Facts the universe is made from
+## 🔬 Facts the universe is made from
 
-- Crystal structures: the Crystallography Open Database (https://www.crystallography.net/cod/), public domain, including alpha sulfur by Rettig and Trotter (1987).
-- Element colours: the Jmol CPK colours. Covalent radii: Cordero et al. (2008). Calculated atomic radii: Clementi, Raimondi and Reinhardt (1967). Electronegativities: Pauling.
-- The nucleus: the semi-empirical (Bethe-Weizsacker) mass formula, the valley of beta stability.
-- Grain and clast sizes: the Wentworth scale.
+| Subject | Source |
+|---|---|
+| Crystal structures | The [Crystallography Open Database](https://www.crystallography.net/cod/), public domain, including alpha sulfur by Rettig and Trotter (1987) |
+| Element colours | The Jmol CPK colours |
+| Atomic sizes | Covalent radii by Cordero et al. (2008); calculated atomic radii by Clementi, Raimondi and Reinhardt (1967) |
+| Electronegativity | Pauling's scale |
+| The nucleus | The semi-empirical (Bethe–Weizsäcker) mass formula and the valley of beta stability |
+| Grain and stone sizes | The Wentworth scale |
 
-## The code
+## 🛠️ The code
 
-Our own C# 5 on Direct3D 12, compiled by the compiler that comes with Windows. No outside code, libraries or packages; no stored pictures. The CDF 9/7 wavelet engine and mode-E detail are the lab's own.
+Our own **C# 5 on Direct3D 12**, built with the compiler that comes with Windows.
+
+- No outside code, libraries or packages.
+- No stored pictures: everything you see is made live.
+- The **CDF 9/7 wavelet engine** and **mode-E** detail are the lab's own, from Uni Vs Matics.
+
+## 🔗 Links
+
+- [unityailab.com](https://unityailab.com)
+- [The Universe project](https://git.unityailab.com/GFourteen/Universe), with everything to build your own
+- [Unity AI Lab Git](https://git.unityailab.com)
+- [Unity AI Lab on GitHub](https://github.com/Unity-Lab-AI)

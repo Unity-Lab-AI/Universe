@@ -15,6 +15,16 @@
 # Giants: bands (how many belts across), band-dark and band-light (belts and zones), great-storm (one great red storm, 1)
 #   or storm-colour (its storms, e.g. Neptune's dark ones). river-colour: rivers, or dry river beds.
 # rock-colour: steep bare rock. base-k: its temperature from its star alone, before any greenhouse (Earth 255 K).
+# Templates: every number may be a range (a..b) and every colour a range (r g b .. r g b); each world of a kind takes its
+#   own value in each range from its seed, so no two worlds of a kind are the same, and a seed always gives the same world.
+# Where a kind forms (a kind with no forms: is drawn only when something asks for it by name):
+#   forms: rocky, giant (past the frost line) or hot-jupiter (the closest orbit of a hot-Jupiter system).
+#   orbit-hz: where its orbit lies against the habitable zone's middle (1 = in the middle; the Sun's is 1.175 AU, and it
+#   moves out with the star's brightness). orbit-frost: against the frost line (the Sun's 2.7 AU). star-brightness: the
+#   star's brightness (the Sun 1; red dwarfs below 0.08). weight: when several kinds fit an orbit, how often this one is chosen.
+#   size-km and size-spread: its size, size-km times a value in the spread. moons: how many. dot-colour: its colour as a dot
+#   from afar. day-hours: one turn of its spin. label: what its card calls it. makeup (and makeup-dry, for one that
+#   formed with no seas): what it is made of, lines split by ;. interest: how much the tour's director wants to visit it.
 # Spec: docs/CONTENT-FORMAT.md · content/planets.dnat
 
 @terrain default
@@ -33,11 +43,26 @@ base-k: 255
 river-colour: 0.1 0.3 0.5
 band-dark: 0.42 0.26 0.16
 band-light: 0.96 0.88 0.78
+day-hours: 10..40
 
 @terrain temperate
 name: A temperate world
 water: yes
 tropical-soil: yes
+forms: rocky
+label: Temperate world
+orbit-hz: 0.75..1.25
+weight: 1
+size-km: 6371
+size-spread: 0.4..1.8
+moons: 0..2
+dot-colour: 0.3 0.6 1
+interest: 6
+makeup: rock: silicate crust, iron core; seas of liquid water; air: nitrogen, carbon dioxide, water vapour
+makeup-dry: rock: silicate crust, iron core; dry basins; air: nitrogen, carbon dioxide, water vapour
+land-share: -0.04..0.16
+cloud-thickness: 0.75..1
+air-colour: 0.3 0.52 1 .. 0.42 0.6 1
 
 @terrain ocean
 name: An ocean world
@@ -48,22 +73,42 @@ air-km: 120
 base-k: 252
 land-share: -0.38
 tropical-soil: yes
+forms: rocky
+label: Ocean world
+orbit-hz: 0.75..1.25
+weight: 0.35
+size-km: 6371
+size-spread: 0.8..1.8
+moons: 0..2
+dot-colour: 0.2 0.45 0.95
+interest: 5
+makeup: rock and iron deep beneath; a world-wide sea hundreds of km deep; air: nitrogen, water vapour
 
 @terrain desert
 name: A desert world
 radius-km: 5100
 cloud-km: 6
 air-km: 70
-air-colour: 0.95 0.62 0.38
 cloud-colour: 0.82 0.62 0.42
 cloud-thickness: 0.4
-rock-colour: 0.58 0.34 0.22
 base-k: 270
 land-share: 0.2
 dunes: yes
 dry: yes
 river-colour: 0.7 0.55 0.38
 ground: -1.2 0.92 0.9 0.84; 2.0 0.82 0.6 0.36 tinted; 99 0.6 0.36 0.24 tinted
+forms: rocky
+label: Rocky planet
+orbit-hz: 0.085..0.75
+weight: 1
+size-km: 6371
+size-spread: 0.4..1.8
+moons: 0..2
+dot-colour: 0.75 0.65 0.55
+interest: 2
+makeup: rock: silicate crust, iron core; dust and stone; air: thin carbon dioxide
+air-colour: 0.9 0.56 0.34 .. 1 0.7 0.45
+rock-colour: 0.5 0.3 0.2 .. 0.64 0.4 0.26
 
 @terrain lava
 name: A lava world
@@ -80,6 +125,16 @@ life: no
 volcanoes: many
 cloud-shift: 0.12
 ground: 4 0.16 0.12 0.11 tinted; 99 0.3 0.26 0.24 tinted
+forms: rocky
+label: Lava planet
+orbit-hz: 0..0.085
+weight: 1
+size-km: 6371
+size-spread: 0.4..1.8
+moons: 0..2
+dot-colour: 1 0.4 0.15
+interest: 2.5
+makeup: rock: molten silicate seas; iron core; air: thin rock vapour and sulfur
 
 @terrain snowball
 name: A snowball world
@@ -93,6 +148,16 @@ frozen-sea: yes
 snow-patches: yes
 cloud-shift: -0.08
 ground: 99 0.42 0.43 0.47 tinted
+forms: rocky
+label: Ice world
+orbit-hz: 1.25..1e9
+weight: 1
+size-km: 6371
+size-spread: 0.4..1.8
+moons: 0..2
+dot-colour: 0.9 0.95 1
+interest: 2.5
+makeup: ice: frozen water, carbon dioxide, nitrogen; rock and iron beneath; air: thin, or none
 
 @terrain tidally-locked
 name: A tidally locked world
@@ -105,6 +170,17 @@ polar-ice: no
 dry: yes
 day-hours: 2000
 tides: 0.1
+forms: rocky
+label: Tidally locked world
+orbit-hz: 0.5..1.6
+star-brightness: 0..0.08
+weight: 3
+size-km: 6371
+size-spread: 0.5..1.6
+moons: 0..0
+dot-colour: 0.7 0.6 0.75
+interest: 4
+makeup: rock: silicate crust, iron core; one face scorched, one frozen; air: carbon dioxide, nitrogen
 
 @terrain gas-giant
 name: A gas giant
@@ -114,7 +190,20 @@ cloud-km: 55
 air-km: 2200
 air-colour: 0.95 0.82 0.6
 cloud-colour: 0.98 0.95 0.88
-bands: 19
+forms: giant
+label: Gas giant
+orbit-frost: 0..3.5
+weight: 1
+size-km: 70000
+size-spread: 0.6..1.2
+moons: 2..8
+dot-colour: 0.95 0.75 0.5
+interest: 1
+day-hours: 9..17
+makeup: hydrogen and helium; clouds: ammonia, water; core: rock and ice
+band-dark: 0.38 0.22 0.13 .. 0.5 0.32 0.2
+band-light: 0.93 0.84 0.72 .. 0.98 0.92 0.84
+bands: 13..21
 
 @terrain ice-giant
 name: An ice giant
@@ -129,6 +218,17 @@ band-dark: 0.25 0.48 0.85
 band-light: 0.39 0.62 0.97
 great-storm: 0
 storm-colour: 0.08 0.15 0.42
+forms: giant
+label: Ice giant
+orbit-frost: 3.5..1e9
+weight: 1
+size-km: 25000
+size-spread: 1..1
+moons: 2..8
+dot-colour: 0.5 0.8 1
+interest: 1
+day-hours: 9..17
+makeup: water, ammonia and methane ices; air: hydrogen, helium, methane; core: rock
 
 @terrain hot-jupiter
 name: A hot Jupiter
@@ -140,6 +240,16 @@ air-colour: 1 0.55 0.3
 cloud-colour: 0.45 0.3 0.26
 band-dark: 0.32 0.13 0.09
 band-light: 0.82 0.37 0.19
+forms: hot-jupiter
+label: Hot Jupiter
+weight: 1
+size-km: 70000
+size-spread: 0.6..1.2
+moons: 2..8
+dot-colour: 0.95 0.75 0.5
+interest: 1
+day-hours: 9..17
+makeup: hydrogen and helium, swollen by heat; clouds: silicates and iron; core: rock
 
 @terrain dyson-hull
 name: A Dyson shell's outer hull

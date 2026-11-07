@@ -44,8 +44,24 @@ namespace DnaAnd.Platform
         /// <summary>Timed test runs ignore the real keyboard and mouse, so the person at the computer is never disturbed by them, and never throws them off.</summary>
         public bool IgnoreReal;
 
+        /// <summary>When the window last came to the front (Environment.TickCount): the click or keys that bring it back are not meant for the game.</summary>
+        public int ActivatedAt = Environment.TickCount - 100000;
+        /// <summary>Came to the front within the last half second.</summary>
+        public bool JustActivated { get { return unchecked(Environment.TickCount - ActivatedAt) < 500; } }
+        /// <summary>A key pressed on purpose for the game: not Shift, Ctrl, Alt, the Windows keys or Caps Lock on their own, not part
+        /// of a shortcut held with Alt, Ctrl or a Windows key (Alt+Tab, Win+Shift+S), and not while the window is just coming to the front.</summary>
+        public bool Deliberate(int k)
+        {
+            if (k == 0x10 || k == 0x11 || k == 0x12 || k == 0x14 || k == 0x5B || k == 0x5C || k == 0x5D || (k >= 0xA0 && k <= 0xA5)) return false;
+            if (_down[0x11] || _down[0x12] || _down[0x5B] || _down[0x5C]) return false;
+            return !JustActivated;
+        }
+
         public bool OnMessage(uint msg, IntPtr wParam, IntPtr lParam)
         {
+            // coming to the front or leaving it: nothing held is carried over (a key let go in another window never sticks down)
+            if (msg == 0x0006 /* WM_ACTIVATE */) { if (((long)wParam & 0xFFFF) != 0) ActivatedAt = Environment.TickCount; Array.Clear(_down, 0, 256); return false; }
+            if (msg == 0x0008 /* WM_KILLFOCUS */) { Array.Clear(_down, 0, 256); return false; }
             if (IgnoreReal && (msg == Win32.WM_KEYDOWN || msg == Win32.WM_SYSKEYDOWN || msg == Win32.WM_MOUSEMOVE || msg == Win32.WM_LBUTTONDOWN || msg == Win32.WM_RBUTTONDOWN || msg == Win32.WM_MOUSEWHEEL)) return true;
             switch (msg)
             {

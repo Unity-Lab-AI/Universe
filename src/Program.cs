@@ -177,7 +177,7 @@ namespace DnaAnd
                 if (testAlt > 0) planet.SetAltitude(testAlt);
             }
             if (testPlanet >= 0) { planet = new PlanetView(gpu, meshes, pipeline, viewer.TerrainAt(testPlanet), viewer.FieldTerrainAt(testPlanet), viewer.Set == 5 || testFieldView); planet.TestEvolveYears = testEvolve; planet.TestGoToCiv = Array.IndexOf(args, "--tociv") >= 0; int sli = Array.IndexOf(args, "--savelife"); if (sli >= 0 && sli + 1 < args.Length) planet.TestSaveLife = args[sli + 1]; int lli = Array.IndexOf(args, "--loadlife"); if (lli >= 0 && lli + 1 < args.Length) planet.TestLoadLife = args[lli + 1]; int csi = Array.IndexOf(args, "--civstep"); if (csi >= 0 && csi + 1 < args.Length) int.TryParse(args[csi + 1], out planet.TestCivStep); for (int k = 0; k < testJumps; k++) planet.JumpToNextField(); if (testAlt > 0) planet.SetAltitude(testAlt); int si = Array.IndexOf(args, "--undersea"); if (si >= 0 && si + 1 < args.Length) planet.GoUnderSea(double.Parse(args[si + 1], System.Globalization.CultureInfo.InvariantCulture)); }
-            UniverseView universe = journey ? new UniverseView(gpu, pipeline, content, Seed) : null;
+            GalaxiesView universe = journey ? new GalaxiesView(gpu, pipeline, content, Seed) : null;
             bool landing = PreviewBuild && args.Length == 0;                            // a plain launch: the landing page first
             DnaAnd.Platform.Launcher.Choice landed = DnaAnd.Platform.Launcher.Choice.Begin;
             if (landing)
@@ -187,7 +187,7 @@ namespace DnaAnd
                 if (landed == DnaAnd.Platform.Launcher.Choice.Quit) { window.Close(); gpu.Dispose(); return 0; }
                 if (chosen.HasValue) { Seed = chosen.Value; WriteLog("universe seed " + Seed + " (chosen on the landing page)"); }
             }
-            WorldView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new WorldView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the one world: one camera through every scale
+            UniverseView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new UniverseView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the universe: one camera through every scale
             if (landing && landed == DnaAnd.Platform.Launcher.Choice.Tour && world != null)
             {
                 world.StartTour("grand-tour");
@@ -208,7 +208,7 @@ namespace DnaAnd
 
                 if (deep == null && planet == null && window.Input.WasPressed(Win32.VK_ESCAPE)) window.Close();
                 // the review menu: rebuilt whenever the set or the keepers change
-                if (world != null) { if (menuDirty || world.MenuChanged) { Window.TimeNames = WorldView.TimeNames; Window.TimeStep = world.TimeStep; window.SetWorldMenu(world.ScaleOn); menuDirty = false; world.MenuChanged = false; } }
+                if (world != null) { if (menuDirty || world.MenuChanged) { Window.TimeNames = UniverseView.TimeNames; Window.TimeStep = world.TimeStep; window.SetWorldMenu(world.ScaleOn); menuDirty = false; world.MenuChanged = false; } }
                 else if (viewer.Set != menuSet || menuDirty) { window.SetReviewMenu(viewer.KeeperLabels(), viewer.KeeperTicks()); menuSet = viewer.Set; menuDirty = false; }
                 int cmd = window.MenuCommand; window.MenuCommand = 0;
                 bool askNow = false;
@@ -231,7 +231,7 @@ namespace DnaAnd
                 else if (cmd == Window.CmdAbout) DocViewer.Show(window.Handle, PreviewText.Docs(), 0);
                 else if (cmd == Window.CmdReadme) DocViewer.Show(window.Handle, PreviewText.Docs(), 1);
                 else if (cmd == Window.CmdHowItWorks) DocViewer.Show(window.Handle, PreviewText.Docs(), 2);
-                else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 5);
+                else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 6);
                 else if (cmd == Window.CmdInvertX) { Settings.Set("invert-left-right", !Settings.Get("invert-left-right", false)); menuDirty = true; }
                 else if (cmd == Window.CmdShot) wantShot = true;
                 else if (cmd == Window.CmdRecord) wantRecord = true;
@@ -324,7 +324,7 @@ namespace DnaAnd
                     int b = deep.HandOff;
                     var body = deep.System.Bodies[b];
                     // carry on with the same 3D planet the solar system view was already drawing, so nothing jumps
-                    var t = deep.FocusTerrain ?? new DnaAnd.Gen.PlanetTerrain(gpu.Device, TerrainKind(body.Kind), body.Kind, (uint)(deep.SystemSeed * 977UL + (ulong)b));
+                    var t = deep.FocusTerrain ?? new DnaAnd.Gen.PlanetTerrain(gpu.Device, body.Terrain ?? TerrainKind(body.Kind), body.Kind, (uint)(deep.SystemSeed * 977UL + (ulong)b));
                     var tf = deep.FocusFields ?? t;
                     planet = new PlanetView(gpu, meshes, pipeline, t, tf, false) { Journey = true };
                     planet.SetAltitude((deep.Distance / deep.BodyRadiusUnits(b) - 1) * t.Radius);
@@ -347,9 +347,9 @@ namespace DnaAnd
                     if (shotsEvery > 0 && clock.Total >= shotsNext) { shotsNext = clock.Total + shotsEvery; wantShot = true; shotName = "shot_" + (shotsN++).ToString("00"); }
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
-                    if (wantTour && world != null) { if (world.Touring) world.StopTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
+                    if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
                     if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { rec = new DnaAnd.Render.Mp4Writer(recordTour, gpu.Width, gpu.Height); recForTour = true; } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
-                    if (recForTour && world != null && !world.Touring) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
+                    if (recForTour && world != null && !world.Touring && !(world.TourPaused && !world.TourFinished)) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
                     if (wantRecord)
                     {
                         wantRecord = false; menuDirty = true;
@@ -359,7 +359,7 @@ namespace DnaAnd
                     if (gpu.Grabbed != null && clipPath == null)
                     {
                         if (wantShot && gpu.GrabW == gpu.Width) { try { DnaAnd.Render.PngWriter.Save(System.IO.Path.Combine(caps, (shotName ?? "Universe " + stamp) + ".png"), gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("screenshot error · " + ex.Message); } wantShot = false; shotName = null; }
-                        if (rec != null) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
+                        if (rec != null && !(recForTour && world != null && world.TourPaused)) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
                         gpu.Grabbed = null;
                     }
                     if (wantShot || rec != null) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
@@ -441,7 +441,7 @@ namespace DnaAnd
             }
         }
 
-        // the universe preview release is built with /define:PREVIEW: it always opens in the one world
+        // the universe preview release is built with /define:PREVIEW: it always opens in the universe view
 #if PREVIEW
         private const bool PreviewBuild = true;
 #else

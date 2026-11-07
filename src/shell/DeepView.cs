@@ -255,7 +255,7 @@ namespace DnaAnd.Shell
             TestVisit(w, h);
             if (_system == null) return;
             int pick = 0;
-            for (int i = 0; i < _system.Bodies.Count; i++) if (_system.Bodies[i].Parent < 0 && _system.Bodies[i].Kind == "Temperate world") { pick = i; break; }
+            for (int i = 0; i < _system.Bodies.Count; i++) if (_system.Bodies[i].Parent < 0 && _system.Bodies[i].Interest > _system.Bodies[pick].Interest) pick = i;
             PickBody(pick);
         }
 
@@ -267,7 +267,7 @@ namespace DnaAnd.Shell
             if (_focusBody >= 0)
             {
                 var body = _system.Bodies[_focusBody];
-                string kind = TerrainKind(body.Kind);
+                string kind = body.Terrain ?? TerrainKind(body.Kind);
                 uint tseed = (uint)(SystemSeed * 977UL + (ulong)_focusBody);
                 // its own real size, from its own solar system
                 double km = body.RadiusUnits / Units.Km(1);

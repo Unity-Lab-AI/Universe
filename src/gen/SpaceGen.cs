@@ -218,6 +218,10 @@ namespace DnaAnd.Gen
         public sealed class Body
         {
             public string Kind; public double OrbitUnits, RadiusUnits, Period, Phase; public float R, G, B;
+            /// <summary>Its kind's template in content/terrain.dnat (null for a moon), and whether it is a giant (no ground).</summary>
+            public string Terrain; public bool Giant;
+            /// <summary>What it is made of, for its card; and how much the tour's director wants to visit it.</summary>
+            public string[] MakeUp, MakeUpDry; public double Interest = 1;
             // its orbit's tilt to the system's plane and where it crosses it (radians): planets lie within a few degrees of one
             // plane (ours: Mercury 7, Pluto 17; around other stars mostly 1 to 3 degrees between planets, some far out of line);
             // close moons in their planet's plane, far captured ones at any tilt, even going round backwards
@@ -274,26 +278,17 @@ namespace DnaAnd.Gen
             {
                 var b = new Body { OrbitUnits = Units.Au(a), Phase = rng.NextDouble() * Math.PI * 2, Period = Math.Sqrt(a * a * a / mass) };
                 bool giant = a > sys.FrostLineAu || (hotJupiter && i == 0);
-                if (giant)
-                {
-                    bool ice = a > sys.FrostLineAu * 3.5;
-                    b.Kind = (hotJupiter && i == 0) ? "Hot Jupiter" : ice ? "Ice giant" : "Gas giant";
-                    b.RadiusUnits = Units.Km(ice ? 25000 : 70000 * rng.Range(0.6f, 1.2f));
-                    if (ice) { b.R = 0.5f; b.G = 0.8f; b.B = 1f; } else { b.R = 0.95f; b.G = 0.75f; b.B = 0.5f; }
-                    if (firstGiant == 0) firstGiant = a;
-                }
-                else
-                {
-                    bool hot = a < 0.1 * scale, wet = Math.Abs(a - sys.HabitableAu) < sys.HabitableAu * 0.25;
-                    b.Kind = hot ? "Lava planet" : wet ? "Temperate world" : a > sys.HabitableAu ? "Ice world" : "Rocky planet";
-                    b.RadiusUnits = Units.Km(6371 * rng.Range(0.4f, 1.8f));
-                    if (hot) { b.R = 1f; b.G = 0.4f; b.B = 0.15f; } else if (wet) { b.R = 0.3f; b.G = 0.6f; b.B = 1f; }
-                    else if (a > sys.HabitableAu) { b.R = 0.9f; b.G = 0.95f; b.B = 1f; } else { b.R = 0.75f; b.G = 0.65f; b.B = 0.55f; }
-                    lastRocky = a;
-                }
+                // which kind of world forms here: every kind in content/terrain.dnat whose rules fit this orbit (where it lies
+                // against the habitable zone and the frost line, how bright its star is), one chosen by their weights; its
+                // size, moons, colour and make-up from its template
+                var k = WorldKind(content, giant ? (hotJupiter && i == 0 ? "hot-jupiter" : "giant") : "rocky", a / sys.HabitableAu, a / sys.FrostLineAu, sys.Luminosity, rng);
+                b.Terrain = k.Id; b.Giant = giant; b.Kind = k.Label; b.MakeUp = k.MakeUp; b.MakeUpDry = k.MakeUpDry; b.Interest = k.Interest;
+                b.RadiusUnits = Units.Km(k.SpreadLo != k.SpreadHi ? k.SizeKm * rng.Range((float)k.SpreadLo, (float)k.SpreadHi) : k.SizeKm * k.SpreadLo);
+                b.R = k.Dot[0]; b.G = k.Dot[1]; b.B = k.Dot[2];
+                if (giant) { if (firstGiant == 0) firstGiant = a; } else lastRocky = a;
                 sys.Bodies.Add(b); outer = a;
                 int planetIndex = sys.Bodies.Count - 1;
-                int moons = giant ? 2 + rng.Int(7) : rng.Int(3);
+                var mk = WorldKind(content, null, 0, 0, 0, null, b.Terrain); int moons = mk.MoonsLo + rng.Int(mk.MoonsHi - mk.MoonsLo + 1);
                 for (int m = 0; m < moons; m++)
                     sys.Bodies.Add(new Body
                     {
@@ -342,6 +337,62 @@ namespace DnaAnd.Gen
             }
             sys.Static = stat.ToArray();
             return sys;
+        }
+
+        // ── the kinds of world a system can make: templates in content/terrain.dnat, each with the rules for where it forms ──
+        public sealed class WorldKindRule
+        {
+            public string Id, Label, Forms; public double HzLo = -1, HzHi = -1, FrostLo = -1, FrostHi = -1, LumLo = -1, LumHi = -1, Weight = 1, Interest = 1;
+            public double SizeKm = 6371, SpreadLo = 1, SpreadHi = 1; public int MoonsLo, MoonsHi; public float[] Dot = { 0.75f, 0.65f, 0.55f };
+            public string[] MakeUp, MakeUpDry;
+        }
+        private static List<WorldKindRule> _kinds;
+        private static List<WorldKindRule> Kinds(ContentLibrary content)
+        {
+            if (_kinds != null) return _kinds;
+            var list = new List<WorldKindRule>(); var ci = global::System.Globalization.CultureInfo.InvariantCulture; var nf = global::System.Globalization.NumberStyles.Float;
+            foreach (var e in content.OfKind("terrain.dnat", "terrain"))
+            {
+                if (!e.Props.ContainsKey("forms")) continue;
+                var k = new WorldKindRule { Id = e.Id, Label = e.Get("label", e.Name), Forms = e.Get("forms", "rocky") };
+                double lo, hi;
+                if (e.TryRange("orbit-hz", out lo, out hi)) { k.HzLo = lo; k.HzHi = hi; }
+                if (e.TryRange("orbit-frost", out lo, out hi)) { k.FrostLo = lo; k.FrostHi = hi; }
+                if (e.TryRange("star-brightness", out lo, out hi)) { k.LumLo = lo; k.LumHi = hi; }
+                if (e.TryRange("weight", out lo, out hi)) k.Weight = lo;
+                if (e.TryRange("interest", out lo, out hi)) k.Interest = lo;
+                if (e.TryRange("size-km", out lo, out hi)) k.SizeKm = lo;
+                if (e.TryRange("size-spread", out lo, out hi)) { k.SpreadLo = lo; k.SpreadHi = hi; }
+                if (e.TryRange("moons", out lo, out hi)) { k.MoonsLo = (int)lo; k.MoonsHi = (int)hi; }
+                var w = e.Get("dot-colour", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); float x, y, z;
+                if (w.Length == 3 && float.TryParse(w[0], nf, ci, out x) && float.TryParse(w[1], nf, ci, out y) && float.TryParse(w[2], nf, ci, out z)) k.Dot = new[] { x, y, z };
+                Func<string, string[]> lines = key => { var v = e.Get(key, ""); if (v.Length == 0) return null; var parts = v.Split(';'); for (int q = 0; q < parts.Length; q++) parts[q] = parts[q].Trim(); return parts; };
+                k.MakeUp = lines("makeup"); k.MakeUpDry = lines("makeup-dry");
+                list.Add(k);
+            }
+            _kinds = list; return list;
+        }
+        /// <summary>The kind of world that forms in a place: <paramref name="forms"/> rocky, giant or hot-jupiter; x the orbit over
+        /// the habitable zone's distance, f over the frost line's, lum the star's brightness (the Sun 1). With
+        /// <paramref name="byId"/>, that kind itself. Only one kind fitting: no chance spent, so a seed's worlds stay its own.</summary>
+        public static WorldKindRule WorldKind(ContentLibrary content, string forms, double x, double f, double lum, Rng rng, string byId = null)
+        {
+            var all = Kinds(content);
+            if (byId != null) { foreach (var k in all) if (k.Id == byId) return k; return new WorldKindRule { Id = byId, Label = byId }; }
+            var fit = new List<WorldKindRule>(); double total = 0;
+            foreach (var k in all)
+            {
+                if (k.Forms != forms) continue;
+                if (k.HzLo >= 0 && (x < k.HzLo || x >= k.HzHi)) continue;
+                if (k.FrostLo >= 0 && (f < k.FrostLo || f >= k.FrostHi)) continue;
+                if (k.LumLo >= 0 && (lum < k.LumLo || lum >= k.LumHi)) continue;
+                fit.Add(k); total += k.Weight;
+            }
+            if (fit.Count == 0) { foreach (var k in all) if (k.Forms == forms) return k; return new WorldKindRule { Id = "default", Label = "World" }; }
+            if (fit.Count == 1) return fit[0];
+            double pick = rng.NextDouble() * total;
+            foreach (var k in fit) { pick -= k.Weight; if (pick <= 0) return k; }
+            return fit[fit.Count - 1];
         }
 
         private static double ZoneAu(ContentLibrary content, string id, double fallback)

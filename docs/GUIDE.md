@@ -9,6 +9,8 @@
   &nbsp;·&nbsp;
   <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
   &nbsp;·&nbsp;
+  <a href="LINUX.md" title="Universe on Linux, through Wine: one script">On Linux</a>
+  &nbsp;·&nbsp;
   <a href="../CREDITS.md" title="Who made it, and the science it is made from">Credits</a>
 </p>
 

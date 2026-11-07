@@ -54,7 +54,7 @@
 | | |
 |---|---|
 | **In the program** | Every page here is built into the program, so this copy and the project always say the same. **Help** on the menu bar opens any of them; the **Guide and wiki** button on the landing page opens this list |
-| **In the project** | The same pages as plain Markdown: `README.md` and `CREDITS.md` at the top, `docs/COMPARED.md`, `docs/GUIDE.md` and `docs/HOW-TO-BUILD.md`, and the in-game pages in `docs/in-game/` |
+| **In the project** | The same pages as plain Markdown: `README.md` and `CREDITS.md` at the top, `docs/COMPARED.md`, `docs/GUIDE.md`, `docs/HOW-TO-BUILD.md` and `docs/LINUX.md` (running it on Linux, through Wine), and the in-game pages in `docs/in-game/` |
 | **The licence** | MIT. Take it, change it, ship it inside your own project, free |
 
 ## Using this viewer

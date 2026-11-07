@@ -19,6 +19,8 @@ mkdir "%STAGE%\docs"
 copy /y "%~dp0README.md" "%STAGE%\docs\README.md" > nul
 copy /y "%~dp0docs\HOW-TO-BUILD.md" "%STAGE%\docs\HOW-TO-BUILD.md" > nul
 copy /y "%~dp0docs\GUIDE.md" "%STAGE%\docs\GUIDE.md" > nul
+copy /y "%~dp0docs\LINUX.md" "%STAGE%\docs\LINUX.md" > nul
+copy /y "%~dp0linux\run.sh" "%STAGE%\run-on-linux.sh" > nul
 copy /y "%~dp0CREDITS.md" "%STAGE%\docs\CREDITS.md" > nul
 if exist "%~dp0release\payload.zip" del "%~dp0release\payload.zip"
 powershell -NoProfile -Command "Compress-Archive -Path '%STAGE%\*' -DestinationPath '%~dp0release\payload.zip' -Force" || exit /b 1

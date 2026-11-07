@@ -10,7 +10,7 @@
   <a href="https://git.unityailab.com/GFourteen/Universe/releases" title="The same release on Unity AI Lab Git"><b>Unity AI Lab Git</b></a>
 </p>
 
-> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.6 MB, from GitHub")** (0.6 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.7 MB, the whole universe, nothing downloaded after. What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
+> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.6 MB, from GitHub")** (0.6 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.7 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
 
 <p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.7 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
@@ -20,6 +20,8 @@
   <a href="docs/GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
   &nbsp;·&nbsp;
   <a href="docs/HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
+  &nbsp;·&nbsp;
+  <a href="docs/LINUX.md" title="Universe on Linux, through Wine: one script">On Linux</a>
   &nbsp;·&nbsp;
   <a href="CREDITS.md" title="Who made it, and the science it is made from">Credits</a>
 </p>
@@ -247,6 +249,7 @@ A bar shows the universe being made, then it opens, whole.
 | **This page**, and the **Help** menu's pages in the program | Anyone, in plain words | What it is, how to fly it, how it works |
 | [**Against the field**](docs/COMPARED.md "Size, scope and performance against the other universe programs") | Anyone | Size, scope and performance beside the other universe programs, with their own published numbers |
 | [**Build your own universe**](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours, features") | Builders: no code needed | Add kinds of worlds, stars and galaxies, change the physics, write tours |
+| [**On Linux**](docs/LINUX.md "Universe on Linux, through Wine: one script") | Linux users | Run it through Wine with the script in the zip; the Steam way; what is and is not yet proven |
 | [**Technical guide**](docs/HOW-TO-BUILD.md "Build, ship and change the code") | Coders (the code is dense: unless you are an advanced one, we suggest an AI coding assistant for changes) | Build it, ship it, find your way round the code, change it |
 
 **Help > Documents** in the program lists every guide, what each is made of and when to read it.

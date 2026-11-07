@@ -9,6 +9,8 @@
   &nbsp;·&nbsp;
   <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
   &nbsp;·&nbsp;
+  <a href="LINUX.md" title="Universe on Linux, through Wine: one script">On Linux</a>
+  &nbsp;·&nbsp;
   <a href="../CREDITS.md" title="Who made it, and the science it is made from">Credits</a>
 </p>
 
@@ -45,7 +47,7 @@ About 18,000 lines of C# and shader code in 61 files, and about 10,000 lines of 
 
 | | |
 |---|---|
-| **Windows 10 or 11**, 64-bit | |
+| **Windows 10 or 11**, 64-bit | To build it, and its home to run in. On Linux it runs through Wine (Direct3D 12 on Vulkan) with the script in the zip: [On Linux](LINUX.md). A native Linux build (Vulkan, X11 and Wayland, a Linux C# runtime) is on the roadmap |
 | **A Direct3D 12 graphics card** | The program picks the strongest one in the computer |
 | **Nothing to install** | The compiler is `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe`, part of Windows |
 
@@ -104,7 +106,7 @@ Change the version at the top of `release.cmd`.
 | `src/shell` | The universe view (`UniverseView`: camera, zoom, picking, info cards, time, days, the tour), the scale and cards on screen (`ScaleHud`), the matter below the ground (`MatterView`), the Help menu's documents (`PreviewText`) |
 | `src/render` | Direct3D 12: the device, picking the graphics card, timing its work, the point and mesh pipelines and their shaders |
 | `src/platform` | The window, input, menus, the landing page (`Launcher`), settings (`%LOCALAPPDATA%\Universe\settings.txt`), the document viewer (`DocViewer`), the stats on screen (`Stats`), the watchdog (`Watchdog`) |
-| `docs/` | The guides: `COMPARED.md` (against the field), `GUIDE.md`, `HOW-TO-BUILD.md`, the in-game pages. They're built into the program too (`build.cmd`'s `/resource` lines), so **Help** shows the same pages; **Help > Documents** is the directory of them all (`docs/in-game/DOCS.md`) |
+| `docs/` | The guides: `COMPARED.md` (against the field), `GUIDE.md`, `HOW-TO-BUILD.md`, `LINUX.md` (on Linux, through Wine), the in-game pages. They're built into the program too (`build.cmd`'s `/resource` lines), so **Help** shows the same pages; **Help > Documents** is the directory of them all (`docs/in-game/DOCS.md`) |
 | `docs/img/` | The logo, the journey clip the readme shows, and the repo page's share images (`social.png` for the link preview, `avatar.png` for the repo's own picture) |
 | `installer` | Our own installer, and the icons, drawn by our own `MakeIcons.cs` |
 

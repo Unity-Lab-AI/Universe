@@ -9,6 +9,8 @@
   &nbsp;·&nbsp;
   <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
   &nbsp;·&nbsp;
+  <a href="LINUX.md" title="Universe on Linux, through Wine: one script">On Linux</a>
+  &nbsp;·&nbsp;
   <a href="../CREDITS.md" title="Who made it, and the science it is made from">Credits</a>
 </p>
 
@@ -39,7 +41,7 @@
 
 | | Needs | Notes |
 |---|---|---|
-| **Universe** | Windows 10 or 11, any Direct3D 12 card. No install size to speak of (1.7 MB), no download beyond the 0.6 MB installer | Every pixel is worked out on the card from equations, so the card does the work; a card with little memory starts at a lower render scale by itself, and **View > GPU use** holds the card at the share you choose (10 to 90%) by turning the detail up or down. On the lab's machine (an RTX 4070 Ti Super at 3840 by 2024, the stats on screen): 60 frames a second among the galaxies and at a star's worlds, 45 to 60 among the atoms, 19 to 26 on a world's grains while the ground under the camera is still being made |
+| **Universe** | Windows 10 or 11, any Direct3D 12 card (on Linux through Wine, with the script in the zip). No install size to speak of (1.7 MB), no download beyond the 0.6 MB installer | Every pixel is worked out on the card from equations, so the card does the work; a card with little memory starts at a lower render scale by itself, and **View > GPU use** holds the card at the share you choose (10 to 90%) by turning the detail up or down. On the lab's machine (an RTX 4070 Ti Super at 3840 by 2024, the stats on screen): 60 frames a second among the galaxies and at a star's worlds, 45 to 60 among the atoms, 19 to 26 on a world's grains while the ground under the camera is still being made |
 | [SpaceEngine](https://store.steampowered.com/app/314650/SpaceEngine/ "SpaceEngine on Steam") | GTX 1050 Ti or RX 460 with 3 GB of card memory, 6 GB of RAM, 4 GB of disk (recommended: GTX 1060, 8 GB, 50 GB) | The nearest in scope: galaxies to a world's ground, with textures for the real worlds |
 | [Universe Sandbox](https://universesandbox.com/faq/ "Universe Sandbox FAQ") | A Direct3D 12 card with 4 GB of card memory, 4 GB of RAM, 4 GB of disk | Simulates a few hundred bodies at once, not a universe |
 | [Elite Dangerous](https://www.pcgamesn.com/elite-dangerous/system-requirements "Elite Dangerous system requirements, PCGamesN") | GTX 470 or R7 240, 6 GB of RAM, 25 GB of disk; Odyssey: GTX 780 with 3 GB, 8 GB of RAM, 75 GB | A full game with ships, trade, missions and sound |

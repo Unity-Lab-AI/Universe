@@ -231,31 +231,91 @@ rate: 0.5
 until-km: 6e-12
 caption: Down to its atoms: the elements its minerals hold, the traces among them
 
+@stop asteroid-round-crystal
+do: arc
+rate: 0
+until-km: 0
+turn: 15
+seconds: 24
+caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
+
+@stop asteroid-into-lattice
+do: arc
+rate: 0.25
+until-km: 1.5e-12
+turn: 6
+seconds: 5
+caption: Down among them
+
+@stop asteroid-through-lattice
+do: fly
+rate: 0.6
+turn: 3
+seconds: 10
+caption: Through the lattice: row on row of atoms, each bonded to its neighbours
+
 @stop asteroid-choose-atom
 do: pick
 target: atom
-caption: One atom of its stone
+caption: One atom
 
 @stop asteroid-to-atom
 do: zoom
 rate: 0.4
 until-km: 6e-13
-caption: An atom of the asteroid: its nucleus, and its electrons where they may be
+caption: An atom: its nucleus, and its electrons where they may be
 
 @stop asteroid-round-atom
 do: arc
 rate: 0.03
 until-km: 2.5e-13
 turn: 14
-seconds: 12
-caption: Round it: the nucleus a spark, the electrons each in its orbital's shape
+seconds: 26
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
 
 @stop asteroid-through-electrons
 do: zoom
 rate: 0.3
 until-km: 5e-14
 pan: 12
-caption: In among its electrons
+caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
+
+@stop asteroid-inner-shells
+do: orbit
+turn: 15
+seconds: 24
+caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
+
+@stop asteroid-to-neighbour
+do: pick
+target: bonded-atom
+caption: Its neighbour
+
+@stop asteroid-across-bond
+do: arc
+rate: 0
+until-km: 0
+turn: 8
+seconds: 9
+caption: Across the bond to its neighbour: atoms share their outer electrons
+
+@stop asteroid-choose-electron
+do: pick
+target: electron
+caption: One electron
+
+@stop asteroid-to-electron
+do: zoom
+rate: 0.35
+until-km: 2.5e-14
+pan: 8
+caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
+
+@stop asteroid-follow-electron
+do: orbit
+turn: 12
+seconds: 16
+caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
 
 @stop asteroid-choose-nucleus
 do: pick
@@ -266,7 +326,7 @@ caption: The nucleus
 do: zoom
 rate: 0.45
 until-km: 3e-17
-caption: Inward, through the empty space of the atom
+caption: Inward: an atom is almost all empty space
 
 @stop asteroid-round-nucleus
 do: arc
@@ -274,7 +334,7 @@ rate: 0
 until-km: 0
 turn: 24
 seconds: 7
-caption: Its nucleus: protons and neutrons, each three quarks in a gluon glow
+caption: Its nucleus: protons and neutrons bound by the strong force
 
 @stop asteroid-choose-proton
 do: pick
@@ -304,7 +364,13 @@ caption: A quark
 do: zoom
 rate: 0.35
 until-km: 6e-19
-caption: One quark: the smallest thing we know
+caption: One quark
+
+@stop asteroid-at-quark
+do: orbit
+turn: 8
+seconds: 9
+caption: The smallest thing we know
 
 @stop asteroid-let-go
 do: pick
@@ -313,7 +379,7 @@ caption: And back out
 
 @stop asteroid-out-of-atom
 do: zoom
-rate: -0.9
+rate: -0.7
 until-km: 1e-9
 caption: Back out through the atom, the crystal, the grain
 
@@ -345,6 +411,178 @@ sweep: 90
 rise: -10
 seconds: 9
 caption: Into its coma: gas and dust boiling off a dark nucleus of ice
+
+@stop onto-comet
+do: zoom
+rate: 0.5
+until-km: 2e-9
+through: yes
+caption: Onto its surface: its own ground, of its own kind's minerals (the card says which), grains of dust and stone
+
+@stop comet-atoms
+do: zoom
+rate: 0.5
+until-km: 6e-12
+caption: Down to its atoms: the elements its minerals hold, the traces among them
+
+@stop comet-round-crystal
+do: arc
+rate: 0
+until-km: 0
+turn: 15
+seconds: 24
+caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
+
+@stop comet-into-lattice
+do: arc
+rate: 0.25
+until-km: 1.5e-12
+turn: 6
+seconds: 5
+caption: Down among them
+
+@stop comet-through-lattice
+do: fly
+rate: 0.6
+turn: 3
+seconds: 10
+caption: Through the lattice: row on row of atoms, each bonded to its neighbours
+
+@stop comet-choose-atom
+do: pick
+target: atom
+caption: One atom
+
+@stop comet-to-atom
+do: zoom
+rate: 0.4
+until-km: 6e-13
+caption: An atom: its nucleus, and its electrons where they may be
+
+@stop comet-round-atom
+do: arc
+rate: 0.03
+until-km: 2.5e-13
+turn: 14
+seconds: 26
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
+
+@stop comet-through-electrons
+do: zoom
+rate: 0.3
+until-km: 5e-14
+pan: 12
+caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
+
+@stop comet-inner-shells
+do: orbit
+turn: 15
+seconds: 24
+caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
+
+@stop comet-to-neighbour
+do: pick
+target: bonded-atom
+caption: Its neighbour
+
+@stop comet-across-bond
+do: arc
+rate: 0
+until-km: 0
+turn: 8
+seconds: 9
+caption: Across the bond to its neighbour: atoms share their outer electrons
+
+@stop comet-choose-electron
+do: pick
+target: electron
+caption: One electron
+
+@stop comet-to-electron
+do: zoom
+rate: 0.35
+until-km: 2.5e-14
+pan: 8
+caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
+
+@stop comet-follow-electron
+do: orbit
+turn: 12
+seconds: 16
+caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
+
+@stop comet-choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop comet-to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward: an atom is almost all empty space
+
+@stop comet-round-nucleus
+do: arc
+rate: 0
+until-km: 0
+turn: 24
+seconds: 7
+caption: Its nucleus: protons and neutrons bound by the strong force
+
+@stop comet-choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop comet-to-proton
+do: zoom
+rate: 0.35
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop comet-round-proton
+do: arc
+rate: 0
+until-km: 0
+turn: 20
+seconds: 6
+caption: Three quarks in a storm of gluons
+
+@stop comet-choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop comet-to-quark
+do: zoom
+rate: 0.35
+until-km: 6e-19
+caption: One quark
+
+@stop comet-at-quark
+do: orbit
+turn: 8
+seconds: 9
+caption: The smallest thing we know
+
+@stop comet-let-go
+do: pick
+target: none
+caption: And back out
+
+@stop comet-out-of-atom
+do: zoom
+rate: -0.7
+until-km: 1e-9
+caption: Back out through the atom, the crystal, the grain
+
+@stop off-comet
+do: zoom
+rate: -1.6
+until-km: 1e40
+out: yes
+caption: Back out to its surface, and its sky
 
 @stop star-2
 do: pick

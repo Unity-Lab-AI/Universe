@@ -1139,6 +1139,8 @@ namespace Universe.Shell
                 private readonly List<StarVertex> _stoneMesh = new List<StarVertex>(); private readonly List<double[]> _stones = new List<double[]>(); private StarVertex[] _stoneArr = new StarVertex[0]; private UploadBuffer _stoneBuf;
         /// <summary>Whether the grain's face gets its own level floor far out all round (not when the planet's ground is drawn behind the matter).</summary>
         public bool Floor = true;
+        /// <summary>The zoom log (the view's), for the lattice's probe line.</summary>
+        public static Action<string> Log; private int _latticeLogTick = -1;
         private readonly List<StarVertex> _patchMesh = new List<StarVertex>(); private long _patchKey; private double _patchGX, _patchGY, _patchGZ, _patchRad;
         private void GrainPatch(List<StarVertex> mesh, double s)
         {
@@ -1658,6 +1660,12 @@ namespace Universe.Shell
             double fax, fay, faz; var focus = Focus(out fax, out fay, out faz);
             if (fm != null && s < AtomSpacing * 40 && Structured(fm))
             {
+                // the lattice level's probe, once a second in the log: the scale in spacings, how many atoms the crystal gives, how many
+                // glows and pick bodies come of them (the level had been black and its atoms unpickable between about six and twenty
+                // spacings, and nothing read in the code said why)
+                int probeTick = (int)time; bool probe = Log != null && probeTick != _latticeLogTick; if (probe) _latticeLogTick = probeTick;
+                int glow0 = glow.Count, bodies0 = _bodies.Count; var probeAtoms = probe ? CrystalKept(fm, 2.4 * s, s < AtomSpacing * 14 ? AtomSpacing * 9 : AtomSpacing * 3, 25000) : null;
+                if (probe) { int inView = 0; double px0 = 2.0 * s / Math.Max(1, _viewH); foreach (var pa in probeAtoms) if (AtomRadius(pa.E) >= px0 * 0.5) inView++; Log("LATTICE probe: " + fm.Id + " at " + (s / AtomSpacing).ToString("0.0") + " spacings, crystal " + probeAtoms.Count + " atoms (" + inView + " wide enough), focus " + (focus != null ? focus.Symbol : "none") + ", reach " + ScaleHud.Words(2.4 * s) + ", kept reach " + ScaleHud.Words(_keptReach) + ", cell area " + (fm.Lat != null ? fm.Lat.Area.ToString("0.0E+0") : "?") + ", yoff " + ScaleHud.Words(_yOff) + ", fy " + ScaleHud.Words(_fy)); }
                 // from about 40 atom spacings (some 10 nm) the crystal's real lattice fills the whole view, coming in as a fine
                 // grain of atoms over the surface and opening into its rows, layers and bonds as you come in
                 // no fading in: an atom is there at its real size, and is drawn once it spans about a pixel (the face's own dots,
@@ -1697,7 +1705,8 @@ namespace Universe.Shell
                     if (cw > 0.02) { float fa = f * sh * (float)cw * (1 - fw); if (NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, fa); else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, fa); }
                     { int nb = _bodies.Count; AddBody(1, 0, 0, at.X, ay, at.Z, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = at.E.Symbol; }   // every layer's atoms
                 }
-                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, (float)(1 - 0.6 * cw));   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
+                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, (float)(1 - 0.6 * cw));
+                if (probe) Log("LATTICE probe: drawn " + drawnAt.Count + " near, glows " + (glow.Count - glow0) + ", bodies " + (_bodies.Count - bodies0) + ", cw " + cw.ToString("0.00"));   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
@@ -2161,7 +2170,7 @@ namespace Universe.Shell
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
             // is for later)
-            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths)" : "level: the lattice (each atom its electron shells, the bonds their shared electrons)"); }   // (one picture at a level, named)
+            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom: a nucleus a hundred thousand times smaller than the atom, and its electrons as fields of where they may be; its size is their reach, and nothing in it is solid" : "level: the lattice: each atom the fields of its electron shells, its size their reach, nothing solid in it; the bonds their shared electrons"); }   // (one picture at a level, named)
             if (!_space && Greyness > 0 && L.Count > 0) L.Add(Greyness >= 1 ? "no colour this small: below light's wavelength, in greys as an electron microscope sees; the atoms' and electrons' colours are marks, not light" : "colour is going: the view is nearing light's wavelength");
             return L;
         }

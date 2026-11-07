@@ -88,7 +88,7 @@ namespace Universe.Shell
 
         public UniverseView(Gpu gpu, BillboardPipeline pipe, MeshPipes meshes, ContentLibrary content, ulong seed)
         {
-            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content);   // (the laws of nature, content/physics.unt)
+            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); MatterView.Log = ZoomLog; _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content);   // (the laws of nature, content/physics.unt)
             var types = new List<string>(); var names = new List<string>();
             foreach (var e in content.OfKind("galaxies.unt", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
             if (types.Count == 0) { types.Add("spiral"); names.Add("Spiral galaxy"); }
@@ -724,7 +724,7 @@ namespace Universe.Shell
                 foreach (var sn in c.Events)
                 {
                     double years = now - sn.T; if (years < 0) continue; double days = years * 365.25;
-                    if (_tSn != null && Math.Abs(sn.T - _tSn.T) < 1e-9 && (int)(time * 2) != _snLogTick)
+                    if (_tSn != null && Math.Abs(sn.T - _tSn.T) < 1e-9 && Math.Abs(sn.Ux - _tSn.Ux) < 1e-6 && Math.Abs(sn.Uz - _tSn.Uz) < 1e-6 && (int)(time * 2) != _snLogTick)
                     {
                         // the supernova the tour is at, in the log: its age, its light, its face and its ejecta now, how far off, so a blank
                         // stop can be read from the log instead of guessed at
@@ -752,7 +752,7 @@ namespace Universe.Shell
                             // face is (one sheet of boiling cells, darker to the limb), full-bright while it shines (a photosphere's face is
                             // as bright as its heat says, whatever its light is against its peak: a thin dim puff of points had stood for it,
                             // and at two hundred days there was nothing to see in the ring), fading only as it thins to a cloud on the tail
-                            double end = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving; float bright = (float)Math.Max(0.25, days <= end ? 1 : Math.Exp(-(days - end) / 40));   // (on the tail a quarter at the least: the thinning cloud still glows, the remnant seen through it)
+                            double end = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving; float bright = (float)(L > 1e6 ? 1 : Math.Max(0.25, days <= end ? 1 : Math.Exp(-(days - end) / 40)));   // (full while it blazes at over a million suns, whatever its day; on the tail a quarter at the least: the thinning cloud still glows, the remnant seen through it)
                             if (_fireSurf == null) { string nm0; StarGen.Build(_content, "supernova-fireball", 0xF1AEUL, out nm0, out _fireSurf); _fireSurf.Giant = true; _fireSurf.Cell = 1.6f; _fireVerts = new StarVertex[_fireSurf.Normals.Length]; _fireBuf = new UploadBuffer(_gpu.Device, (long)_fireVerts.Length * Stride); }
                             _fireSurf.R = cr; _fireSurf.G = cg; _fireSurf.B = cb; _fireSurf.Hot = SnHeatK(sn, days) > 7000;
                             var toEye = new Vec3((float)(-ux / d), (float)(-uy / d), (float)(-uz / d));
@@ -796,7 +796,15 @@ namespace Universe.Shell
             for (int i = 0; i < _galaxies.Count; i++)
             {
                 var c = Supernovae(_galaxies[i], i == _near);
-                foreach (var sn in c.Events) { double years = _simYears - sn.T; if (years < 0 || years > 1.2) continue; double dx = (sn.Ux - _ax) - _ox, dy = (sn.Uy - _ay) - _oy, dz = (sn.Uz - _az) - _oz, d = dx * dx + dy * dy + dz * dz; if (d < bd) { bd = d; best = sn; } }
+                foreach (var sn in c.Events)
+                {
+                    double years = _simYears - sn.T; if (years < 0 || years > 1.2) continue; double days = years * 365.25, end = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving;
+                    // the nearest, but a shining one (its face still blazing) far before one on its tail, and one that leaves a neutron star
+                    // or a black hole before a white dwarf blown to nothing (the tour had kept landing on white dwarfs a hundred and seventy
+                    // days in, their faces shrunk and dimmed: empty space at the stop)
+                    double dx = (sn.Ux - _ax) - _ox, dy = (sn.Uy - _ay) - _oy, dz = (sn.Uz - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) * (days > end ? 50 : 1) * (sn.K.Leaves == "nothing" ? 8 : 1);
+                    if (d < bd) { bd = d; best = sn; }
+                }
             }
             return best;
         }

@@ -131,6 +131,10 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The orbit lines faint continuous lines, never rows of evenly spaced dots:** (built: DNA-AND DESIGN 634; waits on the test) "im still seeing that patterning in solar syastem of planets lik being designed in straight lines"
 
+- [~] **The asteroid's dive the planet's own stops, the tour's supernova a shining one with a remnant, the lattice level probed in the log, the levels' words:** (built: DNA-AND DESIGN 635; waits on the test and its log) "ive put in a bucnh of errors i saw in snaps pics of the zoom in to the astroid its fucked the astroid is invisible till it gets to crystal latuses and the elctrons never appear, wtf we need unification and unifying of the zoom ability to be like planet zoom for any thing or any body u zoom into. so in order there is the astroid images of its fucked up zoom levels then there is maybe the super nova again with no super nova and no nuston star and no black hole in error, so wtf wher is my super novas it keeps zooming to a focal point thats just empty space, and then i aslos took pics of the planet zoom wher shit is black and shit is all jagged and crazy like and at the atom level it need to not just appears from blackmness at a zoom to full on electon fields its a instant hand over ther is no scale in that proper of them being small and getting bigger and the description text needs to propely describe ththat atoms ares pure engergy basicly and classical balls for atoms is in no way accurate but no in so many words"
+
+- [~] **The comet dived into on the tour the same way as the planet and the asteroid, one chain for any body:** (built: DNA-AND DESIGN 636; waits on the test) "and like i said unify all astral body zoom ins so they are all acruate based on elements zommed into as high scales"
+
 ---
 
 ## Pending

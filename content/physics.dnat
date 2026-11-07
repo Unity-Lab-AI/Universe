@@ -53,6 +53,19 @@ does: radioactive decay, and turns one kind of particle into another; helps star
 #   fewer protons than that and a neutron turns into a proton (beta-minus decay, the weak force: an electron and an
 #   antineutrino out); more and a proton turns into a neutron (beta-plus or electron capture); past lead (Z above 82)
 #   the biggest nuclei throw out alpha particles (two protons, two neutrons) as the electric push outgrows the strong pull.
+# gravity: G times the Sun's mass (the Sun's pull, m3/s2, known far better than G itself); orbits follow Kepler's third law
+#   from it (a year squared is the orbit in AU cubed over the star's mass in Suns), a pull falls with the distance squared
+#   (Newton), and a black hole's horizon is 2GM/c2 (Schwarzschild: about 2.95 km for each Sun). earth-g: Earth's pull at
+#   its ground, to compare with. light: the speed of light in empty space.
+@law gravity
+name: Gravity's pull
+gm-sun-m3-s2: 1.32712e20
+earth-g-m-s2: 9.81
+
+@law light
+name: The speed of light
+speed-m-s: 2.998e8
+
 @law nuclear-force
 name: The strong force between nucleons
 core-fm: 1.7

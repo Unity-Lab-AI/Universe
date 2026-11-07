@@ -74,6 +74,19 @@ It's one camera the whole way, about **42 factors of ten**, with nothing swapped
 
 ---
 
+## ⚛️ Real physics, all four forces
+
+| | |
+|---|---|
+| 🪐 **Gravity** | Orbits follow Kepler's law. Every card gives a body's pull and escape speed where you are. A black hole's horizon is 2GM/c², and it bends starlight into a ring |
+| ⚡ **Electromagnetism** | Electrons fill their real shells and orbitals, bonds are shared electrons, stars glow the colour of their temperature, and protons push apart in the nucleus |
+| 🔴 **Strong nuclear force** | Packs protons and neutrons into every nucleus and glues quarks into every proton and neutron |
+| 🟣 **Weak nuclear force** | Decides which nuclei are stable, and how the rest would decay |
+
+Every law's numbers sit in `content/physics.dnat`, so you can change the physics itself. See **[Build your own universe](docs/GUIDE.md)**.
+
+---
+
 ## 🕳️ Black holes, comets and the bodies between
 
 | | |

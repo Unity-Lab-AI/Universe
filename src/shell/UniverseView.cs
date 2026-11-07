@@ -87,7 +87,7 @@ namespace DnaAnd.Shell
 
         public UniverseView(Gpu gpu, BillboardPipeline pipe, MeshPipes meshes, ContentLibrary content, ulong seed)
         {
-            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content;
+            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content);   // (the laws of nature, content/physics.dnat)
             var types = new List<string>(); var names = new List<string>();
             foreach (var e in content.OfKind("galaxies.dnat", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
             if (types.Count == 0) { types.Add("spiral"); names.Add("Spiral galaxy"); }
@@ -346,7 +346,7 @@ namespace DnaAnd.Shell
             foreach (var ex in _extras)
             {
                 if (!ex.Hole || ex.Feeding == 0 || ex.Mass <= 0) continue;
-                double rs = Units.Km(2.953 * ex.Mass), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                 if (rs * 600 / Math.Max(1e-30, d) * h < 2) continue;                      // (too small on screen to show yet)
                 if (_bhDisc == null) MakeBlackHoleParts();
                 float sc = (float)rs, spin = (float)(time * 0.6 + ex.Turn), ct = (float)Math.Cos(ex.Tilt), st = (float)Math.Sin(ex.Tilt);
@@ -2371,7 +2371,7 @@ namespace DnaAnd.Shell
                 foreach (var ex in _extras)
                 {
                     if (!ex.Hole) continue; double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-                    double rs = Units.Km(2.953 * ex.Mass), thE = Math.Sqrt(2 * rs / Math.Max(d, rs)); if (thE < bestE) continue;
+                    double rs = Units.Km(Physics.HorizonKm(ex.Mass)), thE = Math.Sqrt(2 * rs / Math.Max(d, rs)); if (thE < bestE) continue;
                     var cl = new float[4]; float px0 = (float)dx, py0 = (float)dy, pz0 = (float)dz;
                     float cx0 = px0 * vp.M11 + py0 * vp.M21 + pz0 * vp.M31 + vp.M41, cy0 = px0 * vp.M12 + py0 * vp.M22 + pz0 * vp.M32 + vp.M42, cw0 = px0 * vp.M14 + py0 * vp.M24 + pz0 * vp.M34 + vp.M44;
                     if (cw0 <= 0) continue;
@@ -2772,10 +2772,10 @@ namespace DnaAnd.Shell
                 if (exk.Mass > 0)
                 {
                     // its pull where you are, falling with the square of the distance; the speed you would need to get away
-                    double rM = Math.Max(1, (dist + exk.R) / Units.Km(1) * 1000), gm = 1.32712e20 * exk.Mass;   // metres; G times its mass
-                    double g = gm / (rM * rM), vesc = Math.Sqrt(2 * gm / rM);
-                    L.Add("its pull here: " + (g >= 0.01 ? g.ToString("0.###") : g.ToString("0.##E+0")) + " m/s2 (" + (g / 9.81).ToString(g / 9.81 >= 0.01 ? "0.###" : "0.##E+0") + " of Earth's)");
-                    L.Add("escape speed here: " + (vesc >= 2.998e8 ? "faster than light: inside, nothing gets out" : (vesc / 1000).ToString("N0") + " km/s (" + (vesc / 2.998e8 * 100).ToString("0.###") + "% of light)"));
+                    double rM = Math.Max(1, (dist + exk.R) / Units.Km(1) * 1000);                // metres
+                    double g = Physics.Pull(exk.Mass, rM), vesc = Physics.Escape(exk.Mass, rM);     // (Newton's gravity, content/physics.dnat)
+                    L.Add("its pull here: " + (g >= 0.01 ? g.ToString("0.###") : g.ToString("0.##E+0")) + " m/s2 (" + (g / Physics.EarthG).ToString(g / Physics.EarthG >= 0.01 ? "0.###" : "0.##E+0") + " of Earth's)");
+                    L.Add("escape speed here: " + (vesc >= Physics.C ? "faster than light: inside, nothing gets out" : (vesc / 1000).ToString("N0") + " km/s (" + (vesc / Physics.C * 100).ToString("0.###") + "% of light)"));
                 }
             }
             else if (_tKind == 4 && _system != null)

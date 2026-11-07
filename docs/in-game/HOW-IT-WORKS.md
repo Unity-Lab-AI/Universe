@@ -49,6 +49,17 @@ Below the finest ground, the camera goes on into what the ground is made of, eve
 
 Click any grain, atom, electron, proton, neutron or quark for its card.
 
+## ⚛️ The four forces, for real
+
+Universe runs on the real laws of nature, with their real numbers (all in `content/physics.dnat`):
+
+| Force | What it does here |
+|---|---|
+| 🪐 **Gravity** | Orbits follow Kepler's law; every card gives a body's pull and escape speed where you are; a black hole's horizon is 2GM/c², and it bends the light behind it into a ring |
+| ⚡ **Electromagnetism** | Electrons fill their shells and orbitals in their real order; bonds are shared electrons; a star's colour comes from its temperature; protons push apart in the nucleus |
+| 🔴 **Strong nuclear force** | Packs protons and neutrons into the nucleus, with a hard core and a short reach; glues quarks into every proton and neutron; sets each nucleus's binding energy |
+| 🟣 **Weak nuclear force** | Decides which nuclei are stable and how the rest decay: beta-minus, beta-plus, or alpha past lead |
+
 ## 🌀 A galaxy that fills in round you
 
 A galaxy holds about a hundred billion stars, and the game keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide. Each cube is made from its own position, so they are the same stars whenever you come back.

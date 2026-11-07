@@ -167,7 +167,7 @@ namespace DnaAnd.Gen
             foreach (var e in content.OfKind("black-holes.dnat", "blackhole"))
                 if (e.Id == "supermassive") e.TryRange("mass-sol", out lo, out hi);
             double mass = Math.Exp(Math.Log(lo) + rng.NextDouble() * (Math.Log(Math.Min(hi, 1e9)) - Math.Log(lo)));
-            double rs = Units.Km(2.95 * mass);                    // event horizon radius
+            Physics.Load(content); double rs = Units.Km(Physics.HorizonKm(mass));   // event horizon radius (2GM/c², content/physics.dnat)
             var bh = new BlackHole { MassSol = mass, HorizonUnits = rs, Active = rng.NextDouble() < 0.5 };
 
             var disk = new List<StarVertex>();

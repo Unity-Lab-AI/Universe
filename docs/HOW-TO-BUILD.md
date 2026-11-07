@@ -86,6 +86,7 @@ Change the version at the top of `release.cmd`.
 | 🪨 **Grains and matter** | `GrainField` is one field of loose rock for a whole world. `MatterView` places grains, crystals, atoms, electrons and nuclei at their real sizes round where you dive in |
 | 🌊 **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
 | ⏱️ **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
+| ⚛️ **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.dnat`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
 | 🕰️ **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
 
 ---
@@ -102,6 +103,7 @@ Change the version at the top of `release.cmd`.
 | The info cards | `UniverseView.Card` (what they say), `ScaleHud.DrawCard` (how they look) |
 | The Help documents | `docs/` (built in by `build.cmd`'s `/resource` lines), shown by `DocViewer` |
 | Minerals and elements | `content/minerals.dnat`, `content/elements.dnat` |
+| The laws of nature | `content/physics.dnat`, read by `Physics` and `MatterView` |
 
 > **Keep it a toolkit:** read traits from templates, never test for a kind's name in code; give every trait a range; make things from their seed, never store them; and do heavy work on the graphics card.
 

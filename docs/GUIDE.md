@@ -217,6 +217,44 @@ Which kind of world forms in each orbit then follows from the world templates ab
 
 ---
 
+## ⚛️ The laws of nature
+
+Universe runs on the real laws of physics, and their numbers are templates too. They live in `content/physics.dnat`, so you can read every one, and change them to build a universe with different physics.
+
+### The four forces
+
+| Force | What it does in Universe | Its numbers |
+|---|---|---|
+| 🪐 **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per Sun), and the light of stars behind it bends into an **Einstein ring** | `@law gravity`: `gm-sun-m3-s2` (the Sun's pull, G times its mass), `earth-g-m-s2` |
+| ⚡ **Electromagnetism** | Each atom's **electrons** fill their shells and orbitals in their real order (1s 2s 2p 3s ...). **Bonds** are shared electrons. A star's **colour** comes from its temperature the way a glowing body's does (Planck's law). Inside the nucleus, the **protons push each other apart** | `@law coulomb`: `k-mev-fm` (the push between two protons), `@law light`: `speed-m-s` |
+| 🔴 **Strong nuclear force** | **Packs the nucleus**: protons and neutrons pull together just beyond a hard core where they push apart, and feel nothing past a few femtometres. It glues the **quarks** in every proton and neutron. A nucleus's **binding energy** comes from the strong pull against the electric push | `@law nuclear-force`: `core-fm`, `spacing-fm`, `range-fm`; `@law mass-formula`: the five terms of the Bethe–Weizsäcker formula |
+| 🟣 **Weak nuclear force** | Decides **which nuclei are stable** and how the rest decay: too many neutrons and one turns into a proton (beta-minus), too many protons and one turns into a neutron (beta-plus). Past lead, the biggest nuclei throw out alpha particles. Every nucleus's card says which | `@law beta-stability`: `c` (the valley of stability), `alpha-above-z` |
+
+### Matter, air and stars
+
+| Law | What it sets |
+|---|---|
+| `@law air-density` | How many molecules are in each cubic centimetre of air at about one bar, so you meet the right number going into an air |
+| `@gas ...` | The atoms in each molecule of each gas, so an air's make-up gives the atoms you find in it |
+| `@law star-plasma` | What a star's surface is made of, and how dense it is |
+| `@force ...`, `@particle ...`, `@atom ...` | What each force, particle and part of an atom is and does, for the cards |
+
+### Change the physics
+
+```
+@law nuclear-force
+name: The strong force between nucleons
+core-fm: 1.7
+spacing-fm: 1.8
+range-fm: 2.6
+```
+
+Make the strong force reach further and nuclei pack differently. Change gravity's pull and every escape speed, pull and black-hole horizon follows. These are the same numbers physics textbooks use; changing them is how you build a universe where the laws are different.
+
+> **Still to come:** gravity shaping orbits moment by moment (today orbits follow Kepler's law exactly), decay happening before your eyes (today each nucleus says how it would decay), and the fields particles are waves in.
+
+---
+
 ## 🔭 Change the whole universe
 
 `content/universe.dnat` holds the universe itself:
@@ -241,7 +279,7 @@ Below the ground, everything is real matter at its real size.
 |---|---|
 | `content/elements.dnat` | All 118 elements: their atoms, shells and most common isotopes |
 | `content/minerals.dnat` | Minerals (their crystal from its published unit cell) and the **mix** each kind of ground is made of |
-| `content/physics.dnat` | The laws and gases the matter and air follow |
+| `content/physics.dnat` | The laws of nature, gases and particles (see *The laws of nature* above) |
 
 Add a mineral, then put it in a ground's mix, and its grains appear on every world of that kind.
 

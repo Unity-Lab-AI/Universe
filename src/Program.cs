@@ -451,12 +451,15 @@ namespace Universe
 
         // the clip being filmed, if any: a crash finishes it first, so it still plays
         private static Universe.Render.Mp4Writer OpenClip;
+        private static bool _logStarted;
         private static void WriteLog(string line)
         {
             try
             {
                 System.IO.Directory.CreateDirectory("build");
-                System.IO.File.WriteAllText(System.IO.Path.Combine("build", "last-run.log"), line + Environment.NewLine);
+                // every line of this run kept (the first starts the file afresh): an error early on is not wiped by a later line
+                string lf = System.IO.Path.Combine("build", "last-run.log");
+                if (_logStarted) System.IO.File.AppendAllText(lf, line + Environment.NewLine); else { System.IO.File.WriteAllText(lf, line + Environment.NewLine); _logStarted = true; }
             }
             catch { }
         }

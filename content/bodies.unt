@@ -37,8 +37,8 @@ disc-rs: 3..60
 inner-orbit-seconds: 8
 swarm-stars: 40
 swarm-rs: 12..120
-eating-share: 0.5
-eating-stars: 1..4
+eating-share: 0.35
+eating-stars: 1..2
 colour: 1 0.7 0.35
 says: millions to billions of solar masses at the galaxy's heart, its disc of hot gas glowing as it falls in
 

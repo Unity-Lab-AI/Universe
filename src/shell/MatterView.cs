@@ -920,7 +920,7 @@ namespace Universe.Shell
             if (_space && e != null && s > AtomRadius(e) * 3)
             {
                 string[] kinds = { "a globular cluster", "an open cluster", "an emission nebula", "a reflection nebula", "a planetary nebula", "a supernova remnant", "a dark nebula" };
-                string where = _spaceKind == 13 ? "a neutron star's crust (iron nuclei in a lattice, electrons racing between them)" : _spaceKind == 11 ? "a star's plasma (bare nuclei and free electrons, thousands of degrees)" : _spaceKind == 10 ? "the air (the world's own gases, at about one bar)" : _spaceKind >= 0 && _spaceKind < kinds.Length ? kinds[_spaceKind] : "the space between the stars";
+                string where = _spaceKind == 12 ? "a black hole, inside its horizon, falling" : _spaceKind == 13 ? "a neutron star's crust (iron nuclei in a lattice, electrons racing between them)" : _spaceKind == 11 ? "a star's plasma (bare nuclei and free electrons, thousands of degrees)" : _spaceKind == 10 ? "the air (the world's own gases, at about one bar)" : _spaceKind >= 0 && _spaceKind < kinds.Length ? kinds[_spaceKind] : "the space between the stars";
                 return "the gas of " + where + ": one atom about every " + ScaleHud.Words(_gasSpacing) + ", mostly hydrogen; the one ahead " + e.Name.ToLowerInvariant();
             }
             string mn = m != null ? m.Name.ToLowerInvariant() + " (" + m.Formula + ")" : "rock";

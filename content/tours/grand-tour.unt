@@ -114,12 +114,21 @@ max-rate: 0.35
 seconds: 9
 caption: The shadow, two and a half times the horizon across: light itself is caught here, and nothing inside gets out
 
+@stop to-horizon
+do: shot
+to-radii: 0.45
+sweep: 140
+rise: -25
+max-rate: 0.25
+seconds: 16
+caption: Down to the horizon itself: the disc all round, the sky bent into a ring, the shadow growing to fill the view; the well's graph marks the way down
+
 @stop fall
 do: zoom
 rate: 0.7
 until-km: 1e-19
 through: yes
-pan: 3
+pan: 6
 caption: In through the horizon: from here the way out needs more than light's speed; the well's graph shows the fall, a sharp step at the horizon down to a point; black, all the way to the middle
 
 @stop singularity

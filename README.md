@@ -239,7 +239,7 @@ A bar shows the universe being made, then it opens, whole.
 |---|---|---|
 | **This page**, and the **Help** menu's pages in the program | Anyone, in plain words | What it is, how to fly it, how it works |
 | [**Build your own universe**](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours, features") | Builders: no code needed | Add kinds of worlds, stars and galaxies, change the physics, write tours |
-| [**Technical guide**](docs/HOW-TO-BUILD.md "Build, ship and change the code") | Coders | Build it, ship it, find your way round the code, change it |
+| [**Technical guide**](docs/HOW-TO-BUILD.md "Build, ship and change the code") | Advanced coders, or anyone with an AI coding assistant | Build it, ship it, find your way round the code (it is dense), change it |
 
 **Help > Documents** in the program lists every guide, what each is made of and when to read it.
 

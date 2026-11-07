@@ -340,7 +340,7 @@ Every stop has a `caption`, which is shown on screen. A caption of `{sky}` is wr
 
 ## Add a feature in code
 
-When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, built with the compiler that comes with Windows. It is dense (read it by its comments: a fifth of its lines are plain English), so see **Build your own (technical)** for the full map and how to read it. The short version:
+When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, built with the compiler that comes with Windows. It is dense (read it by its comments: a fifth of its lines are plain English), and changing it by hand is work for an advanced programmer, or for anyone with an AI coding assistant; see **Build your own (technical)** for the full map and how to read it. The short version:
 
 | You want | Go to |
 |---|---|

@@ -57,6 +57,9 @@ namespace DnaAnd.Platform
             return !JustActivated;
         }
 
+        /// <summary>Holds the controls for this frame (while the universe is still being made at the start): nothing pressed, moved or held.</summary>
+        public void Hold() { Array.Clear(_pressed, 0, 256); Array.Clear(_down, 0, 256); Wheel = 0; _pending = 0; MouseDX = MouseDY = 0; LeftClicked = RightClicked = false; LeftDown = RightDown = false; }
+
         public bool OnMessage(uint msg, IntPtr wParam, IntPtr lParam)
         {
             // coming to the front or leaving it: nothing held is carried over (a key let go in another window never sticks down)

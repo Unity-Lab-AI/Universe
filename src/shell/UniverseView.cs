@@ -271,7 +271,7 @@ namespace DnaAnd.Shell
                     {
                         // points through the whole sphere, each kept as often as the web is crowded there: the walls, filaments and
                         // clusters show, the voids stay dark; made on a thread of its own so nothing waits
-                        int want = Math.Min(_glowPoints, 900000); double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU * 1.5; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.6 + 1.5) / _webMean; ulong sd = _seed;   // (top: a wall's density and a little more keeps every point (filaments and clusters show by crowding, voids two hundred times thinner): a quarter of the tries are kept, so it is made in a few seconds)
+                        int want = Math.Min(_glowPoints, 900000); _glowWant = want; _glowMade = 0; double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU * 1.5; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.6 + 1.5) / _webMean; ulong sd = _seed;   // (top: a wall's density and a little more keeps every point (filaments and clusters show by crowding, voids two hundred times thinner): a quarter of the tries are kept, so it is made in a few seconds)
                         _glowMaker = new System.Threading.Thread(() =>
                         {
                             // made on every core but one at once, each its own share from its own seed (the same points every time),
@@ -292,6 +292,7 @@ namespace DnaAnd.Shell
                                         double wv = Web(x, y, z); if (rng.NextDouble() * top * top > wv * wv) continue;   // kept by the web's density squared: its filaments and clusters stand out bright, its voids go dark
                                         float warm = (float)rng.NextDouble();
                                         list.Add(new StarVertex { X = (float)x, Y = (float)y, Z = (float)z, Size = 1.2f, R = 0.75f + 0.25f * warm, G = 0.72f + 0.1f * warm, B = 1f - 0.3f * warm, A = 1 });
+                                        if ((list.Count & 1023) == 0) System.Threading.Interlocked.Add(ref _glowMade, 1024);   // (how far along, for the start's loading bar)
                                     }
                                     lists[me] = list;
                                 }) { IsBackground = true, Priority = System.Threading.ThreadPriority.BelowNormal };
@@ -1683,13 +1684,15 @@ namespace DnaAnd.Shell
         public bool Update(Input input, double dt, int w, int h)
         {
             Mark();
+            LoadProgress(dt);
+            if (Loading) input.Hold();                                                  // (the controls wait while the universe is made)
             if (_pausedTour != null)
             {
                 // a paused tour: T carries it on (the T key and the menu, as they start it), R starts it again, Backspace lets it go
                 if (input.WasPressed('R')) StartTour(_tourName);
                 else if (input.WasPressed(0x08)) { _pausedTour = null; _pausedWhy = null; MenuChanged = true; }
             }
-            if (_tour != null) TourStep(input, dt, w, h);
+            if (_tour != null && !Loading) TourStep(input, dt, w, h);   // (the tour begins once the universe is made)
             _matter.Glide = _tour != null ? 1.2 : 4;                                     // on the tour the matter glides as a film camera would                                  // a tour gives the controls what each stop asks
             // a click (pressed and let go without dragging) picks what is under the mouse
             if (input.LeftClicked) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }
@@ -2076,6 +2079,27 @@ namespace DnaAnd.Shell
         // in the matter, how far over what is picked the view is: the tour slows as it lines up (to a quarter, never stopped,
         // so it never looks frozen) and speeds again once over it
         // below a giant's cloud tops (it has no ground: inside, only its gas)
+        // ── the start: held on a loading screen until what you see first is made (the web's light, the galaxies made in full
+        // round you with their stars), so the universe never opens half made and filling in; never more than a minute ──
+        private int _glowMade, _glowWant = 1; private bool _loadDone; private double _loadT, _loadShare; private string[] _loadLines;
+        /// <summary>Still making what is seen first, at the start.</summary>
+        public bool Loading { get { return !_loadDone; } }
+        private void LoadProgress(double dt)
+        {
+            if (_loadDone) return; _loadT += dt;
+            double web = _glowAll != null ? 1 : Math.Min(0.99, _glowMade / (double)Math.Max(1, _glowWant));
+            int near = 0, made = 0;
+            for (int i = 0; i < _galaxies.Count; i++)
+            {
+                var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz;
+                if (dx * dx + dy * dy + dz * dz > _nearUnits * _nearUnits * 2.25) continue;
+                near++; if (g.Far != null) made++;
+            }
+            double gal = near == 0 ? (_loadT > 3 ? 1 : 0) : made / (double)near;
+            _loadShare = web * 0.65 + gal * 0.35;
+            _loadLines = new[] { "Making the universe", web < 1 ? "the cosmic web: " + ((int)(web * 100)) + "% of its light" : "the cosmic web: ready", "the galaxies round you: " + made + " of " + Math.Max(near, made) };
+            if ((web >= 1 && gal >= 1) || _loadT > 60) { _loadDone = true; MenuChanged = true; }
+        }
         private bool InsideGiant { get { if (_ground == null || _ground.Solid || _planet < 0) return false; double x, y, z; CamFromPlanet(out x, out y, out z); return Math.Sqrt(x * x + y * y + z * z) < _ground.Radius + _ground.CloudKm * 0.9; } }
         private double OverPick() { if (_matterScale <= 0 && _spaceScale <= 0) return 1; double u = Math.Max(0, Math.Min(1, (0.6 - _matter.PickOff) / 0.4)); u = u * u * (3 - 2 * u); return 0.25 + 0.75 * u; }
         private double OnCourse() { double u = Math.Max(0, Math.Min(1, (0.12 - OffTarget()) / 0.08)); return u * u * (3 - 2 * u); }
@@ -2600,6 +2624,7 @@ namespace DnaAnd.Shell
                 }
                 _hud.DrawCard(_meshes, lines, w * 0.3, h * 0.86, w, h);
             }
+            if (Loading) { _gpu.ClearDepth(); _hud.DrawLoading(_meshes, w, h, _loadShare, _loadLines ?? new[] { "Making the universe" }); }   // (the start's loading screen over everything)
             if (Settings.Get("show-fps", true))                                       // frames a second, top right (View > Show FPS)
                 _hud.DrawCard(_meshes, new[] { Window.Fps.ToString("0") + " FPS" }, w - 150 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 12 * Math.Max(1, h / 1080.0), w, h);
             double mdx, mdy, mdz, mrad, msx, msy;

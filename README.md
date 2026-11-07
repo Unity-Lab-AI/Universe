@@ -109,7 +109,7 @@ There's no life here yet, but the worlds aren't frozen. Their insides cool, plat
 
 ## 🚀 Start
 
-The landing page opens first. Type a seed (or press **Random**, or leave it blank for a new universe), then **Begin**, or **Take the tour**. Your settings and the **Guide and wiki** are there too.
+The landing page opens first. Type a seed (or press **Random**, or leave it blank for a new universe), then **Begin**, or **Take the tour**. Your settings and the **Guide and wiki** are there too. The universe is then made before it opens, with a bar showing how far along it is, so it never fills in in front of you.
 
 ## 🖱️ How to fly
 

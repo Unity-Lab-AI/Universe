@@ -1,5 +1,7 @@
 # How to use it
 
+> **Starting up:** the universe is made before it opens, with a bar showing how far along it is (a few seconds; the controls wait till it's ready).
+>
 > **New here?** Press **T** for the grand tour, a five-minute film from the whole universe down to the quarks. Press **T** again any time to fly it yourself.
 
 ## 🖱️ Flying

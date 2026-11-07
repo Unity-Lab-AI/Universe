@@ -359,7 +359,7 @@ namespace DnaAnd
                     if (gpu.Grabbed != null && clipPath == null)
                     {
                         if (wantShot && gpu.GrabW == gpu.Width) { try { DnaAnd.Render.PngWriter.Save(System.IO.Path.Combine(caps, (shotName ?? "Universe " + stamp) + ".png"), gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("screenshot error · " + ex.Message); } wantShot = false; shotName = null; }
-                        if (rec != null && !(recForTour && world != null && world.TourPaused)) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
+                        if (rec != null && !(recForTour && world != null && (world.TourPaused || world.Loading))) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
                         gpu.Grabbed = null;
                     }
                     if (wantShot || rec != null) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; }   // (a screenshot at full size; a clip at its own, half each way on a big screen)

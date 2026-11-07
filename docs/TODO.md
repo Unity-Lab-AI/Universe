@@ -94,6 +94,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The lattice's clouds bright enough to read; the hand-overs to the orbs and to the orbitals by degrees:** (built: DNA-AND DESIGN 612; waits on the test) "i took some screen shots of issues and at 200 picometers jsut befoer it there is a had off between orbs and elctrons and there is not middle ground it jsut instaly jusmps to orbs then instantly jusmps to our electron fields of yellow abnd blue elctrons, check clips"
 
+- [~] **Every zoom ending at a crawl, the pull-outs from matter eased to the pop, chained zooms one movement:** (built: DNA-AND DESIGN 613; waits on the test) "u didnt fix the pull out to web it just instant stops i though i told u all movememnts need slow down a crawl once close to doing centematics"
+
 ---
 
 ## Pending

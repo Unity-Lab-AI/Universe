@@ -31,3 +31,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the tour's pans eased in, the grid gone after the hole, the text rimmed and warm): DNA-AND DESIGN 606-608.
 - 2026-11-07 (the fireball as a star's face, every asteroid its own make-up and its elements' forges, the zoom from rest and the pan before the travel): DNA-AND DESIGN 609-611.
 - 2026-11-07 (the lattice's clouds readable, the matter levels handing over by degrees): DNA-AND DESIGN 612.
+- 2026-11-07 (every zoom ending at a crawl, chained zooms one movement): DNA-AND DESIGN 613.

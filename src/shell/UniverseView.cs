@@ -1993,10 +1993,19 @@ namespace Universe.Shell
                     {
                         // one steady rate in scale (each tenfold the same time), eased in and out
                         double d = ViewDistanceKm(), want = st.UntilKm, sign = st.Rate >= 0 ? 1 : -1;
+                        // a zoom out of a body's matter ends where the view pops out to space (its written until is a stand-in): that is
+                        // its real end, and it is eased to, as every end is (it had run at full rate until the pop, and stopped dead)
+                        if (st.Out && want >= 1e30) want = _spaceScale > 0 ? _spaceTop * 0.6 : _matterScale > 0 ? _matterTop * 0.6 : want;
                         double left = Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, want)));
-                        double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Max(0.12, Math.Min(1, left / 1.5))) * TourPace;   // slowing to a crawl over the last tenfold and a half of an approach (an eighth of its rate at the end); never faster than the world is made
+                        // one movement, however many stops it is written as: a zoom followed by another the same way runs straight on
+                        // (no easing out at the join, no fresh start after it); the last of them slows to a crawl over its final tenfold
+                        // and a half, a twentieth of its rate at the end, and ends at that crawl, as every move does (it had dropped
+                        // to an eighth and then stopped dead at its until)
+                        var nx = _tourAt + 1 < _tour.Count ? _tour[_tourAt + 1] : null; bool chain = !st.Out && nx != null && nx.Do == "zoom" && (nx.Rate >= 0 ? 1 : -1) == sign;
+                        double target = Math.Abs(st.Rate) * (st.Through || chain ? 1 : Math.Max(0.05, Math.Sqrt(Math.Min(1, left / 1.5)))) * TourPace;   // (never faster than the world is made)
                         double ramp = Math.Min(1, _tourT / 2.5); ramp = ramp * ramp * (3 - 2 * ramp);                     // brought up from rest over the first two and a half seconds (an exponential ease-in was fastest in its first frame: a jerk away from the last thing)
-                        _tourRate += (target * ramp - _tourRate) * (1 - Math.Exp(-dt * 1.5));
+                        double aim = Math.Max(target * ramp, Math.Min(target, _tourRate));                                 // (a rate carried in from the stop before is kept, never dropped to ramp again)
+                        _tourRate += (aim - _tourRate) * (1 - Math.Exp(-dt * 1.5));
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
@@ -2024,7 +2033,7 @@ namespace Universe.Shell
                         else if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_spaceScale > 0 && _matter.SpaceKind == 12 && _fallShare < 1) || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
-                        if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
+                        if ((sign > 0 && d <= want * 1.02) || (sign < 0 && !st.Out && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; if (!chain) _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
                     }
                     break;
                 case "shot":

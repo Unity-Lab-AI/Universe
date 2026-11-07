@@ -502,7 +502,7 @@ namespace Universe.Shell
             {
                 var a = SolidRock(new Rng(0x5A57E1UL), 1, 0.52f, 0.47f, 0.42f); _rockSolidN = a.Count; _rockSolid = new UploadBuffer(_gpu.Device, (long)a.Count * Stride); _rockSolid.Write(a.ToArray(), a.Count);
                 var b = SolidRock(new Rng(0x60BE5UL), 0.08, 0.55f, 0.52f, 0.5f); _roundSolidN = b.Count; _roundSolid = new UploadBuffer(_gpu.Device, (long)b.Count * Stride); _roundSolid.Write(b.ToArray(), b.Count);
-                var c = SolidRock(new Rng(0xC0CE7UL), 0.9, 0.16f, 0.15f, 0.14f); _nucSolidN = c.Count; _nucSolid = new UploadBuffer(_gpu.Device, (long)c.Count * Stride); _nucSolid.Write(c.ToArray(), c.Count);   // a comet's nucleus: among the darkest things known
+                var c = SolidRock(new Rng(0xC0CE7UL), 0.9, 0.42f, 0.40f, 0.38f); _nucSolidN = c.Count; _nucSolid = new UploadBuffer(_gpu.Device, (long)c.Count * Stride); _nucSolid.Write(c.ToArray(), c.Count);   // a comet's nucleus: among the darkest bodies there are (albedo 0.04), shown as a camera exposing for it sees it, mid-grey, as Rosetta saw 67P (at its true darkness it was black against the stars) things known
             }
             var cm = new List<StarVertex>(); var rng = new Rng(0xC0CE7UL);   // (the coma and the tails round the solid nucleus)
             for (int k = 0; k < 9000; k++)
@@ -1008,7 +1008,7 @@ namespace Universe.Shell
         // the camera rides along with the planet or moon you picked (or are at) as it goes round its star
         private void FollowBody()
         {
-            int follow = _tKind == 2 && _system != null && _tIndex < _system.Bodies.Count ? _tIndex : _planet;
+            int follow = _tKind == 2 && _system != null && _tIndex < _system.Bodies.Count ? _tIndex : _tKind == 6 ? -1 : _planet;   // (an asteroid, comet or black hole picked: they do not move, and riding with the planet you left shifted the camera off them every frame)
             if (follow < 0 && _system != null)
             {
                 // nothing picked: the nearest planet or moon is matched once you are within about 300 of its radii
@@ -1226,7 +1226,7 @@ namespace Universe.Shell
         // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
         // the last galaxy's kind, so the next is another kind
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
-        private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin, _shotTurnT = 2;
+        private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin, _shotTurnT = 2, _shotSweep;   // (_shotSweep: how far round the shot sweeps, radians, signed: the stop's sweep, or round to a small body's lit side)
         private double[] _shotP0; private double _shotR0;   // where the shot began (universe units) and the size of what was in view there: the departure is paced from it
         private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
@@ -1374,14 +1374,15 @@ namespace Universe.Shell
                             double hx = cx - ux * ce, hy = cy - uy * ce, hz = cz - uz * ce, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz);
                             if (hl < 1e-6) { hx = Math.Abs(ux) < 0.9 ? 1 : 0; hy = 0; hz = Math.Abs(ux) < 0.9 ? 0 : 1; double d0 = hx * ux + hz * uz; hx -= ux * d0; hy -= uy * d0; hz -= uz * d0; hl = Math.Sqrt(hx * hx + hy * hy + hz * hz); }
                             _shotE1 = new[] { hx / hl, hy / hl, hz / hl }; _shotUp = new[] { ux, uy, uz };
+                            _shotE2 = new[] { uy * _shotE1[2] - uz * _shotE1[1], uz * _shotE1[0] - ux * _shotE1[2], ux * _shotE1[1] - uy * _shotE1[0] };
+                            _shotSweep = st.Sweep * _shotDir * Math.PI / 180;
                             if (_tKind == 6 && _system != null && _tIndex >= 0 && _tIndex < _extras.Count && !_extras[_tIndex].Hole)
                             {
-                                // a small body lit by its star: the shot comes round to its lit side (the sweep's middle facing the star), never
-                                // a dark rock against the stars with its name on the card
+                                // a small body lit by its star: the shot sweeps round from where the camera is to the body's lit side (the
+                                // short way round), so it comes to rest with the star behind the camera, never on a dark rock against the stars
                                 double sx = _ax - _tx, sy = _ay - _ty, sz = _az - _tz, se = sx * ux + sy * uy + sz * uz; sx -= ux * se; sy -= uy * se; sz -= uz * se; double sl = Math.Sqrt(sx * sx + sy * sy + sz * sz);
-                                if (sl > 1e-9) { var e1 = Turn(new Vec3((float)(sx / sl), (float)(sy / sl), (float)(sz / sl)), new Vec3((float)ux, (float)uy, (float)uz), -st.Sweep * _shotDir * Math.PI / 180 * 0.5); _shotE1 = new[] { (double)e1.X, e1.Y, e1.Z }; }
+                                if (sl > 1e-9) _shotSweep = Math.Atan2((sx * _shotE2[0] + sy * _shotE2[1] + sz * _shotE2[2]) / sl, (sx * _shotE1[0] + sy * _shotE1[1] + sz * _shotE1[2]) / sl);
                             }
-                            _shotE2 = new[] { uy * _shotE1[2] - uz * _shotE1[1], uz * _shotE1[0] - ux * _shotE1[2], ux * _shotE1[1] - uy * _shotE1[0] };
                             _shotD0 = tl; _shotEl0 = Math.Asin(Math.Max(-1, Math.Min(1, ce)));
                             _shotD1 = st.ToKm > 0 ? Units.Km(st.ToKm) : st.ToRadii > 0 && trad > 0 ? trad * st.ToRadii : tl;
                             _shotEl1 = Math.Max(-1.3, Math.Min(1.3, _shotEl0 + st.Rise * Math.PI / 180));
@@ -1400,7 +1401,7 @@ namespace Universe.Shell
                         Func<double, double[]> frame = ee =>
                         {
                             double Dd = Math.Exp(Math.Log(_shotD0) + (Math.Log(_shotD1) - Math.Log(_shotD0)) * ee);
-                            double az2 = st.Sweep * _shotDir * Math.PI / 180 * ee, el2 = _shotEl0 + (_shotEl1 - _shotEl0) * ee, ca2 = Math.Cos(az2), sa2 = Math.Sin(az2), ce3 = Math.Cos(el2), se3 = Math.Sin(el2);
+                            double az2 = _shotSweep * ee, el2 = _shotEl0 + (_shotEl1 - _shotEl0) * ee, ca2 = Math.Cos(az2), sa2 = Math.Sin(az2), ce3 = Math.Cos(el2), se3 = Math.Sin(el2);
                             return new[] { ce3 * (ca2 * _shotE1[0] + sa2 * _shotE2[0]) + se3 * _shotUp[0], ce3 * (ca2 * _shotE1[1] + sa2 * _shotE2[1]) + se3 * _shotUp[1], ce3 * (ca2 * _shotE1[2] + sa2 * _shotE2[2]) + se3 * _shotUp[2], Dd };
                         };
                         Func<double[], double> fromStart = f => { double px = _ax + _ox + tdx + f[0] * f[3] - _shotP0[0], py = _ay + _oy + tdy + f[1] * f[3] - _shotP0[1], pz = _az + _oz + tdz + f[2] * f[3] - _shotP0[2]; return Math.Sqrt(px * px + py * py + pz * pz); };

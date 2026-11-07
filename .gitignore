@@ -1,2 +1,30 @@
 build/
 release/
+
+# Machine-local session state, written by .claude/hooks/* (per machine, never team-shared)
+.claude/.session-state.md
+.claude/.session-env.json
+.claude/.last-session.md
+.claude/.session-tidbits.md
+.claude/.session-usage.jsonl
+.claude/.usage-tracking-disabled
+.claude/.yolo-mode
+.claude/.persona-state
+.claude/.setup-complete
+
+# Per-developer Claude Code settings override (settings.json is team-shared and committed)
+.claude/settings.local.json
+
+# User-private setup data: secrets, identity, assets
+.claude/.env
+.claude/user.json
+.claude/user-context/
+
+# OS and editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+release/

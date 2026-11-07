@@ -397,46 +397,53 @@ namespace Universe.Shell
             // 2 root(1 - r), running from the throat down to the point at r = 0, two radii below it. Down is toward the point: the
             // far sheet is above and behind you, the throat's ring at depth 0, the point at depth 2. You are at your real r
             double rhoCam = Math.Max(0, Math.Min(1, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs)));
-            double S = 1.5 / Math.Max(1e-30, rhoCam);                                       // the well's unit (one horizon radius) against your own scale: the wall round you about a view and a half off, at every depth of the fall
-            // down the throat the radius is drawn on a log scale, each tenfold of it two views of length ahead: the fall's twenty-five
-            // tenfolds fit, and the well is a long funnel narrowing to the point ahead, which recedes as you fall until the last scale;
-            // above the throat the sheet keeps Flamm's own height (2 root(r - 1)), flat far out and vertical at the horizon's ring
-            const double PerTenfold = 2.0; double lgCam = Math.Log10(Math.Max(1e-300, rhoCam));
-            Func<double, double> along = rho => rho >= 1 ? lgCam * PerTenfold - 2 * Math.Sqrt(rho - 1) * S : (lgCam - Math.Log10(Math.Max(1e-300, rho))) * PerTenfold;   // how far ahead of you (down) a ring of that radius lies; negative: above
+            // the well inside the horizon is the dilation itself, not the hole's size: the funnel is drawn in the fall's own measure,
+            // each tenfold of the radius two views of length (T tenfolds from the horizon to the singularity at the quarks' size:
+            // about twenty-five for a stellar hole, thirty for a supermassive one), so it is far longer than the space the hole takes
+            // up, and it is complete at every depth: the mouth (the horizon's ring, the big opening) above you, the walls a view and a
+            // half round you, and the cone squeezing straight down to the point ahead, where it ends in no space at all. Looking down
+            // you see the whole run to the point; looking up, the whole run back to the opening
+            const double PerTenfold = 2.0;
+            double T = Math.Max(3, Math.Log10(Math.Max(1e-300, _matter.HoleRs) / MatterView.KnownKm));   // tenfolds from the horizon to the end
+            double tCam = Math.Min(T - 0.01, -Math.Log10(Math.Max(1e-300, rhoCam)));                   // your own depth in tenfolds below the horizon
+            Func<double, double> radiusAt = t => 1.5 * Math.Max(0, T - t) / (T - tCam);                 // the cone's radius at a depth, in views: a view and a half at yours, nothing at the point
+            double Smouth = radiusAt(0);                                                                 // the mouth's radius in views: the sheet outside the horizon is drawn at that scale (one horizon radius = Smouth)
+            Func<double, double> along = rho => rho >= 1 ? -tCam * PerTenfold - 2 * Math.Sqrt(rho - 1) * Smouth : (-Math.Log10(Math.Max(1e-300, rho)) - tCam) * PerTenfold;   // how far ahead of you (down) a ring of that radius lies; negative: above
+            Func<double, double> width = rho => rho >= 1 ? rho * Smouth : radiusAt(-Math.Log10(Math.Max(1e-300, rho)));   // its radius in views
             var pts = new List<StarVertex>();
             Action<double, double, float, float, float, float> put = (u, v, br, cr, cg, cb) =>
             {
-                double rho = Math.Sqrt(u * u + v * v);
-                var p = e1 * (float)(u * S) + e2 * (float)(v * S) + ax * (float)along(rho);
+                double rho = Math.Sqrt(u * u + v * v), wv = rho > 0 ? width(rho) / rho : 0;
+                var p = e1 * (float)(u * wv) + e2 * (float)(v * wv) + ax * (float)along(rho);
                 pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0, R = cr * br, G = cg * br, B = cb * br, A = 1 });   // (no size of its own: a point of the line, the same few pixels at any distance)
             };
-            // the sheet's square grid, every half radius out to eight, each line sampled finely (and finer through the throat and the cone, where it plunges)
+            // the sheet outside the horizon: its square grid every half radius out to eight, bent into Flamm's bowl down to the throat
             for (int li = -16; li <= 16; li++)
             {
                 double c0 = li * 0.5; bool axisLine = li == 0;
                 for (int q = 0; q <= 640; q++)
                 {
-                    double c1 = -8 + q * 16.0 / 640; double rho = Math.Sqrt(c0 * c0 + c1 * c1);
-                    float br = (float)(axisLine ? 0.6 : 0.4) * (float)Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08) * (rho < 1 ? 1.3f : 1f);
+                    double c1 = -8 + q * 16.0 / 640; double rho = Math.Sqrt(c0 * c0 + c1 * c1); if (rho < 1) continue;
+                    float br = (float)(axisLine ? 0.6 : 0.4) * (float)Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08);
                     put(c0, c1, br, 0.35f, 0.9f, 0.6f); put(c1, c0, br, 0.35f, 0.9f, 0.6f);
                 }
             }
-            // inside the throat the surface runs on down twenty-five tenfolds to the point: rings of the grid at every tenfold of the radius
-            // from a hundredth of where you are out to the throat (so the structure is round you at every scale of the fall), and spokes
-            // down between them, every one running to the point
-            for (int k = -12; k <= 21; k++)
+            // inside: the whole cone, a ring every sixth of a tenfold from the mouth to the point, brightest near you, and spokes the
+            // whole way down between them, every one ending at the point
+            int kEnd = (int)Math.Ceiling(T * 6);
+            for (int k = 0; k <= kEnd; k++)
             {
-                double rho = rhoCam * Math.Pow(10, k / 6.0); if (rho >= 1) break; if (rho < 1e-30) continue;
-                float br = (float)(0.55 * Math.Max(0.3, 1 - Math.Abs(k) * 0.04));
+                double t = Math.Min(T, k / 6.0), rho = Math.Pow(10, -t); if (radiusAt(t) <= 0) break;
+                float br = (float)(0.55 * Math.Max(0.3, 1 - Math.Abs(t - tCam) * 0.25));
                 for (int q = 0; q < 96; q++) { double a = q * Math.PI * 2 / 96; put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
             }
             for (int sp = 0; sp < 24; sp++)
             {
-                double a = sp * Math.PI * 2 / 24, lo = Math.Max(rhoCam * 0.000316, 1e-30);
-                for (int q = 0; q <= 200; q++) { double rho = lo * Math.Pow(1 / lo, q / 200.0); if (rho > 1) break; put(Math.Cos(a) * rho, Math.Sin(a) * rho, 0.3f, 0.35f, 0.9f, 0.6f); }
+                double a = sp * Math.PI * 2 / 24;
+                for (int q = 0; q <= 400; q++) { double t = T * q / 400.0, rho = Math.Pow(10, -t); put(Math.Cos(a) * rho, Math.Sin(a) * rho, 0.3f, 0.35f, 0.9f, 0.6f); }
             }
-            for (int q = 0; q < 240; q++) { double a = q * Math.PI * 2 / 240; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); }   // the throat: the horizon's ring, bright
-            { var p = ax * (float)(3.5 * PerTenfold); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.04f, R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all runs down to, at the funnel's end ahead
+            for (int q = 0; q < 240; q++) { double a = q * Math.PI * 2 / 240; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); }   // the mouth: the horizon's ring, bright
+            { var p = ax * (float)((T - tCam) * PerTenfold); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.04f, R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all squeezes down to, at the cone's end
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
             float lz = _lens[2]; _lens[2] = 0;                                                  // (a reference, not light: never bent by the hole's lens)
@@ -3891,6 +3898,22 @@ namespace Universe.Shell
                         L.Add("speed now: " + (vNow / 1000).ToString("0.#") + " km/s; " + (vPeri / 1000).ToString("0.#") + " at its closest, " + (vApo / 1000).ToString("0.#") + " at its farthest");
                         double arcsecCentury = b.PeriRate * (100 / Math.Max(1e-9, b.Period)) * 206264.8, slow = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gm / (rM * Physics.C * Physics.C)));
                         L.Add("relativity: its closest point turns " + (arcsecCentury < 3600 ? arcsecCentury.ToString("0.#") + " arcseconds" : (arcsecCentury / 3600).ToString("0.#") + " degrees") + " a century; clocks here run slower by 1 part in " + (slow > 0 ? (1 / slow).ToString("0.##E+0") : "(none)"));
+                        {
+                            // its own pull on clocks: slower on its ground than far away, and faster higher up, so a satellite's clock runs
+                            // ahead of the ground's by so many microseconds a day (the correction every satellite clock carries)
+                            double gmw = WorldGm(b), rw = Math.Max(1, b.RadiusUnits / Units.Km(1) * 1000), c2 = Physics.C * Physics.C;
+                            double sGround = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gmw / (rw * c2))), sSat = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gmw / (4.2 * rw * c2)));
+                            double usDay = sGround * 86400e6, gain = (sGround - sSat) * 86400e6;
+                            L.Add("its own pull slows clocks on its ground by " + (usDay >= 10 ? usDay.ToString("0") : usDay.ToString("0.##")) + " microseconds a day against far away; a satellite four radii up runs " + (gain >= 10 ? gain.ToString("0") : gain.ToString("0.##")) + " of them faster than the ground");
+                        }
+                        {
+                            // its own pull on clocks: slower on its ground than far away, and faster higher up, so a satellite's clock runs
+                            // ahead of the ground's by so many microseconds a day (the correction every satellite clock carries)
+                            double gmw = WorldGm(b), rw = Math.Max(1, b.RadiusUnits / Units.Km(1) * 1000), c2 = Physics.C * Physics.C;
+                            double sGround = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gmw / (rw * c2))), sSat = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gmw / (4.2 * rw * c2)));
+                            double usDay = sGround * 86400e6, gain = (sGround - sSat) * 86400e6;
+                            L.Add("its own pull slows clocks on its ground by " + (usDay >= 10 ? usDay.ToString("0") : usDay.ToString("0.##")) + " microseconds a day against far away; a satellite four radii up runs " + (gain >= 10 ? gain.ToString("0") : gain.ToString("0.##")) + " of them faster than the ground");
+                        }
                     }
                     L.Add(au >= sy.HabitableAu * 0.75 && au <= sy.HabitableAu * 1.4 ? "in the habitable zone" : au < sy.HabitableAu * 0.75 ? "inside the habitable zone: too hot" : "outside the habitable zone: too cold");
                     L.Add("moons: " + moons);
@@ -3970,6 +3993,36 @@ namespace Universe.Shell
             return L;
         }
 
+        // gravitational time dilation, where you are: your own clock against the clocks far from every mass (the star, the world you
+        // are at, the holes near you): dtau/dt = root(1 - sum 2GM/(r c^2)); slower the deeper in a well, stopped at a horizon against
+        // far clocks, and past it no far clock sees you at all. The world's own clock (its days, its orbits) runs on far time
+        private double ClockFactorHere()
+        {
+            if (_spaceScale > 0 && _matter.SpaceKind == 12) return 0;
+            double sum = 0, c2 = Physics.C * Physics.C;
+            if (_system != null) { double d = Math.Max(1, DistToSysStar() / Units.Km(1) * 1000); sum += 2 * Physics.GmSun * _system.MassSol / (d * c2); }
+            if (_system != null && _planet >= 0 && _planet < _system.Bodies.Count) { double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Max(1, Math.Sqrt(x * x + y * y + z * z) * 1000); sum += 2 * WorldGm(_system.Bodies[_planet]) / (r * c2); }
+            foreach (var ex in _extras) { if (!ex.Hole || ex.Mass <= 0) continue; double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Max(1, Math.Sqrt(dx * dx + dy * dy + dz * dz) / Units.Km(1) * 1000); sum += 2 * Physics.GmSun * ex.Mass / (d * c2); }
+            return Math.Sqrt(Math.Max(0, 1 - sum));
+        }
+        // a world's GM from its size and what it is (rock about 5.5 g/cc, a giant about 1.3, ice about 2): no body carries a mass of its own
+        private static double WorldGm(SpaceGen.Body b)
+        {
+            double rM = b.RadiusUnits / Units.Km(1) * 1000, rho = b.Kind != null && (b.Kind.Contains("giant") || b.Kind.Contains("Jupiter")) ? 1300 : b.Kind != null && b.Kind.Contains("ic") && b.Parent >= 0 ? 2000 : 5500;
+            return 6.674e-11 * 4.0 / 3 * Math.PI * rM * rM * rM * rho;
+        }
+        private static string SlowWords(double f)
+        {
+            double slow = 1 - f; if (slow <= 0) return "the same as far away";
+            return slow * 100 >= 0.01 ? "slower than far away by " + (slow * 100).ToString("0.##") + "%" : "slower than far away by 1 part in " + (1 / slow).ToString("0.##E+0");
+        }
+        private string ClockWords()
+        {
+            double f = ClockFactorHere();
+            if (_spaceScale > 0 && _matter.SpaceKind == 12) return " · your clock here: past the horizon, where no far clock sees it";
+            if (f <= 0) return " · your clock here: stopped against far clocks";
+            return 1 - f < 1e-7 ? "" : " · your clock here: " + SlowWords(f);
+        }
         public string Title
         {
             get
@@ -3980,7 +4033,7 @@ namespace Universe.Shell
                     : _ground != null ? "at " + _system.Bodies[_planet].Kind + ", " + Units.Describe(AboveGround()) + " above the ground"
                     : _system != null ? "in the system of a " + _system.StarName + " (" + _system.Bodies.Count + " planets and moons)"
                     : _near >= 0 ? (NearShare() > 0.5 ? "among the stars of " : "near ") + _galaxies[_near].Name : "among the galaxies";
-                double hr = LocalHour(); string when = " · time: " + TimeNames[TimeStep] + (hr >= 0 ? ", " + ((int)hr).ToString("00") + ":" + ((int)(hr % 1 * 60)).ToString("00") + " here" : "");
+                double hr = LocalHour(); string when = " · time: " + TimeNames[TimeStep] + (hr >= 0 ? ", " + ((int)hr).ToString("00") + ":" + ((int)(hr % 1 * 60)).ToString("00") + " here" : "") + ClockWords();
                 var lh = LayerHere(); if (lh != null) where = "inside " + (_system != null && _planet >= 0 ? _system.Bodies[_planet].Kind : "the giant") + ", in its " + lh.Name.ToLowerInvariant() + " (" + lh.Says + ")";
                 return PreviewText.AppName + " · " + where + when + picked + (_tour != null && _tourAt < _tour.Count ? " · tour: " + _tour[_tourAt].Name : "") + " · " + (_spaceScale > 0 || _matterScale > 0 || _tKind == 5 ? "looking at " + ScaleHud.Words(ViewDistanceKm()) + " away" : "nearest thing " + Units.Describe(NearestDistance()) + " away") + " · wheel: fly in or out toward the mouse · drag: circle the pick or look around · right click: clear the pick · W A S D Q E: fly · H: scale on or off · Esc: close · card " + (int)Math.Round(Window.GpuBusy * 100) + "% busy (GPU use " + (int)Math.Round(Window.GpuUse * 100) + "%)";
             }

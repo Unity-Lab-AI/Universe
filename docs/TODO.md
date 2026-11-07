@@ -1,0 +1,61 @@
+# TODO — Minor Task List (Active Tasks)
+
+**Tier 2 of 3** — the MINOR task list. Holds active tasks (pending + in_progress) at the day-to-day work grain. Each minor task lives under a major milestone in `docs/ROADMAP.md` and decomposes further into entries in `docs/DECOMPOSED.md` when YOLO mode picks it up.
+
+Completed tasks move to `docs/FINALIZED.md` per `.claude/CONSTRAINTS.md §FINALIZED BEFORE DELETE`. Never delete a task description; only flip status (LAW: NEVER DELETE TODO INFO).
+
+Status markers:
+- `[ ]` pending
+- `[~]` in_progress
+- `[x]` complete (move to FINALIZED.md immediately, never leave here)
+
+LAW #0 reminder: every task description preserves the user's verbatim words.
+
+⚖️ **Work laws:** every task is built from its **Spec:** pages, per `docs/WORK-LAWS.md`. If a spec is missing a detail, ask the creator first (LAW 3).
+
+**Three-tier cascade:** ROADMAP.md (major) → TODO.md (minor, this file) → DECOMPOSED.md (decomposed). YOLO mode reads all three and works the cascade — see `.claude/commands/yolo.md` and `.claude/WORKFLOW.md §YOLO MODE`.
+
+The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); a change to its code or content is made there and arrives here with the next sync and release. The items below are the Universe program's own; each is also carried in DNA-AND's `docs/TODO.md`, where its DESIGN entry is.
+
+---
+
+## In progress
+
+### U11 — Docs
+**Spec:** `wiki/systems/u11-docs.md`, `docs/WORK-LAWS.md`
+- [~] Keep every page true as the program changes: the public pages (`README.md`, `CREDITS.md`, `docs/*.md`, `docs/in-game/*.md`) and these workflow files; `last-verified` and `status` on every wiki page: "make sure all docs are not stale, and when i say "all" i mean it all fucking documents, top to bottom look for single words that are wrong too"
+
+### Built, waiting on the creator's test (the creator installs and tests: "i SAID: next time ill install and test!")
+**Spec:** `wiki/systems/u06-universe.md`, `wiki/systems/u08-matter.md`, `wiki/systems/u09-tour-and-captures.md`
+
+
+### Built, waiting on the creator's test
+**Spec:** `wiki/systems/u06-universe.md`
+
+- [~] **The well a complete dilation cone from the mouth to the point at every depth, longer than the hole:** (built: DESIGN 576; waits on the test) "amnnd the black hole graph thing i think u are missing is space and distance in a black hole is strached to infinity so the grid funnel needs to be complete from top to bottom able to see the shole thing when looking down to the pin point or tit big opening looking up" / "its longer than the space that existes the black hole takes up... it stratches beyound the confines of space and time and is a complete funnel from top to bottom at all zoom scalled, and u actuall need to travel a long ways like a long long weays the funnel is a time and distance dialtion cone squeezing down to one point of non space existace"
+
+- [~] **Your own clock against far clocks wherever you are; a world's pull on clocks and a satellite's gain on its card; the far watcher at the horizon:** (built: DESIGN 577; waits on the test) "rtemebre time speeds up further from gravity and slows whenin very high gravity and maybe even stops" / "its why we have time dialtion codes for satilights further from gravity time runs differnt"
+
+---
+
+## Pending
+
+### U12 — The program's own road
+**Spec:** `docs/ROADMAP.md#U12`, `wiki/systems/u06-universe.md`, `wiki/systems/u03-engine-core.md`, `wiki/systems/u10-packaging.md`
+
+- [ ] **A star's layers down through to the heavier elements at its core:** (DNA-AND ROADMAP R18) "stars shoiuld be mostly hydrogen till getting to it heavey m,etal cores ect ect"
+- [ ] **A gravity switch: bodies straight on, stars blown apart; gravity as a live force:** (DNA-AND DESIGN 519) "as i dont thinkg galxies are acutally being held togetther buy the laws of nature. like if i has a setting to turn off all gravity.. would stars explode pressures of all bodies zero and every body move to straight line travel... right?"
+- [ ] **The rest of relativity:** length contraction, redshift, frame dragging
+- [ ] **Decay happening before your eyes, and the fields particles are waves in** (today each nucleus says how it would decay)
+- [ ] **Light rendered truly below its wavelength:** "later when ther is color properly do it"
+- [ ] **The waveform carrying every field, from the cosmic web to the microbes** (gas and star fields, the ground itself, clouds, stars' surfaces)
+- [ ] **The Linux path run on a Linux desktop:** (waits on a Linux machine or a Linux user's report) "okay well make sure that path is real"
+- [ ] **(Later) Native Linux and Mac builds** (Vulkan, their own windowing, a C# runtime there)
+- [ ] **Screens of the landing page, the installer and the document viewer in the readmes:** (waits on the creator's windows) "and we will need screen shots of like the docs viewer and install requirments and installer posints but not alot of screen shots just the main things" / "and landing page"
+- [ ] **The readme's clip from a take the creator approves, and the social images from it:** "okay the clip u have in the read me needs to be a proper tour once we figure it all out" / "we cxan take some snaps to use for the social images later"
+
+---
+
+## TOMBSTONES
+
+_(none)_

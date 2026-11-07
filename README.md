@@ -172,7 +172,7 @@ About 19,600 lines of C# and shader code in 61 files, and about 10,900 lines of 
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them, and their shadow is the size the law gives from where you stand. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well |
+| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them, and their shadow is the size the law gives from where you stand. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well: your own clock against far clocks is in the title wherever you are, a world's card gives the microseconds a day its pull costs the ground's clocks and a satellite's gain, and at a horizon your clock stops against far clocks |
 | **Electromagnetism** | Electrons in their real shells and orbitals, bonds as shared electrons, stars the colour of their heat |
 | **Strong force** | Packs every nucleus, and glues the quarks in every proton and neutron |
 | **Weak force** | Decides which nuclei are stable, and how the rest would decay |

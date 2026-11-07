@@ -1,0 +1,150 @@
+{
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_COMMAND": "1",
+    "DISABLE_FEEDBACK_COMMAND": "1",
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "DISABLE_AUTOUPDATER": "1"
+  },
+  "feedbackSurveyRate": 0.0,
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/statusline.sh\""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(node --check:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(find:*)",
+      "Bash(sed:*)",
+      "Bash(dir:*)",
+      "Bash(echo:*)",
+      "Bash(grep:*)",
+      "Bash(cat:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git gc:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(pip list:*)",
+      "Bash(cd:*)",
+      "Bash(cp:*)",
+      "Bash(touch:*)",
+      "Bash(curl:*)",
+      "Bash(start:*)",
+      "Bash(powershell:*)",
+      "Bash(chmod:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-env-dump.cjs\""
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-compact-restore.cjs\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/user-prompt-state-refresh.cjs\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-tool-memory-sync.cjs\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact-snapshot.cjs\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-session-writeup.cjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/usage-track.cjs\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-bash-safety.cjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-tool-public-repo-guard.cjs\""
+          }
+        ]
+      }
+    ],
+    "UserPromptExpansion": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/skill-context-inject.cjs\""
+          }
+        ]
+      }
+    ]
+  },
+  "_comment": "TEAM-SHARED Claude Code settings (committed to git per Anthropic convention). The env block enforces the team's privacy posture (no telemetry, no error reporting, no feedback surveys/command, no Generated-with-Claude-Code attribution header, no autoupdater). The permissions allow-list standardizes bash command access. The hooks block IS the harness layer — every script under .claude/hooks/ is wired here. Each hook has a .cjs (Option A primary) and .sh (Option B fallback) sibling; if a team member's machine lacks node, swap each command from `node ...cjs` to `bash ...sh`. For PERSONAL machine-local overrides, create .claude/settings.local.json (gitignored by Anthropic default) — settings there take precedence over this file. Never paste API keys in either settings file — use a gitignored .env via /setup."
+}

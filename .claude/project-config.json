@@ -1,0 +1,9 @@
+{
+  "git_flow": {
+    "enabled": true,
+    "confirmed_at": "2026-05-14T13:03:02",
+    "main_branch": "main",
+    "develop_branch": "develop",
+    "custom_protected_branches": []
+  }
+}

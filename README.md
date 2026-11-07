@@ -172,7 +172,7 @@ About 18,000 lines of C# and shader code, and 10,000 lines of templates. That is
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well |
+| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them, and their shadow is the size the law gives from where you stand. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well |
 | **Electromagnetism** | Electrons in their real shells and orbitals, bonds as shared electrons, stars the colour of their heat |
 | **Strong force** | Packs every nucleus, and glues the quarks in every proton and neutron |
 | **Weak force** | Decides which nuclei are stable, and how the rest would decay |
@@ -185,7 +185,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 
 | | |
 |---|---|
-| **Black holes** | A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets, a supermassive one tearing several stars apart at once; quiet ones are a shadow and bent starlight. The gravity well is drawn round each, a sharp step at the horizon down to a point, and zooming in at the shadow falls through the horizon, black, to the singularity at the quarks' size |
+| **Black holes** | A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets, a supermassive one tearing several stars apart at once; quiet ones are a shadow and bent starlight. Zooming in at the shadow flies down to the horizon with the disc all round and the shadow growing to fill the view, then falls through: black, the gravity well itself round you as a grid (Flamm's surface outside the throat, its inner surface down to the point), your escape speed, time left and tide on the card, to the singularity at the quarks' size |
 | **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, gas giants, ice giants and hot Jupiters. Some have **rings**. Those that orbit close to their star are **tidally locked**: one face always toward it, a day as long as a year |
 | **Moons** | Worlds in their own right: mostly airless rock or ice, now and then an ocean, a lava world or one with air |
 | **Orbits** | Never perfect circles: every orbit an ellipse, most gently oval, some long and wild, each body fastest at its closest point |

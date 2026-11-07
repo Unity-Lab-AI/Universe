@@ -61,10 +61,13 @@ Both go in the `captures` folder. On the landing page, tick **Film the tour** to
 
 ## What you will see
 
-1. **Galaxies**, each of its own kind. Close to one, its own stars fade in, made round you as you go. At its heart a giant black hole, feeding or quiet: the tour flies by a feeding one, round its disc and in to its shadow.
-2. **A star's system**: its worlds, moons, belts and the star itself.
-3. **A world**: its real ground, seas, clouds and air. Plates, volcanoes, quakes, weather, ice ages and impacts run on its own clock. Its seas are dived into, down to the bed.
-4. **Below the ground**: grains, the crystal of their mineral, then atoms, electrons, the nucleus and its quarks.
+1. **Galaxies**, each of its own kind. Close to one, its own stars fade in, made round you as you go. At its heart a giant black hole, feeding or quiet: the tour flies by a feeding one, round its disc, down to its horizon and through it, falling in black down the gravity well itself to the singularity, and out again.
+2. **A supernova**, if one is going in the galaxies round you, else the youngest remnant: the fireball or the shell, and what was born at its middle.
+3. **A star's system**: its worlds, moons, belts and the star itself; an asteroid of the belt, landed on and zoomed into down to its atoms; a comet by its tail.
+4. **A world**: its real ground, seas, clouds and air. Plates, volcanoes, quakes, weather, ice ages and impacts run on its own clock. Its seas are dived into, down to the bed.
+5. **Below the ground**: grains, the crystal of their mineral, then atoms, electrons, the nucleus and its quarks, one electron ridden beside like a comet.
+
+Everything picked has its card at the left: what it is, what it is made of down to the traces, the numbers that matter.
 
 ---
 

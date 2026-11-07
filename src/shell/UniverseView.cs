@@ -718,7 +718,7 @@ namespace Universe.Shell
             double now = _simYears; var pts = new List<StarVertex>();
             for (int i = 0; i < _galaxies.Count; i++)
             {
-                var g = _galaxies[i]; double gx = RelX(g) - _ox, gy = RelY(g) - _oy, gz = RelZ(g) - _oz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
+                var g = _galaxies[i]; double gx = (g.X - _ax) - _ox, gy = (g.Y - _ay) - _oy, gz = (g.Z - _az) - _oz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
                 if (gd > 400 * g.Scale) continue;
                 bool full = i == _near; var c = Supernovae(g, full); if (c.Events.Count == 0) continue;
                 foreach (var sn in c.Events)
@@ -840,7 +840,7 @@ namespace Universe.Shell
             Sn best = null; double bestAng = 0.035;
             for (int i = 0; i < _galaxies.Count; i++)
             {
-                var g = _galaxies[i]; double gx = RelX(g) - _ox, gy = RelY(g) - _oy, gz = RelZ(g) - _oz; if (gx * gx + gy * gy + gz * gz > Math.Pow(400 * g.Scale, 2)) continue;
+                var g = _galaxies[i]; double gx = (g.X - _ax) - _ox, gy = (g.Y - _ay) - _oy, gz = (g.Z - _az) - _oz; if (gx * gx + gy * gy + gz * gz > Math.Pow(400 * g.Scale, 2)) continue;
                 var c = Supernovae(g, i == _near);
                 foreach (var sn in c.Events)
                 {
@@ -1448,7 +1448,7 @@ namespace Universe.Shell
             m.M11 = cu * s; m.M12 = 0; m.M13 = su * s;
             m.M21 = -st * su * s; m.M22 = ct * s; m.M23 = st * cu * s;
             m.M31 = -ct * su * s; m.M32 = -st * s; m.M33 = ct * cu * s;
-            m.M41 = (float)(RelX(g) - _ox); m.M42 = (float)(RelY(g) - _oy); m.M43 = (float)(RelZ(g) - _oz);
+            m.M41 = (float)((g.X - _ax) - _ox); m.M42 = (float)((g.Y - _ay) - _oy); m.M43 = (float)((g.Z - _az) - _oz);
             return m;
         }
 
@@ -2548,7 +2548,7 @@ namespace Universe.Shell
                     var g8 = _galaxies[i]; double ex = g8.X - _tx, ey = g8.Y - _ty, ez = g8.Z - _tz;
                     if (ex * ex + ey * ey + ez * ez < Math.Pow(3e6 / Units.LightYearsPerUnit, 2)) { _tKind = 0; _tIndex = i; _tName = g8.Name; break; }
                 }
-            if (_tKind == 0) { var g = _galaxies[_tIndex]; dx = RelX(g) - _ox; dy = RelY(g) - _oy; dz = RelZ(g) - _oz; radius = g.Scale * 0.3; return true; }
+            if (_tKind == 0) { var g = _galaxies[_tIndex]; dx = (g.X - _ax) - _ox; dy = (g.Y - _ay) - _oy; dz = (g.Z - _az) - _oz; radius = g.Scale * 0.3; return true; }
             if (_tKind == 6 && _tSpot != null && _tExtra != null)
             {
                 // the spot picked on the body's stone: the point itself on its drawn surface, a small mark to fly down to
@@ -2730,7 +2730,7 @@ namespace Universe.Shell
             if (kind < 0)
                 for (int i = 0; i < _galaxies.Count; i++)
                 {
-                    var g = _galaxies[i]; double dx = RelX(g) - _ox, dy = RelY(g) - _oy, dz = RelZ(g) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                    var g = _galaxies[i]; double dx = (g.X - _ax) - _ox, dy = (g.Y - _ay) - _oy, dz = (g.Z - _az) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     double sizePx = g.Scale / Math.Max(1e-9, l) / Math.Tan(0.45) * _lastH * 0.5;   // its size on screen
                     double d2 = near(dx, dy, dz), allow = Math.Max(reachPx, sizePx);
                     if (d2 < allow * allow && (kind < 0 || d2 < best)) { best = d2; kind = 0; idx = i; name = g.Name; }
@@ -2740,7 +2740,7 @@ namespace Universe.Shell
                 // every point of the web's light far off is a galaxy: a click on one picks it, to fly to; there its galaxies are
                 // made in full and the pick goes on to the one at that spot
                 double gb = reachPx * reachPx; int gq = -1;
-                for (int q = 0; q < _glowShown.Length; q++) { var v = _glowShown[q]; double d2 = near(RelX(v) - _ox, RelY(v) - _oy, RelZ(v) - _oz); if (d2 < gb) { gb = d2; gq = q; } }
+                for (int q = 0; q < _glowShown.Length; q++) { var v = _glowShown[q]; double d2 = near((v.X - _ax) - _ox, (v.Y - _ay) - _oy, (v.Z - _az) - _oz); if (d2 < gb) { gb = d2; gq = q; } }
                 if (gq >= 0)
                 {
                     var v = _glowShown[gq]; double ly = Math.Sqrt(Math.Pow(v.X - _ax - _ox, 2) + Math.Pow(v.Y - _ay - _oy, 2) + Math.Pow(v.Z - _az - _oz, 2)) * Units.LightYearsPerUnit;

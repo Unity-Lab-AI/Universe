@@ -449,3 +449,120 @@ rim-speed-km-s: 220
 dark-energy-share: 0.68
 hubble-km-s-mpc: 70
 
+@law supernova
+name: Supernovae: a star's death, and what it leaves
+real: yes
+rate-per-century: 3
+core-collapse-share: 0.7
+cc-peak-sol: 5e8
+ia-peak-sol: 4e9
+cc-rise-days: 10
+ia-rise-days: 18
+plateau-days: 100
+cc-ejecta-km-s: 5000
+ia-ejecta-km-s: 10000
+free-years: 300
+remnant-years: 100000
+neutron-star-max-sol: 20
+kinds: ii-p, ii-l, iin, ib-c, ia, superluminous
+says: a galaxy of a hundred billion stars has about three supernovae a century (two to five: the core collapse of a star of eight solar masses or more about two of them, a white dwarf pushed past its limit by a companion about one), so across the observable universe several go off every second; a core-collapse supernova shines at about five hundred million suns' worth for its hundred-day plateau (absolute magnitude about -17), a white-dwarf one at about four billion (absolute magnitude -19.3, up in eighteen days, halving every twelve after), brighter than most galaxies; the star's matter is flung out at five to ten thousand km/s (a few hundredths of light's speed, the outermost layers up to a tenth of it), free for a few hundred years, then slowed as it sweeps up the gas between the stars (the radius growing as the two-fifths power of the age), seen as a shell for about a hundred thousand years until it merges with that gas; the core of a star of eight to about twenty solar masses becomes a neutron star (the youngest spin fastest, tens of times a second), heavier than that a black hole; a white dwarf's blast leaves nothing but the shell
+
+# ── The kinds of supernova (their shares of all, their light curves, what they leave) ──
+# share: of all supernovae; peak-sol: its peak light in suns; rise-days: to the peak; plateau-days: held near the peak (0 for
+# none); halving-days: how fast it fades after; tail-share: the share of the peak the slow radioactive tail (cobalt-56, halving
+# every 77 days) starts from; peak-k: the heat of its glowing face at the peak (its colour: the fireball is a hundred thousand
+# degrees at the shock's breakout, cooling to this by the peak, to about 5,500 on a plateau and 4,500 after); ejecta-km-s: how
+# fast its matter flies out (its glowing face, the photosphere, lags at about six tenths of that, out to about ten billion km,
+# then draws back in as the fireball thins to a cloud); colour: its light from afar; leaves: core (a neutron star under about
+# twenty solar masses, else a black hole), nothing, or magnetar.
+
+@supernova ii-p
+name: Type II-P supernova (plateau)
+real: yes
+share: 0.33
+peak-sol: 5e8
+rise-days: 10
+plateau-days: 100
+halving-days: 8
+tail-share: 0.05
+peak-k: 6000
+ejecta-km-s: 5000
+colour: 1 0.85 0.6
+leaves: core
+says: the commonest: a red supergiant's core collapses, and its thick hydrogen envelope keeps it shining on a plateau for about a hundred days (absolute magnitude about -17)
+
+@supernova ii-l
+name: Type II-L supernova (linear)
+real: yes
+share: 0.07
+peak-sol: 8e8
+rise-days: 10
+plateau-days: 0
+halving-days: 20
+tail-share: 0.05
+peak-k: 7000
+ejecta-km-s: 6000
+colour: 1 0.9 0.7
+leaves: core
+says: a core collapse in a star with a thinner hydrogen envelope: no plateau, a steady fade from a brighter peak
+
+@supernova iin
+name: Type IIn supernova (narrow lines)
+real: yes
+share: 0.06
+peak-sol: 2e9
+rise-days: 20
+plateau-days: 60
+halving-days: 25
+tail-share: 0.1
+peak-k: 10000
+ejecta-km-s: 4000
+colour: 0.8 0.9 1
+leaves: core
+says: the blast ploughs into gas the star shed before it died: bright for months, blue, much of its light from that crash
+
+@supernova ib-c
+name: Type Ib/Ic supernova (stripped)
+real: yes
+share: 0.24
+peak-sol: 4e8
+rise-days: 14
+plateau-days: 0
+halving-days: 15
+tail-share: 0.03
+peak-k: 8000
+ejecta-km-s: 10000
+colour: 0.95 0.95 1
+leaves: core
+says: a star that lost its hydrogen (for Ic its helium too) in winds or to a companion before its core collapsed: fast and fainter, its matter flung out faster
+
+@supernova ia
+name: Type Ia supernova (white dwarf)
+real: yes
+share: 0.29
+peak-sol: 4e9
+rise-days: 18
+plateau-days: 0
+halving-days: 12
+tail-share: 0.01
+peak-k: 10000
+ejecta-km-s: 10000
+colour: 0.85 0.9 1
+leaves: nothing
+says: a white dwarf pushed past 1.4 solar masses by a companion and blown apart entirely: the brightest of the common kinds (absolute magnitude -19.3), up in eighteen days, halving every twelve after, alike enough to measure the universe by
+
+@supernova superluminous
+name: Superluminous supernova
+real: yes
+share: 0.002
+peak-sol: 2e10
+rise-days: 40
+plateau-days: 0
+halving-days: 50
+tail-share: 0.1
+peak-k: 12000
+ejecta-km-s: 10000
+colour: 0.75 0.85 1
+leaves: magnetar
+says: ten to a hundred times a common supernova's light (absolute magnitude about -21), slow to rise and slow to fade: a very heavy star, its blast lit from inside by the newborn magnetar spinning down; about one in five hundred
+

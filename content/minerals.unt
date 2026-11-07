@@ -1333,3 +1333,163 @@ shape: molecule
 bond-nm: 0.0957
 angle: 104.5
 about: H2O, bent at 104.5 degrees | from the air: every mineral surface wears a film | one or two molecules thick
+
+# ── The minerals of meteorites and comets ──
+
+@mineral kamacite
+name: Kamacite (nickel-iron metal)
+formula: (Fe,Ni)
+atoms: Fe Fe Fe Fe Fe Fe Fe Fe Fe Fe Fe Fe Fe Fe Fe Ni
+trace: Fe Co 0.005 P 0.002 Cr 0.0005 Ga 0.00005 Ge 0.0001 Ir 0.000005 Pt 0.00001 Au 0.000001 W 0.000001 Re 0.0000002 Os 0.000003 Ru 0.000005 Pd 0.000003
+colour: 0.62 0.62 0.64
+lustre: metallic
+clarity: opaque
+cell: 2.8665 2.8665 2.8665 90 90 90
+structure: body-centred cubic Im-3m (alpha iron), nickel on about one site in sixteen
+structure-source: alpha-iron structure (Wyckoff, Crystal Structures); kamacite 5 to 7% nickel
+site: 0.0000 0.0000 0.0000 Fe 0.94 Ni 0.06
+site: 0.5000 0.5000 0.5000 Fe 0.94 Ni 0.06
+
+@mineral taenite
+name: Taenite (nickel-rich iron)
+formula: (Ni,Fe)
+atoms: Fe Fe Fe Fe Fe Fe Fe Ni Ni Ni
+trace: Fe Co 0.008 P 0.001 Cr 0.0002 Cu 0.0005 Ga 0.00003 Ge 0.0001 Ir 0.000003 Pt 0.00001 Pd 0.000005 Au 0.000002
+colour: 0.72 0.72 0.7
+lustre: metallic
+clarity: opaque
+cell: 3.59 3.59 3.59 90 90 90
+structure: face-centred cubic Fm-3m (gamma iron), nickel on about three sites in ten
+structure-source: gamma-iron (austenite) structure (Wyckoff, Crystal Structures); taenite 25 to 50% nickel
+site: 0.0000 0.0000 0.0000 Fe 0.7 Ni 0.3
+site: 0.5000 0.5000 0.0000 Fe 0.7 Ni 0.3
+site: 0.5000 0.0000 0.5000 Fe 0.7 Ni 0.3
+site: 0.0000 0.5000 0.5000 Fe 0.7 Ni 0.3
+
+@mineral troilite
+name: Troilite (iron sulfide)
+formula: FeS
+atoms: Fe S
+trace: Fe Ni 0.01 Co 0.002 Cr 0.003 Mn 0.002 Cu 0.001 Zn 0.0005 Ti 0.0003
+trace: S Se 0.0001 Te 0.00001
+colour: 0.55 0.48 0.35
+lustre: metallic
+clarity: opaque
+cell: 3.45 3.45 5.80 90 90 120
+structure: hexagonal, the nickel-arsenide type (troilite's own cell is a slight distortion of it): iron between sheets of sulfur
+structure-source: NiAs-type FeS subcell (Wyckoff, Crystal Structures)
+site: 0.0000 0.0000 0.0000 Fe
+site: 0.0000 0.0000 0.5000 Fe
+site: 0.3333 0.6667 0.2500 S
+site: 0.6667 0.3333 0.7500 S
+
+@mineral graphite
+name: Graphite (carbon)
+formula: C
+atoms: C
+trace: C N 0.001 H 0.005 O 0.002 S 0.0005
+colour: 0.14 0.14 0.15
+lustre: metallic
+clarity: opaque
+cell: 2.464 2.464 6.711 90 90 120
+structure: hexagonal P6(3)/mmc: sheets of carbon in hexagons, loosely stacked
+structure-source: COD 9008569 (Wyckoff, R. W. G. 1963)
+site: 0.0000 0.0000 0.2500 C
+site: 0.0000 0.0000 0.7500 C
+site: 0.3333 0.6667 0.2500 C
+site: 0.6667 0.3333 0.7500 C
+
+@mineral ammonia-ice
+name: Ammonia ice
+formula: NH3
+atoms: N H H H
+colour: 0.86 0.9 0.94
+lustre: vitreous
+clarity: translucent
+molecule: N 0 0 0, H 0.0938 0 0.0381, H -0.0469 0.0812 0.0381, H -0.0469 -0.0812 0.0381
+cell: 5.1305 5.1305 5.1305 90 90 90
+structure: cubic P2(1)3: ammonia molecules, each pointing along a body diagonal, held by hydrogen bonds
+structure-source: Hewat, A. W. and Riekel, C. 1979 (Acta Crystallographica A35), nitrogen at x = 0.2107
+site: 0.2107 0.2107 0.2107 N
+site: 0.7107 0.2893 0.7893 N
+site: 0.7893 0.7107 0.2893 N
+site: 0.2893 0.7893 0.7107 N
+
+@mineral carbon-monoxide-ice
+name: Carbon monoxide ice
+formula: CO
+atoms: C O
+colour: 0.84 0.86 0.9
+lustre: vitreous
+clarity: translucent
+molecule: C 0 0 0, O 0.0651 0.0651 0.0651
+cell: 5.63 5.63 5.63 90 90 90
+structure: cubic (alpha carbon monoxide, the same packing as alpha nitrogen): molecules on a face-centred grid, each along a body diagonal
+structure-source: alpha-CO, P2(1)3, a = 5.63 angstroms (Vegard, L. 1930)
+site: 0 0 0 C
+site: 0 0.5 0.5 C
+site: 0.5 0 0.5 C
+site: 0.5 0.5 0 C
+
+# ── What the small bodies are made of ──
+# Shares from the meteorites that fall from each kind: ordinary chondrites (S-type) about half olivine, a quarter pyroxene, a
+# tenth feldspar, metal and sulfide grains; carbonaceous chondrites (C-type) olivine and pyroxene with magnetite, sulfide,
+# carbon and carbonates and water bound in; iron meteorites (M-type) nickel-iron with sulfide nodules; enstatite chondrites
+# (E-type) nearly all enstatite; eucrites (V-type) pyroxene and plagioclase; a comet's nucleus about four parts dust to one
+# of ice by weight (Rosetta at 67P); Kuiper bodies ice and rock about half and half. The regolith of a small body is fine dust
+# strewn with pebbles and boulders (Itokawa, Ryugu and Bennu are rubble heaps with boulders tens of metres across).
+
+@mix asteroid-c
+name: Carbon-rich asteroid ground
+grain-mm: 0.03..0.3
+clasts: pebble 4..64 0.08, cobble 64..256 0.05, boulder 256..20000 0.04
+minerals: forsterite 20, enstatite 12, magnetite 14, troilite 8, graphite 14, calcite 8, water-ice 12, fayalite 6, pyrite 4, kamacite 2
+
+@mix asteroid-s
+name: Stony asteroid ground
+grain-mm: 0.05..0.5
+clasts: pebble 4..64 0.1, cobble 64..256 0.08, boulder 256..20000 0.05
+minerals: forsterite 34, enstatite 20, augite 6, anorthite 8, albite 6, kamacite 8, taenite 2, troilite 8, fayalite 6, magnetite 2
+
+@mix asteroid-m
+name: Metal asteroid ground
+grain-mm: 0.1..1
+clasts: pebble 4..64 0.06, cobble 64..256 0.04, boulder 256..20000 0.03
+minerals: kamacite 62, taenite 22, troilite 8, enstatite 4, graphite 1, pyrite 2, forsterite 1
+
+@mix asteroid-e
+name: Enstatite asteroid ground
+grain-mm: 0.05..0.5
+clasts: pebble 4..64 0.08, cobble 64..256 0.05, boulder 256..20000 0.03
+minerals: enstatite 68, kamacite 10, troilite 10, forsterite 4, anorthite 6, albite 2
+
+@mix asteroid-v
+name: Basalt asteroid ground
+grain-mm: 0.05..0.5
+clasts: pebble 4..64 0.1, cobble 64..256 0.06, boulder 256..20000 0.04
+minerals: augite 36, anorthite 34, enstatite 10, forsterite 5, ilmenite 4, troilite 4, magnetite 3, quartz 4
+
+@mix asteroid-p
+name: Dark icy asteroid ground
+grain-mm: 0.02..0.3
+clasts: pebble 4..64 0.05, cobble 64..256 0.03, boulder 256..20000 0.02
+minerals: graphite 18, water-ice 30, forsterite 14, enstatite 10, magnetite 8, troilite 6, methane-ice 4, ammonia-ice 4, carbon-monoxide-ice 2, calcite 4
+
+@mix kuiper
+name: Kuiper-belt body ground
+grain-mm: 0.02..0.3
+clasts: pebble 4..64 0.04, cobble 64..256 0.02, boulder 256..20000 0.01
+minerals: water-ice 42, methane-ice 10, nitrogen-ice 8, carbon-monoxide-ice 5, ammonia-ice 5, dry-ice 4, graphite 10, forsterite 8, enstatite 5, troilite 3
+
+@mix comet
+name: Comet nucleus
+grain-mm: 0.005..0.1
+clasts: pebble 4..64 0.05, cobble 64..256 0.03, boulder 256..20000 0.03
+minerals: forsterite 18, enstatite 12, graphite 14, troilite 3, magnetite 3, water-ice 34, dry-ice 8, carbon-monoxide-ice 4, ammonia-ice 2, methane-ice 2
+
+@mix rogue
+name: Rogue planet ground
+grain-mm: 0.05..0.5
+clasts: pebble 4..64 0.06, cobble 64..256 0.03, boulder 256..4000 0.01
+minerals: nitrogen-ice 28, water-ice 28, dry-ice 10, forsterite 10, augite 8, anorthite 7, magnetite 4, methane-ice 3, hematite 2
+

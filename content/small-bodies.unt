@@ -2,6 +2,9 @@
 # researched: Cambridge "Asteroid compositional types and their distributions"; Tholen classification;
 #   Ohio State asteroid and trans-Neptunian lectures; Jewitt 2002 (comet nuclei); Encyclopedia.com
 #   "Vital Statistics of Asteroids and Comets"; Highline College comets and asteroids notes
+# mix: the minerals its ground is made of (content/minerals.unt @mix); makeup: what its card says it is made of (lines split by ;);
+#   density: grams a cubic centimetre (its mass follows from its size); albedo: the share of light it reflects; belt-share: how
+#   common the kind is at the belt's inner edge .. outer edge (an asteroid's kind is drawn by these at its place in the belt).
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
 
 # ── Asteroids by makeup ──
@@ -11,12 +14,22 @@ name: C-type asteroid
 real: yes
 says: very dark, carbon-rich and primitive, little changed since the system formed; the most common type
 linked-meteorite: carbonaceous chondrite
+mix: asteroid-c
+makeup: carbon-rich stone, as a carbonaceous chondrite: olivine and pyroxene, magnetite, iron sulfide, carbon as graphite and tarry organic matter, carbonates; water, as ice and bound in its minerals
+density: 1.4
+albedo: 0.05
+belt-share: 0.25..0.75
 
 @asteroid s-type
 name: S-type asteroid
 real: yes
 says: stony and silicate, brighter; more common close to the star
 linked-meteorite: ordinary chondrite, stony-iron
+mix: asteroid-s
+makeup: stone, as an ordinary chondrite: olivine and pyroxene, feldspar, grains of nickel-iron metal and iron sulfide through it
+density: 2.7
+albedo: 0.2
+belt-share: 0.55..0.1
 
 @asteroid m-type
 name: M-type asteroid
@@ -24,16 +37,43 @@ real: yes
 says: nickel and iron, probably the broken metal core of a shattered small world
 linked-meteorite: iron
 example: Psyche
+mix: asteroid-m
+makeup: metal, as an iron meteorite: nickel-iron (kamacite and taenite), with iron sulfide and a little stone
+density: 5.3
+albedo: 0.15
+belt-share: 0.08..0.06
 
 @asteroid e-type
 name: E-type asteroid
 real: yes
 says: very bright and reflective
+mix: asteroid-e
+makeup: pale stone, as an enstatite chondrite: nearly iron-free pyroxene (enstatite), with metal and sulfide grains
+density: 2.7
+albedo: 0.45
+belt-share: 0.07..0
 
 @asteroid p-type
 name: P-type asteroid
 real: yes
 says: very dark, reddish, comet-like, found far out
+mix: asteroid-p
+makeup: dark stone and ice: organic-rich carbon, silicate dust, water ice and other ices, reddened by its tarry surface
+density: 1.2
+albedo: 0.04
+belt-share: 0..0.1
+
+@asteroid v-type
+name: V-type asteroid
+real: yes
+says: basalt, a chip off a world that melted and formed a crust: the Vesta family
+linked-meteorite: howardite, eucrite, diogenite
+example: Vesta
+mix: asteroid-v
+makeup: basalt, as a eucrite: pyroxene and plagioclase feldspar, a crust that once was lava
+density: 3.0
+albedo: 0.35
+belt-share: 0.05..0.01
 
 @asteroid rubble-pile
 name: Rubble-pile asteroid
@@ -66,6 +106,10 @@ says: sharing a planet's orbit, 60° ahead or behind it
 name: Centaur
 real: yes
 says: half asteroid, half comet, orbiting between the giant planets
+mix: asteroid-p
+makeup: dark stone and ice: organic-rich carbon, silicate dust, water and other ices
+density: 1.0
+albedo: 0.06
 
 # ── Comets ──
 
@@ -74,12 +118,20 @@ name: Short-period comet
 real: yes
 from: Kuiper belt and scattered disk
 says: returns every few years to a few hundred years
+mix: comet
+makeup: a nucleus of dust and ice, about four parts dust to one of ice by weight: silicate grains and organic-rich carbon, water ice, frozen carbon dioxide and carbon monoxide, a little ammonia and methane; a dark crust of tar over it
+density: 0.5
+albedo: 0.04
 
 @comet long-period
 name: Long-period comet
 real: yes
 from: Oort cloud
 says: falls in once in thousands of years or more, sometimes only once
+mix: comet
+makeup: a nucleus of dust and ice never warmed since the system formed: silicate grains and organic-rich carbon, water ice, frozen carbon dioxide and carbon monoxide, a little ammonia and methane
+density: 0.5
+albedo: 0.04
 
 @comet sungrazer
 name: Star-grazing comet
@@ -150,27 +202,47 @@ where: the Kuiper belt
 name: Classical Kuiper-belt object
 real: yes
 says: icy body on a calm, round orbit in the Kuiper belt
+mix: kuiper
+makeup: ice and stone, about half and half: water ice with frozen methane, nitrogen, carbon monoxide and ammonia, over rock and organic-rich carbon, its surface reddened by tar-like tholins
+density: 1.0
+albedo: 0.1
 
 @far plutino
 name: Plutino
 real: yes
 says: icy body locked in a 3:2 orbital beat with the outermost giant, like Pluto
+mix: kuiper
+makeup: ice and stone, about half and half: water ice with frozen methane, nitrogen, carbon monoxide and ammonia, over rock and organic-rich carbon, its surface reddened by tar-like tholins
+density: 1.0
+albedo: 0.1
 
 @far scattered-disk-object
 name: Scattered-disk object
 real: yes
 says: icy body thrown onto a long, tilted orbit by a giant planet
+mix: kuiper
+makeup: ice and stone, about half and half: water ice with frozen methane, nitrogen, carbon monoxide and ammonia, over rock and organic-rich carbon, its surface reddened by tar-like tholins
+density: 1.0
+albedo: 0.1
 
 @far detached-object
 name: Detached object
 real: yes
 says: icy body on a huge lonely orbit beyond everything else
 example: Sedna
+mix: kuiper
+makeup: ice and stone, about half and half: water ice with frozen methane, nitrogen, carbon monoxide and ammonia, over rock and organic-rich carbon, its surface reddened by tar-like tholins
+density: 1.0
+albedo: 0.1
 
 @far oort-cloud-comet
 name: Oort-cloud comet
 real: yes
 says: one of a vast number of icy bodies in the outer shell, tens of thousands of au out
+mix: kuiper
+makeup: ice and stone, about half and half: water ice with frozen methane, nitrogen, carbon monoxide and ammonia, over rock and organic-rich carbon, its surface reddened by tar-like tholins
+density: 1.0
+albedo: 0.1
 
 # ── Meteors and meteorites ──
 
@@ -220,6 +292,10 @@ real: yes
 says: nickel-iron, from the core of a shattered small world
 
 # ── Generator rules ──
+
+@rule small-makeup
+real: rule
+says: every small body has its own make-up: its kind's mix of minerals (content/minerals.unt), listed on its card with the elements they hold down to the traces, and dived into at its surface as a planet's ground is; an asteroid's kind is drawn by the kinds' belt-share at its place in the belt (stony inside, carbon-rich outside)
 
 @rule small-seed
 real: rule

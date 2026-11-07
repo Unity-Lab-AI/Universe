@@ -115,10 +115,12 @@ namespace Universe.Shell
         private bool _plasma; private string _plasmaMake = "hydrogen 91.2%, helium 8.7%"; private double _plasmaPerCc = 1e17;
         /// <summary>Into a star's surface: its plasma (content/physics.unt star-plasma): bare nuclei of its elements in their
         /// shares, at its density, with free electrons darting between them (too hot for any atom to keep its electrons).</summary>
-        public void SetPlasma(ulong spot)
+        public void SetPlasma(ulong spot) { SetPlasma(spot, _plasmaMake); }
+        /// <summary>A star's plasma, of its own make-up ("hydrogen 91.2%, helium 8.7%, ...", by count of atoms).</summary>
+        public void SetPlasma(ulong spot, string makeup)
         {
             var parts = new List<SpaceGen.Part>(); double total = 0;
-            foreach (var bit in _plasmaMake.Split(','))
+            foreach (var bit in (makeup ?? _plasmaMake).Split(','))
             {
                 string t = bit.Trim(); int pc = t.IndexOf('%'), sp = pc > 0 ? t.LastIndexOf(' ', pc) : -1; if (sp < 0) continue;
                 double share; if (!double.TryParse(t.Substring(sp + 1, pc - sp - 1), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out share)) continue;
@@ -129,6 +131,74 @@ namespace Universe.Shell
             foreach (var q in parts) q.Share /= total;
             SetSpace(11, spot, 0, parts.ToArray()); _plasma = true;
             _gasSpacing = 1e-5 / Math.Pow(_plasmaPerCc, 1 / 3.0);
+        }
+        public bool InSpace { get { return _space; } }
+        public int SpaceKind { get { return _spaceKind; } }
+        /// <summary>A neutron star's crust: iron nuclei packed in a lattice (about a hundred million grams a cubic centimetre: the nuclei
+        /// a hundredth of an atom's width apart), electrons racing between them; the same drawing as a star's plasma, at that spacing.</summary>
+        public void SetNeutronCrust(ulong spot)
+        {
+            SetPlasma(spot, "iron 100%"); _spaceKind = 13; _gasSpacing = 1e-15;
+        }
+        private double _holeRs, _holeMass;
+        public double HoleRs { get { return _holeRs; } }
+        /// <summary>Inside a black hole's horizon: the fall, pitch black (no light from anything here reaches anything else), down to
+        /// the singularity at the middle, where the zoom finds quarks pressed closer than anything, as far as the laws we have go.</summary>
+        public void SetHole(ulong spot, double rsKm, double massSol)
+        {
+            SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _gasSpacing = 1e-40;
+        }
+        // the singularity: its whole mass in a point with no size at all, as far as the laws we have can say; drawn, once the zoom
+        // is down at the quarks' size, as quarks pressed into a ball a third of the view wide at every size on down (a point: however
+        // far in you go it is the same), all three colour charges, picked like any quark; above that size, nothing: the fall is black
+        private void Singularity(List<StarVertex> glow, double s, double time)
+        {
+            if (s > Nucleon * 8) return;
+            float[][] colour = { new[] { 1f, 0.3f, 0.3f }, new[] { 0.3f, 1f, 0.35f }, new[] { 0.4f, 0.5f, 1f } };
+            double R = s * 0.32;
+            for (int i = 0; i < 1200; i++)
+            {
+                double u = Hash(i, 1, 3, _seed), v = Hash(i, 2, 3, _seed) * 2 - 1, a = Hash(i, 3, 3, _seed) * Math.PI * 2 + time * (0.02 + 0.01 * (i % 7)), r = R * Math.Pow(u, 1 / 3.0), sq = Math.Sqrt(Math.Max(0, 1 - v * v));
+                double x = r * sq * Math.Cos(a), y = r * v, z = r * sq * Math.Sin(a);
+                var c = colour[i % 3]; float f = (float)(0.55 + 0.45 * Math.Sin(time * 0.6 + i));
+                Add(glow, x, y, z, Math.Max(s * 0.004, Nucleon * 0.02), c[0] * f, c[1] * f, c[2] * f, s);
+                if (i < 240) { int nb = _bodies.Count; AddBody(4, i, i % 2, x, y, z, Math.Max(s * 0.01, Nucleon * 0.05), s); if (_bodies.Count > nb) { _bodies[nb].Sym = i % 2 == 1 ? "up" : "down"; _bodies[nb].Key = 1; } }
+            }
+            Add(glow, 0, 0, 0, s * 0.06, 1f, 1f, 1f, s);
+        }
+        private static string Secs(double t)
+        {
+            if (t < 1e-3) return (t * 1e6).ToString("0.#") + " microseconds";
+            if (t < 1) return (t * 1e3).ToString("0.#") + " milliseconds";
+            if (t < 90) return t.ToString("0.#") + " seconds";
+            if (t < 5400) return (t / 60).ToString("0.#") + " minutes";
+            return (t / 3600).ToString("0.#") + " hours";
+        }
+        /// <summary>What a ground's mix is made of, in words for a card: its minerals with their shares, the elements they hold (by count
+        /// of atoms) and the traces down to parts per billion (from every mineral's real trace chemistry, content/minerals.unt).</summary>
+        public string[] MakeUpWords(string mixId)
+        {
+            List<KeyValuePair<Mineral, double>> mix; if (mixId == null || !_mixes.TryGetValue(mixId, out mix) || mix.Count == 0) return new string[0];
+            double total = 0; foreach (var kv in mix) total += kv.Value; if (total <= 0) return new string[0];
+            var mw = new List<string>(); var el = new Dictionary<string, double>(); var tr = new Dictionary<string, double>();
+            foreach (var kv in mix)
+            {
+                double sh = kv.Value / total; string nm = kv.Key.Name.ToLowerInvariant(); int br = nm.IndexOf(" ("); if (br > 0) nm = nm.Substring(0, br);
+                mw.Add(nm + " " + (sh * 100).ToString(sh >= 0.1 ? "0" : "0.#") + "%");
+                int na = Math.Max(1, kv.Key.Atoms.Length);
+                foreach (var a in kv.Key.Atoms) { double v; el.TryGetValue(a, out v); el[a] = v + sh / na; }
+                if (kv.Key.Traces != null) foreach (var host in kv.Key.Traces) { double hostShare = CountOf(kv.Key, host.Key) / (double)na * sh; foreach (var t in host.Value) { double v; tr.TryGetValue(t.Key, out v); tr[t.Key] = v + t.Value * hostShare; } }
+            }
+            foreach (var k in new List<string>(tr.Keys)) if (el.ContainsKey(k)) { el[k] += tr[k]; tr.Remove(k); }   // (a trace in one mineral, a main element of another: an element)
+            var els = new List<KeyValuePair<string, double>>(el); els.Sort((a, b) => b.Value.CompareTo(a.Value));
+            var trs = new List<KeyValuePair<string, double>>(tr); trs.Sort((a, b) => b.Value.CompareTo(a.Value));
+            Func<string, string> name = sym => { var e = El(sym); return e != null ? e.Name.ToLowerInvariant() : sym; };
+            Func<double, string> share = v => v >= 0.0001 ? (v * 100).ToString(v >= 0.01 ? "0.#" : "0.##") + "%" : v >= 1e-7 ? (v * 1e6).ToString("0.#") + " ppm" : (v * 1e9).ToString("0.##") + " ppb";
+            var ew = new List<string>(); foreach (var e in els) ew.Add(name(e.Key) + " " + share(e.Value));
+            var tw = new List<string>(); int shown = Math.Min(trs.Count, 22); for (int q = 0; q < shown; q++) tw.Add(name(trs[q].Key) + " " + share(trs[q].Value));
+            var L = new List<string> { "minerals: " + string.Join(", ", mw.ToArray()), "elements (by atoms): " + string.Join(", ", ew.ToArray()) };
+            if (tw.Count > 0) L.Add("traces: " + string.Join(", ", tw.ToArray()) + (trs.Count > shown ? ", and " + (trs.Count - shown) + " more, down to parts per billion" : ""));
+            return L.ToArray();
         }
         public void SetAir(string air, ulong spot)
         {
@@ -850,7 +920,7 @@ namespace Universe.Shell
             if (_space && e != null && s > AtomRadius(e) * 3)
             {
                 string[] kinds = { "a globular cluster", "an open cluster", "an emission nebula", "a reflection nebula", "a planetary nebula", "a supernova remnant", "a dark nebula" };
-                string where = _spaceKind == 11 ? "a star's plasma (bare nuclei and free electrons, thousands of degrees)" : _spaceKind == 10 ? "the air (the world's own gases, at about one bar)" : _spaceKind >= 0 && _spaceKind < kinds.Length ? kinds[_spaceKind] : "the space between the stars";
+                string where = _spaceKind == 13 ? "a neutron star's crust (iron nuclei in a lattice, electrons racing between them)" : _spaceKind == 11 ? "a star's plasma (bare nuclei and free electrons, thousands of degrees)" : _spaceKind == 10 ? "the air (the world's own gases, at about one bar)" : _spaceKind >= 0 && _spaceKind < kinds.Length ? kinds[_spaceKind] : "the space between the stars";
                 return "the gas of " + where + ": one atom about every " + ScaleHud.Words(_gasSpacing) + ", mostly hydrogen; the one ahead " + e.Name.ToLowerInvariant();
             }
             string mn = m != null ? m.Name.ToLowerInvariant() + " (" + m.Formula + ")" : "rock";
@@ -1318,7 +1388,8 @@ namespace Universe.Shell
 
         private void Build(double s, double time, List<StarVertex> solid, List<StarVertex> glow, List<StarVertex> mesh, bool overlay)
         {
-            _yOff = 0; _patchMesh.Clear(); _orbRecs.Clear(); _stoneMesh.Clear(); _stones.Clear();                                                 // (the grain's face: made afresh each frame from its kept points)
+            _yOff = 0; _patchMesh.Clear(); _orbRecs.Clear(); _stoneMesh.Clear(); _stones.Clear();
+            if (_space && _spaceKind == 12) { Singularity(glow, s, time); return; }          // inside a black hole: the fall is black, down to the singularity                                                 // (the grain's face: made afresh each frame from its kept points)
             if (!_space && !_noGrains)
             {
                 long fgi, fgj; double fgx, fgy, fgz, frad, top; FocusGrain(out fgi, out fgj, out fgx, out fgy, out fgz, out frad);
@@ -1895,6 +1966,31 @@ namespace Universe.Shell
         private List<string> CardLines()
         {
             var L = new List<string>();
+            if (_space && _spaceKind == 12)
+            {
+                // the fall into a black hole: where you are, by the laws of gravity (the event horizon is where the speed to escape is
+                // exactly light's; inside it is more, and outside it is less: content/physics.unt); the time left to the middle on
+                // your own clock (a radial fall from rest far away, the same in Newton's and Einstein's gravity: two thirds of
+                // r^1.5 over the root of 2GM); the stretch head to foot (the tide: 2GM over r cubed, across two metres)
+                double r = _scale * 0.6, rM = r * 1000, gm = Universe.Core.Physics.GmSun * _holeMass; bool at = _scale <= Nucleon * 8;
+                if (!at)
+                {
+                    L.Add("inside the event horizon");
+                    L.Add("no light from here gets out: the speed to escape is " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.##E+0") + " times light's (at the horizon it was exactly light's; outside, less)");
+                    L.Add("falling: " + ScaleHud.Words(r) + " from the middle; the horizon " + ScaleHud.Words(_holeRs * 2) + " across");
+                    L.Add("your own time left to the middle: " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " (from the horizon: " + Secs(2.0 / 3 * Math.Pow(_holeRs * 1000, 1.5) / Math.Sqrt(2 * gm)) + ")");
+                    double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the stretch head to foot (the tide): " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.##E+0")) + " m/s2" + (tide > 100 ? ": torn apart" : tide > 1 ? ": felt" : ""));
+                    L.Add("a picked quark, an atom: nothing to pick here; the middle is " + ScaleHud.Words(r) + " down");
+                }
+                else
+                {
+                    L.Add("the singularity");
+                    L.Add("its whole mass, " + (_holeMass >= 1e4 ? _holeMass.ToString("0.##E+0") : _holeMass.ToString("0.#")) + " solar masses, in a point with no size at all, as far as the laws we have can say");
+                    L.Add("quarks pressed closer than anything, until those laws give out: what is really here is not known");
+                    L.Add("the view: " + ScaleHud.Words(_scale) + "; the ball stays the same however far in you go: a point");
+                }
+                return L;
+            }
             // a grain you are now at the face of: it is where you are, not a pick any more
             if (_picked != null && _picked.Kind == 0 && _scale < Grain * 0.35) _picked = null;
             if (_picked != null && _picked.Kind == 2)
@@ -1999,7 +2095,7 @@ namespace Universe.Shell
             L.Add("shells: " + string.Join(", ", Array.ConvertAll(e.Shells, x => x.ToString())));
             L.Add("width: about " + ScaleHud.Words(AtomRadius(e) * 2) + ", nucleus " + ScaleHud.Words(NucleusRadius(e) * 2));
             if (_space && _gasParts != null) { var top = (SpaceGen.Part[])_gasParts.Clone(); Array.Sort(top, (a, b) => b.Share.CompareTo(a.Share)); L.Add("made of: " + top[0].Name + ", " + top[1].Name + (top.Length > 2 ? ", " + top[2].Name : "")); }
-            if (_space) { L.Add("in the gas of " + (_spaceKind == 2 ? "an emission nebula (most of its hydrogen ionized by hot stars)" : _spaceKind == 3 ? "a reflection nebula" : _spaceKind == 4 ? "a planetary nebula (its gas glowing from the white dwarf at its middle)" : _spaceKind == 5 ? "a supernova remnant (hot, racing outward)" : _spaceKind == 6 ? "a dark nebula (cold, mostly molecules of hydrogen)" : _spaceKind == 9 ? "the space between the stars" : _spaceKind == 11 ? "a star's surface: plasma, bare nuclei and free electrons" : _spaceKind == 10 ? "the air: " + _airText : "space between a cluster's stars")); double inView = Math.Pow(_scale * 1.2 / _gasSpacing, 3), perCc = Math.Pow(1e-5 / _gasSpacing, 3);
+            if (_space) { L.Add("in the gas of " + (_spaceKind == 2 ? "an emission nebula (most of its hydrogen ionized by hot stars)" : _spaceKind == 3 ? "a reflection nebula" : _spaceKind == 4 ? "a planetary nebula (its gas glowing from the white dwarf at its middle)" : _spaceKind == 5 ? "a supernova remnant (hot, racing outward)" : _spaceKind == 6 ? "a dark nebula (cold, mostly molecules of hydrogen)" : _spaceKind == 9 ? "the space between the stars" : _spaceKind == 13 ? "a neutron star's crust: iron nuclei packed in a lattice, electrons racing between them; deeper, below about a kilometre, the nuclei dissolve into neutrons packed shoulder to shoulder" : _spaceKind == 11 ? "a star's surface: plasma, bare nuclei and free electrons" : _spaceKind == 10 ? "the air: " + _airText : "space between a cluster's stars")); double inView = Math.Pow(_scale * 1.2 / _gasSpacing, 3), perCc = Math.Pow(1e-5 / _gasSpacing, 3);
                 L.Add("about " + perCc.ToString(perCc < 10 ? "0.#" : "N0") + " atoms a cubic centimetre (air has 25 billion billion)");
                 L.Add(inView >= 2 ? "in view: about " + Big(inView) + " atoms, far too thin to see" : "in view: the one atom ahead of you");
                 L.Add("each about " + ScaleHud.Words(_gasSpacing) + " from the next"); }

@@ -137,6 +137,10 @@ says: orbits two stars at once
 name: Rogue planet
 real: yes
 says: no star at all, drifting through space, warmed only from inside
+mix: rogue
+makeup: rock: silicate crust, iron core; its air frozen onto the ground as ice: nitrogen, water, carbon dioxide; warmed only from inside
+density: 5.0
+albedo: 0.5
 
 # ── Earth-family examples ──
 

@@ -17,7 +17,11 @@
 #   long the inner edge takes to go round as watched (the real time is minutes to hours for a supermassive hole: scaled to be
 #   seen); swarm-stars and swarm-rs, stars swept round the hole on tight ellipses of those sizes (as the S stars at the Milky
 #   Way's heart); eating-share, how many feeding holes are tearing a star apart right now: a star that came too close,
-#   stretched along its orbit into a stream of gas that winds in and feeds the disc (a tidal disruption).
+#   stretched along its orbit into a stream of gas that winds in and feeds the disc (a tidal disruption); eating-stars, how many
+#   at once (a supermassive hole's disc can hold several, each on its own stream).
+# What each body is made of (its card, and the matter you dive into at its surface) comes from its entry: an asteroid's kind
+#   (content/small-bodies.unt @asteroid, picked by belt-share at its place in the belt), a Kuiper body's, a comet's, a rogue
+#   planet's (content/planets.unt): each with its mix (content/minerals.unt @mix), makeup, density and albedo.
 # Spec: docs/CONTENT-FORMAT.md · content/black-holes.unt · content/small-bodies.unt · content/stars.unt
 
 @place supermassive-black-hole
@@ -34,6 +38,7 @@ inner-orbit-seconds: 8
 swarm-stars: 40
 swarm-rs: 12..120
 eating-share: 0.5
+eating-stars: 1..4
 colour: 1 0.7 0.35
 says: millions to billions of solar masses at the galaxy's heart, its disc of hot gas glowing as it falls in
 
@@ -104,7 +109,7 @@ shape: rock
 name: An icy body of the Kuiper belt
 where: kuiper
 shown: 300
-entry: asteroid centaur
+entry: far classical-kbo
 size-km: 100
 colour: 0.75 0.7 0.7
 says: ice and rock beyond the planets, where the comets of short period come from
@@ -129,6 +134,5 @@ size-km: 5
 colour: 0.85 0.92 1
 shape: comet
 says: a nucleus of ice and dust warmed by its star: gas and dust boil off into its coma and are pushed out into its tail
-
 coma-km: 1e5..1e6
 tail-km: 1e7..8e7

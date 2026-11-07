@@ -188,6 +188,41 @@ namespace Universe.Shell
             c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
             pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
         }
+        /// <summary>A black hole's gravity well, graphed: the depth of space's dip against the distance from the middle (Flamm's
+        /// paraboloid, 2 root(rs (r - rs)), from forty horizon radii in), a sharp step at the event horizon straight down to a point, the
+        /// singularity, and a mark where you are on it (outside, on the curve; inside, down the step, by how far in you have fallen).
+        /// At the horizon the speed to escape is exactly light's; outside less, inside more.</summary>
+        public void DrawWell(MeshPipes pipes, int w, int h, double radii)
+        {
+            float px = Math.Max(1, h / 1080f), cell = 2.0f * px;
+            float pw = 380 * px, ph = 230 * px, x0 = w - pw - 20 * px, y0 = h * 0.5f - ph * 0.5f;
+            var l = new List<StarVertex>();
+            Quad(l, x0, y0, pw, ph, 0.02f, 0.02f, 0.03f);
+            float gx0 = x0 + 70 * px, gx1 = x0 + pw - 16 * px, gy0 = y0 + 34 * px, gy1 = y0 + ph - 40 * px;   // the graph's box: the horizon at the left edge, forty radii at the right; the dip downward
+            Func<double, float> X = r => gx0 + (float)(Math.Log(Math.Max(1, r)) / Math.Log(40)) * (gx1 - gx0);
+            Func<double, float> Y = r => gy0 + (float)(2 * Math.Sqrt(Math.Max(0, r - 1)) / (2 * Math.Sqrt(39))) * (gy1 - gy0 - 60 * px);   // (the curve, from the top at the horizon down and out)
+            // the curve (space's dip, read from the right in: flatter far out, steeper close in), the step, the point
+            for (int k = 0; k <= 160; k++) { double r = Math.Pow(40, k / 160.0); Quad(l, X(r) - px, Y(r) - px, 2.5f * px, 2.5f * px, 0.5f, 0.72f, 0.9f); }
+            for (int k = 0; k <= 80; k++) { float y = gy0 + (gy1 - gy0) * k / 80f; Quad(l, gx0 - px, y, 2.5f * px, 2.5f * px, 0.6f, 0.68f, 0.8f); }   // the step: the horizon, straight down
+            Quad(l, gx0 - 3 * px, gy1 - 3 * px, 6 * px, 6 * px, 1f, 1f, 1f);                                                                  // the point: the singularity
+            // where you are: on the curve outside, down the step inside (by the logarithm of how far in, down to the quarks' size)
+            float mx, my;
+            if (radii >= 1) { mx = X(radii); my = Y(radii); }
+            else { double t = Math.Max(0, Math.Min(1, Math.Log10(1 / Math.Max(1e-40, radii)) / 40)); mx = gx0; my = gy0 + (gy1 - gy0) * (float)t; }
+            Quad(l, mx - 5 * px, my - 5 * px, 10 * px, 10 * px, 1f, 0.85f, 0.3f);
+            Action<string, float, float, float, float, float> text = (s, tx, ty, r, g, b) => { float cx = tx; foreach (char ch in s) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(l, cx + c[0] * cell, ty + c[1] * cell, cell * 0.9f, cell * 0.9f, r, g, b); cx += 6 * cell; } };
+            text("GRAVITY WELL", x0 + 12 * px, y0 + 10 * px, 0.8f, 0.85f, 0.9f);
+            text("HORIZON", x0 + 8 * px, gy0 - 4 * px, 0.6f, 0.68f, 0.8f);
+            text("40 R", gx1 - 24 * cell, gy0 - 16 * px, 0.5f, 0.6f, 0.7f);
+            text("POINT", x0 + 8 * px, gy1 - 6 * px, 0.9f, 0.9f, 0.9f);
+            text(radii >= 1 ? "YOU: " + radii.ToString("0.0") + " R" : "YOU: INSIDE, " + (radii >= 1e-3 ? (radii * 1).ToString("0.000") + " R" : radii.ToString("0.0E+0") + " R"), x0 + 12 * px, y0 + ph - 26 * px, 1f, 0.85f, 0.3f);
+            text(radii >= 1 ? "ESCAPE " + (Math.Sqrt(1 / radii) * 100).ToString("0") + "% OF LIGHT" : "ESCAPE OVER LIGHT: NO WAY OUT", x0 + 12 * px + 6 * cell * 14, y0 + ph - 26 * px, 0.8f, 0.85f, 0.9f);
+            var arr = l.ToArray(); var buf = Slot(arr, arr.Length);
+            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 0; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;
+            var c2 = new float[BillboardPipeline.ConstantCount];
+            c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
+            pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
+        }
         public void DrawBars(MeshPipes pipes, int w, int h, float frac)
         {
             var l = new List<StarVertex>(); float bh = h * frac;

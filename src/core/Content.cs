@@ -63,7 +63,8 @@ namespace Universe.Core
             {
                 string line = raw.TrimEnd();
                 if (line.StartsWith("# ──")) { section = line.Trim('#', ' ', '─'); cur = null; continue; }
-                if (line.Length == 0 || line.StartsWith("#")) { cur = null; continue; }
+                if (line.StartsWith("#")) continue;                                    // a comment inside an entry is only a comment: it never ends the entry (it did, and the two black holes of bodies.unt, with a comment under their headers, lost every line: no black hole was ever made)
+                if (line.Length == 0) { cur = null; continue; }
                 if (line.StartsWith("@"))
                 {
                     string[] head = line.Substring(1).Split(new[] { ' ' }, 2, StringSplitOptions.RemoveEmptyEntries);

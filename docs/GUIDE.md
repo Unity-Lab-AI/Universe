@@ -310,6 +310,14 @@ Add a mineral, then put it in a ground's mix, and its grains appear on every wor
 
 ---
 
+### What the small bodies and stars are made of
+
+An asteroid's kind lives in `content/small-bodies.unt` (`@asteroid` with `mix`, `makeup`, `density`, `albedo` and `belt-share`, its share at the belt's inner edge .. outer edge; the belt draws each asteroid's kind by these at its place), a Kuiper body's and a comet's in the same file, a rogue planet's in `content/planets.unt`. Each `mix` is a ground in `content/minerals.unt` (`@mix`), and the card works the elements and traces out from the minerals' own atoms and `trace` lines. A star's `makeup` (`content/stars.unt`, by count of atoms) is what its card gives and what its plasma is made of when you dive into it; `makeup-note` is what the card says of it.
+
+### Supernovae
+
+`content/physics.unt` `@law supernova` holds the rate (per century, for a galaxy of a hundred billion stars), the free-expansion years, the remnant years and the neutron-star mass limit; each `@supernova` kind has its `share`, `peak-sol`, `rise-days`, `plateau-days`, `halving-days`, `tail-share`, `peak-k`, `ejecta-km-s`, `colour` and what it `leaves` (`core`, `nothing` or `magnetar`). Every galaxy's supernovae follow from these, its seed and the game's clock.
+
 ## Write a tour
 
 Tours are lists of camera moves in `content/tours/`. The grand tour is `grand-tour.unt`. Copy it and make your own:
@@ -335,7 +343,7 @@ caption: Across the universe, straight to one far away
 |---|---|
 | `pick` | Chooses what to look at: `start-galaxy`; `far-galaxy` (with `far-ly: 1e9..5e9`, a true crossing: a galaxy that far ahead, made from its own region before you set off, one whose heart is feeding when there is one); `black-hole` (a feeding one before a quiet one); `star`; `planet` (never a world that is all sea); `land` (a spot of dry land under you, to come down on); `asteroid`, `comet`, `quark` and more, or `none`. A black hole is this galaxy's own heart (a feeding one before a quiet one). A pick looks for a few seconds; if it finds nothing (a system with no belt, say) every stop up to the next pick is skipped, so a caption never tells of what is not in view |
 | `shot` | A framed film shot round what is picked (a small body is framed from its lit side: the sweep carries the camera round to it; at a black hole the frame is the disc's own plane): `to-radii` or `to-km` (how far), `sweep` (degrees round), `rise` (degrees up), `max-rate` (how fast the scale may change, tenfolds a second: on the way in to the subject, and on the way out from whatever was in view where the shot began, so an asteroid you were beside pulls away smoothly on the way to a comet, never left in a frame) |
-| `zoom` | A straight push in or pull out, `until-km` |
+| `zoom` | A straight push in or pull out, `until-km`; `out: yes` for a pull out that ends once back out of the matter (a body's ground, a black hole) into space |
 | `orbit`, `look`, `arc`, `fly`, `glide` | Circle, look round, dolly while circling, fly forward, skim over the land |
 
 Every stop has a `caption`, which is shown on screen. A caption of `{sky}` is written on the spot from what is really up from where you stand: its star only if it is in view, its moons, the other worlds, the galaxy's stars by night or the day sky by day. A caption of `{hole}` is written from the black hole you picked: its jets if it fires them, its disc, or that it is quiet, and how big its horizon is.
@@ -351,7 +359,7 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 | A new trait for worlds | Read it in `PlanetTerrain.Build` (`src/gen/PlanetTerrain.cs`), use it where the ground is shaped or coloured |
 | A new rule for where worlds form | `SpaceGen.WorldKind` (`src/gen/SpaceGen.cs`) |
 | A new kind of thing in space | `src/gen/BodyGen.cs` and `content/bodies.unt` |
-| A black hole's disc, swarm and torn star | `content/bodies.unt`: `disc-rs` (its disc's reach in horizon radii), `inner-orbit-seconds` (how long its inner edge takes round, as watched), `swarm-stars` and `swarm-rs` (stars on tight ellipses round it), `eating-share` (how many feeding holes are tearing a star apart now). Every motion is worked out on the card from these |
+| A black hole's disc, swarm and torn stars | `content/bodies.unt`: `eating-stars` (how many stars a feeding hole tears apart at once), `disc-rs` (its disc's reach in horizon radii), `inner-orbit-seconds` (how long its inner edge takes round, as watched), `swarm-stars` and `swarm-rs` (stars on tight ellipses round it), `eating-share` (how many feeding holes are tearing a star apart now). Every motion is worked out on the card from these |
 | Dark matter and dark energy | `content/physics.unt` `@law cosmos`: `dark-matter-share` and `rim-speed-km-s` (a galaxy's card: its mass with its halo, its stars' flat speed), `dark-energy-share` and `hubble-km-s-mpc` (the horizon's words) |
 | A new galaxy shape | `src/gen/GalaxyGen.cs` |
 | New controls or camera moves | `UniverseView.Update` and the tour's `TourStep` (`src/shell/UniverseView.cs`) |

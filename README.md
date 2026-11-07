@@ -185,13 +185,14 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 
 | | |
 |---|---|
-| **Black holes** | A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets; quiet ones are a shadow and bent starlight |
+| **Black holes** | A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets, a supermassive one tearing several stars apart at once; quiet ones are a shadow and bent starlight. The gravity well is drawn round each, a sharp step at the horizon down to a point, and zooming in at the shadow falls through the horizon, black, to the singularity at the quarks' size |
 | **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, gas giants, ice giants and hot Jupiters. Some have **rings**. Those that orbit close to their star are **tidally locked**: one face always toward it, a day as long as a year |
 | **Moons** | Worlds in their own right: mostly airless rock or ice, now and then an ocean, a lava world or one with air |
 | **Orbits** | Never perfect circles: every orbit an ellipse, most gently oval, some long and wild, each body fastest at its closest point |
 | **Comets** | A dark nucleus a few km across in a glowing coma up to a million km wide, an ion tail straight from the star and a curved dust tail, tens of millions of km long: seen right across their system |
-| **Asteroids** | Lumpy, cratered rock in a star's belts |
-| **Wanderers** | Neutron stars and rogue planets drifting between the stars |
+| **Asteroids** | Lumpy, cratered rock in a star's belts, each of a real kind by its place in the belt (stony, carbon-rich, metal, enstatite, basalt, dark and icy), with its minerals and elements on its card and under the zoom |
+| **Wanderers** | Neutron stars and rogue planets drifting between the stars, a neutron star's crust of iron nuclei dived into |
+| **Supernovae** | Every galaxy's own, two to five a century, of every real kind and in every stage, as bright as physics says from where you are: up close a fireball ten billion km across in the colour of its heat, then a shell standing for a hundred thousand years with the neutron star, black hole or magnetar born at its middle; the star that died is gone with its worlds, and its neighbours are scorched |
 
 **Dead, but alive.** There's no life yet, but every world runs on its own clock: plates drift, volcanoes erupt, ice ages come and go, and rocks from space leave craters.
 

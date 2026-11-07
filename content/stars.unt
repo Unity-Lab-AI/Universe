@@ -13,6 +13,7 @@
 #   and young T Tauri stars). remnant: what is left when a star dies (white dwarfs, neutron stars, pulsars, magnetars).
 @star o-type
 name: O-type blue star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 real: yes
 color: blue
@@ -26,6 +27,7 @@ radius-sol: 6.6..15
 
 @star b-type
 name: B-type blue-white star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 real: yes
 color: blue-white
@@ -39,6 +41,7 @@ radius-sol: 1.8..6.6
 
 @star a-type
 name: A-type white star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 real: yes
 color: white
@@ -53,6 +56,7 @@ radius-sol: 1.4..1.8
 
 @star f-type
 name: F-type yellow-white star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 real: yes
 color: yellow-white
@@ -66,6 +70,7 @@ radius-sol: 1.15..1.4
 
 @star g-type
 name: G-type yellow star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 spots: yes
 real: yes
@@ -81,6 +86,7 @@ radius-sol: 0.96..1.15
 
 @star k-type
 name: K-type orange star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 spots: yes
 real: yes
@@ -95,6 +101,7 @@ radius-sol: 0.7..0.96
 
 @star m-type
 name: M-type red dwarf
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 spots: yes
 real: yes
@@ -112,6 +119,8 @@ radius-sol: 0.1..0.7
 
 @star red-giant
 name: Red giant
+makeup: hydrogen 90.5%, helium 9.4%, oxygen 0.045%, nitrogen 0.02%, carbon 0.012%, neon 0.008%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%
+makeup-note: its surface stirred up from its depths: nitrogen up, carbon down (the first dredge-up)
 surface-kind: giant
 real: yes
 color: red-orange
@@ -123,6 +132,8 @@ share-of-stars: uncommon
 
 @star red-supergiant
 name: Red supergiant
+makeup: hydrogen 89%, helium 10.9%, oxygen 0.045%, nitrogen 0.03%, carbon 0.01%, neon 0.008%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%
+makeup-note: deep mixing: helium and nitrogen up, carbon down
 surface-kind: giant
 real: yes
 color: red
@@ -136,6 +147,8 @@ share-of-stars: rarest
 
 @star blue-supergiant
 name: Blue supergiant
+makeup: hydrogen 90%, helium 9.9%, oxygen 0.045%, nitrogen 0.02%, carbon 0.015%, neon 0.008%, magnesium 0.004%, silicon 0.003%, iron 0.003%
+makeup-note: nitrogen up and carbon down at its surface, from its burning core
 surface-kind: giant
 real: yes
 color: blue
@@ -148,6 +161,8 @@ share-of-stars: rarest
 
 @star wolf-rayet
 name: Wolf-Rayet star
+makeup: helium 86%, hydrogen 2%, nitrogen 8%, carbon 2.5%, oxygen 1%, neon 0.2%, iron 0.03%, silicon 0.03%, magnesium 0.03%
+makeup-note: its hydrogen blown away in its wind: a bare core of helium, rich in nitrogen (the WN kind)
 surface-kind: normal
 real: yes
 color: blue
@@ -161,6 +176,7 @@ share-of-stars: rarest
 
 @star protostar
 name: Protostar
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 real: yes
 stage: a star still forming inside a gas cloud
@@ -171,6 +187,7 @@ share-of-stars: rare
 
 @star t-tauri
 name: T Tauri star
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: normal
 spots: yes
 real: yes
@@ -182,6 +199,8 @@ share-of-stars: rare
 
 @star brown-dwarf
 name: Brown dwarf
+makeup: hydrogen 91%, helium 8.8%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%
+makeup-note: too small to burn hydrogen: the same stuff as a star, cool enough for molecules (water, methane, ammonia) in its air
 surface-kind: brown-dwarf
 real: yes
 mass-jupiter: 13..80
@@ -196,6 +215,8 @@ share-of-stars: common
 
 @star white-dwarf
 name: White dwarf
+makeup: hydrogen 99.9%, helium 0.1%
+makeup-note: a skin of pure hydrogen a few kilometres thick; beneath it carbon and oxygen about half and half, the ash of its burning, packed to a tonne a teaspoon
 surface-kind: white-dwarf
 remnant: yes
 real: yes
@@ -208,6 +229,8 @@ share-of-stars: common
 
 @star neutron-star
 name: Neutron star
+makeup: iron 100%
+makeup-note: a crust of iron nuclei in a sea of electrons; deeper, below about a kilometre, nuclei dissolve into neutrons packed shoulder to shoulder
 surface-kind: neutron-star
 remnant: yes
 real: yes
@@ -220,6 +243,8 @@ share-of-stars: rare
 
 @star pulsar
 name: Pulsar
+makeup: iron 100%
+makeup-note: a crust of iron nuclei in a sea of electrons; deeper, neutrons packed shoulder to shoulder; its beams from its magnetic poles
 surface-kind: neutron-star
 remnant: yes
 real: yes
@@ -231,6 +256,8 @@ share-of-stars: rarest
 
 @star magnetar
 name: Magnetar
+makeup: iron 100%
+makeup-note: a crust of iron nuclei in a sea of electrons, its magnetic field a thousand times a pulsar's; deeper, neutrons packed shoulder to shoulder
 surface-kind: neutron-star
 remnant: yes
 real: yes
@@ -250,6 +277,7 @@ radius-sol: 0.000004..0.00004
 
 @star cepheid
 name: Cepheid variable
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%, sulfur 0.0013%, argon 0.0003%, aluminium 0.0003%, calcium 0.0002%, sodium 0.0002%, nickel 0.00017%
 surface-kind: giant
 real: yes
 stage: a giant that swells and shrinks on a steady beat
@@ -300,6 +328,8 @@ says: dimmer than a main-sequence star of the same color
 
 @star carbon-star
 name: Carbon star (class C)
+makeup: hydrogen 90.5%, helium 9.4%, carbon 0.08%, oxygen 0.045%, nitrogen 0.02%, neon 0.008%, magnesium 0.004%, silicon 0.003%, iron 0.003%
+makeup-note: more carbon than oxygen at its surface, dredged up from its burning shell: soot in its air
 surface-kind: giant
 real: yes
 color: deep red
@@ -310,6 +340,8 @@ share-of-stars: rarest
 
 @star s-type
 name: S-type star
+makeup: hydrogen 90.5%, helium 9.4%, oxygen 0.045%, carbon 0.04%, nitrogen 0.02%, neon 0.008%, magnesium 0.004%, silicon 0.003%, iron 0.003%, zirconium 0.00002%, barium 0.000003%, technetium 0.0000001%
+makeup-note: between an ordinary giant and a carbon star: zirconium, barium and the short-lived technetium freshly made inside it
 surface-kind: giant
 real: yes
 says: a cool giant between ordinary red giants and carbon stars
@@ -319,6 +351,8 @@ share-of-stars: rarest
 
 @star l-dwarf
 name: L-type brown dwarf
+makeup: hydrogen 91%, helium 8.8%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%
+makeup-note: cool enough for dust clouds of iron and silicates in its air
 surface-kind: brown-dwarf
 real: yes
 says: the warmest brown dwarfs, with metal-hydride clouds
@@ -328,6 +362,8 @@ share-of-stars: uncommon
 
 @star t-dwarf
 name: T-type brown dwarf
+makeup: hydrogen 91%, helium 8.8%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%
+makeup-note: cool enough for methane and water in its air
 surface-kind: brown-dwarf
 real: yes
 says: cooler brown dwarfs with methane in their air
@@ -337,6 +373,8 @@ share-of-stars: uncommon
 
 @star y-dwarf
 name: Y-type brown dwarf
+makeup: hydrogen 91%, helium 8.8%, oxygen 0.045%, carbon 0.025%, neon 0.008%, nitrogen 0.006%, magnesium 0.004%, silicon 0.003%, iron 0.003%
+makeup-note: cool enough for ammonia clouds, near room temperature
 surface-kind: brown-dwarf
 real: yes
 says: the coldest brown dwarfs, barely warmer than a planet
@@ -346,6 +384,8 @@ share-of-stars: rare
 
 @star rr-lyrae
 name: RR Lyrae variable
+makeup: hydrogen 91.5%, helium 8.4%, oxygen 0.02%, carbon 0.008%, neon 0.003%, nitrogen 0.002%, magnesium 0.0015%, silicon 0.001%, iron 0.0005%, sulfur 0.0005%
+makeup-note: an old star, poor in the heavier elements (about a tenth of a young star's share)
 surface-kind: normal
 real: yes
 says: an old pulsing star that brightens and dims in less than a day
@@ -355,6 +395,7 @@ share-of-stars: rare
 
 @star mira
 name: Mira variable
+makeup: hydrogen 90.5%, helium 9.4%, oxygen 0.045%, nitrogen 0.02%, carbon 0.012%, neon 0.008%, magnesium 0.004%, silicon 0.003%, iron 0.003%, titanium 0.0001%
 surface-kind: giant
 real: yes
 says: a pulsing red giant that brightens and dims over months

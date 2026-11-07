@@ -114,6 +114,27 @@ max-rate: 0.35
 seconds: 9
 caption: The shadow, two and a half times the horizon across: light itself is caught here, and nothing inside gets out
 
+@stop fall
+do: zoom
+rate: 0.7
+until-km: 1e-19
+through: yes
+pan: 3
+caption: In through the horizon: from here the way out needs more than light's speed; the well's graph shows the fall, a sharp step at the horizon down to a point; black, all the way to the middle
+
+@stop singularity
+do: orbit
+turn: 6
+seconds: 8
+caption: The singularity: its whole mass in a point with no size at all, as far as the laws we have can say; quarks pressed closer than anything, until those laws give out
+
+@stop out-of-hole
+do: zoom
+rate: -2
+until-km: 1e40
+out: yes
+caption: Back out past the horizon (the one way nothing real can go)
+
 @stop hole-back
 do: shot
 to-radii: 200
@@ -122,6 +143,29 @@ rise: 25
 max-rate: 0.5
 seconds: 9
 caption: {hole}
+
+@stop supernova
+do: pick
+target: supernova
+caption: A star dying: a supernova
+
+@stop to-supernova
+do: shot
+to-radii: 10
+sweep: 30
+rise: 10
+max-rate: 0.6
+seconds: 10
+caption: {supernova}
+
+@stop round-supernova
+do: shot
+to-radii: 5
+sweep: 100
+rise: 20
+max-rate: 0.4
+seconds: 9
+caption: Brighter than a hundred million stars for weeks: its light fades over months, its shell flies on for a hundred thousand years, and what its core became stays
 
 @stop choose-star
 do: pick
@@ -164,6 +208,26 @@ sweep: 120
 rise: 15
 seconds: 8
 caption: An asteroid: rock left over from when the worlds were made
+
+@stop onto-asteroid
+do: zoom
+rate: 0.5
+until-km: 2e-9
+through: yes
+caption: Onto its surface: its own ground, of its own kind's minerals (the card says which), grains of dust and stone
+
+@stop asteroid-atoms
+do: zoom
+rate: 0.5
+until-km: 6e-12
+caption: Down to its atoms: the elements its minerals hold, the traces among them
+
+@stop off-asteroid
+do: zoom
+rate: -1.6
+until-km: 1e40
+out: yes
+caption: Back out to the rock
 
 @stop comet
 do: pick

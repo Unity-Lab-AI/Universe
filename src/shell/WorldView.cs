@@ -2090,6 +2090,14 @@ namespace DnaAnd.Shell
             var look = Look;
             Mat4 view = Mat4.LookAt(new Vec3(0, 0, 0), look, ViewUp());
             double reach = Math.Max(1e-12, NearestDistance());
+            // the bodies drawn close round you (asteroids, comets, black holes' discs) count too, so the nearest drawing distance never
+            // cuts away one you are beside
+            foreach (var ex in _extras)
+            {
+                if (ex.Shape.Length == 0 && !ex.Hole) continue;
+                double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
+                if (d > 0 && d < reach) reach = d;
+            }
             Mat4 proj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)(reach * 1e-3), (float)(_uRadius * 2.2));   // out to the far side of the visible universe
             Mat4 vp = view * proj;
             _lastVp = vp; _lastW = w; _lastH = h; _haveVp = true;

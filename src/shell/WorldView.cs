@@ -357,16 +357,16 @@ namespace DnaAnd.Shell
         // -- asteroids and comets close in: a lumpy cratered rock lit from its star's side, made once (radius about 1) and drawn for
         // each, turned to its star and spinning on that line (so its lit side stays lit); a comet's dark nucleus in its coma, with
         // its ion tail straight away from the star and its wider curved dust tail --
-        private UploadBuffer _rockBuf, _cometBuf, _nucBuf; private int _rockN, _cometN, _nucN;
+        private UploadBuffer _rockBuf, _cometBuf, _nucBuf, _roundBuf; private int _rockN, _cometN, _nucN, _roundN;
         private bool ShapeShown(Extra ex, int h)
         {
             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
             double reach = ex.Shape == "comet" ? 2000 : 1;                                  // (a comet's coma shows from much farther)
             return ex.R * reach / Math.Max(1e-30, d) * h > 3;
         }
-        private static void RockPoints(List<StarVertex> l, Rng rng, int n, float r0, float g0, float b0, double albedo)
+        private static void RockPoints(List<StarVertex> l, Rng rng, int n, float r0, float g0, float b0, double albedo, double lump = 1)
         {
-            var bumps = new double[12][]; for (int q = 0; q < 12; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); bumps[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), (rng.NextDouble() - 0.5) * 0.5, 1 + rng.NextDouble() * 2.5 }; }
+            var bumps = new double[12][]; for (int q = 0; q < 12; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); bumps[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), (rng.NextDouble() - 0.5) * 0.5 * lump, 1 + rng.NextDouble() * 2.5 }; }
             var craters = new double[30][]; for (int q = 0; q < 30; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); craters[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), Math.Cos(0.08 + rng.NextDouble() * 0.3) }; }
             for (int k = 0; k < n; k++)
             {
@@ -374,7 +374,7 @@ namespace DnaAnd.Shell
                 double rad = 1; foreach (var bq in bumps) rad += bq[3] * Math.Pow(Math.Max(0, x * bq[0] + y * bq[1] + z * bq[2]), bq[4]);
                 double shade = 1;
                 foreach (var cq in craters) { double c = x * cq[0] + y * cq[1] + z * cq[2]; if (c > cq[3]) { double t = (c - cq[3]) / (1 - cq[3]); rad -= 0.05 * (1 - t); shade *= 0.75 + 0.25 * t; } else if (c > cq[3] - 0.02) shade *= 1.15; }
-                double sx = x * 1.5, sy = y * 0.85, sz = z;                                   // (elongated, as small bodies are)
+                double sx = x * (1 + 0.5 * lump), sy = y * (1 - 0.15 * lump), sz = z;          // (elongated, as small bodies are: too little gravity to pull them round)
                 double lit = Math.Max(0, x * 0.9 + 0.1) * shade * albedo + 0.015;              // its star is along +x
                 l.Add(new StarVertex { X = (float)(sx * rad), Y = (float)(sy * rad), Z = (float)(sz * rad), Size = 0.045f, R = (float)(r0 * lit), G = (float)(g0 * lit), B = (float)(b0 * lit), A = 1 });
             }
@@ -383,6 +383,9 @@ namespace DnaAnd.Shell
         {
             var rock = new List<StarVertex>(); RockPoints(rock, new Rng(0x5A57E1UL), 30000, 0.75f, 0.68f, 0.6f, 1.0);
             _rockN = rock.Count; _rockBuf = new UploadBuffer(_gpu.Device, (long)_rockN * Stride); _rockBuf.Write(rock.ToArray(), _rockN);
+            // a body big enough (a few hundred km across) for its own gravity to pull it round: a cratered globe
+            var round = new List<StarVertex>(); RockPoints(round, new Rng(0x60BE5UL), 40000, 0.75f, 0.7f, 0.66f, 1.0, 0.08);
+            _roundN = round.Count; _roundBuf = new UploadBuffer(_gpu.Device, (long)_roundN * Stride); _roundBuf.Write(round.ToArray(), _roundN);
             var cm = new List<StarVertex>(); var rng = new Rng(0xC0CE7UL); RockPoints(cm, rng, 20000, 0.5f, 0.48f, 0.46f, 0.35);   // a comet's nucleus: among the darkest things known
             _nucN = cm.Count; _nucBuf = new UploadBuffer(_gpu.Device, (long)_nucN * Stride); _nucBuf.Write(cm.ToArray(), _nucN); cm.Clear();
             for (int k = 0; k < 9000; k++)
@@ -423,7 +426,7 @@ namespace DnaAnd.Shell
                 m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
                 if (ex.Shape == "comet") DrawPoints(_nucBuf, _nucN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
                 if (ex.Shape == "comet") DrawPoints(_cometBuf, _cometN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 0f);   // (its own units: the placing scales them; the coma and tails soft glows)
-                else DrawPoints(_rockBuf, _rockN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
+                else DrawPoints(Units.Km(1) > 0 && ex.R / Units.Km(1) > 200 ? _roundBuf : _rockBuf, ex.R / Units.Km(1) > 200 ? _roundN : _rockN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
             }
         }
         private UploadBuffer _extraBuf; private StarVertex[] _extraV = new StarVertex[0]; private readonly float[] _lens = new float[4], _web = new float[5];
@@ -441,7 +444,7 @@ namespace DnaAnd.Shell
         }
         private Extra MakeExtra(Place pl, double x, double y, double z)
         {
-            var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>() };
+            var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm * (pl.Shape == "rock" ? Math.Exp(-1.6 + 3.2 * Math.Pow(Math.Abs(Math.Sin(x * 3.1 + y * 5.7 + z * 1.9) * 7919.1) % 1, 2.5)) : 1)), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>() };
             ex.Lines.Add(pl.Name); if (pl.Says.Length > 0) ex.Lines.Add(pl.Says);
             var en = pl.Entry.Split(' ');
             if (en.Length == 2) foreach (var e in _content.Entries) if (e.Kind == en[0] && e.Id == en[1])
@@ -1828,14 +1831,19 @@ namespace DnaAnd.Shell
         private void TourTurn(double yawRad, double pitchRad)
         {
             var lk = Look; var upv = LevelUp(); var rt = Vec3.Cross(lk, ViewUp()).Normalized;
+            // close over the picked world (under half its radius up) the view turns where you are, never circling the whole world
+            bool overIt = _ground != null && _tKind == 2 && _tIndex == _planet && AboveGround() / Units.Km(1) < _ground.Radius * 0.5;
             for (int pass = 0; pass < 2; pass++)
             {
                 double ang = pass == 0 ? yawRad : pitchRad; if (Math.Abs(ang) < 1e-12) continue;
-                var axis = pass == 0 ? upv.Normalized : rt;
-                var f = Turn(Look, axis, ang);
                 double odx, ody, odz, orad;
-                bool circle = _tKind >= 0 && _tKind != 3 && !(_ground != null && (_matterScale > 0 || AboveGround() < Units.Km(MatterView.OverlayKm)))
+                bool circle = _tKind >= 0 && _tKind != 3 && !overIt && !(_ground != null && (_matterScale > 0 || AboveGround() < Units.Km(MatterView.OverlayKm)))
                               && TargetFromCamera(out odx, out ody, out odz, out orad) && odx * odx + ody * ody + odz * odz > 0;
+                // circling round a pick: about the view's own up (always square to the line to it, so it never rolls in place when
+                // seen from straight above); turning where you are: about the level up (the horizon stays level), or the view's own up
+                // when looking nearly along it
+                var axis = pass == 1 ? rt : circle || Math.Abs(Vec3.Dot(lk, upv.Normalized)) > 0.95f ? ViewUp() : upv.Normalized;
+                var f = Turn(Look, axis, ang);
                 if (circle)
                 {
                     TargetFromCamera(out odx, out ody, out odz, out orad);

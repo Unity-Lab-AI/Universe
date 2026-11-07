@@ -1393,7 +1393,7 @@ namespace Universe.Shell
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
-                        if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
+                        if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
                         if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
                     }
                     break;
@@ -2007,7 +2007,7 @@ namespace Universe.Shell
             if (_tour != null && !Loading) TourStep(input, dt, w, h);   // (the tour begins once the universe is made)
             _matter.Glide = _tour != null ? 1.2 : 4;                                     // on the tour the matter glides as a film camera would                                  // a tour gives the controls what each stop asks
             // a click (pressed and let go without dragging) picks what is under the mouse
-            if (input.LeftClicked) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }
+            if (input.LeftClicked && !input.JustActivated) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }   // (the click that brings the window to the front picks nothing: on the tour it set a spot off to the side as the target, and the tour, which only moves where it looks, stood still)
             if (_pressed && input.LeftDown && Math.Abs(input.MouseX - _pressX) + Math.Abs(input.MouseY - _pressY) > 6) _dragged = true;   // dragging circles round the pick (or looks around if nothing is picked)
             if (_pressed && !input.LeftDown) { _pressed = false; if (!_dragged)
                 {
@@ -2423,7 +2423,9 @@ namespace Universe.Shell
             if (_tKind == 2 && _ground != null && _tIndex == _planet) return 0;          // (coming down to the picked world the view looks ahead to its horizon, not at its middle: that is on course)
             double dx, dy, dz, r; if (_tKind < 0 || !TargetFromCamera(out dx, out dy, out dz, out r)) return 0;
             double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l <= 0) return 0; var lk = Look;
-            return Math.Acos(Math.Max(-1, Math.Min(1, (dx * lk.X + dy * lk.Y + dz * lk.Z) / l)));
+            double off = Math.Acos(Math.Max(-1, Math.Min(1, (dx * lk.X + dy * lk.Y + dz * lk.Z) / l)));
+            if (_tKind == 3 && _ground != null) off = Math.Max(0, off - 0.5);           // a spot on the ground: within about thirty degrees of the look is on course (coming down onto it the view looks down and the spot is under you a little to one side, and that angle grows as the height shrinks: it stood still at a centimetre, the spot a few degrees past the limit)
+            return off;
         }
 
         private static Vec3 Turn(Vec3 v, Vec3 k, double a)
@@ -2925,6 +2927,14 @@ namespace Universe.Shell
                         _hud.DrawFill(_meshes, w, h, fr, fg, fb); _gpu.ClearDepth(); _ground.Dim = (float)lit;
                     }
                     else _ground.Dim = 1;
+                    {
+                        // the ground's pieces split no finer than four grains to an edge (a cell a quarter of a grain: the finest the land's
+                        // shape goes, the grains themselves take over below that, drawn over the ground from a centimetre up and as the matter
+                        // below): it split on down to microbe size under the overlay, a queue of a thousand pieces in flight for detail the
+                        // grains already covered, and the frame rate went with it
+                        var gmx = _ground.Solid && cr > 0 ? _ground.GrainMix(y / cr) : null;
+                        _ground.FinestEdgeKm = gmx != null && gmx.Size > 0 ? Math.Max(1e-7, gmx.Size * 4) : 0;
+                    }
                     _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), fogKm, fr, fg, fb, 0, 0, w, h, 400);   // detail scales with the GPU use
                 }
             }

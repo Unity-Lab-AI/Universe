@@ -31,6 +31,9 @@ namespace Universe.Gen
         // deepest split for each layer: the ground goes down to about a millionth of a metre (microbe size),
         // the sea surface to a few centimetres, the clouds to about a kilometre
         private static readonly int[] MaxLevel = { 44, 26, 10, 44 };
+        /// <summary>The finest piece edge (km) the ground is split to, 0 for no limit: set to a few grains, since below that the grains
+        /// themselves are drawn (over the ground, and as the matter) and finer pieces carry no shape of their own.</summary>
+        public double FinestEdgeKm;
         private const int MaxCached = 1600;
         private readonly Dictionary<PKey, Patch> _cache = new Dictionary<PKey, Patch>();
         public const int Ground = 0, Water = 1, Clouds = 2, Hull = 3;
@@ -1481,7 +1484,7 @@ namespace Universe.Gen
                 if (ang > ViewHalfAngle + Math.Asin(Math.Min(1, p.Edge * 0.9 / dist)) + 0.05) { _drawList.Add(p); return; }
             }
             bool mustSplit = Shell && (Mask != 0 || Cutaway != null) && level < 4;     // rings, gaps and cutaways show only once the shell is cut into small enough pieces
-            if (level < MaxLevel[layer] && (dist < p.Edge * splitFactor || mustSplit))
+            if (level < MaxLevel[layer] && (dist < p.Edge * splitFactor || mustSplit) && (FinestEdgeKm <= 0 || layer != Ground || p.Edge * 0.5 >= FinestEdgeKm))
             {
                 // the four smaller pieces, nearest to the camera first, so detail fills in where you are looking from
                 long[] ci = { i * 2, i * 2 + 1, i * 2, i * 2 + 1 }, cj = { j * 2, j * 2, j * 2 + 1, j * 2 + 1 };
@@ -1523,6 +1526,7 @@ namespace Universe.Gen
         {
             if (depth <= 0 || level >= MaxLevel[layer]) return;
             double size = 2.0 / Math.Pow(2, level + 1);
+            if (FinestEdgeKm > 0 && layer == Ground && size * LayerRadius(layer) * 0.9 < FinestEdgeKm) return;   // (no finer than the grains need)
             long ci0 = (long)Math.Floor((_camS + 1) / size), cj0 = (long)Math.Floor((_camT + 1) / size);
             for (long a = i * 2; a <= i * 2 + 1; a++) for (long b = j * 2; b <= j * 2 + 1; b++) Get(layer, f, level + 1, a, b, true);
             if (ci0 >= i * 2 && ci0 <= i * 2 + 1 && cj0 >= j * 2 && cj0 <= j * 2 + 1) Prefetch(layer, f, level + 1, ci0, cj0, depth - 1);

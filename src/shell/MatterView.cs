@@ -1739,7 +1739,10 @@ namespace Universe.Shell
         public bool Pick(int mx, int my)
         {
             if (!_haveVp) return false;
-            double best = Math.Pow(24 * Math.Max(1, _lastH / 1080.0), 2); Body pick = null; bool pickInside = false; double pickDepth = 0; var m = _lastVp;
+            // a click always picks something: the thing it is on, else the nearest thing within a good reach of it (a sixth of the
+            // screen), else the spot on the surface under it, else the point one view ahead along it (looking out across a face, or
+            // up, there was nothing to pick at all)
+            double best = Math.Pow(Math.Max(160, _lastH * 0.15), 2); Body pick = null; bool pickInside = false; double pickDepth = 0; var m = _lastVp;
             foreach (var b in _bodies)
             {
                 float x = (float)((b.X - _fx) / _scale + _ex), y = (float)((b.Y - _fy) / _scale + _ey), z = (float)((b.Z - _fz) / _scale + _ez);
@@ -1776,7 +1779,12 @@ namespace Universe.Shell
                     _tfx = _fx + (d.X * k - _ex) * _scale; _tfz = _fz + (d.Z * k - _ez) * _scale;
                     _picked = new Body { Kind = 2, X = _tfx, Y = 0, Z = _tfz, Size = _scale * 0.02 }; return true;
                 }
-                return false;
+                {
+                    // the point one view ahead along the line under the mouse
+                    var d = (fwd + right * (float)(nx * t * aspect) + up * (float)(ny * t)).Normalized;
+                    _tfx = _fx + (d.X - _ex) * _scale; _tfy = _fy + (d.Y - _ey) * _scale; _tfz = _fz + (d.Z - _ez) * _scale;
+                    _picked = new Body { Kind = 2, X = _tfx, Y = _tfy, Z = _tfz, Size = _scale * 0.02 }; return true;
+                }
             }
             _picked = pick; _tfx = pick.X; _tfz = pick.Z; _tfy = pick.Kind == 0 ? 0 : pick.Y;
             return true;   // whatever you pick is gone to, in any layer (a grain: to its top)   // grains and atoms are flown to; electrons, nucleons and quarks are only named

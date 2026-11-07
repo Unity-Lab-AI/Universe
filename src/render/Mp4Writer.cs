@@ -44,7 +44,8 @@ namespace Universe.Render
         private System.Threading.Thread _encoder;
         public readonly string Path;
 
-        /// <summary>Starts a clip at <paramref name="path"/>, <paramref name="w"/> by <paramref name="h"/> pixels (made even), about 60 frames a second.</summary>
+        /// <summary>Starts a clip at <paramref name="path"/>, <paramref name="w"/> by <paramref name="h"/> pixels (made even), 30 frames a second: every
+        /// other frame of the game's sixty, at a bit rate a clip needs (about 6 megabits a second at 1080p: a minute is about 45 MB, not 90).</summary>
         public Mp4Writer(string path, int w, int h)
         {
             Path = path; Down = w > 1920 ? 2 : 1; _w = (w / Down) & ~1; _h = (h / Down) & ~1;
@@ -58,13 +59,13 @@ namespace Universe.Render
                 Check(MFCreateSinkWriterFromURL(System.IO.Path.GetFullPath(path), IntPtr.Zero, attrs, out _writer), "MFCreateSinkWriterFromURL");
             }
             finally { Com.Release(ref attrs); }
-            ulong size = ((ulong)_w << 32) | (uint)_h, rate = (60UL << 32) | 1, square = (1UL << 32) | 1;
+            ulong size = ((ulong)_w << 32) | (uint)_h, rate = (30UL << 32) | 1, square = (1UL << 32) | 1;
             IntPtr outType; Check(MFCreateMediaType(out outType), "MFCreateMediaType");
             try
             {
                 Com.Method<SetGuidFn>(outType, 24)(outType, ref MajorType, ref Video);
                 Com.Method<SetGuidFn>(outType, 24)(outType, ref SubType, ref H264);
-                Com.Method<SetU32Fn>(outType, 21)(outType, ref Bitrate, (uint)Math.Min(40000000L, Math.Max(4000000L, (long)_w * _h * 6)));
+                Com.Method<SetU32Fn>(outType, 21)(outType, ref Bitrate, (uint)Math.Min(16000000L, Math.Max(2500000L, (long)_w * _h * 3)));   // (six megabits a second at 1080p: stars stay sharp, a minute weighs about 45 MB; it was twice that at sixty frames)
                 Com.Method<SetU32Fn>(outType, 21)(outType, ref Interlace, 2);           // progressive
                 Com.Method<SetU64Fn>(outType, 22)(outType, ref FrameSize, size);
                 Com.Method<SetU64Fn>(outType, 22)(outType, ref FrameRate, rate);
@@ -99,9 +100,10 @@ namespace Universe.Render
         {
             if (_writer == IntPtr.Zero || rgb == null || rgb.Length < srcW * srcH * 3) return;
             long now = System.Diagnostics.Stopwatch.GetTimestamp(); if (_lastTicks < 0) _t0 = now;
+            if (_lastTicks >= 0 && (now - _lastTicks) * 1000.0 / System.Diagnostics.Stopwatch.Frequency < 28) return;   // thirty frames a second: a frame shown within 28 ms of the last is let go (the clip keeps its timing)
             long t = (now - _t0) * 10000000L / System.Diagnostics.Stopwatch.Frequency;      // in hundreds of nanoseconds
             long prev = _lastTicks < 0 ? 0 : (_lastTicks - _t0) * 10000000L / System.Diagnostics.Stopwatch.Frequency;
-            long dur = _lastTicks < 0 ? 166667 : Math.Max(1, t - prev);
+            long dur = _lastTicks < 0 ? 333333 : Math.Max(1, t - prev);
             if (!_queue.TryAdd(Tuple.Create(rgb, srcW, srcH, t, dur))) return;               // (the encoder is behind: this frame let go; the last one shown longer)
             _lastTicks = now;
         }

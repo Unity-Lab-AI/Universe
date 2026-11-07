@@ -402,7 +402,9 @@ namespace Universe.Shell
             { var p = ax * (float)dist(Rings + 0.5); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.05), R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all presses down to
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
+            float lz = _lens[2]; _lens[2] = 0;                                                  // (the grid is a reference, not light: never bent by the hole's lens, which had bent it clean out of the view)
             DrawPoints(_fallBuf, arr.Length, vp, right, up, 1f, 0.0012f, w, h, time, 0, 1f, 2f);
+            _lens[2] = lz;
         }
         private UploadBuffer _wellBuf; private int _wellN;
         private void MakeWell()
@@ -564,24 +566,32 @@ namespace Universe.Shell
         }
         private double SnShellKmS(Sn sn, double years) { double v = sn.K.V; return years <= _snFreeYears ? v : v * 0.4 * Math.Pow(_snFreeYears / years, 0.6); }
         private static string Years(double y) { return y < 1 ? (y * 365.25).ToString("0") + " days" : y < 1000 ? y.ToString("0") + " years" : y < 1e6 ? (y / 1000).ToString("0.#") + " thousand years" : (y / 1e6).ToString("0.#") + " million years"; }
-        private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf; private int _snPointCap, _shellN, _fireCap;
+        private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf, _shellCrabBuf, _shellCasBuf; private int _snPointCap, _shellN, _fireCap;
         private void MakeShells()
         {
             // a shell of flung matter: a thin sphere of points, bunched into filaments (knots and streamers, as the real ones are), the
             // young one yellow-white and red (hot, glowing in hydrogen and oxygen), the old one faint and blue-green
-            var rng = new Rng(0x5E11UL); var young = new List<StarVertex>(); var old = new List<StarVertex>();
+            // in the real colours of their glowing gas: hydrogen's red, oxygen's green and teal, sulfur's orange, the blue-white of electrons
+            // spiralling in a magnetic field; each remnant one of the real looks (the Crab's red filaments round a blue-white heart, Cas A's
+            // green oxygen and orange sulfur knots, the Veil's red and teal lace), the old ones faint red and blue
+            var rng = new Rng(0x5E11UL); var young = new List<StarVertex>(); var old = new List<StarVertex>(); var crab = new List<StarVertex>(); var cas = new List<StarVertex>();
             for (int k = 0; k < 2400; k++)
             {
                 double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, sq = Math.Sqrt(1 - u * u);
                 double fil = 0.5 + 0.5 * Math.Sin(a * 7 + u * 11) * Math.Sin(u * 13 - a * 3);      // the filaments: bunched, not even
                 double r = 1 + (rng.NextDouble() - 0.5) * 0.12 - 0.06 * fil;
-                float br = (float)(0.25 + 0.75 * fil * fil);
-                young.Add(new StarVertex { X = (float)(sq * Math.Cos(a) * r), Y = (float)(u * r), Z = (float)(sq * Math.Sin(a) * r), Size = 0.05f, R = 1f * br, G = (0.55f + 0.35f * br) * br, B = 0.35f * br, A = 1 });
-                old.Add(new StarVertex { X = (float)(sq * Math.Cos(a) * r), Y = (float)(u * r), Z = (float)(sq * Math.Sin(a) * r), Size = 0.06f, R = 0.3f * br, G = 0.65f * br, B = 0.6f * br, A = 1 });
+                float br = (float)(0.25 + 0.75 * fil * fil); bool lace = fil > 0.55;
+                float x = (float)(sq * Math.Cos(a) * r), y = (float)(u * r), z = (float)(sq * Math.Sin(a) * r);
+                young.Add(new StarVertex { X = x, Y = y, Z = z, Size = 0.05f, R = (lace ? 1f : 0.3f) * br, G = (lace ? 0.32f : 0.85f) * br, B = (lace ? 0.3f : 0.8f) * br, A = 1 });          // the Veil: red hydrogen lace, teal oxygen
+                crab.Add(new StarVertex { X = x * (lace ? 1f : 0.6f), Y = y * (lace ? 1f : 0.6f), Z = z * (lace ? 1f : 0.6f), Size = lace ? 0.05f : 0.09f, R = (lace ? 1f : 0.6f) * br, G = (lace ? 0.35f : 0.7f) * br, B = (lace ? 0.3f : 1f) * br, A = 1 });   // the Crab: red filaments round a blue-white glow of spiralling electrons
+                cas.Add(new StarVertex { X = x, Y = y, Z = z, Size = 0.05f, R = (lace ? 0.3f : 1f) * br, G = (lace ? 0.95f : 0.5f) * br, B = (lace ? 0.55f : 0.2f) * br, A = 1 });            // Cas A: green oxygen knots, orange sulfur
+                old.Add(new StarVertex { X = x, Y = y, Z = z, Size = 0.06f, R = (lace ? 0.6f : 0.35f) * br, G = (lace ? 0.3f : 0.4f) * br, B = (lace ? 0.35f : 0.7f) * br, A = 1 });
             }
             _shellN = young.Count;
             _shellYoungBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellYoungBuf.Write(young.ToArray(), _shellN);
             _shellOldBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellOldBuf.Write(old.ToArray(), _shellN);
+            _shellCrabBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellCrabBuf.Write(crab.ToArray(), _shellN);
+            _shellCasBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellCasBuf.Write(cas.ToArray(), _shellN);
         }
         // the colour of a glowing surface by its heat (the usual blackbody look: orange at 3,000 K, white near 6,500, blue-white past 10,000)
         private static void Blackbody(double tK, out float r, out float g, out float b)
@@ -663,11 +673,15 @@ namespace Universe.Shell
                     }
                     else if (full && years < _snRemnantYears)
                     {
+                        // a remnant's shell: a faint nebula, seen only from near (within about two thousand light-years, the youngest from
+                        // farther), never a galaxy-wide crop of gas balls; a going supernova is the thing seen across the galaxy
+                        double reachLy = years < 2000 ? 6000 : years < 20000 ? 2500 : 1200; if (dLy > reachLy) continue;
                         double rly = SnShellLy(sn, years), r = rly / Units.LightYearsPerUnit;
                         if (r / Math.Max(1e-30, d) * h < 2.5) continue;                                          // (too small on screen to show)
-                        float fade = (float)Math.Max(0.06, Math.Min(1, Math.Pow(300 / Math.Max(300, years), 0.35)));
+                        float fade = (float)(Math.Max(0.04, Math.Min(1, Math.Pow(300 / Math.Max(300, years), 0.4))) * Math.Min(1, (reachLy - dLy) / (reachLy * 0.5)));
                         var m = Mat4.Identity; m.M11 = (float)r; m.M22 = (float)r; m.M33 = (float)r; m.M41 = (float)ux; m.M42 = (float)uy; m.M43 = (float)uz;
-                        DrawPoints(years < 5000 ? _shellYoungBuf : _shellOldBuf, _shellN, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade);
+                        int look = (int)(Math.Abs(sn.T * 1000) % 3);
+                        DrawPoints(years > 30000 ? _shellOldBuf : look == 0 ? _shellCrabBuf : look == 1 ? _shellCasBuf : _shellYoungBuf, _shellN, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade);
                     }
                 }
             }

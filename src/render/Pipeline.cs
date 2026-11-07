@@ -152,7 +152,15 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
                 float3 qdir = b > 0.02 ? q / b : normalize(axis);
                 s.pos = cam + toHole * along + qdir * bn; rel = s.pos - cam;
                 float s2 = 6.75 / (rc * rc) * max(0.0, 1.0 - 1.0 / rc); float th = rc >= 1.5 ? asin(sqrt(saturate(s2))) : 3.14159265 - asin(sqrt(saturate(s2)));
-                if (dot(normalize(rel), toHole) > cos(th)) holeHidden = true;
+                float3 rn = normalize(rel); float ca = dot(rn, toHole);
+                if (ca > cos(th))
+                {
+                    // within the shadow's cone: its light reaches you bent round the shadow's edge, so it is seen just outside the edge
+                    // at its own azimuth (the bright ring hugging the shadow, as the Event Horizon Telescope's)
+                    float3 perp = rn - toHole * ca; float pl = length(perp); float3 pd = pl > 1e-4 ? perp / pl : normalize(axis);
+                    float th2 = th + 0.03; float3 nd = toHole * cos(th2) + pd * sin(th2);
+                    s.pos = cam + nd * length(rel); s.color.rgb *= 0.85;
+                }
             }
         }
     }

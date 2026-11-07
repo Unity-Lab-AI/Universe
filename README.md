@@ -5,10 +5,12 @@
 <p align="center"><b><i>One camera. One universe. From the cosmic web down to a quark.</i></b></p>
 
 <p align="center">
-  <a href="https://git.unityailab.com/GFourteen/Universe/releases" title="Download Universe-Setup.exe from Unity AI Lab Git"><b>Download · Unity AI Lab Git</b></a>
+  <a href="https://github.com/Unity-Lab-AI/Universe/releases/latest" title="The latest release on GitHub: the installer and the zip"><b>Download the latest release</b></a>
   &nbsp;|&nbsp;
-  <a href="https://github.com/Unity-Lab-AI/Universe/releases" title="Download Universe-Setup.exe from GitHub"><b>Download · GitHub</b></a>
+  <a href="https://git.unityailab.com/GFourteen/Universe/releases" title="The same release on Unity AI Lab Git"><b>Unity AI Lab Git</b></a>
 </p>
+
+> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.6 MB, from GitHub")** (0.6 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.7 MB, the whole universe, nothing downloaded after. What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
 
 <p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.7 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
@@ -189,7 +191,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **T · R** | The grand tour: start or carry on · start again |
 | **F12 · F9** | A screenshot · start or stop a clip |
 
-The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS with the GPU and CPU stats, render scale and GPU use. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
+The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 
 ---
 

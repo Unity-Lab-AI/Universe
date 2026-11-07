@@ -418,6 +418,14 @@ atoms: O O
 atoms: H H O
 @gas argon
 atoms: Ar
+@gas neon
+atoms: Ne
+@gas krypton
+atoms: Kr
+@gas xenon
+atoms: Xe
+@gas radon
+atoms: Rn
 @gas carbon dioxide
 atoms: C O O
 @gas carbon monoxide

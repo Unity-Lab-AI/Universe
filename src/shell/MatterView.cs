@@ -36,7 +36,7 @@ namespace Universe.Shell
         private const double AtomSpacing = 2.5e-13; // about 0.25 nm between atoms in a crystal
         private const double Nucleon = 0.85e-18;    // a proton's or neutron's radius, about 0.85 femtometres
 
-        private sealed class Mineral { public string Id, Name, Formula; public string[] Atoms; public float R, G, B, Lustre = 1; public Lattice Lat; public KeyValuePair<string, double[]>[] Molecule; public string Structure = ""; public bool Liquid; public double Spacing; }
+        private sealed class Mineral { public string Id, Name, Formula; public string[] Atoms; public float R, G, B, Lustre = 1; public Lattice Lat; public KeyValuePair<string, double[]>[] Molecule; public string Structure = ""; public bool Liquid; public double Spacing; public Dictionary<string, KeyValuePair<string, double>[]> Traces; }   // Traces: for each atom of the formula, the elements that stand in for it on its sites now and then, each with its share of those sites (content: trace)
         private sealed class Element { public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; }
         private readonly Dictionary<string, Mineral> _minerals = new Dictionary<string, Mineral>();
         private readonly Dictionary<string, List<KeyValuePair<Mineral, double>>> _mixes = new Dictionary<string, List<KeyValuePair<Mineral, double>>>();
@@ -189,6 +189,17 @@ namespace Universe.Shell
                 float r, g, b; float.TryParse(col[0], out r); float.TryParse(col.Length > 1 ? col[1] : col[0], out g); float.TryParse(col.Length > 2 ? col[2] : col[0], out b);
                 m.R = r; m.G = g; m.B = b; m.Lustre = LustreCode(e.Get("lustre", "earthy"), e.Get("clarity", "opaque"));
                 m.Lat = Lattice.From(e); m.Structure = e.Get("structure", ""); m.Liquid = e.Get("state", "") == "liquid"; m.Spacing = TryD(e.Get("spacing-nm", "0"), 0) * 1e-12; m.Molecule = MoleculeFrom(e.Get("molecule", ""));
+                // its trace elements (content: trace <host> <element> <share of the host's sites> ...): the real minor and trace
+                // chemistry of the mineral, each element taking the host's place on that share of its sites
+                foreach (var tl in e.All("trace"))
+                {
+                    var w = tl.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); if (w.Length < 3) continue;
+                    var list = new List<KeyValuePair<string, double>>();
+                    for (int q = 1; q + 1 < w.Length; q += 2) { double sh; if (double.TryParse(w[q + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out sh) && sh > 0) list.Add(new KeyValuePair<string, double>(w[q], sh)); }
+                    if (list.Count == 0) continue;
+                    if (m.Traces == null) m.Traces = new Dictionary<string, KeyValuePair<string, double>[]>();
+                    m.Traces[w[0]] = list.ToArray();
+                }
                 _minerals[m.Id] = m;
             }
             foreach (var e in content.OfKind("minerals.unt", "surface"))
@@ -570,9 +581,34 @@ namespace Universe.Shell
         private Element SiteAtom(Mineral m, long i, long j, long k)
         {
             if (m == null) return null;
-            if (m.Molecule != null) return El(m.Molecule[0].Key);                             // a molecule's first atom sits on the site
-            return El(m.Atoms[(int)(Hash(i, j, k + 20, _seed) * m.Atoms.Length) % m.Atoms.Length]);
+            if (m.Molecule != null) return El(Traced(m, m.Molecule[0].Key, i, j, k));            // a molecule's first atom sits on the site (or a dissolved ion in a molecule's place)
+            return El(Traced(m, m.Atoms[(int)(Hash(i, j, k + 20, _seed) * m.Atoms.Length) % m.Atoms.Length], i, j, k));
         }
+        // the atom on a site, after its mineral's trace elements have had their chance to stand in for it (each on its share of
+        // the host's sites, from the site's own hash: fixed in place, the same each time you come back)
+        private string Traced(Mineral m, string sym, long i, long j, long k)
+        {
+            KeyValuePair<string, double>[] tr; if (m == null || m.Traces == null || sym == null || !m.Traces.TryGetValue(sym, out tr)) return sym;
+            double r = Hash(i * 131 + 7, j * 17 + 3, k + 120, _seed), acc = 0;
+            for (int t = 0; t < tr.Length; t++) { acc += tr[t].Value; if (r < acc) return tr[t].Key; }
+            return sym;
+        }
+        /// <summary>Whether this element is a trace in the mineral: not one of its formula's atoms, standing in for one.</summary>
+        private static bool IsTrace(Mineral m, Element e) { if (m == null || e == null || m.Traces == null) return false; foreach (var a in m.Atoms) if (a == e.Symbol) return false; return true; }
+        private static string TraceHost(Mineral m, Element e) { if (m == null || m.Traces == null || e == null) return null; foreach (var kv in m.Traces) foreach (var t in kv.Value) if (t.Key == e.Symbol) return kv.Key; return null; }
+        private static double TraceShare(Mineral m, Element e) { if (m == null || m.Traces == null || e == null) return 0; foreach (var kv in m.Traces) foreach (var t in kv.Value) if (t.Key == e.Symbol) return t.Value; return 0; }
+        // the mineral's trace elements, for its card: each with its share, from the most common down
+        private string TraceWords(Mineral m)
+        {
+            if (m == null || m.Traces == null) return null;
+            var all = new List<KeyValuePair<string, double>>();
+            foreach (var kv in m.Traces) foreach (var t in kv.Value) { var e = El(t.Key); if (e != null) all.Add(new KeyValuePair<string, double>(e.Name.ToLowerInvariant(), t.Value * CountOf(m, kv.Key) / Math.Max(1, m.Atoms.Length))); }
+            if (all.Count == 0) return null; all.Sort((a, b) => b.Value.CompareTo(a.Value));
+            var parts = new List<string>();
+            foreach (var a in all) parts.Add(a.Key + " " + (a.Value >= 0.0001 ? (a.Value * 100).ToString(a.Value >= 0.01 ? "0.#" : "0.##") + "%" : a.Value >= 1e-7 ? (a.Value * 1e6).ToString("0.#") + " ppm" : (a.Value * 1e9).ToString("0.##") + " ppb"));
+            return string.Join(", ", parts.ToArray());
+        }
+        private static int CountOf(Mineral m, string sym) { int n = 0; foreach (var a in m.Atoms) if (a == sym) n++; return n; }
 
         // the atom right under you: the site of the focus grain's lattice nearest the point you dive into
         private Element FocusAtom() { double x, y, z; return Focus(out x, out y, out z); }
@@ -682,6 +718,7 @@ namespace Universe.Shell
                             var els = L.Els[q]; var oc = L.Occ[q]; string sym = null; double r = Hash(i * 977 + q, j, k + 90, _seed), acc = 0;
                             for (int t = 0; t < els.Length; t++) { acc += oc[t]; if (r < acc) { sym = els[t]; break; } }
                             if (sym == null) continue;
+                            sym = Traced(m, sym, i * 977 + q, j, k);                                   // (its trace elements take the host's place on their share of its sites)
                             var e = El(sym); if (e == null) continue;
                             list.Add(new CAtom { E = e, X = X, Y = Y, Z = Z });
                             if (m.Molecule != null && m.Molecule[0].Key == sym)
@@ -1407,9 +1444,9 @@ namespace Universe.Shell
                             float sh = (float)(1 - 0.25 * -k);
                             double sx, sy, sz; SitePos(fm, i, j, k, out sx, out sy, out sz);                // its place (a liquid's: loose and moving)
                             var mol = fm.Molecule;
-                            if (mol != null)
+                            if (mol != null && el.Symbol == mol[0].Key)
                             {
-                                // a whole molecule on this site, in its real shape, each turned its own way
+                                // a whole molecule on this site, in its real shape, each turned its own way (a dissolved ion in a molecule's place stands alone)
                                 for (int q = 1; q < mol.Length; q++)
                                 {
                                     var me = El(mol[q].Key); if (me == null) continue; double ox, oy, oz; Orient(i, j, k, mol[q].Value, out ox, out oy, out oz);
@@ -1828,6 +1865,7 @@ namespace Universe.Shell
                 var fm2 = FocusMineral; if (fm2 == null) return L;
                 L.Add("a spot on " + (_noGrains ? "the sea" : "a grain of " + fm2.Name.ToLowerInvariant()));
                 L.Add("made of: " + fm2.Formula + StructureName(fm2));
+                { var tw = TraceWords(fm2); if (tw != null) L.Add("traces: " + tw); }
                 if (_scale < 3e-10 / 0.6 * 30) L.Add("its face: atomic terraces, each step 0.3 nm");
                 L.Add("you are " + ScaleHud.Words(_scale * 0.6) + " above it");
                 return L;
@@ -1910,6 +1948,7 @@ namespace Universe.Shell
                 var gm = FocusMineral; if (gm == null) return L;
                 L.Add("the surface of a grain of " + gm.Name.ToLowerInvariant());
                 L.Add("made of: " + gm.Formula + StructureName(gm));
+                { var tw = TraceWords(gm); if (tw != null) L.Add("traces: " + tw); }
                 L.Add("you are " + ScaleHud.Words(_scale * 0.6) + " above it");
                 if (_scale < 6e-10) L.Add("its face steps down in atomic layers, 0.3 nm each");
                 return L;
@@ -1929,6 +1968,7 @@ namespace Universe.Shell
                 L.Add("each about " + ScaleHud.Words(_gasSpacing) + " from the next"); }
             else if (fm != null && fm.Molecule != null && fm.Lat == null) L.Add("in a molecule of " + fm.Formula.Split(' ')[0] + ", in " + fm.Name.ToLowerInvariant());
             else if (fm != null) L.Add("in a grain of " + fm.Name.ToLowerInvariant() + " (" + fm.Formula + ")" + StructureName(fm));
+            if (!_space && fm != null && IsTrace(fm, e)) { var host = El(TraceHost(fm, e)); double sh = TraceShare(fm, e); L.Add("a trace: in place of " + (host != null ? host.Name.ToLowerInvariant() : "another atom") + " on about one site in " + Big(1 / Math.Max(1e-12, sh))); }
             return L;
         }
 

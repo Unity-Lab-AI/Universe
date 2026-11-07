@@ -49,7 +49,7 @@ Below the finest ground, the camera goes on into what the ground is made of, eve
 |---|---|
 | **Grains** | About 0.2 mm across, each one mineral from its ground's own mix: quartz, feldspars, clays, olivine, calcite, salt, ices and more |
 | **Crystal** | Rock salt as sodium and chlorine on a cube grid 0.282 nm apart, quartz as a silica network, water molecules bent at 104.5° |
-| **Atoms** | Each atom's electrons in their real shells, each on a path in its orbital's own shape (s round, p through its two lobes, d round its leaves), the paths slowly turning so they are never the same twice, round a nucleus about a hundred thousand times smaller than the atom |
+| **Atoms** | A grain's atoms are its mineral's, on their real lattice, with the trace elements a real mineral carries each on its real share of sites (nickel in olivine, strontium in feldspar, gold in pyrite, the sea's dissolved ions among its water), so any of the 118 elements can be met where it really is. Each atom's electrons in their real shells, each on a path in its orbital's own shape (s round, p through its two lobes, d round its leaves), the paths slowly turning so they are never the same twice, round a nucleus about a hundred thousand times smaller than the atom |
 | **Nucleus** | That element's real protons and neutrons |
 | **Quarks** | Three in each proton and neutron, held by gluons: points as far as anyone has measured, and the zoom goes on below them without a floor |
 

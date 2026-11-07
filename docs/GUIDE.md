@@ -301,7 +301,7 @@ Below the ground, everything is real matter at its real size.
 | File | What it holds |
 |---|---|
 | `content/elements.unt` | All 118 elements: their atoms, shells and most common isotopes |
-| `content/minerals.unt` | Minerals (their crystal from its published unit cell) and the **mix** each kind of ground is made of |
+| `content/minerals.unt` | Minerals (their crystal from its published unit cell, and their **trace elements**: `trace <host> <element> <share>`, each element standing in for the host atom on that share of its sites, so nickel sits in olivine, strontium in feldspar, gold in pyrite, and the sea's ions among its water) and the **mix** each kind of ground is made of |
 | `content/physics.unt` | The laws of nature, gases and particles (see *The laws of nature* above) |
 
 Add a mineral, then put it in a ground's mix, and its grains appear on every world of that kind.

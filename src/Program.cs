@@ -165,7 +165,7 @@ namespace Universe
             PlanetView planet = null;
             if (openSet > 0) viewer.ShowSet(openSet);
             bool journey = Array.IndexOf(args, "--journey") >= 0;
-            ElementView elements = openSet == 7 ? new ElementView(gpu, meshes, content) : null;
+            ElementView elements = openSet == 7 ? new ElementView(gpu, meshes, content) : null; bool showElements = false;   // (from the universe, View > The periodic table opens it over the world; Escape comes back)
             MicrobeView microbes = openSet == 8 ? new MicrobeView(gpu, pipeline, Seed) : null;
             StyleView style = openSet >= 9 && openSet <= 11 ? new StyleView(gpu, meshes, Seed, openLook, openSet == 10, openSet == 11) : null;
             if (openSet == 6 && testDyson < 0)
@@ -238,6 +238,7 @@ namespace Universe
                 else if (cmd == Window.CmdReadme) DocViewer.Show(window.Handle, PreviewText.Docs(), 2);
                 else if (cmd == Window.CmdHowItWorks) DocViewer.Show(window.Handle, PreviewText.Docs(), 3);
                 else if (cmd == Window.CmdCompared) DocViewer.Show(window.Handle, PreviewText.Docs(), 5);
+                else if (cmd == Window.CmdElements && world != null) { if (elements == null) elements = new ElementView(gpu, meshes, content); showElements = !showElements; }
                 else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 8);
                 else if (cmd == Window.CmdStats) { Settings.Set("show-stats", !Settings.Get("show-stats", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertX) { Settings.Set("invert-left-right", !Settings.Get("invert-left-right", false)); menuDirty = true; }
@@ -276,7 +277,8 @@ namespace Universe
                 if (backFrom >= 0 && clock.Total >= backFrom && clock.Total < backFrom + backFor) window.Input.Notch(-1);
                 if (clickAt >= 0 && clock.Total >= clickAt) { window.Input.MouseX = (int)(clickX * gpu.Width); window.Input.MouseY = (int)(clickY * gpu.Height); window.Input.LeftClicked = true; clickAt = -1; }
                 window.Input.Glide(clock.Delta, window.Input.IsDown(0x11));      // the wheel glides in smoothly; hold Ctrl: eight times as fast, in every view
-                if (world != null) { if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); }
+                if (showElements && window.Input.WasPressed(0x1B)) showElements = false;   // Escape: back from the periodic table to the universe, where you were
+                if (world != null && !showElements) { if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); }
                 else if (style != null) style.Update(window.Input, clock.Delta, gpu.Width, gpu.Height);
                 else if (microbes != null) microbes.Update(window.Input, clock.Delta);
                 else if (elements != null) elements.Update(window.Input, clock.Delta);
@@ -340,7 +342,7 @@ namespace Universe
                     deep.HandOff = -1;
                 }
                 gpu.BeginFrame(0.005f, 0.006f, 0.012f);
-                if (world != null) world.Draw(gpu.Width, gpu.Height, clock.Total);
+                if (world != null && !showElements) world.Draw(gpu.Width, gpu.Height, clock.Total);
                 else if (style != null) style.Draw(gpu, gpu.Width, gpu.Height, clock.Total);
                 else if (microbes != null) microbes.Draw(gpu, gpu.Width, gpu.Height, clock.Total);
                 else if (elements != null) elements.Draw(gpu, gpu.Width, gpu.Height, clock.Total);
@@ -421,7 +423,7 @@ namespace Universe
                 frames++; titleTimer += clock.Delta;
                 if (titleTimer >= 0.5)
                 {
-                    lastTitle = string.Format("{0} · {1:0} fps · universe " + Seed, world != null ? world.Title : style != null ? style.Title : microbes != null ? microbes.Title : elements != null ? elements.Title : planet != null ? planet.Title : deep == null ? (universe != null ? universe.Title : viewer.Title) : deep.Title, frames / titleTimer);
+                    lastTitle = string.Format("{0} · {1:0} fps · universe " + Seed, world != null && !showElements ? world.Title : style != null ? style.Title : microbes != null ? microbes.Title : elements != null ? elements.Title : planet != null ? planet.Title : deep == null ? (universe != null ? universe.Title : viewer.Title) : deep.Title, frames / titleTimer);
                     window.SetTitle(lastTitle);
                     Window.Fps = frames / titleTimer; titleTimer = 0; frames = 0;
                 }

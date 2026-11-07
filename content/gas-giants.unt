@@ -10,7 +10,7 @@ name: Gas giant
 real: yes
 makeup: mostly hydrogen and helium, a few percent heavier elements
 example: Jupiter, Saturn
-air: hydrogen 90%, helium 10%, methane 0.3%, ammonia 0.03%  (like Jupiter)
+air: hydrogen 90%, helium 10%, methane 0.3%, ammonia 0.03%, neon 0.002%, water 0.0004%  (like Jupiter)
 
 @giant ice-giant
 name: Ice giant

@@ -1774,7 +1774,7 @@ namespace DnaAnd.Shell
                 if (_tKind != 2) AimNext();
                 input.Wheel += 1;
                 _autoLogT += dt;
-                if (_autoLogT > 1) { _autoLogT = 0; try { System.IO.File.AppendAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dna_autopath.log"), Title + Environment.NewLine); } catch { } }
+                if (_autoLogT > 1) { _autoLogT = 0; try { System.IO.File.AppendAllText(System.IO.Path.Combine(System.IO.Path.GetTempPath(), PreviewText.AppName.ToLowerInvariant().Replace("-", "") + "_autopath.log"), Title + Environment.NewLine); } catch { } }
             }
             if (input.RightClicked) { _matter.Unpick(); if (_spaceScale <= 0) { _tKind = -1; _tName = ""; } }   // lets go of everything picked (in a nebula's gas the nebula stays where you are)                    // right click: let go of what you picked
             if (input.WasPressed(0x48)) { _hud.Visible = !_hud.Visible; MenuChanged = true; }   // H: the scale on screen, on or off
@@ -2705,7 +2705,7 @@ namespace DnaAnd.Shell
         {
             try
             {
-                string f = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "dna_zoom.log");
+                string f = System.IO.Path.Combine(System.IO.Path.GetTempPath(), PreviewText.AppName.ToLowerInvariant().Replace("-", "") + "_zoom.log");   // (the program's own name: universe_zoom.log, dnaand_zoom.log)
                 if (System.IO.File.Exists(f) && new System.IO.FileInfo(f).Length > 200000) System.IO.File.Delete(f);
                 System.IO.File.AppendAllText(f, DateTime.Now.ToString("HH:mm:ss.f") + "  " + what + "  |  " + Title.Replace(PreviewText.AppName + " · ", "").Split(new[] { " · wheel:" }, StringSplitOptions.None)[0] + Environment.NewLine);
             }

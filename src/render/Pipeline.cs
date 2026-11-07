@@ -87,14 +87,19 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         s.size = 0;
         s.color.a = 1;
     }
+    bool o0 = false;
     float2 c = corners[vid];
     float4 cc0 = mul(float4(s.pos, 1), viewProj);
     float size = max(s.size * misc.y, cc0.w * screen.z); // never smaller than screen.z of the view distance
     if (screen.w > 0) size = min(size, cc0.w * screen.w);   // and, when asked, never bigger than screen.w of it (points of light stay points up close)
+    size = min(size, cc0.w * 0.35);                               // and never more than most of the view, for every point (a soft glow right up close
+                                                                  // looks the same, but thousands of them each covering the whole screen are more work
+                                                                  // than the card may take in a frame, and Windows resets it)
+    if (cc0.w <= 0) o0 = true;
     float3 world = s.pos + (right.xyz * c.x + up.xyz * c.y) * size;
     VO o;
     o.pos = mul(float4(world, 1), viewProj);
-    if (webOut) o.pos = float4(2, 2, 2, 1);                       // (outside the view: not drawn)
+    if (webOut || o0) o.pos = float4(2, 2, 2, 1);                 // (outside the view, or behind you: not drawn)
     if (lensA.z > 0 && cc0.w > lensA.w)
     {
         // light passing a black hole is bent toward it by its mass (general relativity): what is behind it shows moved outward,

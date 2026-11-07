@@ -137,6 +137,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A dive onto a small body landing on the drawn stone's own surface, its spin held while you are on it:** (built: DNA-AND DESIGN 637; waits on the test) "okay but u fixed the invisible astroid as zoom rihgt?" / "what the fuck do u mean its visible ther in not a fucking thing but stars at all the xzoom levels i screen shotted when the sasteroid was selecterd"
 
+- [~] **A spot on any small body picked by a click on its stone, the zoom flying down to it:** (built: DNA-AND DESIGN 638; waits on the test) "and should differnt spots on an astroid be selctabble just like all bodies" / "so maqke it so for all bodies"
+
 ---
 
 ## Pending

@@ -1010,7 +1010,7 @@ namespace Universe.Shell
         }
         // a solid body: a sphere of triangles (an icosahedron cut four times), pushed in and out by broad lumps and pitted by craters,
         // drawn as lit stone with flat facets (never points of light); its star along +x
-        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private double _lastDrawTime;
+        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private double _lastDrawTime; private double[] _tSpot;   // _tSpot: a spot picked on the small body you are at (unit, from its middle): the zoom flies to it, as to a spot of a world's land
         // a small body's shape: its radius and shade along any direction from its middle (its bumps, craters, stretch and grit), the
         // one function the mesh is built from and a dive lands on, so the ground you stand on is the stone that is drawn
         private static Func<double[], double[]> RockShape(Rng rng, double lump)
@@ -1301,6 +1301,7 @@ namespace Universe.Shell
             // every body on an orbit moves on it every frame (the list itself is remade only when you move to a new cell); the one
             // you are at moves you with it, so you stay beside it, or on its ground, as it goes round (at a minute a second an
             // asteroid at three AU would leave you in half a second)
+            if (_tKind != 6 || _tExtra == null) _tSpot = null;
             foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && (ex != _tExtra || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra) { _ox += ex.X - ex.LX; _oy += ex.Y - ex.LY; _oz += ex.Z - ex.LZ; } } }   // (a held spin let go once you are off the body)
             if (key == _extraKey) return; _extraKey = key; _extras.Clear();
             // the compact remnants of this galaxy's past supernovae: a neutron star (from a star of eight to about twenty solar masses) or a
@@ -2539,6 +2540,12 @@ namespace Universe.Shell
                     if (ex * ex + ey * ey + ez * ez < Math.Pow(3e6 / Units.LightYearsPerUnit, 2)) { _tKind = 0; _tIndex = i; _tName = g8.Name; break; }
                 }
             if (_tKind == 0) { var g = _galaxies[_tIndex]; dx = (g.X - _ax) - _ox; dy = (g.Y - _ay) - _oy; dz = (g.Z - _az) - _oz; radius = g.Scale * 0.3; return true; }
+            if (_tKind == 6 && _tSpot != null && _tExtra != null)
+            {
+                // the spot picked on the body's stone: the point itself on its drawn surface, a small mark to fly down to
+                double rr = BodyRadiusToward(_tExtra, _lastDrawTime, _tSpot[0], _tSpot[1], _tSpot[2]);
+                dx = (_tExtra.X - _ax) - _ox + _tSpot[0] * rr; dy = (_tExtra.Y - _ay) - _oy + _tSpot[1] * rr; dz = (_tExtra.Z - _az) - _oz + _tSpot[2] * rr; radius = _tExtra.R * 0.05; return true;
+            }
             if (_tKind == 1 || _tKind == 4 || _tKind == 5 || _tKind == 6 || _tKind == 7 || _tKind == 8) { dx = (_tx - _ax) - _ox; dy = (_ty - _ay) - _oy; dz = (_tz - _az) - _oz; radius = _tRadius; return true; }   // a star, or a spot in a belt
             if (_tKind == 2 && _system != null && _tIndex < _system.Bodies.Count)
             { double x, y, z; BodyPos(_tIndex, out x, out y, out z); dx = x - _ox; dy = y - _oy; dz = z - _oz; radius = _system.Bodies[_tIndex].RadiusUnits; return true; }
@@ -2566,6 +2573,24 @@ namespace Universe.Shell
             _tSn = null;
             if (ClickSupernova(dir)) return;                                                // a supernova going now, under the mouse: picked before any star
             double reachPx = 24 * Math.Max(1, _lastH / 1080.0), best = reachPx * reachPx; int kind = -1, idx = 0; double tx = 0, ty = 0, tz = 0, trad = 0; string name = "";
+            _tSpot = null;
+            // a spot on the small body you are at: where the line under the mouse meets its drawn stone (its real shape, as a world's
+            // land is met), once it stands a few dozen pixels wide; picked, the zoom flies down to that spot, as to a spot of land
+            if (_tKind == 6 && _tExtra != null && _tExtra.Shape.Length > 0 && !_tExtra.Hole && _ground == null)
+            {
+                var exs = _tExtra; double cx0 = (exs.X - _ax) - _ox, cy0 = (exs.Y - _ay) - _oy, cz0 = (exs.Z - _az) - _oz, cl0 = Math.Sqrt(cx0 * cx0 + cy0 * cy0 + cz0 * cz0);
+                if (cl0 > 0 && exs.R / cl0 * _lastH > 40)
+                {
+                    Func<double, double> over = t => { double hx = dir.X * t - cx0, hy = dir.Y * t - cy0, hz = dir.Z * t - cz0, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz); return hl - BodyRadiusToward(exs, _lastDrawTime, hx / hl, hy / hl, hz / hl); };
+                    double t0 = Math.Max(0, cl0 - exs.R * 2), t1 = cl0 + exs.R * 2, hitT = -1, prev = t0, prevV = over(t0);
+                    for (int q = 1; q <= 240; q++) { double t = t0 + (t1 - t0) * q / 240.0, v = over(t); if (prevV > 0 && v <= 0) { double lo = prev, hi = t; for (int b2 = 0; b2 < 24; b2++) { double mid = (lo + hi) / 2; if (over(mid) > 0) lo = mid; else hi = mid; } hitT = (lo + hi) / 2; break; } prev = t; prevV = v; }
+                    if (hitT > 0)
+                    {
+                        double hx = dir.X * hitT - cx0, hy = dir.Y * hitT - cy0, hz = dir.Z * hitT - cz0, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz);
+                        _tSpot = new[] { hx / hl, hy / hl, hz / hl }; _tName = "a spot on " + exs.Name.ToLowerInvariant(); return;
+                    }
+                }
+            }
             Func<double, double, double, double> near = (dx, dy, dz) => { double sx, sy; if (!ToScreen(dx, dy, dz, out sx, out sy)) return double.MaxValue; return (sx - mx) * (sx - mx) + (sy - my) * (sy - my); };
             for (int q = 0; q < _extras.Count && _ground == null; q++)
             {
@@ -3043,9 +3068,10 @@ namespace Universe.Shell
                 if (TargetFromCamera(out qx, out qy, out qz, out qr) && qr > 0)
                 {
                     double ql = Math.Sqrt(qx * qx + qy * qy + qz * qz);
-                    double qrD = exd.Hole || exd.Shape.Length == 0 ? qr : BodyRadiusToward(exd, _lastDrawTime, -qx / ql, -qy / ql, -qz / ql);   // the stone's real surface under you, not its nominal sphere
+                    double cxv = (exd.X - _ax) - _ox, cyv = (exd.Y - _ay) - _oy, czv = (exd.Z - _az) - _oz, cl = Math.Max(1e-300, Math.Sqrt(cxv * cxv + cyv * cyv + czv * czv));   // (from the body's middle: a spot picked on it only steers the way down; the ground is what is under you)
+                    double qrD = exd.Hole || exd.Shape.Length == 0 ? qr : BodyRadiusToward(exd, _lastDrawTime, -cxv / cl, -cyv / cl, -czv / cl);   // the stone's real surface under you, not its nominal sphere
                     ulong dspot = (ulong)(long)(_ox / Units.Km(1)) * 73856093UL ^ (ulong)(long)(_oy / Units.Km(1)) * 19349663UL ^ (ulong)(long)(_oz / Units.Km(1)) * 83492791UL;
-                    if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : qrD * 1.3))
+                    if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : double.MaxValue) && (exd.Hole || cl < qrD * 1.3))
                     {
                         if (exd.Hole && exd.Mass > 0)
                         {
@@ -3065,13 +3091,13 @@ namespace Universe.Shell
                         }
                         if (exd.Mix != null)
                         {
-                            double ux = -qx / ql, uy = -qy / ql, uz = -qz / ql;                 // from the body's middle to you: its surface here, under you
+                            double ux = -cxv / cl, uy = -cyv / cl, uz = -czv / cl;                 // from the body's middle to you: its surface here, under you
                             double sx = _ax - exd.X, sy = _ay - exd.Y, sz = _az - exd.Z, sl = Math.Sqrt(sx * sx + sy * sy + sz * sz);   // its star, for the light on the grains
                             _matter.Set(exd.Mix, false, false, exd.Cr, exd.Cg, exd.Cb, dspot);
                             _matter.SetGround(qrD / Units.Km(1), ux, uy, uz, exd.Mix, dspot * 0x9E3779B97F4A7C15UL + 0x51UL, 0, 0); exd.SpinHold = BodySpin(exd, _lastDrawTime);   // (its ground at the drawn stone's own height here; its spin held while you are on it)
                             _matter.SetAirAbove(null);
                             _bodyUp = new[] { ux, uy, uz }; _bodyStar = sl > 0 ? new[] { sx / sl, sy / sl, sz / sl } : new[] { ux, uy, uz };
-                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, (ql - qrD) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
+                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, (cl - qrD) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
                             ZoomLog("DIVE onto " + exd.Name + ": its ground " + exd.Mix + " from " + ScaleHud.Words(_spaceScale * 0.6) + " up"); return true;
                         }
                     }

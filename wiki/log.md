@@ -49,3 +49,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (one dive chain for any body, the supernova pick, the lattice probe, the levels' words): DNA-AND DESIGN 635.
 - 2026-11-07 (the comet dived like the planet and the asteroid): DNA-AND DESIGN 636.
 - 2026-11-07 (a dive onto a small body lands on the drawn stone): DNA-AND DESIGN 637.
+- 2026-11-07 (a spot on any small body picked by a click): DNA-AND DESIGN 638.

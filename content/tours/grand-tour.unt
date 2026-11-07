@@ -382,13 +382,18 @@ do: pick
 target: electron
 caption: One electron
 
+@stop to-electron
+do: zoom
+rate: 0.35
+until-km: 2.5e-14
+pan: 8
+caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
+
 @stop follow-electron
-do: arc
-rate: 0
-until-km: 0
-turn: 10
-seconds: 10
-caption: An electron: a point, and a wave spread through its cloud
+do: orbit
+turn: 12
+seconds: 16
+caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
 
 @stop choose-nucleus
 do: pick

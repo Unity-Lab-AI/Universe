@@ -79,20 +79,26 @@ float wmodeE(float X0, float Y0, float zoom, float seed, float kb, float ang)
 // the three sheets of pattern a surface's detail is read from, tilted to the diagonals: laid flat along the axes, a level
 // face (or any face square to an axis) saw two of the three collapse into stripes, which crossed into a grid of straight
 // edges, tiles and saws. Tilted, every face square to an axis reads a full pattern from all three
-static const float3 WPLANE_A[3] = { float3(0.7071, -0.7071, 0), float3(0.7071, 0.7071, 0), float3(0.7071, -0.7071, 0) };
-static const float3 WPLANE_B[3] = { float3(0.4082, 0.4082, -0.8165), float3(-0.4082, 0.4082, -0.8165), float3(-0.4082, -0.4082, -0.8165) };
-float woctave(float3 p, uint key, uint k)
+// Their frame is orthonormal (each sheet's two axes are the other two sheets' normals), and each sheet counts by how squarely it
+// faces the surface (WSHEETS: the weights from the surface's direction), so a sheet seen edge-on, which can only draw stripes,
+// counts for nothing: the rain of lines down every face at every size came from two sheets sharing an axis
+static const float3 WPLANE_N[3] = { float3(0.5774, 0.5774, 0.5774), float3(0.7071, -0.7071, 0), float3(0.4082, 0.4082, -0.8165) };
+static const float3 WPLANE_A[3] = { float3(0.7071, -0.7071, 0), float3(0.4082, 0.4082, -0.8165), float3(0.5774, 0.5774, 0.5774) };
+static const float3 WPLANE_B[3] = { float3(0.4082, 0.4082, -0.8165), float3(0.5774, 0.5774, 0.5774), float3(0.7071, -0.7071, 0) };
+float3 wsheets(float3 n) { float3 w = abs(float3(dot(n, WPLANE_N[0]), dot(n, WPLANE_N[1]), dot(n, WPLANE_N[2]))); w = w * w * w * w; return w / max(1e-6, w.x + w.y + w.z); }
+float woctave(float3 p, uint key, uint k, float3 wts)
 {
     float sum = 0;
     for (uint pl = 0; pl < 3; pl++)
     {
+        if (wts[pl] < 0.002) continue;
         float u = dot(p, WPLANE_A[pl]), v = dot(p, WPLANE_B[pl]);
         float a = wh01(key + pl * 31u, k) * 6.2832, c = cos(a), s = sin(a);
         float uu = u * c - v * s + wh01(key + pl * 31u, k + 97u) * 37, vv = u * s + v * c + wh01(key + pl * 31u, k + 191u) * 41;
-        if (k < (uint)WSTORED) sum += wtile(k + pl, uu * 0.02, vv * 0.02);
-        else sum += (wmodeE(fmod(uu * 0.02, 3) - 1.5, fmod(vv * 0.02, 3) - 1.5, exp2(k - WSTORED + 1), wh01(key, k + 5u), wh01(key, k + 7u), wh01(key, k + 9u) * 6.28) - 0.75) * 1.4;
+        if (k < (uint)WSTORED) sum += wts[pl] * wtile(k + pl, uu * 0.02, vv * 0.02);
+        else sum += wts[pl] * (wmodeE(fmod(uu * 0.02, 3) - 1.5, fmod(vv * 0.02, 3) - 1.5, exp2(k - WSTORED + 1), wh01(key, k + 5u), wh01(key, k + 7u), wh01(key, k + 9u) * 6.28) - 0.75) * 1.4;
     }
-    return sum / 3;
+    return sum;
 }
 // octaves from frequency f0, each twice as fine and gain as strong, as fine as maxF (the finest the pixel can show), the
 // finest fading in, never switching
@@ -115,26 +121,27 @@ float wtileR(uint k, float mu, float mv)
     float a0 = lerp(wave[b + y0 * WT + x0], wave[b + y0 * WT + x1], fx), a1 = lerp(wave[b + y1 * WT + x0], wave[b + y1 * WT + x1], fx);
     return lerp(a0, a1, fy);
 }
-float woctaveD(double3 p, uint key, uint k)
+float woctaveD(double3 p, uint key, uint k, float3 wts)
 {
     float sum = 0;
     for (uint pl = 0; pl < 3; pl++)
     {
+        if (wts[pl] < 0.002) continue;
         double u = p.x * (double)WPLANE_A[pl].x + p.y * (double)WPLANE_A[pl].y + p.z * (double)WPLANE_A[pl].z, v = p.x * (double)WPLANE_B[pl].x + p.y * (double)WPLANE_B[pl].y + p.z * (double)WPLANE_B[pl].z;
         float a = wh01(key + pl * 31u, k) * 6.2832, c = cos(a), s = sin(a);
         double uu = u * (double)c - v * (double)s + (double)(wh01(key + pl * 31u, k + 97u) * 37), vv = u * (double)s + v * (double)c + (double)(wh01(key + pl * 31u, k + 191u) * 41);
-        if (k < (uint)WSTORED) sum += wtileR(k + pl, wreduce(uu * (double)(0.02 * WT), 2.0 * (WT - 1)), wreduce(vv * (double)(0.02 * WT), 2.0 * (WT - 1)));
-        else sum += (wmodeE(wreduce(uu * 0.02, 3) - 1.5, wreduce(vv * 0.02, 3) - 1.5, exp2(k - WSTORED + 1), wh01(key, k + 5u), wh01(key, k + 7u), wh01(key, k + 9u) * 6.28) - 0.75) * 1.4;
+        if (k < (uint)WSTORED) sum += wts[pl] * wtileR(k + pl, wreduce(uu * (double)(0.02 * WT), 2.0 * (WT - 1)), wreduce(vv * (double)(0.02 * WT), 2.0 * (WT - 1)));
+        else sum += wts[pl] * (wmodeE(wreduce(uu * 0.02, 3) - 1.5, wreduce(vv * 0.02, 3) - 1.5, exp2(k - WSTORED + 1), wh01(key, k + 5u), wh01(key, k + 7u), wh01(key, k + 9u) * 6.28) - 0.75) * 1.4;
     }
-    return sum / 3;
+    return sum;
 }
-float woctavesD(double3 p, uint key, float f0, float amp0, float gain, float maxF)
+float woctavesD(double3 p, uint key, float f0, float amp0, float gain, float maxF, float3 wts)
 {
     float sum = 0, amp = amp0, f = f0;
     for (uint k = 0; k < 14u; k++)                                    // (never more than fourteen octaves for a pixel: the twelve stored, two of mode-E)
     {
         float fine = maxF / f; if (fine < 0.5) break;
-        sum += smoothstep(0.5, 2.5, fine) * amp * woctaveD(p * (double)f, key, k);     // (the finest layer eased in over a couple of pixels' worth: at the pixel's own size it drew moire, straight lines in rows)
+        sum += smoothstep(0.5, 2.5, fine) * amp * woctaveD(p * (double)f, key, k, wts);     // (the finest layer eased in over a couple of pixels' worth: at the pixel's own size it drew moire, straight lines in rows)
         amp *= gain; f *= 2;
     }
     return sum;
@@ -160,13 +167,13 @@ float cfbm(float3 p, uint s)
 static const int GPALB = 6 * WT * WT, GPALM = 16, GPALS = 2 + 16 + 48;
 uint ghash(uint i, uint j, uint seedW) { uint h = i * 0x9E3779B1u ^ j * 0x85EBCA77u ^ seedW; h ^= h >> 16; h *= 0x7FEB352Du; h ^= h >> 15; h *= 0x846CA68Bu; h ^= h >> 16; return h; }
 float g01(uint key, uint j, uint seedW) { return (ghash(key, j, seedW) & 0xFFFFFF) / 16777216.0; }
-float woctaves(float3 p, uint key, float f0, float amp0, float gain, float maxF)
+float woctaves(float3 p, uint key, float f0, float amp0, float gain, float maxF, float3 wts)
 {
     float sum = 0, amp = amp0, f = f0;
     for (uint k = 0; k < 14u; k++)                                    // (never more than fourteen octaves for a pixel: the twelve stored, two of mode-E)
     {
         float fine = maxF / f; if (fine < 0.5) break;
-        sum += smoothstep(0.5, 2.5, fine) * amp * woctave(p * f, key, k);
+        sum += smoothstep(0.5, 2.5, fine) * amp * woctave(p * f, key, k, wts);
         amp *= gain; f *= 2;
     }
     return sum;
@@ -229,7 +236,8 @@ float4 PS(VO i) : SV_Target
         // (high and low halves) and the pixel's own small offset
         double3 L = (double3)i.wp * (double)detA.w + (double3)detA.xyz + double3(light.w, cam.w, fog.w); uint key = asuint(detB.x);
         float fw = max(1e-15, length(fwidth(i.wp)) * detA.w), maxF = min(0.25 / fw, 16384);   // (no layer finer than four pixels across: finer drew moire)   // this pixel's size on the grain (from the view, exact); never more than about thirteen octaves for any pixel (each past the stored twelve runs mode-E: twenty-eight of them on every pixel of a big screen were seconds of work in one frame, and Windows reset the card). Finer than that the face's detail is its atomic terraces and atoms
-        float h = woctavesD(L, key, 2.5, 0.16, 0.5, maxF) * detB.y;                    // in view units
+        float3 wts = wsheets(normalize((float3)L));                                     // (the grain is a ball of radius 1 in its own frame: its surface faces outward from its middle)
+        float h = woctavesD(L, key, 2.5, 0.16, 0.5, maxF, wts) * detB.y;               // in view units
         // close in, the face steps in single atomic layers: flat terraces with a step one layer high between them, as on a real
         // crystal face. They come in from about a micrometre across the view (a pixel three layers wide) to a tenth of that,
         // the face growing flatter as they do, so zooming on shows them open out, wider and wider, never the same look
@@ -256,8 +264,8 @@ float4 PS(VO i) : SV_Target
         float lim = min(maxF * 0.8, 16384);
         // its stains and cracks in single precision (colour needs no more, and doubles run many times slower on most cards)
         float3 Lf = (float3)L;
-        float iron = woctaves(Lf, key * 7u + 300u, 2.0, 1, 0.6, lim), clay = woctaves(Lf + float3(9, 0, -4), key * 7u + 400u, 2.0, 1, 0.6, lim);
-        float crk = woctaves(Lf * 1.7, key * 7u + 500u, 2.0, 1, 0.6, lim), dark = clamp(0.5 - abs(crk) * 3, 0, 0.6);
+        float iron = woctaves(Lf, key * 7u + 300u, 2.0, 1, 0.6, lim, wts), clay = woctaves(Lf + float3(9, 0, -4), key * 7u + 400u, 2.0, 1, 0.6, lim, wts);
+        float crk = woctaves(Lf * 1.7, key * 7u + 500u, 2.0, 1, 0.6, lim, wts), dark = clamp(0.5 - abs(crk) * 3, 0, 0.6);
         float ir = clamp(iron / 2.4 * 2.4 - 0.15, 0, 0.6), cl = clamp(clay / 2.4 * 2.4 - 0.2, 0, 0.5);
         stain = float3(1 + ir * 0.25 + cl * 0.3, 1 - ir * 0.35 + cl * 0.3, 1 - ir * 0.55 + cl * 0.25) * (1 - dark) * (1 - 0.3 * stepE);   // (each step's edge a fine shaded line)
         // and closer still, the face is its atoms: rows of them 0.25 nm apart in the crystal's plane, coming in as soon as a pixel

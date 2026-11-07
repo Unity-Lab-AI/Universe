@@ -410,8 +410,15 @@ namespace Universe.Shell
             }
             // the whole atom's orbitals turned one way for this atom (its own place in the crystal), and turning on slowly with time
             // (drift: each subshell and orbital its own way), so every path keeps changing, as an electron's does
-            double turn = Hash(key, 7, 34, _seed) * Math.PI * 2 + drift * (0.6 + 0.25 * el.Sub + 0.1 * el.M), ct = Math.Cos(turn), st = Math.Sin(turn);
-            double x1 = u * ct - w * st, z1 = u * st + w * ct, tb = drift * 0.37 * (1 + 0.2 * el.Sub), cb = Math.Cos(tb), sb = Math.Sin(tb);
+            // and a new path every time round: an electron has no path of its own, only a cloud of where it may be, so the loop it is
+            // shown on is never the same twice. Each time round the loop's turn and tilt change (from the count of times round, so
+            // every electron its own), eased in over the last quarter of the way round, never a jump
+            double rev = Math.Floor(a / (2 * Math.PI)), fr = a / (2 * Math.PI) - rev, ease = Math.Max(0, (fr - 0.75) / 0.25); ease = ease * ease * (3 - 2 * ease);
+            double h0 = Hash(key + el.Sub * 7, el.Spin + (long)rev * 13, 35 + el.M, _seed), h1 = Hash(key + el.Sub * 7, el.Spin + ((long)rev + 1) * 13, 35 + el.M, _seed);
+            double revTurn = (h0 + (h1 - h0) * ease) * Math.PI * 2, revTilt = (Hash(key + el.Sub * 7, el.Spin + (long)rev * 13, 36 + el.M, _seed) * 2 - 1) * 0.9;
+            double revTilt1 = (Hash(key + el.Sub * 7, el.Spin + ((long)rev + 1) * 13, 36 + el.M, _seed) * 2 - 1) * 0.9; revTilt += (revTilt1 - revTilt) * ease;
+            double turn = Hash(key, 7, 34, _seed) * Math.PI * 2 + drift * (0.6 + 0.25 * el.Sub + 0.1 * el.M) + revTurn, ct = Math.Cos(turn), st = Math.Sin(turn);
+            double x1 = u * ct - w * st, z1 = u * st + w * ct, tb = drift * 0.37 * (1 + 0.2 * el.Sub) + revTilt, cb = Math.Cos(tb), sb = Math.Sin(tb);
             x = x1; y = v * cb - z1 * sb; z = v * sb + z1 * cb;
         }
         // how far round its path an electron is at a time (inner and more tightly held electrons faster; slowed to be watched)
@@ -1344,7 +1351,7 @@ namespace Universe.Shell
                     if (overlay || px < 1.5) continue;                                           // over the ground: the ground itself is their top
                     // the grain you are on keeps its whole 3D body while its shape shows (its fine face lies over it round you, in round
                     // rings); closer in than a twentieth of its size its face and atoms are all there is to see
-                    if (under && s < FocusRad * 0.05) continue;
+                    if (s < FocusRad * 0.05) continue;                                       // closer than a twentieth of the grain: its face and atoms are all there is; the grains round it are below and behind it, and their coarse bodies, which stand off their true shape by far more than the view, poked through as floating slabs
                     // (no grain bodies of its own: the grains are the ground's, drawn by the ground; here only the one you are on, its face)
                 }
             }
@@ -1583,7 +1590,7 @@ namespace Universe.Shell
                     if (el.Spin == 0)
                         for (int q = 0; q < 48; q++)
                         {
-                            double px, py, pz; ElectronAt(el, key, q * Math.PI * 2 / 48, out px, out py, out pz, ElectronDrift(time));
+                            double px, py, pz; ElectronAt(el, key, Math.Floor(ElectronPhase(el, k, time) / (2 * Math.PI)) * 2 * Math.PI + q * Math.PI * 2 / 48, out px, out py, out pz, ElectronDrift(time));   // (the loop of this time round)
                             Add(glow, x + px * ar, y + py * ar, z + pz * ar, dot * 0.4, (valence ? 0.4f : 0.2f) * f, (valence ? 0.3f : 0.3f) * f, (valence ? 0.1f : 0.5f) * f, s);
                         }
                     double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz, ElectronDrift(time));
@@ -1595,7 +1602,8 @@ namespace Universe.Shell
                         _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz; _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz;
                         double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
                     }
-                    Add(glow, exx, eyy, ezz, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
+                    bool riding = _picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.J == k;
+                    Add(glow, exx, eyy, ezz, riding ? Math.Max(dot, s * 0.07) : dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);   // (the one you ride beside: a glowing body a share of the view, as a comet is when you fly with it; a point has no size, this is the size we give it)
                     { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; } }   // every atom's electrons can be picked
                 }
             }

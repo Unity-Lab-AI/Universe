@@ -3506,7 +3506,7 @@ namespace Universe.Shell
                 {
                     // a grain picked over the ground: ringed, with its card, as anything picked anywhere
                     _gpu.ClearDepth(); double gqx, gqy, gqr;
-                    if (_matter.PickedOnScreen(out gqx, out gqy, out gqr)) { _hud.DrawRing(_meshes, gqx, gqy, Math.Min(gqr, h * 0.45), w, h); if (_hud.Visible && _tour == null) _hud.DrawCard(_meshes, _matter.Card(), gqx + gqr + 12 * Math.Max(1, h / 1080.0), gqy - gqr, w, h); }
+                    if (_matter.PickedOnScreen(out gqx, out gqy, out gqr)) { _hud.DrawRing(_meshes, gqx, gqy, Math.Min(gqr, h * 0.45), w, h); if (_hud.Visible) _hud.DrawCard(_meshes, _matter.Card(), gqx + gqr + 12 * Math.Max(1, h / 1080.0), gqy - gqr, w, h); }
                 }
             }
             if (_spaceScale > 0)
@@ -3526,7 +3526,7 @@ namespace Universe.Shell
                 _matter.Draw(sv, _spaceScale, w, h, _matterClock, _meshes, false);
                 _gpu.ClearDepth();
                 double qx, qy, qr; if (_matter.PickedOnScreen(out qx, out qy, out qr)) _hud.DrawRing(_meshes, qx, qy, Math.Min(qr, h * 0.45), w, h);
-                if (_hud.Visible && _tour == null) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), 24 * Math.Max(1, h / 1080.0), w, h);
+                if (_hud.Visible) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), 24 * Math.Max(1, h / 1080.0), w, h);
             }
             if (_matterScale > 0)
             {
@@ -3537,7 +3537,7 @@ namespace Universe.Shell
                 _matter.Draw(mview, _matterScale, w, h, _matterClock, _meshes, false);
                 _gpu.ClearDepth();                                                     // its ring and card on top of the grains
                 double qx, qy, qr; if (_matter.PickedOnScreen(out qx, out qy, out qr)) _hud.DrawRing(_meshes, qx, qy, Math.Min(qr, h * 0.45), w, h);   // what you picked, ringed
-                if (_hud.Visible && _tour == null) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), 24 * Math.Max(1, h / 1080.0), w, h);   // what you are in, and what you picked
+                if (_hud.Visible) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), 24 * Math.Max(1, h / 1080.0), w, h);   // what you are in, and what you picked
             }
             _gpu.ClearDepth();                                                         // the scale, cards and rings always on top of everything
             DrawScale(w, h);
@@ -3600,8 +3600,8 @@ namespace Universe.Shell
                 bool fills = rpx > h * 0.45;                                           // bigger than the view: no ring, the card sits top left
                 if (!fills) _hud.DrawRing(_meshes, msx, msy, rpx, w, h);
                 // its card at the left edge, under the top, never over what you look at (beside the ring it sat across the middle of the
-                // view, a wall of text over the hole); on the tour no card at all: the captions carry the words
-                if (_hud.Visible && _tour == null) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), 72 * Math.Max(1, h / 1080.0), w, h);
+                // view, a wall of text over the hole); on the tour too, where the caption at the foot says what the shot is and the card what the thing is
+                if (_hud.Visible) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), 72 * Math.Max(1, h / 1080.0), w, h);
             }
         }
 

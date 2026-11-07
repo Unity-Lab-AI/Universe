@@ -139,7 +139,7 @@ internal static class Setup
         private readonly Panel[] _pages = new Panel[9]; private readonly CheckBox _accept = new CheckBox(); private int _page;
         private readonly Button _back = new Button(), _next = new Button(), _cancel = new Button();
         private readonly TextBox _dir = new TextBox(); private readonly Label _space = new Label(), _file = new Label();
-        private readonly CheckBox _desktop = new CheckBox(), _start = new CheckBox(), _launch = new CheckBox(), _clearClips = new CheckBox();
+        private readonly CheckBox _desktop = new CheckBox(), _start = new CheckBox(), _launch = new CheckBox(), _clearClips = new CheckBox(), _clearShots = new CheckBox(), _clearSettings = new CheckBox();
         private readonly ProgressBar _bar = new ProgressBar(); private readonly bool _update; private bool _blocked, _installed; private string _installedDir;
         private readonly long _need;
 
@@ -193,17 +193,20 @@ internal static class Setup
             Add(6, "Shortcuts", "Where you would like shortcuts to " + AppName + ":");
             _desktop.Text = "On the desktop"; _desktop.Checked = true; _desktop.Location = new Point(28, 110); _desktop.AutoSize = true; _pages[6].Controls.Add(_desktop);
             _start.Text = "On the Start menu"; _start.Checked = true; _start.Location = new Point(28, 140); _start.AutoSize = true; _pages[6].Controls.Add(_start);
-            // clips filmed by an earlier copy: offered to be cleared out (screenshots are always kept)
+            // what an earlier copy left behind, each offered to be deleted on its own: its clips, its screenshots, its settings
             try
             {
-                string caps = Path.Combine(dir, "captures");
-                var clips = Directory.Exists(caps) ? Directory.GetFiles(caps, "*.mp4") : new string[0];
-                if (clips.Length > 0)
+                string caps = Path.Combine(dir, "captures"); int y = 190;
+                Action<CheckBox, string[], string, bool> offer = (box, files, what, on) =>
                 {
-                    long bytes = 0; foreach (var c in clips) bytes += new FileInfo(c).Length;
-                    _clearClips.Text = "Delete my old clips (" + clips.Length + " clip" + (clips.Length == 1 ? "" : "s") + ", " + (bytes / 1048576.0).ToString("N0") + " MB; screenshots are kept)";
-                    _clearClips.Checked = true; _clearClips.Location = new Point(28, 190); _clearClips.AutoSize = true; _pages[6].Controls.Add(_clearClips);
-                }
+                    if (files.Length == 0) return;
+                    long bytes = 0; foreach (var f in files) bytes += new FileInfo(f).Length;
+                    box.Text = "Delete my old " + what + " (" + files.Length + " file" + (files.Length == 1 ? "" : "s") + ", " + (bytes / 1048576.0).ToString("N0") + " MB)";
+                    box.Checked = on; box.Location = new Point(28, y); box.AutoSize = true; _pages[6].Controls.Add(box); y += 30;
+                };
+                offer(_clearClips, Directory.Exists(caps) ? Directory.GetFiles(caps, "*.mp4") : new string[0], "clips", true);
+                offer(_clearShots, Directory.Exists(caps) ? Directory.GetFiles(caps, "*.png") : new string[0], "screenshots", false);
+                offer(_clearSettings, Directory.Exists(SettingsDir) ? Directory.GetFiles(SettingsDir, "*", SearchOption.AllDirectories) : new string[0], "settings (back to how it starts)", false);
             }
             catch { }
             // 4 installing
@@ -275,11 +278,12 @@ internal static class Setup
                         if (Directory.Exists(p)) Directory.Delete(p, true); else if (File.Exists(p)) File.Delete(p);
                     }
                 Directory.CreateDirectory(dir);
-                if (_clearClips.Checked)
                 {
-                    // the old clips, if chosen: only the videos in the captures folder (screenshots kept)
+                    // what was chosen to be deleted from the earlier copy: its clips, its screenshots, its settings
                     string caps = Path.Combine(dir, "captures");
-                    if (Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps, "*.mp4")) { try { File.Delete(c); } catch { } }
+                    if (_clearClips.Checked && Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps, "*.mp4")) { try { File.Delete(c); } catch { } }
+                    if (_clearShots.Checked && Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps, "*.png")) { try { File.Delete(c); } catch { } }
+                    if (_clearSettings.Checked) try { if (Directory.Exists(SettingsDir)) Directory.Delete(SettingsDir, true); } catch { }
                 }
                 using (var s = Payload()) using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
                 {

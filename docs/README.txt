@@ -59,6 +59,8 @@
     Needs ......... Windows 10 or 11, 64-bit, and a Direct3D 12 graphics card
     Display ....... runs in a window and never changes your display settings
     Captures ...... screenshots and clips go in the captures folder
+    Updating ...... installing over it offers to delete old clips, screenshots
+                    and settings, each on its own
     Uninstall ..... Windows' Apps list, or "Uninstall Universe.exe" here
     Build your own  https://git.unityailab.com/GFourteen/Universe
 

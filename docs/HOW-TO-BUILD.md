@@ -62,7 +62,7 @@ This builds the release copy and packs it, the `content` folder and the document
 
 | File | What it is |
 |---|---|
-| `release\Universe-Setup-<version>.exe` | Installs to your Programs folder, with Start menu and desktop shortcuts, an Apps list entry and an uninstaller |
+| `release\Universe-Setup-<version>.exe` | Installs to your Programs folder, with Start menu and desktop shortcuts, an Apps list entry and an uninstaller. Over an earlier copy it offers to delete what that copy left behind, each on its own: its clips, its screenshots, its settings |
 | `release\Universe-<version>-windows.zip` | The same files, to unzip and run |
 
 Change the version at the top of `release.cmd`.

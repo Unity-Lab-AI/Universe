@@ -174,7 +174,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 
 ## Start
 
-1. **Download** the installer from the links at the top, and run it.
+1. **Download** the installer from the links at the top, and run it. Over an earlier copy it offers to delete your old clips, screenshots and settings, each on its own.
 2. **Pick a seed** on the landing page (or **Random**, or leave it blank).
 3. **Begin** to fly, or **Take the tour**.
 

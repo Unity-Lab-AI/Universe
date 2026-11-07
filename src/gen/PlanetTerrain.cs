@@ -1353,6 +1353,7 @@ namespace Universe.Gen
             float lx, float ly, float lz, float fogDist, float fr, float fg, float fb, int x, int y, int w, int h)
         {
             Mat4 rest = turn * viewRot * proj;
+            Universe.Render.GpuLog.Pass = "a world's " + (_drawingHull ? "hull" : surface == 0 ? (_gg ? "ground with its sand" : "ground") : surface == 2 ? "clouds" : surface == 3 ? "sea" : "surface");
             foreach (var p in _drawList)
             {
                 float ox = (float)(p.Cx - camX), oy = (float)(p.Cy - camY), oz = (float)(p.Cz - camZ);

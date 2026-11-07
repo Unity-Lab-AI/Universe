@@ -497,7 +497,7 @@ float4 PS(VO i) : SV_Target
             if (WaveAddress != 0) _srv(_list, 2, WaveAddress);
             _topo(_list, 4);
             _vp(_list, 1, ref vp); _sc(_list, 1, ref r);
-            _draw(_list, (uint)vertexCount, 1, (uint)firstVertex, 0);
+            _draw(_list, (uint)vertexCount, 1, (uint)firstVertex, 0); GpuLog.Draw(vertexCount);
         }
         public void Draw(UploadBuffer buffer, int vertexCount, float[] constants, int x, int y, int w, int h)
         {
@@ -510,7 +510,7 @@ float4 PS(VO i) : SV_Target
             if (WaveAddress != 0) _srv(_list, 2, WaveAddress);                          // the waveform, for detail worked out per pixel
             _topo(_list, 4);
             _vp(_list, 1, ref vp); _sc(_list, 1, ref r);
-            _draw(_list, (uint)vertexCount, 1, 0, 0);
+            _draw(_list, (uint)vertexCount, 1, 0, 0); GpuLog.Draw(vertexCount);
         }
     }
 }

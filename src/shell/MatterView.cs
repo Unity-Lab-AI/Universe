@@ -1541,6 +1541,7 @@ namespace Universe.Shell
         /// <summary>Draws the matter; with <paramref name="overlay"/>, only its grains, lying over the ground still drawn below.</summary>
         public void Draw(Mat4 view, double scaleKm, int w, int h, double time, MeshPipes pipes, bool overlay)
         {
+            Universe.Render.GpuLog.Pass = overlay ? "the grains over the ground" : "the matter (a grain's face, crystals, atoms)";
             _lastH = h;
             // the point you dive into eases across to what you picked
             double dt = _lastTime < 0 ? 0 : Math.Max(0, Math.Min(0.1, time - _lastTime)); _lastTime = time;
@@ -1611,6 +1612,7 @@ namespace Universe.Shell
                 pc[19] = (float)(ox0 - pc[40]); pc[23] = (float)(oy0 - pc[41]); pc[31] = (float)(oz0 - pc[42]);   // the low halves
                 pc[44] = BitConverter.ToSingle(BitConverter.GetBytes((uint)(_patchKey & 0xFFFFFFFF)), 0); pc[45] = (float)(_patchRad / Math.Max(1e-30, _scale)); pc[46] = (float)(3e-13 / Math.Max(1e-30, _patchRad)); pc[47] = 1;   // (one atomic layer, 0.3 nm, in the grain's own units: its terraces)
                 Put(_patchMesh, ref _patchArr, ref _patchBuf);
+                Universe.Render.GpuLog.Pass = "a grain's face, its detail worked out per pixel";
                 pipes.Solid.Draw(_patchBuf, _patchMesh.Count, pc, 0, 0, w, h);
             }
         }

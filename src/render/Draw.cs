@@ -41,6 +41,7 @@ namespace Universe.Render
             Com.Check(Com.Method<CreateCommittedResourceFn>(device, 27)(device, ref heap, 0, ref desc, 0xAC3, IntPtr.Zero, ref iid, out _resource), "CreateCommittedResource");
             Com.Check(Com.Method<MapFn>(_resource, 8)(_resource, 0, IntPtr.Zero, out _mapped), "Map");
             GpuAddress = Com.Method<GpuAddressFn>(_resource, 11)(_resource);
+            GpuLog.Buffer(GpuAddress, Bytes);
         }
 
         public void Write(StarVertex[] data, int count)
@@ -58,7 +59,7 @@ namespace Universe.Render
         // device; it is freed some frames later (Collect, once a frame), for every buffer in the game
         private static readonly System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<IntPtr, long>> Retired = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<IntPtr, long>>();
         private static long _frame;
-        public void Dispose() { if (_resource != IntPtr.Zero) lock (Retired) Retired.Add(new System.Collections.Generic.KeyValuePair<IntPtr, long>(_resource, _frame)); _resource = IntPtr.Zero; _mapped = IntPtr.Zero; }
+        public void Dispose() { GpuLog.BufferGone(GpuAddress); if (_resource != IntPtr.Zero) lock (Retired) Retired.Add(new System.Collections.Generic.KeyValuePair<IntPtr, long>(_resource, _frame)); _resource = IntPtr.Zero; _mapped = IntPtr.Zero; }
         /// <summary>Once a frame: frees the buffers let go more than eight frames ago.</summary>
         public static void Collect()
         {
@@ -104,7 +105,7 @@ namespace Universe.Render
             _srv(_list, 1, buffer.GpuAddress);
             _topo(_list, 4); // triangle list
             _vp(_list, 1, ref vp); _sc(_list, 1, ref r);
-            _draw(_list, 6, (uint)count, 0, 0);
+            _draw(_list, 6, (uint)count, 0, 0); GpuLog.Draw(count);
         }
     }
 }

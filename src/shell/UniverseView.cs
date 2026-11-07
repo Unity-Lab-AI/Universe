@@ -2400,6 +2400,7 @@ namespace Universe.Shell
                 var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
                 float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);   // (inside a galaxy the web's points are not drawn: its sky shows the other galaxies themselves, made in full round you)
                 webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
+            Render.GpuLog.Pass = "the web's light";
                 if (webFade > 0.01 && !skyHidden)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
                 _web[0] = (float)(2.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)_nearUnits;   // (from where the galaxies made in full begin to fade out, the web fades in over the same span: they hand over, never both at once, never a gap)
@@ -2407,6 +2408,7 @@ namespace Universe.Shell
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd
             }
+            Render.GpuLog.Pass = "galaxies";
             for (int i = 0; i < _galaxies.Count && !skyHidden; i++)
             {
                 // every galaxy is one field of its own stars: the near one shows more of them as it grows on screen, each point
@@ -2451,6 +2453,7 @@ namespace Universe.Shell
                     if (g.StructCount > 0) { DrawPoints(g.Struct, g.StructCount, Placement(g) * vp, right, up, 1f, 0.0016f, w, h, time, 0, (float)Math.Max(0, Math.Min(1, (60 - kv.Key) / 20))); drawn++; }   // fading in from 60 to 40 of its sizes
                 }
             }
+            Render.GpuLog.Pass = "black holes and bodies";
             UpdateExtras();
             DrawBlackHoles(vp, right, up, w, h, time);                               // the feeding ones' discs and jets
                               // asteroids and comets close in: their own bodies
@@ -2478,6 +2481,7 @@ namespace Universe.Shell
                 _extraBuf.Write(_extraV, _extras.Count);
                 DrawPoints(_extraBuf, _extras.Count, vp, right, up, 1f, 0.0024f, w, h, time);
             }
+            Render.GpuLog.Pass = "a cluster's stars";
             if (_cstars.Count > 0 && !skyHidden)
             {
                 // the cluster's own stars round you: old red and orange giants and yellow stars in a globular, young blue-white in an open one
@@ -2492,6 +2496,7 @@ namespace Universe.Shell
                 _cstarBuf.Write(_cstarV, _cstars.Count);
                 DrawPoints(_cstarBuf, _cstars.Count, vp, right, up, 1f, 0.0022f, w, h, time);
             }
+            Render.GpuLog.Pass = "the stars round you";
             if (_near >= 0 && _localCount > 0 && inside > 0 && !skyHidden)
             {
                 // the real stars of this space at their real sizes (a small point from afar, never smaller than a dot on screen)
@@ -2503,6 +2508,7 @@ namespace Universe.Shell
                 }
                 DrawPoints(_localBuf, _localCount, Placement(_galaxies[_near]) * vp, right, up, 1f, 0.0022f, w, h, time);
             }
+            Render.GpuLog.Pass = "the star system";
             if (_system != null)
             {
                 // the system around its star (the anchor): orbits and belts, then the star, planets and moons as glows at their real sizes
@@ -2540,8 +2546,10 @@ namespace Universe.Shell
             }
             // the solid small bodies (asteroids, comets' nuclei) and worlds' rings last of everything in space: after every star,
             // belt and orbit behind them, so nothing shows through a solid body (the glows are drawn without looking at what is in front)
+            Render.GpuLog.Pass = "asteroids and comets";
             DrawSmallBodies(vp, right, up, w, h, time);
             DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them
+            Render.GpuLog.Pass = "a world's ground";
             if (_ground != null && _matterScale <= 0)   // (in the matter the grain's own face fills the view: the planet's ground mesh is not drawn behind it, one picture only)
             {
                 // the planet's real ground, in km around its centre, with the same view turn; near and far follow the height

@@ -50,9 +50,11 @@ namespace Universe.Render
             // the strongest graphics card in this computer: the one with the most video memory of its own (software ones skipped),
             // so a laptop with two GPUs uses its real one; if none will do, Windows's own choice
             IntPtr best = PickAdapter();
+            GpuLog.Enable();                                                             // (Windows' record of what the card does, for the crash log if it is lost)
             if (best == IntPtr.Zero || D3D12.D3D12CreateDevice(best, D3D12.D3D_FEATURE_LEVEL_11_0, ref iid, out _device) < 0)
                 Com.Check(D3D12.D3D12CreateDevice(IntPtr.Zero, D3D12.D3D_FEATURE_LEVEL_11_0, ref iid, out _device), "D3D12CreateDevice");
             if (best != IntPtr.Zero) Com.Release(ref best);
+            DeviceForLog = _device;
 
             var qd = new D3D12.CommandQueueDesc { Type = D3D12.COMMAND_LIST_TYPE_DIRECT };
             iid = D3D12.IID_ID3D12CommandQueue;
@@ -245,7 +247,7 @@ namespace Universe.Render
                 Com.Method<ResolveQueryDataFn>(_list, 54)(_list, _queryHeap, 2, 0, 2, _queryRead, 0);
             }
             Com.Check(_close(_list), "CommandList.Close");
-            _execute(_queue, 1, new[] { _list });
+            _execute(_queue, 1, new[] { _list }); GpuLog.Submitted();
             Com.Check(_present(_swapChain, 1, 0), "Present");
             // the frame is handed to the card and not waited for here (the next frame's game work runs meanwhile), unless its
             // picture is wanted back now (a screenshot or a clip's frame)
@@ -347,6 +349,8 @@ namespace Universe.Render
             Com.Check(_signal(_queue, _fence, value), "Queue.Signal");
             WaitFor(value); _pending = 0;
         }
+        /// <summary>The device, for the crash log's account of what the card was doing when it was lost.</summary>
+        public static IntPtr DeviceForLog;
         private ulong _pending;                                   // the frame handed to the card and not yet waited for (0: none)
         private void WaitFor(ulong value)
         {

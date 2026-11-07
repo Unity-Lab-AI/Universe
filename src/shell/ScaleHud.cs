@@ -223,6 +223,37 @@ namespace Universe.Shell
             c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
             pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
         }
+        /// <summary>A black cone of the view: every pixel whose line of sight lies within <paramref name="theta"/> of the direction
+        /// (dx, dy, dz) (in the screen's own basis: right, up, forward) is blacked out. A black hole's shadow, at any size up to the
+        /// whole view and past it. Rows two pixels tall, the run's ends found to the pixel.</summary>
+        public void DrawCone(MeshPipes pipes, int w, int h, double dx, double dy, double dz, double theta)
+        {
+            double t = Math.Tan(0.45), aspect = w / (double)Math.Max(1, h), ct = Math.Cos(theta);
+            var l = new List<StarVertex>(); int step = Math.Max(1, h / 540);
+            for (int y = 0; y < h; y += step)
+            {
+                double ny = (1 - (y + step * 0.5) / h * 2) * t;
+                Func<double, bool> inside = x => { double nx = (x / w * 2 - 1) * t * aspect, len = Math.Sqrt(nx * nx + ny * ny + 1); return (nx * dx + ny * dy + dz) / len > ct; };
+                const int N = 96; bool prev = inside(0); double runStart = prev ? 0 : -1;
+                for (int k = 1; k <= N; k++)
+                {
+                    double x = k * (double)w / N; bool now = k == N ? false : inside(x);
+                    if (now == prev) continue;
+                    // the edge, to the pixel, between the last sample and this one
+                    double lo = (k - 1) * (double)w / N, hi = x; if (k == N) hi = w;
+                    if (k < N) for (int b = 0; b < 7; b++) { double m = (lo + hi) * 0.5; if (inside(m) == prev) lo = m; else hi = m; }
+                    double edge = k == N ? w : (lo + hi) * 0.5;
+                    if (prev) { Quad(l, (float)runStart, y, (float)(edge - runStart), step, 0, 0, 0); runStart = -1; } else runStart = edge;
+                    prev = now;
+                }
+            }
+            if (l.Count == 0) return;
+            var arr = l.ToArray(); var buf = Slot(arr, arr.Length);
+            var m2 = Mat4.Identity; m2.M11 = 2f / w; m2.M22 = -2f / h; m2.M33 = 0; m2.M41 = -1; m2.M42 = 1; m2.M43 = 0.0001f; m2.M44 = 1;
+            var c2 = new float[BillboardPipeline.ConstantCount];
+            c2[0] = m2.M11; c2[5] = m2.M22; c2[10] = m2.M33; c2[12] = m2.M41; c2[13] = m2.M42; c2[14] = m2.M43; c2[15] = m2.M44; c2[18] = 1; c2[22] = 1;
+            pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
+        }
         public void DrawBars(MeshPipes pipes, int w, int h, float frac)
         {
             var l = new List<StarVertex>(); float bh = h * frac;

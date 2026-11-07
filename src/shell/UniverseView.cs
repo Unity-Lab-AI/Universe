@@ -358,6 +358,24 @@ namespace Universe.Shell
         // torn star's stream flowing)
         private sealed class HoleParts { public UploadBuffer Disc, Jets, Swarm, Stream; public int DiscN, JetsN, SwarmN, StreamN; public float K; }
         private readonly Dictionary<string, HoleParts> _holeParts = new Dictionary<string, HoleParts>();
+        /// <summary>Every black hole's shadow: a black cone of the view round it, its half-angle by the law for where the camera
+        /// stands (sin^2 = (27/4)(rs/r)^2 (1 - rs/r)): 2.6 horizon radii across from afar, half the sky at the photon sphere, nearly
+        /// all of it just outside the horizon. Drawn over the stars and galaxies behind the hole; the disc, swarm and streams are drawn
+        /// after it, their own captured light dropped on the card.</summary>
+        private void DrawShadows(int w, int h)
+        {
+            if (!_haveAxes) return; var lk = Look;
+            foreach (var ex in _extras)
+            {
+                if (!ex.Hole || ex.Mass <= 0) continue;
+                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz), r = d / Math.Max(1e-300, rs);
+                if (r <= 1.0005) continue;
+                double s2 = 6.75 / (r * r) * Math.Max(0, 1 - 1 / r), th = r >= 1.5 ? Math.Asin(Math.Sqrt(Math.Min(1, s2))) : Math.PI - Math.Asin(Math.Sqrt(Math.Min(1, s2)));
+                if (th < Math.PI / 2 && Math.Tan(th) * h / (2 * Math.Tan(0.45)) < 0.6) continue;   // (smaller than a pixel: nothing to draw)
+                double ux = dx / d, uy = dy / d, uz = dz / d;
+                _hud.DrawCone(_meshes, w, h, ux * _viewRight.X + uy * _viewRight.Y + uz * _viewRight.Z, ux * _viewUp.X + uy * _viewUp.Y + uz * _viewUp.Z, ux * lk.X + uy * lk.Y + uz * lk.Z, th);
+            }
+        }
         private UploadBuffer _wellBuf; private int _wellN;
         private void MakeWell()
         {
@@ -760,7 +778,7 @@ namespace Universe.Shell
                 // two beams from the poles, narrow, fading as they go, blue-violet
                 double y = 3 + Math.Pow(rng.NextDouble(), 1.8) * 600, w = 0.6 + y * 0.03, a = rng.NextDouble() * Math.PI * 2, f = Math.Exp(-y / 300);
                 float br = (float)(0.25 + 0.75 * f); int side = (k & 1) == 0 ? 1 : -1;
-                jets.Add(new StarVertex { X = (float)(Math.Cos(a) * w * rng.NextDouble()), Y = (float)(side * y), Z = (float)(Math.Sin(a) * w * rng.NextDouble()), Size = (float)(1 + y * 0.01), R = 0.55f * br, G = 0.6f * br, B = 1f * br, A = 1 });
+                jets.Add(new StarVertex { X = (float)(Math.Cos(a) * w * rng.NextDouble()), Y = (float)(side * y), Z = (float)(Math.Sin(a) * w * rng.NextDouble()), Size = (float)(0.3 + y * 0.004), R = 0.4f * br, G = 0.45f * br, B = 0.75f * br, A = 1 });
             }
             int nsw = pl != null ? pl.Swarm : 0;
             for (int k = 0; k < nsw; k++)
@@ -3255,6 +3273,7 @@ namespace Universe.Shell
             DrawSupernovae(vp, right, up, w, h, time);
             Render.GpuLog.Pass = "black holes and bodies";
             UpdateExtras();
+            DrawShadows(w, h);                                                          // every hole's shadow, black, at its real size from where you stand
             DrawBlackHoles(vp, right, up, w, h, time);                               // the feeding ones' discs and jets
                               // asteroids and comets close in: their own bodies
             {
@@ -3275,7 +3294,13 @@ namespace Universe.Shell
             {
                 if (_extraV.Length < _extras.Count) _extraV = new StarVertex[_extras.Count + 256];
                 for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex.Shape.Length > 0 && ShapeShown(ex, h)) { _extraV[q] = new StarVertex(); continue; }   // (drawn as its own body: no point of light over it)
-                    if (ex.Hole) { _extraV[q] = new StarVertex { X = (float)((ex.X - _ax) - _ox), Y = (float)((ex.Y - _ay) - _oy), Z = (float)((ex.Z - _az) - _oz), Size = (float)(ex.R * 3), R = ex.Cr * 0.7f, G = ex.Cg * 0.7f, B = ex.Cb * 0.7f, A = 1 }; continue; }   // its glowing disc and photon ring; the middle stays dark (bent light)
+                    if (ex.Hole)
+                    {
+                        // its glow from afar (so it can be found and picked), fading out within a hundred radii as its real disc, shadow and lens take over
+                        double hdx = (ex.X - _ax) - _ox, hdy = (ex.Y - _ay) - _oy, hdz = (ex.Z - _az) - _oz, hrs = ex.Mass > 0 ? Units.Km(Physics.HorizonKm(ex.Mass)) : ex.R / 2.6;
+                        float farF = (float)Math.Max(0, Math.Min(1, (Math.Sqrt(hdx * hdx + hdy * hdy + hdz * hdz) / Math.Max(1e-300, hrs) - 100) / 100)) * (ex.Feeding > 0 ? 0.7f : 0.25f);
+                        _extraV[q] = new StarVertex { X = (float)hdx, Y = (float)hdy, Z = (float)hdz, Size = (float)(ex.R * 3), R = ex.Cr * farF, G = ex.Cg * farF, B = ex.Cb * farF, A = 1 }; continue;
+                    }
                     _extraV[q] = new StarVertex { X = (float)((ex.X - _ax) - _ox), Y = (float)((ex.Y - _ay) - _oy), Z = (float)((ex.Z - _az) - _oz), Size = (float)ex.R, R = ex.Cr, G = ex.Cg, B = ex.Cb, A = 1 }; }
                 if (_extraBuf == null || _extraBuf.Bytes < (long)_extras.Count * Stride) { if (_extraBuf != null) _extraBuf.Dispose(); _extraBuf = new UploadBuffer(_gpu.Device, (long)(_extras.Count + 256) * Stride); }
                 _extraBuf.Write(_extraV, _extras.Count);
@@ -3545,18 +3570,9 @@ namespace Universe.Shell
                 double rpx = Math.Max(14 * Math.Max(1, h / 1080.0), mrad / Math.Max(1e-30, l) / Math.Tan(0.45) * h * 0.5 * 1.25);
                 bool fills = rpx > h * 0.45;                                           // bigger than the view: no ring, the card sits top left
                 if (!fills) _hud.DrawRing(_meshes, msx, msy, rpx, w, h);
-                if (_hud.Visible)
-                {
-                    if (fills) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 24 * Math.Max(1, h / 1080.0), w, h);
-                    else
-                    {
-                        // beside what you picked; never over the frame counter and the stats at the top right (a card drawn there
-                        // garbled both): under them instead
-                        double cx0 = msx + rpx + 12 * Math.Max(1, h / 1080.0), cy0 = msy - rpx;
-                        if (cy0 < _statsBottom && cx0 > _statsLeft - w * 0.3) cy0 = _statsBottom + 8 * Math.Max(1, h / 1080.0);
-                        _hud.DrawCard(_meshes, Card(), cx0, cy0, w, h);
-                    }
-                }
+                // its card at the left edge, under the top, never over what you look at (beside the ring it sat across the middle of the
+                // view, a wall of text over the hole); on the tour no card at all: the captions carry the words
+                if (_hud.Visible && _tour == null) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), 72 * Math.Max(1, h / 1080.0), w, h);
             }
         }
 

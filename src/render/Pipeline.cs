@@ -88,6 +88,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         s.size = 0;
         s.color.a = 1;
     }
+    bool holeHidden = false;
     if (extra.y > 0)
     {
         // a feeding black hole's own things, in its own frame (its disc level, its horizon's radius 1), each worked out here
@@ -105,7 +106,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             // Telescope saw): the disc is always lopsided
             float3 tang = float3(-sin(ang), 0, cos(ang)); float beta = sqrt(0.5 / r);
             float3 toCam = normalize(webA.xyz - p); float gam = 1 / sqrt(1 - beta * beta), dop = 1 / (gam * (1 - beta * dot(tang, toCam)));
-            s.color.rgb *= clamp(dop * dop * dop, 0.25, 4.0);
+            s.color.rgb *= clamp(dop * dop * dop, 0.45, 2.5);     // (lopsided, as the Event Horizon Telescope saw it, but never a missing half)
             s.pos = p;
         }
         else if (extra.w < 2.5)
@@ -120,7 +121,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             float cp = cos(peri), sp = sin(peri); float x1 = x * cp - z * sp, z1 = x * sp + z * cp;
             float ci = cos(inc), si = sin(inc); float y2 = z1 * si, z2 = z1 * ci;
             float cn = cos(node), sn = sin(node);
-            s.pos = float3(x1 * cn - z2 * sn, y2, x1 * sn + z2 * cn); s.size = 0.9;
+            s.pos = float3(x1 * cn - z2 * sn, y2, x1 * sn + z2 * cn); s.size = 0.3;
         }
         else
         {
@@ -128,15 +129,34 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             // stretched along its orbit into a stream of gas (a tidal disruption), winding in round the hole and feeding the disc,
             // hotter and bluer as it falls. Each point is a share of the way along the stream, and the stream flows: the star's
             // remains at its head, its gas drawn out behind and down
-            float s0 = frac(s.pos.x - K * t * 0.0035), r = 3.2 + 90 * exp(-s0 * 3.4), ang = s0 * 6.2832 * 2.4 + 0.9;
+            float s0 = frac(s.pos.x - K * t * 0.0035), r = 3.2 + 90 * exp(-s0 * 3.4), ang = -s0 * 6.2832 * 2.4 + 0.9;   // (winding in the way the disc turns: its angle grows as it falls)
             float wide = 0.25 + 4 * s0 * s0;                                                   // (thin at the star, spreading as it winds in)
             float3 p = float3(cos(ang) * r, s.pos.y * wide, sin(ang) * r) + float3(-sin(ang), 0, cos(ang)) * s.pos.z * wide * 2;
             float head = exp(-s0 * 14);                                                        // (the star's remains: a bright knot at the head)
             s.color.rgb = lerp(float3(1, 0.85, 0.55), float3(0.7, 0.8, 1), s0) * s.color.r * (0.35 + 1.4 * s0 + 2.5 * head);
             s.size = s.size * (0.6 + 2 * s0) + head * 1.5; s.pos = p;
         }
+        {
+            // seen past the hole: a ray from the far side bends round it (general relativity), so the disc's far side is lifted into an
+            // arch over and under the shadow, the lift growing with how far past the hole the point lies (sqrt(b^2 + 2 dz) for its
+            // offset b from the line of sight, in horizon radii); and what lies within the shadow's cone behind the hole is captured,
+            // never seen. The shadow's half-angle from where the camera stands: sin^2 = (27/4)(rs/r)^2 (1 - rs/r), the law for a
+            // static observer, 2.6 radii across from afar, half the sky at the photon sphere, nearly all of it at the horizon
+            float3 cam = webA.xyz; float rc = max(1.001, length(cam)); float3 toHole = -cam / rc;
+            float3 rel = s.pos - cam; float along = dot(rel, toHole); float dz = along - rc;
+            if (dz > 0)
+            {
+                float3 q = rel - toHole * along; float b = length(q);
+                float bn = sqrt(b * b + 2.0 * dz);
+                float3 axis = float3(0, 1, 0) - toHole * toHole.y + float3(1e-4, 0, 0);
+                float3 qdir = b > 0.02 ? q / b : normalize(axis);
+                s.pos = cam + toHole * along + qdir * bn; rel = s.pos - cam;
+                float s2 = 6.75 / (rc * rc) * max(0.0, 1.0 - 1.0 / rc); float th = rc >= 1.5 ? asin(sqrt(saturate(s2))) : 3.14159265 - asin(sqrt(saturate(s2)));
+                if (dot(normalize(rel), toHole) > cos(th)) holeHidden = true;
+            }
+        }
     }
-    bool o0 = false;
+    bool o0 = holeHidden;
     float2 c = corners[vid];
     float4 cc0 = mul(float4(s.pos, 1), viewProj);
     float size = max(s.size * misc.y, cc0.w * screen.z); // never smaller than screen.z of the view distance
@@ -165,7 +185,8 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         float r = length(d);
         if (r > 1e-6)
         {
-            float r2 = (r + sqrt(r * r + 4 * lensA.z * lensA.z)) * 0.5;
+            float tE = lensA.z * saturate((cc0.w - lensA.w) / lensA.w);          // (the ring is for light from well behind the hole: what sits at the hole itself is bent next to nothing by this; its own bending is worked above)
+            float r2 = (r + sqrt(r * r + 4 * tE * tE)) * 0.5;
             float2 nd = d / r * r2; nd.x /= lensB.x;
             o.pos.xy += (lensA.xy + nd - ndc) * o.pos.w;
         }

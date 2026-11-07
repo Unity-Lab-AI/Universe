@@ -34,6 +34,17 @@ namespace Universe.Render
         private static Guid FrameSize = new Guid("1652c33d-d6b2-4012-b834-72030849a37d"), FrameRate = new Guid("c459a2e8-3d2c-4e44-b132-fee5156c7bb0");
         private static Guid Aspect = new Guid("c6376a1e-8d0a-4027-be45-6d9a0ad39bb6"), Stride = new Guid("644b4e48-1e02-4516-b0eb-c01ca9d49ac6");
         private static Guid HardwareOk = new Guid("a634a91c-822b-41b9-a494-4de4643612b0");
+        // the encoder's own knobs (ICodecAPI, through the sink writer): rate control by quality, so bits go only where the picture has
+        // detail (black space costs nothing, a star field what it needs), never a fixed flood of them a second
+        private static Guid IidCodecApi = new Guid("901db4c7-31ce-41a2-85dc-8fa0bf41b8da"), RateMode = new Guid("1c0608e9-370c-4710-8a58-cb6181c42423"), QualityKnob = new Guid("fcbf57a3-7ea5-4bf1-a7a0-ac4ad1f8e8d2");
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int GetServiceFn(IntPtr self, uint stream, ref Guid service, ref Guid riid, out IntPtr ppv);   // IMFSinkWriter 12
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int SetValueFn(IntPtr self, ref Guid api, IntPtr variant);                               // ICodecAPI 9
+        private static void SetKnob(IntPtr codec, Guid api, uint value)
+        {
+            IntPtr v = Marshal.AllocHGlobal(24);
+            try { for (int i = 0; i < 24; i++) Marshal.WriteByte(v, i, 0); Marshal.WriteInt16(v, 0, 19); Marshal.WriteInt32(v, 8, (int)value); Com.Method<SetValueFn>(codec, 9)(codec, ref api, v); }   // (a VARIANT: VT_UI4 and the value)
+            finally { Marshal.FreeHGlobal(v); }
+        }
 
         private IntPtr _writer; private uint _stream; private readonly int _w, _h; private long _lastTicks = -1, _t0; private bool _started;
         /// <summary>Every how many pixels of the screen the clip keeps one: 2 on a screen wider than 1920 (a 4K screen films at
@@ -86,6 +97,18 @@ namespace Universe.Render
                 Check(Com.Method<SetInputFn>(_writer, 4)(_writer, _stream, inType, IntPtr.Zero), "SetInputMediaType");
             }
             finally { Com.Release(ref inType); }
+            try
+            {
+                // by quality, not by a fixed rate: 70 of 100 keeps the stars and the grain's face sharp and lets black space cost
+                // nothing, so a clip weighs what its pictures hold (a few tens of MB a minute at 1080p, not ninety); the average
+                // rate above stays as the ceiling. An encoder without the knob keeps the rate
+                IntPtr codec; Guid none = Guid.Empty, iid = IidCodecApi;
+                if (Com.Method<GetServiceFn>(_writer, 12)(_writer, _stream, ref none, ref iid, out codec) >= 0 && codec != IntPtr.Zero)
+                {
+                    try { SetKnob(codec, RateMode, 3); SetKnob(codec, QualityKnob, 70); } finally { Com.Release(ref codec); }
+                }
+            }
+            catch { }
             Check(Com.Method<NoArgFn>(_writer, 5)(_writer), "BeginWriting");
             _encoder = new System.Threading.Thread(() =>
             {

@@ -43,7 +43,7 @@ A **click**, the **wheel** or a **key** pauses the tour, and a note on screen sa
 | Control | What it does |
 |---|---|
 | **F12** | A screenshot (PNG) |
-| **F9** | Start or stop recording a clip (MP4 video, 30 frames a second, about 45 MB a minute at 1080p) |
+| **F9** | Start or stop recording a clip: one MP4 for as long as it records, 30 frames a second, packed by quality so black space costs nothing and the stars stay sharp (a few tens of MB a minute at 1080p) |
 
 Both go in the `captures` folder. On the landing page, tick **Film the tour** to record the whole tour. The **Clips** list plays what you have filmed, and **Open folder** shows where it is.
 

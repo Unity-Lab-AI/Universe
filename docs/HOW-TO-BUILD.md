@@ -36,7 +36,7 @@ What is scratch-made and what comes from Windows, layer by layer. Nothing is dow
 | **Generators** | `GalaxyGen`, `StarGen`, `SpaceGen`, `PlanetGen`, `PlanetTerrain`, `BodyGen`, `GrainField`, `ElementGen`, `IconFont` (the blocky letters on screen) | nothing |
 | **Simulation** | `PlanetCore`, `PlanetPlates`, `PlanetSurface`, `PlanetAir`, `PlanetWeather`, `PlanetImpacts` | nothing |
 | **Views** | `UniverseView` (the camera, the zoom, picking, the cards, time, the tour), `MatterView`, `ScaleHud`, `PreviewText` | nothing |
-| **Captures** | `PngWriter` (chunks, filters, checksums), `GifWriter` (palette and LZW), `Mp4Writer` (every other frame handed to a sink writer, 30 a second at about 6 megabits a second for 1080p) | Media Foundation for the H.264 inside an MP4; the framework's Deflate inside a PNG |
+| **Captures** | `PngWriter` (chunks, filters, checksums), `GifWriter` (palette and LZW), `Mp4Writer` (every other frame handed to a sink writer, 30 a second, the encoder set to rate control by quality through its own knobs, so bits go only where the picture has detail; 6 megabits a second the ceiling at 1080p) | Media Foundation for the H.264 inside an MP4; the framework's Deflate inside a PNG |
 | **Shipping** | `Setup.cs` (the installer wizard, carrying the payload inside itself), `MakeIcons` (the icons drawn by code) | Windows Forms for the wizard's controls |
 
 About 18,000 lines of C# and shader code in 61 files, and about 10,000 lines of templates in 30.

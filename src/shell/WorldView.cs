@@ -2161,14 +2161,14 @@ namespace DnaAnd.Shell
             var right = new Vec3(view.M11, view.M21, view.M31); var up = new Vec3(view.M12, view.M22, view.M32);
             _viewRight = right; _viewUp = up; _haveAxes = true;
             double share = NearShare(), within = InsideShare();
-            // inside a galaxy its own stars fill the sky and every other galaxy is faint behind them (from inside ours, Andromeda
+            // inside a galaxy its own stars fill the sky and the other galaxies show fainter behind them (as Andromeda
             // is barely seen with the eye): the others and the web's glow fade to a sixth as you go in
-            float others = (float)(1 - 0.85 * Math.Max(0, Math.Min(1, within)));
+            float others = (float)(1 - 0.45 * Math.Max(0, Math.Min(1, within)));   // (dimmed a little: the other galaxies still show in its sky)
             {
                 // the rest of the universe's galaxies, a glow along the cosmic web (remade without the near ones as you move far)
                 if (double.IsNaN(_glowAtX) || _glowReady != null || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
                 var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
-                float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);
+                float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade); webFade = 0.5f + 0.5f * webFade;   // (from deep inside a galaxy the others still show in its sky, at half)
                 webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
                 if (webFade > 0.01)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {

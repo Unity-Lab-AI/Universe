@@ -413,6 +413,7 @@ namespace DnaAnd
                 window.Input.EndFrame();
                 if (smokeMs >= 0 && clock.Total * 1000 >= smokeMs) { window.Close(); smokeMs = -1; }
             }
+            if (rec != null) { try { rec.Dispose(); WriteLog("clip saved · " + rec.Path); } catch { } rec = null; }   // a clip being filmed when the window closes is finished, so it plays
             if (deep != null) deep.Dispose();
             if (elements != null) elements.Dispose();
             if (universe != null) universe.Dispose();

@@ -3,13 +3,15 @@ namespace DnaAnd.Shell
 {
     internal static class PreviewText
     {
-        /// <summary>The program's name: Universe for the universe release, DNA-AND for the whole game.</summary>
-#if PREVIEW
+        /// <summary>The program's name: Universe for the Universe project's own release, DNA-AND for DNA-AND (its universe
+        /// preview included), never one in the other's place.</summary>
+#if UNIVERSE
         public const string AppName = "Universe";
+        public const string Version = "0.1.0";
 #else
         public const string AppName = "DNA-AND";
-#endif
         public const string Version = "0.1 (universe preview)";
+#endif
 
         public const string About =
             AppName + " " + Version + "\n\n" +

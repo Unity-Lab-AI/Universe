@@ -1003,6 +1003,7 @@ namespace DnaAnd.Shell
                 double want = Math.Max(0.5, Math.Min(1, Window.Fps / 40.0));
                 if (_ground != null && _ground.Backlog > 80) want *= Math.Max(0.6, 80.0 / _ground.Backlog);
                 if (WebNotMade) want = 0.05;                                            // out among the web before its light is made: wait for it
+                if (_matterScale > 0 || _spaceScale > 0) want = 1;                     // in the matter nothing is waited for (the ground's building behind you never slows it)
                 _tourPace += (want - _tourPace) * 0.05; return _tourPace;
             }
         }

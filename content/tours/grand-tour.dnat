@@ -240,7 +240,7 @@ caption: And down: there is as much below us as above
 
 @stop to-grains
 do: zoom
-rate: 0.25
+rate: 0.4
 until-km: 2e-6
 through: yes
 caption: The ground breaks into stones, then grains of sand
@@ -252,7 +252,7 @@ caption: One grain of sand
 
 @stop to-face
 do: zoom
-rate: 0.25
+rate: 0.45
 until-km: 2e-9
 through: yes
 caption: Onto one grain, a crystal of one mineral
@@ -264,7 +264,7 @@ caption: A spot on its face
 
 @stop to-crystal
 do: zoom
-rate: 0.25
+rate: 0.5
 until-km: 6e-12
 caption: Down to its atoms, in a pattern repeated billions of times
 

@@ -380,19 +380,25 @@ namespace Universe.Shell
         /// <summary>Inside the horizon, the fall's one reference: the gravity well itself, in the world. The sheet of space round the
         /// hole as a square grid (the rubber sheet), bent into Flamm's paraboloid outside the horizon (its depth 2 root(rs (r - rs)),
         /// the exact shape of a still slice of Schwarzschild space, flat far out, vertical at the horizon's throat) and, inside the
-        /// throat, into the falling observer's own slice, a cone (its depth growing with the way in) down to the point, the singularity.
+        /// throat, into the surface the same equation gives there with its sign flipped (space and time swapped: a timelike depth),
+        /// 2 root(rs (rs - r)), from the throat down to the point, the singularity, two radii below it.
         /// You are on the axis at your depth, the walls round you, every line of the grid running down to the point ahead; the axis is
         /// the way you came in, fixed in space, so turning the view turns round the well. (A reference, not light: never bent by the
-        /// hole's lens.) Sources: Flamm 1916; the Gullstrand-Painleve slice for the infaller, a cone inside the horizon.</summary>
+        /// hole's lens.) Flamm 1916, from the Schwarzschild metric; the free-faller's own slices are flat, so this is the still slice's shape.</summary>
         private void DrawFallGrid(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
             // where you are down the well: the fall runs from the horizon (r = rs) to the quarks' size, 25 tenfolds; the cone inside
             // the throat narrows to the point over that run
-            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), t = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / 25));
-            const double ConeDepth = 10; double rhoCam = 1 - t, zCam = 2 + ConeDepth * t;
+            // the surface, from the metric itself (rs = 1): outside the horizon Flamm's, its height above the throat 2 root(r - 1)
+            // (z'^2 = g_rr - 1 = 1/(r - 1)), a bowl opening upward, flat far out, vertical at the throat; inside the horizon the same
+            // equation with its sign flipped (there g_rr is negative: space and time have swapped roles, and the depth is timelike),
+            // 2 root(1 - r), running from the throat down to the point at r = 0, two radii below it. Down is toward the point: the
+            // far sheet is above and behind you, the throat's ring at depth 0, the point at depth 2. You are at your real r
+            double rhoCam = Math.Max(0, Math.Min(1, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs)));
+            Func<double, double> depth = rho => rho >= 1 ? -2 * Math.Sqrt(rho - 1) : 2 * Math.Sqrt(1 - rho);
+            double zCam = depth(rhoCam);
             double S = Units.Km(_spaceScale) * 1.5 / Math.Max(0.03, rhoCam);                 // the well's unit (one horizon radius) in the world: the wall about a view and a half from you
-            Func<double, double> depth = rho => rho >= 1 ? 2 * Math.Sqrt(rho - 1) : 2 + ConeDepth * (1 - rho);
             var pts = new List<StarVertex>();
             Action<double, double, float, float, float, float> put = (u, v, br, cr, cg, cb) =>
             {
@@ -407,7 +413,7 @@ namespace Universe.Shell
                 for (int q = 0; q <= 640; q++)
                 {
                     double c1 = -8 + q * 16.0 / 640; double rho = Math.Sqrt(c0 * c0 + c1 * c1);
-                    float br = (float)(axisLine ? 0.6 : 0.4) * (float)Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08);
+                    float br = (float)(axisLine ? 0.6 : 0.4) * (float)Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08) * (rho < 1 ? 1.3f : 1f);
                     put(c0, c1, br, 0.35f, 0.9f, 0.6f); put(c1, c0, br, 0.35f, 0.9f, 0.6f);
                 }
             }

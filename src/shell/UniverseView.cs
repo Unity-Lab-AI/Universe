@@ -1315,7 +1315,10 @@ namespace Universe.Shell
                         // frame for up to twenty seconds, never going on with nothing chosen (every later stop would be lost)
                         int k0 = _tKind, i0 = _tIndex, p0 = _matter.PickCount; double x0 = _tx; TourPick(st.Target);
                         bool got = st.Target == "none" || (st.Target == "planet" && _tKind == 2 && _system != null) || (_tKind >= 0 && (_tKind != k0 || _tIndex != i0 || _tx != x0)) || _matter.PickCount != p0;
-                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 20)) done = true;   // (a system with none of them: on at once)
+                        // while it looks (what it wants still being made round you, or none there at all) it never sits still: it looks
+                        // round slowly, eased in, and goes on after a few seconds at most
+                        if (!got) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);
+                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5)) done = true;   // (a system with none of them: on at once)
                     }
                     break;
                 default: done = true; break;

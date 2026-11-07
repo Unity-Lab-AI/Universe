@@ -396,15 +396,18 @@ namespace Universe.Shell
             // 2 root(1 - r), running from the throat down to the point at r = 0, two radii below it. Down is toward the point: the
             // far sheet is above and behind you, the throat's ring at depth 0, the point at depth 2. You are at your real r
             double rhoCam = Math.Max(0, Math.Min(1, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs)));
-            Func<double, double> depth = rho => rho >= 1 ? -2 * Math.Sqrt(rho - 1) : 2 * Math.Sqrt(1 - rho);
-            double zCam = depth(rhoCam);
-            double S = 1.5 / Math.Max(1e-30, rhoCam);                                       // the well's unit (one horizon radius) against your own scale: the wall round you about a view and a half off, at every depth of the fall (no clamp: the rings are always round you)
+            double S = 1.5 / Math.Max(1e-30, rhoCam);                                       // the well's unit (one horizon radius) against your own scale: the wall round you about a view and a half off, at every depth of the fall
+            // down the throat the radius is drawn on a log scale, each tenfold of it two views of length ahead: the fall's twenty-five
+            // tenfolds fit, and the well is a long funnel narrowing to the point ahead, which recedes as you fall until the last scale;
+            // above the throat the sheet keeps Flamm's own height (2 root(r - 1)), flat far out and vertical at the horizon's ring
+            const double PerTenfold = 2.0; double lgCam = Math.Log10(Math.Max(1e-300, rhoCam));
+            Func<double, double> along = rho => rho >= 1 ? lgCam * PerTenfold - 2 * Math.Sqrt(rho - 1) * S : (lgCam - Math.Log10(Math.Max(1e-300, rho))) * PerTenfold;   // how far ahead of you (down) a ring of that radius lies; negative: above
             var pts = new List<StarVertex>();
             Action<double, double, float, float, float, float> put = (u, v, br, cr, cg, cb) =>
             {
-                double rho = Math.Sqrt(u * u + v * v), z = depth(rho);
-                var p = e1 * (float)(u * S) + e2 * (float)(v * S) + ax * (float)((z - zCam) * S);
-                pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(S * 0.012), R = cr * br, G = cg * br, B = cb * br, A = 1 });
+                double rho = Math.Sqrt(u * u + v * v);
+                var p = e1 * (float)(u * S) + e2 * (float)(v * S) + ax * (float)along(rho);
+                pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0, R = cr * br, G = cg * br, B = cb * br, A = 1 });   // (no size of its own: a point of the line, the same few pixels at any distance)
             };
             // the sheet's square grid, every half radius out to eight, each line sampled finely (and finer through the throat and the cone, where it plunges)
             for (int li = -16; li <= 16; li++)
@@ -420,7 +423,7 @@ namespace Universe.Shell
             // inside the throat the surface runs on down twenty-five tenfolds to the point: rings of the grid at every tenfold of the radius
             // from a hundredth of where you are out to the throat (so the structure is round you at every scale of the fall), and spokes
             // down between them, every one running to the point
-            for (int k = -12; k <= 60; k++)
+            for (int k = -12; k <= 21; k++)
             {
                 double rho = rhoCam * Math.Pow(10, k / 6.0); if (rho >= 1) break; if (rho < 1e-30) continue;
                 float br = (float)(0.55 * Math.Max(0.3, 1 - Math.Abs(k) * 0.04));
@@ -428,11 +431,11 @@ namespace Universe.Shell
             }
             for (int sp = 0; sp < 24; sp++)
             {
-                double a = sp * Math.PI * 2 / 24, lo = Math.Max(rhoCam * 0.01, 1e-30);
+                double a = sp * Math.PI * 2 / 24, lo = Math.Max(rhoCam * 0.000316, 1e-30);
                 for (int q = 0; q <= 200; q++) { double rho = lo * Math.Pow(1 / lo, q / 200.0); if (rho > 1) break; put(Math.Cos(a) * rho, Math.Sin(a) * rho, 0.3f, 0.35f, 0.9f, 0.6f); }
             }
             for (int q = 0; q < 240; q++) { double a = q * Math.PI * 2 / 240; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); }   // the throat: the horizon's ring, bright
-            { var p = ax * (float)((depth(0) - zCam) * S); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(S * 0.06), R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all runs down to
+            { var p = ax * (float)(3.5 * PerTenfold); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.04f, R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all runs down to, at the funnel's end ahead
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
             float lz = _lens[2]; _lens[2] = 0;                                                  // (a reference, not light: never bent by the hole's lens)
@@ -462,16 +465,23 @@ namespace Universe.Shell
         {
             var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             ex.KindName = made.Name; ex.Mix = made.Get("mix", null); if (ex.Mix != null && ex.Mix.Length == 0) ex.Mix = null;
-            string says = made.Get("says", ""); ex.Lines.Add(made.Name + (says.Length > 0 ? ": " + says : ""));
-            bool first = true; foreach (var part in made.Get("makeup", "").Split(';')) { string t = part.Trim(); if (t.Length == 0) continue; ex.Lines.Add((first ? "made of: " : "") + t); first = false; }
+            ex.Lines.Add(made.Name);   // (its kind; its words are in the content and the docs: the card stays short)
+            { var parts = made.Get("makeup", "").Split(';'); if (parts.Length > 0 && parts[0].Trim().Length > 0) ex.Lines.Add("made of: " + Short(parts[0].Trim(), 70)); }   // (the first clause of its make-up: the minerals and elements below say the rest)
             if (ex.Mix != null) foreach (var ln in _matter.MakeUpWords(ex.Mix)) ex.Lines.Add(ln);
             double dens; if (double.TryParse(made.Get("density", ""), fs, ci, out dens) && dens > 0)
             {
                 ex.Density = dens; double rM = ex.R / Units.Km(1) * 1000, kg = dens * 1000 * 4.0 / 3 * Math.PI * rM * rM * rM; ex.Mass = kg / 1.989e30;
-                ex.Lines.Add("density: " + dens.ToString("0.#") + " g/cc (" + (dens < 1 ? "it would float on water" : dens < 2 ? "light: loose rubble and ice" : dens < 4 ? "stone" : "metal") + "); mass: " + kg.ToString("0.##E+0") + " kg; width " + ScaleHud.Words(ex.R / Units.Km(1) * 2));
+                ex.Lines.Add("density " + dens.ToString("0.#") + " g/cc, mass " + kg.ToString("0.#E+0") + " kg, " + ScaleHud.Words(ex.R / Units.Km(1) * 2) + " across");
             }
-            double alb; if (double.TryParse(made.Get("albedo", ""), fs, ci, out alb)) { ex.Albedo = alb; ex.Lines.Add("albedo " + alb.ToString("0.##") + ": it reflects " + (alb * 100).ToString("0") + "% of the light that falls on it" + (alb < 0.06 ? ", darker than coal" : alb > 0.3 ? ", bright" : "")); }
-            if (made.Props.ContainsKey("linked-meteorite")) ex.Lines.Add("the meteorites that fall from its kind: " + made.Get("linked-meteorite", ""));
+            double alb; if (double.TryParse(made.Get("albedo", ""), fs, ci, out alb)) { ex.Albedo = alb; ex.Lines.Add("albedo " + alb.ToString("0.##") + ": reflects " + (alb * 100).ToString("0") + "% of the light" + (alb < 0.06 ? ", darker than coal" : "")); }
+            if (made.Props.ContainsKey("linked-meteorite")) ex.Lines.Add("its meteorites: " + made.Get("linked-meteorite", ""));
+        }
+        // a card's line cut short at a clause (a comma, a colon, a semicolon) before the limit: the whole sentence lives in the content
+        private static string Short(string t, int limit)
+        {
+            if (t == null || t.Length <= limit) return t; int cut = -1;
+            foreach (var sep in new[] { "; ", ": ", ", " }) { int k = t.LastIndexOf(sep, limit); if (k > cut) cut = k; }
+            return cut > limit / 2 ? t.Substring(0, cut) : t.Substring(0, limit).TrimEnd();
         }
         private static string Secs(double t)
         {
@@ -799,23 +809,19 @@ namespace Universe.Shell
             {
                 // a remnant, mid-process: the shell by its age, what is at its middle, what became of the star and its worlds, what comes next
                 L.Add(sn.K.Name + ", " + Years(years) + " ago"); L.Add("id: SN-" + ((long)(sn.T * 1000) & 0xFFFFFF).ToString("X6") + " in " + sn.G.Name);
-                L.Add(sn.K.Says);
                 L.Add("its shell: " + (SnShellLy(sn, years) * 2).ToString("0.#") + " light-years across, moving at " + SnShellKmS(sn, years).ToString("N0") + " km/s" + (years < _snFreeYears ? " (flying free: it has not yet swept up its own mass of gas)" : " (slowed as it sweeps up the gas between the stars, its radius growing as the two-fifths power of its age)") + (years < 5000 ? "; hot, glowing in hydrogen and oxygen" : "; cooling, faint, blue-green"));
                 L.Add(sn.K.Leaves == "nothing" ? "at its middle: nothing; the white dwarf was blown apart entirely" : sn.K.Leaves == "magnetar" ? "at its middle: a magnetar, born in it, lighting the blast from inside as it spins down" : sn.Mass < _snNsMax ? "at its middle: a neutron star, born in it, spinning about " + Math.Min(700, 30 * Math.Sqrt(970 / Math.Max(1, years))).ToString("0") + " times a second; among the bodies round you, picked like any" : "at its middle: a black hole, born in it; among the bodies round you, picked like any");
                 L.Add("the star that died: " + (sn.Ia ? "a white dwarf of 1.4 solar masses" : "a star of " + sn.Mass.ToString("0") + " solar masses") + ", gone; its worlds with it: the inner ones vaporised, the outer flung loose");
-                L.Add("the shell merges with the gas between the stars in about " + Years(Math.Max(0, _snRemnantYears - years)) + "; in a few million years that gas, cooled, condenses into new stars and worlds");
                 L.Add("distance: " + Units.Describe(dist));
                 return;
             }
             string stage = days < sn.K.Rise ? "still rising to its peak" : days < sn.K.Rise + sn.K.Plateau ? "on its plateau" : days < sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? "fading, halving every " + sn.K.Halving.ToString("0") + " days" : "on its long radioactive tail (cobalt-56, halving every 77 days)";
             L.Add(sn.K.Name); L.Add("id: SN-" + ((long)(sn.T * 1000) & 0xFFFFFF).ToString("X6") + " in " + sn.G.Name);
-            L.Add(sn.K.Says);
             L.Add(sn.Ia ? "a white dwarf of 1.4 solar masses, blown apart entirely" : "a star of " + sn.Mass.ToString("0") + " solar masses, its fuel spent");
             L.Add(days.ToString("0") + " days since its blast, " + stage + "; shining now at " + (L0 >= 1e6 ? (L0 / 1e6).ToString("0.#") + " million" : L0.ToString("N0")) + " suns' worth (its peak " + (peak / 1e6).ToString("0") + " million: " + (peak >= 2e9 ? "brighter than most galaxies" : "a hundred million stars' light") + ")");
             L.Add("its matter flung out at " + v.ToString("N0") + " km/s (" + (v / 299792.458 * 100).ToString("0.#") + "% of light's speed, the outermost up to a tenth of it): its edge now " + ScaleHud.Words(SnEjectaKm(sn, Math.Max(1, days)) * 2) + " across");
             { double rp = SnPhotKm(sn, days), tk = SnHeatK(sn, days); L.Add(rp > 1e6 ? "its glowing face: " + ScaleHud.Words(rp * 2) + " across, " + tk.ToString("N0") + " K (" + (tk > 9000 ? "blue-white" : tk > 6500 ? "white" : tk > 5000 ? "yellow-white" : "orange") + ")" + (days > sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? ", drawing back in as the fireball thins to a cloud" : "") : "the fireball has thinned to a cloud: its remnant shows at the middle"); }
-            L.Add("its own worlds: the inner ones vaporised in the blast, the outer flung loose as the star's mass left; its neighbours within a few light-years scorched, their air stripped on the side that faced it");
-            L.Add("in a few million years this gas, cooled and mixed into the clouds between the stars, condenses into new stars and worlds");
+            L.Add("its worlds: the inner ones vaporised, the outer flung loose; its neighbours scorched");
             L.Add(sn.K.Leaves == "nothing" ? "what it leaves: nothing but its shell, seen for a hundred thousand years as it sweeps up the gas between the stars" : sn.K.Leaves == "magnetar" ? "what it leaves: a magnetar at its middle, a neutron star with a field a thousand times a pulsar's, spinning down and lighting the blast from inside; its shell seen for a hundred thousand years" : sn.Mass < _snNsMax ? "what it leaves: a neutron star at its middle, revealed as the ejecta thin, spinning tens of times a second; its shell seen for a hundred thousand years" : "what it leaves: a black hole at its middle, revealed as the ejecta thin; its shell seen for a hundred thousand years");
             L.Add("this galaxy: about " + (SnRate(sn.G) * 100).ToString("0.#") + " supernovae a century");
             L.Add("distance: " + Units.Describe(dist));
@@ -1115,7 +1121,7 @@ namespace Universe.Shell
                 long hid = ((long)(x / Units.Km(1e6)) * 73856093L ^ (long)(y / Units.Km(1e6)) * 19349663L ^ (long)(z / Units.Km(1e6)) * 83492791L) & 0xFFFFFF;
                 ex.Lines.Add("id: " + kid + "-" + hid.ToString("X6"));
             }
-            if (pl.Says.Length > 0) ex.Lines.Add(pl.Says);
+            if (pl.Says.Length > 0) ex.Lines.Add(Short(pl.Says, 70));                        // (a short line: the card is a card, not a page)
             if (pl.Shape == "comet")
             {
                 // its coma and tail, each comet its own size in its kind's ranges (from where it is): real comets' comas a hundred
@@ -1178,9 +1184,7 @@ namespace Universe.Shell
                     ex.Tilt = (float)(u3 * Math.PI); ex.Turn = (float)(u2 * 37 % (Math.PI * 2));
                     ex.Lines.Add(ex.Feeding == 0 ? "quiet: not feeding, only its shadow and the light it bends" : ex.Feeding == 1 ? "feeding: a disc of gas spiralling in, heated to millions of degrees" : "feeding, and firing jets from its poles at nearly the speed of light");
                     if (ex.Eating) ex.Lines.Add(ex.EatN > 1 ? "stars being eaten now: " + ex.EatN + ", each stretched along its orbit into a stream of gas winding into the disc" : "a star being eaten now: stretched along its orbit into a stream of gas winding into the disc");
-                    ex.Lines.Add("escape speed: exactly light's at the horizon; inside it more, so nothing gets out; outside it less");
-                    { double gm = Physics.GmSun * ex.Mass, rsM = rs * 1000; ex.Lines.Add("from the horizon to the middle, falling, on your own clock: " + Secs(2.0 / 3 * Math.Pow(rsM, 1.5) / Math.Sqrt(2 * gm))); }
-                    ex.Lines.Add("its gravity well (the graph when it is picked): space's dip round it, a sharp step at the horizon down to a point");
+                    { double gm = Physics.GmSun * ex.Mass, rsM = rs * 1000; ex.Lines.Add("escape speed: light's at the horizon; the fall from there to the middle: " + Secs(2.0 / 3 * Math.Pow(rsM, 1.5) / Math.Sqrt(2 * gm)) + " of your own time"); }
                 }
                 if (e.Props.ContainsKey("made-by")) ex.Lines.Add("made by: " + e.Get("made-by", ""));
                 if (e.Props.ContainsKey("example")) ex.Lines.Add("for example: " + e.Get("example", ""));
@@ -3646,7 +3650,7 @@ namespace Universe.Shell
                 }
                 _gpu.ClearDepth();                                                     // the cards and the frames a second on top of the bars
                 // what is in view and in focus, written as you go, just below the top bar
-                if (_hud.Visible && (_matterScale > 0 || _spaceScale > 0)) _hud.DrawCard(_meshes, _matter.Card(), 24 * Math.Max(1, h / 1080.0), h * 0.11, w, h);
+                // (the matter's card is drawn once, at the left edge, on the tour as off it: a second drawing here drew over the first, a garble)
             }
             else if (_pausedTour != null)
             {
@@ -3837,7 +3841,7 @@ namespace Universe.Shell
                 {
                     // what it is made of, by count of atoms, its own share of the heavier elements (content/stars.unt makeup)
                     var ke = StarKindEntry(_tName.StartsWith("a ") ? _tName.Substring(2) : _tName);
-                    if (ke != null) { double metals; string mk = StarMakeUp(ke, _tx, _ty, _tz, out metals); if (mk != null) { L.Add("made of (by atoms): " + mk); if (ke.Get("makeup", "").StartsWith("hydrogen")) { L.Add("everything past helium: " + metals.ToString("0.##") + " times its kind's usual share"); L.Add("its colour and heat come from its mass, not its make-up: the same gas makes a red dwarf and a blue giant; the heavier the star, the harder its core is squeezed and the hotter it burns"); } } if (ke.Props.ContainsKey("makeup-note")) L.Add(ke.Get("makeup-note", "")); }
+                    if (ke != null) { double metals; string mk = StarMakeUp(ke, _tx, _ty, _tz, out metals); if (mk != null) { var mp = mk.Split(','); L.Add("made of (by atoms): " + string.Join(",", mp, 0, Math.Min(6, mp.Length)) + (mp.Length > 6 ? ", and " + (mp.Length - 6) + " more" : "")); if (ke.Get("makeup", "").StartsWith("hydrogen")) L.Add("past helium " + metals.ToString("0.##") + " times its kind's share; its colour and heat from its mass, not its make-up"); } if (ke.Props.ContainsKey("makeup-note")) L.Add(ke.Get("makeup-note", "")); }
                 }
                 if (open)
                 {

@@ -195,10 +195,11 @@ namespace Universe.Shell
             var trs = new List<KeyValuePair<string, double>>(tr); trs.Sort((a, b) => b.Value.CompareTo(a.Value));
             Func<string, string> name = sym => { var e = El(sym); return e != null ? e.Name.ToLowerInvariant() : sym; };
             Func<double, string> share = v => v >= 0.0001 ? (v * 100).ToString(v >= 0.01 ? "0.#" : "0.##") + "%" : v >= 1e-7 ? (v * 1e6).ToString("0.#") + " ppm" : (v * 1e9).ToString("0.##") + " ppb";
-            var ew = new List<string>(); foreach (var e in els) ew.Add(name(e.Key) + " " + share(e.Value));
-            var tw = new List<string>(); int shown = Math.Min(trs.Count, 22); for (int q = 0; q < shown; q++) tw.Add(name(trs[q].Key) + " " + share(trs[q].Value));
-            var L = new List<string> { "minerals: " + string.Join(", ", mw.ToArray()), "elements (by atoms): " + string.Join(", ", ew.ToArray()) };
-            if (tw.Count > 0) L.Add("traces: " + string.Join(", ", tw.ToArray()) + (trs.Count > shown ? ", and " + (trs.Count - shown) + " more, down to parts per billion" : ""));
+            var ew = new List<string>(); for (int q = 0; q < Math.Min(6, els.Count); q++) ew.Add(name(els[q].Key) + " " + share(els[q].Value)); if (els.Count > 6) ew.Add("and " + (els.Count - 6) + " more");
+            var tw = new List<string>(); int shown = Math.Min(trs.Count, 5); for (int q = 0; q < shown; q++) tw.Add(name(trs[q].Key) + " " + share(trs[q].Value));
+            if (mw.Count > 5) { int more = mw.Count - 5; mw.RemoveRange(5, more); mw.Add("and " + more + " more"); }
+            var L = new List<string> { "minerals: " + string.Join(", ", mw.ToArray()), "elements: " + string.Join(", ", ew.ToArray()) };
+            if (tw.Count > 0) L.Add("traces: " + string.Join(", ", tw.ToArray()) + (trs.Count > shown ? ", and " + (trs.Count - shown) + " more" : ""));
             return L.ToArray();
         }
         public void SetAir(string air, ulong spot)
@@ -1976,14 +1977,11 @@ namespace Universe.Shell
                 double r = _scale * 0.6, rM = r * 1000, gm = Universe.Core.Physics.GmSun * _holeMass; bool at = _scale <= Nucleon * 8;
                 if (!at)
                 {
-                    L.Add("inside the event horizon");
-                    L.Add("no light from here gets out: the speed to escape is " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.##E+0") + " times light's (at the horizon it was exactly light's; outside, less)");
-                    L.Add("falling: " + ScaleHud.Words(r) + " from the middle; the horizon " + ScaleHud.Words(_holeRs * 2) + " across");
-                    L.Add("your own time left to the middle: " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " (from the horizon: " + Secs(2.0 / 3 * Math.Pow(_holeRs * 1000, 1.5) / Math.Sqrt(2 * gm)) + ")");
-                    L.Add("your own time since the horizon: " + Secs(_fallTau) + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + " than it runs)" : " (shown as it runs)"));
-                    L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light by your own clock (the fall from rest far away: root(rs over r) of light's speed; light's own at the horizon)");
-                    double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the stretch head to foot (the tide): " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.##E+0")) + " m/s2" + (tide > 100 ? ": torn apart" : tide > 1 ? ": felt" : ""));
-                    L.Add("a picked quark, an atom: nothing to pick here; the middle is " + ScaleHud.Words(r) + " down");
+                    L.Add("inside the event horizon: no light out");
+                    L.Add(ScaleHud.Words(r) + " from the middle (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
+                    L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
+                    L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
+                    { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }
                 }
                 else
                 {

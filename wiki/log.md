@@ -42,3 +42,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the quarks tight from afar): DNA-AND DESIGN 623.
 - 2026-11-07 (the singularity an uncountable mass, the nucleon's quarks never pulled apart): DNA-AND DESIGN 624.
 - 2026-11-07 (the singularity five hundred glows): DNA-AND DESIGN 625.
+- 2026-11-07 (the climb out as fast as the fall): DNA-AND DESIGN 626.

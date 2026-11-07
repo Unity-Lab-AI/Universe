@@ -118,6 +118,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The singularity five hundred overlapping glows, not six thousand:** (built: DNA-AND DESIGN 625; waits on the test) "lets not have 6 thousand glow we can handle this without frying my gpu"
 
+- [~] **The climb out of the hole as fast as the fall, about half a minute each way:** (built: DNA-AND DESIGN 626; waits on the test) "okay the fall in was much faster than the clibe out they need to be similar and not minutes and minutes of traveling up the tunnel used speed up"
+
 ---
 
 ## Pending

@@ -139,7 +139,7 @@ caption: The singularity: its whole mass in a point with no size at all, as far 
 
 @stop out-of-hole
 do: zoom
-rate: -2
+rate: -2.2
 until-km: 1e40
 out: yes
 caption: Back out past the horizon (the one way nothing real can go)

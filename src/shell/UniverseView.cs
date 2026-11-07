@@ -2041,6 +2041,11 @@ namespace Universe.Shell
                         // its real end, and it is eased to, as every end is (it had run at full rate until the pop, and stopped dead)
                         if (st.Out && want >= 1e30) want = _spaceScale > 0 ? _spaceTop * 0.6 : _matterScale > 0 ? _matterTop * 0.6 : want;
                         double left = Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, want)));
+                        // in a black hole the way is the fall's own measure (forty tenfolds of the way in, then the zoom): what is left
+                        // of a climb out is the share of the way still to climb and the zoom back out, not the view's scale against the
+                        // top (the scale sits just under the top the whole way up, so the climb had crawled at a sixth of its rate for
+                        // minutes while the fall ran at full rate)
+                        if (_spaceScale > 0 && _matter.SpaceKind == 12 && _fallHole != null) left = (sign < 0 ? Math.Max(0, _fallShare) : Math.Max(0, 1 - _fallShare)) * MatterView.FallTenfolds + Math.Abs(Math.Log10(Math.Max(1e-40, _spaceScale) / Math.Max(1e-40, sign < 0 ? _fallScale0 : d)));
                         // one movement, however many stops it is written as: a zoom followed by another the same way runs straight on
                         // (no easing out at the join, no fresh start after it); the last of them slows to a crawl over its final tenfold
                         // and a half, a twentieth of its rate at the end, and ends at that crawl, as every move does (it had dropped

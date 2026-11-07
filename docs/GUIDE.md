@@ -330,7 +330,7 @@ caption: Across the universe, straight to one far away
 | `zoom` | A straight push in or pull out, `until-km` |
 | `orbit`, `look`, `arc`, `fly`, `glide` | Circle, look round, dolly while circling, fly forward, skim over the land |
 
-Every stop has a `caption`, which is shown on screen.
+Every stop has a `caption`, which is shown on screen. A caption of `{sky}` is written on the spot from what is really up from where you stand: its star only if it is in view, its moons, the other worlds, the galaxy's stars by night or the day sky by day.
 
 ---
 

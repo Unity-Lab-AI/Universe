@@ -1177,7 +1177,30 @@ namespace Universe.Shell
         // the tour is looking round (up at the sky, round the view, gliding): the view is its own, never turned back to the pick
         private bool TourLooking { get { if (_tour == null || _tourAt >= _tour.Count) return false; var d = _tour[_tourAt].Do; return d == "shot" || (_ground != null && (d == "look" || d == "glide" || (d == "orbit" && _tKind != 2))); } }
         // the caption: the stop's own (a pick, over in a moment, shows the next stop's, so every caption stays on through its flight)
-        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        // what is really up in the sky from where you stand (for a caption written as "{sky}"): the star only if it is above the
+        // horizon and in view, the other worlds and this world's moons only if they are, the galaxy's stars by night, the day sky by day
+        private string SkyWords()
+        {
+            if (_ground == null || _planet < 0 || _system == null) return "the sky";
+            double cx, cy, cz; CamFromPlanet(out cx, out cy, out cz); double cl = Math.Sqrt(cx * cx + cy * cy + cz * cz); if (cl <= 0) return "the sky";
+            double ux = cx / cl, uy = cy / cl, uz = cz / cl;
+            Func<double, double, double, bool> seen = (dx, dy, dz) => { double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l <= 0 || (dx * ux + dy * uy + dz * uz) / l < 0.02) return false; double sx, sy; return ToScreen(dx, dy, dz, out sx, out sy) && sx >= 0 && sx <= _lastW && sy >= 0 && sy <= _lastH; };
+            bool star = seen(-_ox, -_oy, -_oz), day = (-_ox * ux - _oy * uy - _oz * uz) > 0;
+            int worlds = 0, moons = 0;
+            for (int i = 0; i < _system.Bodies.Count && i + 1 < _bodyCount; i++)
+            {
+                if (i == _planet) continue; var b = _system.Bodies[i];
+                if (!seen(_bodyVerts[i + 1].X, _bodyVerts[i + 1].Y, _bodyVerts[i + 1].Z)) continue;   // (from the camera: the system has placed them)
+                if (b.Parent == _planet) moons++; else if (b.Parent < 0) worlds++;
+            }
+            var parts = new List<string>();
+            if (star) parts.Add("its star");
+            if (moons > 0) parts.Add(moons == 1 ? "its moon" : "its " + moons + " moons");
+            if (worlds > 0) parts.Add(worlds == 1 ? "another of its star's worlds" : worlds + " of its star's other worlds");
+            parts.Add(day ? "the day sky, its star's light through the air" : "the galaxy's stars beyond");
+            string w = string.Join(", ", parts.ToArray()); return char.ToUpperInvariant(w[0]) + w.Substring(1);
+        }
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {

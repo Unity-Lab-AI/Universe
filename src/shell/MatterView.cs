@@ -174,15 +174,16 @@ namespace Universe.Shell
             float[][] colour = { new[] { 1f, 0.3f, 0.3f }, new[] { 0.3f, 1f, 0.35f }, new[] { 0.4f, 0.5f, 1f } };
             // the singularity: quarks beyond counting crammed into no space, one seething mass of colour charge a third of the view
             // wide at every size on down, never dots to be counted (twelve hundred separate glows had stood for it, each one countable):
-            // thousands of tiny overlapping glows, densest at the middle, drawn afresh at every scale so the mass is the same however
-            // far in you go, and a white heart where the density runs away
+            // a few hundred soft glows wide enough to overlap into one mass (never thousands: the card is not to be fried for it),
+            // densest at the middle, drawn afresh at every scale so the mass is the same however far in you go, and a white heart
+            // where the density runs away
             double R = s * 0.32;
-            for (int i = 0; i < 6000; i++)
+            for (int i = 0; i < 500; i++)
             {
                 double u = Hash(i, 1, 3, _seed), v = Hash(i, 2, 3, _seed) * 2 - 1, a = Hash(i, 3, 3, _seed) * Math.PI * 2 + time * (0.02 + 0.01 * (i % 7)), r = R * Math.Pow(u, 0.5), sq = Math.Sqrt(Math.Max(0, 1 - v * v));
                 double x = r * sq * Math.Cos(a), y = r * v, z = r * sq * Math.Sin(a);
                 var c = colour[i % 3]; float f = (float)(0.35 + 0.25 * Math.Sin(time * 0.6 + i)) * (float)(0.5 + 0.5 * (1 - u));
-                Add(glow, x, y, z, s * 0.012, c[0] * f, c[1] * f, c[2] * f, s);
+                Add(glow, x, y, z, s * 0.045, c[0] * f * 0.6f, c[1] * f * 0.6f, c[2] * f * 0.6f, s);
                 if (i < 240) { int nb = _bodies.Count; AddBody(4, i, i % 2, x, y, z, Math.Max(s * 0.01, Nucleon * 0.05), s); if (_bodies.Count > nb) { _bodies[nb].Sym = i % 2 == 1 ? "up" : "down"; _bodies[nb].Key = 1; } }
             }
             Add(glow, 0, 0, 0, s * 0.10, 1f, 0.98f, 0.95f, s); Add(glow, 0, 0, 0, s * 0.2, 0.6f, 0.55f, 0.6f, s);

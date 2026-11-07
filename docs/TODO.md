@@ -116,6 +116,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The singularity one uncountable mass of quarks, the nucleon's three never pulled apart:** (built: DNA-AND DESIGN 624; waits on the test) "but they dont pull apart they ar trillionX^e1000000000000 quarks" / "cramed into zero space"
 
+- [~] **The singularity five hundred overlapping glows, not six thousand:** (built: DNA-AND DESIGN 625; waits on the test) "lets not have 6 thousand glow we can handle this without frying my gpu"
+
 ---
 
 ## Pending

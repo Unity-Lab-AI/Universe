@@ -71,6 +71,7 @@ internal static class Setup
                 }
             }
             catch { }
+        try { using (var k = Registry.CurrentUser.OpenSubKey(ChoiceKey)) { var v = k == null ? null : k.GetValue("InstallDir") as string; if (!string.IsNullOrEmpty(v) && File.Exists(Path.Combine(v, AppName + ".exe"))) return v.TrimEnd('\\'); } } catch { }
         foreach (var l in new[] { StartMenuLink, DesktopLink })
             try
             {
@@ -232,6 +233,10 @@ internal static class Setup
                 string d = _dir.Text.Trim();
                 if (d.Length == 0 || !Path.IsPathRooted(d)) { MessageBox.Show(this, "Choose a full folder path.", Text); return; }
                 long f = FreeBytes(d); if (f >= 0 && f < _need) { MessageBox.Show(this, "There is not enough space there: " + Size(_need) + " is needed.", Text); return; }
+                if (File.Exists(Path.Combine(d, AppName + ".exe")))
+                { if (MessageBox.Show(this, AppName + " is already installed in\n" + d + "\n\nUpdate that copy? (your screenshots and clips stay)", Text, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return; }
+                else if (Directory.Exists(d) && Directory.GetFileSystemEntries(d).Length > 0)
+                { if (MessageBox.Show(this, "The folder\n" + d + "\nalready has other things in it. They will be left as they are and " + AppName + " installed beside them.\n\nInstall there?", Text, MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return; }
             }
             if (_page == 6) { Show(7); Install(); return; }
             if (_page == 8)
@@ -249,11 +254,11 @@ internal static class Setup
             {
                 CloseRunning(this);
                 // an update replaces the game and keeps the captures; a fresh install starts empty
-                if (Directory.Exists(dir))
-                    foreach (var p in Directory.GetFileSystemEntries(dir))
+                if (File.Exists(Path.Combine(dir, AppName + ".exe")))
+                    foreach (var name in new[] { "build", "content", "docs", AppName + ".exe", "Uninstall " + AppName + ".exe", "README.txt", "LICENSE.txt", "PRIVACY.txt" })
                     {
-                        if (Path.GetFileName(p).Equals("captures", StringComparison.OrdinalIgnoreCase)) continue;
-                        if (Directory.Exists(p)) Directory.Delete(p, true); else File.Delete(p);
+                        string p = Path.Combine(dir, name);
+                        if (Directory.Exists(p)) Directory.Delete(p, true); else if (File.Exists(p)) File.Delete(p);
                     }
                 Directory.CreateDirectory(dir);
                 using (var s = Payload()) using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
@@ -308,16 +313,16 @@ internal static class Setup
         foreach (var l in new[] { StartMenuLink, DesktopLink }) try { if (File.Exists(l)) File.Delete(l); } catch { }
         Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, false);
         if (all) try { if (Directory.Exists(SettingsDir)) Directory.Delete(SettingsDir, true); } catch { }
-        // everything in the folder but this running uninstaller (and the captures, unless they go too) goes now; the
-        // uninstaller and the emptied folder a moment after it closes
+        // the game goes now; this running uninstaller, and the folder if it is left empty, a moment after it closes
         string self = Assembly.GetExecutingAssembly().Location;
-        foreach (var p in Directory.GetFileSystemEntries(dir))
+        // only the game's own parts: anything else in the folder is left alone
+        foreach (var name in new[] { "build", "content", "docs", AppName + ".exe", "README.txt", "LICENSE.txt", "PRIVACY.txt", all ? "captures" : null })
         {
+            if (name == null) continue; string p = Path.Combine(dir, name);
             if (p.Equals(self, StringComparison.OrdinalIgnoreCase)) continue;
-            if (!all && Path.GetFileName(p).Equals("captures", StringComparison.OrdinalIgnoreCase)) continue;
-            try { if (Directory.Exists(p)) Directory.Delete(p, true); else File.Delete(p); } catch { }
+            try { if (Directory.Exists(p)) Directory.Delete(p, true); else if (File.Exists(p)) File.Delete(p); } catch { }
         }
-        string after = all || !Directory.Exists(Path.Combine(dir, "captures")) ? "rmdir /s /q \"" + dir + "\"" : "del /f /q \"" + self + "\"";
+        string after = "del /f /q \"" + self + "\" & rmdir \"" + dir + "\"";   // (rmdir without /s: the folder goes only if nothing else is in it)
         Process.Start(new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 3 > nul & " + after) { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true });
         if (!quiet) MessageBox.Show(AppName + " has been removed." + (all ? "" : "\n\nYour screenshots and clips are kept in\n" + Path.Combine(dir, "captures")), AppName + " Uninstall", MessageBoxButtons.OK, MessageBoxIcon.Information);
         return 0;

@@ -972,7 +972,7 @@ namespace DnaAnd.Shell
 
         // ── a tour: a flight of stops read from content/tours/<name>.dnat, flown with the real controls (the wheel's zoom at one
         // steady rate, the drag's circling and looking, the same picks a click makes) so it shows the one world as it is ──
-        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds, Pan; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
+        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds, Pan, ToRadii, ToKm, Sweep, Rise, MaxRate; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
         private List<TourStop> _tour; private int _tourAt; private double _tourClock, _tourStall, _tourLastD, _tourT, _tourRate;
         /// <summary>Starts the tour of that name (content/tours/name.dnat); false if there is none.</summary>
         public bool StartTour(string name)
@@ -981,7 +981,8 @@ namespace DnaAnd.Shell
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
             foreach (var e in _content.OfKind("tours/" + name + ".dnat", "stop"))
                 list.Add(new TourStop { Name = e.Id, Do = e.Get("do", "orbit"), Target = e.Get("target", "none"), Caption = e.Get("caption", ""), Rate = num(e.Get("rate", "0.3"), 0.3),
-                    UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes", Pan = num(e.Get("pan", "0"), 0) });
+                    UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes", Pan = num(e.Get("pan", "0"), 0),
+                    ToRadii = num(e.Get("to-radii", "0"), 0), ToKm = num(e.Get("to-km", "0"), 0), Sweep = num(e.Get("sweep", "0"), 0), Rise = num(e.Get("rise", "0"), 0), MaxRate = num(e.Get("max-rate", "0.35"), 0.35) });
             if (list.Count == 0) return false;
             _tour = list; _tourAt = 0; _tourT = 0; _tourRate = 0; _tourClock = 0; _shotRng = new Rng((ulong)Environment.TickCount ^ _seed); NewShot();
             if (TimeStep == 0) SetTime(1);                                              // time runs on the tour (the planets turn, the electrons move)
@@ -995,6 +996,7 @@ namespace DnaAnd.Shell
         // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
         // the last galaxy's kind, so the next is another kind
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
+        private double[] _shotE1, _shotE2, _shotUp; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
         {
             _shotDir = _shotRng.NextDouble() < 0.5 ? -1 : 1; _shotMul = 0.75 + 0.5 * _shotRng.NextDouble(); _shotCrane = (_shotRng.NextDouble() * 2 - 1) * 1.5;
@@ -1016,7 +1018,7 @@ namespace DnaAnd.Shell
             }
         }
         // the tour is looking round (up at the sky, round the view, gliding): the view is its own, never turned back to the pick
-        private bool TourLooking { get { if (_tour == null || _tourAt >= _tour.Count) return false; var d = _tour[_tourAt].Do; return _ground != null && (d == "look" || d == "glide" || (d == "orbit" && _tKind != 2)); } }
+        private bool TourLooking { get { if (_tour == null || _tourAt >= _tour.Count) return false; var d = _tour[_tourAt].Do; return d == "shot" || (_ground != null && (d == "look" || d == "glide" || (d == "orbit" && _tKind != 2))); } }
         // the caption: the stop's own (a pick, over in a moment, shows the next stop's, so every caption stays on through its flight)
         private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
@@ -1047,6 +1049,42 @@ namespace DnaAnd.Shell
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
                         if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
+                    }
+                    break;
+                case "shot":
+                    {
+                        // a film's shot of what is picked: the camera moves in its own frame round the subject (how far, in the
+                        // subject's own sizes or in km; how far round it sweeps; how far it rises or sinks), always facing it, the
+                        // distance gliding evenly in scale and every move eased in and out; long enough that the scale never changes
+                        // faster than max-rate tenfolds a second, so nothing streams past
+                        double tdx, tdy, tdz, trad;
+                        if (!TargetFromCamera(out tdx, out tdy, out tdz, out trad)) { done = true; break; }
+                        double tl = Math.Sqrt(tdx * tdx + tdy * tdy + tdz * tdz); if (tl <= 0) { done = true; break; }
+                        if (_tourT <= dt * 1.5 || _shotT < 0)
+                        {
+                            // its frame, from where the camera is: up the level up, round from where it stands now
+                            var up = LevelUp(); double ux = up.X, uy = up.Y, uz = up.Z;
+                            double cx = -tdx / tl, cy = -tdy / tl, cz = -tdz / tl, ce = cx * ux + cy * uy + cz * uz;
+                            double hx = cx - ux * ce, hy = cy - uy * ce, hz = cz - uz * ce, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz);
+                            if (hl < 1e-6) { hx = Math.Abs(ux) < 0.9 ? 1 : 0; hy = 0; hz = Math.Abs(ux) < 0.9 ? 0 : 1; double d0 = hx * ux + hz * uz; hx -= ux * d0; hy -= uy * d0; hz -= uz * d0; hl = Math.Sqrt(hx * hx + hy * hy + hz * hz); }
+                            _shotE1 = new[] { hx / hl, hy / hl, hz / hl }; _shotUp = new[] { ux, uy, uz };
+                            _shotE2 = new[] { uy * _shotE1[2] - uz * _shotE1[1], uz * _shotE1[0] - ux * _shotE1[2], ux * _shotE1[1] - uy * _shotE1[0] };
+                            _shotD0 = tl; _shotEl0 = Math.Asin(Math.Max(-1, Math.Min(1, ce)));
+                            _shotD1 = st.ToKm > 0 ? Units.Km(st.ToKm) : st.ToRadii > 0 && trad > 0 ? trad * st.ToRadii : tl;
+                            _shotEl1 = Math.Max(-1.3, Math.Min(1.3, _shotEl0 + st.Rise * Math.PI / 180));
+                            double decades = Math.Abs(Math.Log10(_shotD1 / _shotD0));
+                            _shotLen = Math.Max(st.Seconds, decades / Math.Max(0.05, st.MaxRate) + 2);
+                            _shotT = 0;
+                        }
+                        if (!WebNotMade) _shotT += dt;                                          // (held while the web's light is made)
+                        double u = Math.Min(1, _shotT / _shotLen), e = u * u * (3 - 2 * u);
+                        double D = Math.Exp(Math.Log(_shotD0) + (Math.Log(_shotD1) - Math.Log(_shotD0)) * e);
+                        double az = st.Sweep * _shotDir * Math.PI / 180 * e, el = _shotEl0 + (_shotEl1 - _shotEl0) * e, ca = Math.Cos(az), sa = Math.Sin(az), ce2 = Math.Cos(el), se2 = Math.Sin(el);
+                        double vx = ce2 * (ca * _shotE1[0] + sa * _shotE2[0]) + se2 * _shotUp[0], vy = ce2 * (ca * _shotE1[1] + sa * _shotE2[1]) + se2 * _shotUp[1], vz = ce2 * (ca * _shotE1[2] + sa * _shotE2[2]) + se2 * _shotUp[2];
+                        // the camera to where the shot has it now (the subject where it is now: worlds move on their orbits)
+                        _ox += tdx + vx * D; _oy += tdy + vy * D; _oz += tdz + vz * D;
+                        SetLook(-vx, -vy, -vz);
+                        if (u >= 1) { done = true; _shotT = -1; }
                     }
                     break;
                 case "orbit":

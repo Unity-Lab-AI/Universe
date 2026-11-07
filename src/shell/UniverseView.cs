@@ -653,6 +653,7 @@ namespace Universe.Shell
         }
         private double SnShellKmS(Sn sn, double years) { double v = sn.K.V; return years <= _snFreeYears ? v : v * 0.4 * Math.Pow(_snFreeYears / years, 0.6); }
         private static string Years(double y) { return y < 1 ? (y * 365.25).ToString("0") + " days" : y < 1000 ? y.ToString("0") + " years" : y < 1e6 ? (y / 1000).ToString("0.#") + " thousand years" : (y / 1e6).ToString("0.#") + " million years"; }
+        private int _snLogTick = -1;   // (the log's clock for the tour's supernova: what its fireball is doing, twice a second)
         private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf, _shellCrabBuf, _shellCasBuf; private int _snPointCap, _shellN; private StarSurface _fireSurf; private StarVertex[] _fireVerts;   // (_fireSurf: a fireball's face, drawn as a star's, coloured by its heat each frame)
         private void MakeShells()
         {
@@ -723,6 +724,13 @@ namespace Universe.Shell
                 foreach (var sn in c.Events)
                 {
                     double years = now - sn.T; if (years < 0) continue; double days = years * 365.25;
+                    if (_tSn != null && Math.Abs(sn.T - _tSn.T) < 1e-9 && (int)(time * 2) != _snLogTick)
+                    {
+                        // the supernova the tour is at, in the log: its age, its light, its face and its ejecta now, how far off, so a blank
+                        // stop can be read from the log instead of guessed at
+                        _snLogTick = (int)(time * 2); double uxl = (sn.Ux - _ax) - _ox, uyl = (sn.Uy - _ay) - _oy, uzl = (sn.Uz - _az) - _oz;
+                        ZoomLog("SN at the tour's pick: " + sn.K.Name + ", " + days.ToString("0") + " days, light " + SnLum(sn, days).ToString("0.#E+0") + " sol, face " + ScaleHud.Words(SnPhotKm(sn, days)) + " across, ejecta " + ScaleHud.Words(SnEjectaKm(sn, days)) + ", " + Units.Describe(Math.Sqrt(uxl * uxl + uyl * uyl + uzl * uzl)) + " away, galaxy " + (full ? "near" : "far") + ", leaves " + sn.K.Leaves + ", remnant bodies " + _extras.Count);
+                    }
                     double ux = (sn.Ux - _ax) - _ox, uy = (sn.Uy - _ay) - _oy, uz = (sn.Uz - _az) - _oz, d = Math.Sqrt(ux * ux + uy * uy + uz * uz), dLy = Math.Max(1e-9, d * Units.LightYearsPerUnit);
                     if (days < 700)
                     {
@@ -2013,7 +2021,7 @@ namespace Universe.Shell
         }
         // your horizon, for a caption written as "{horizon}": how far you see each way, and why it ends there (the expansion of space, sped by dark energy)
         private string HorizonWords() { return "It ends only at your horizon, " + Units.Describe(_uRadius) + " each way, which moves with you: past it space stretches away faster than light can cross it, sped by dark energy (" + (_darkEnergy * 100).ToString("0") + "% of everything, " + _hubble.ToString("0") + " km/s a megaparsec)"; }
-        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()).Replace("{horizon}", HorizonWords()).Replace("{supernova}", SupernovaWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()).Replace("{horizon}", HorizonWords()).Replace("{supernova}", SupernovaWords()).Replace("{seen}", SeenWords()).Replace("{body}", BodyWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {
@@ -4307,6 +4315,16 @@ namespace Universe.Shell
             double sum = 0; int n = 0;
             for (int k = 0; k < 24; k++) { try { var sy = SpaceGen.System(_content, _kinds[(k * 7) % _kinds.Count], 0x9E3779B97F4A7C15UL * (ulong)(k + 1)); sum += sy.Bodies.Count; n++; } catch { } }
             return _bodiesPerStar = n > 0 ? sum / n : 10;
+        }
+        // the body the tour is at, for a caption: its kind and its own minerals (an S-type asteroid: forsterite 31%, enstatite 24%...),
+        // never a stock word for it (the caption had said "rock left over from when the worlds were made" over every one)
+        private string BodyWords()
+        {
+            var ex = _tKind == 6 ? _tExtra : null; if (ex == null) return "a small body";
+            string kind = ex.KindName ?? ex.Name; string mins = null;
+            foreach (var ln in ex.Lines) if (ln.StartsWith("minerals: ")) { mins = ln.Substring(10); break; }
+            string a = kind.Length > 0 && "AEIOU".IndexOf(char.ToUpperInvariant(kind[0])) >= 0 ? "An " : "A ";
+            return a + kind.ToLowerInvariant() + (mins != null ? ": " + mins : "");
         }
         private string SeenWords()
         {

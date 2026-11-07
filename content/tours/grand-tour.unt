@@ -216,7 +216,7 @@ to-radii: 3
 sweep: 120
 rise: 15
 seconds: 8
-caption: An asteroid: rock left over from when the worlds were made
+caption: {body}
 
 @stop onto-asteroid
 do: zoom
@@ -231,12 +231,98 @@ rate: 0.5
 until-km: 6e-12
 caption: Down to its atoms: the elements its minerals hold, the traces among them
 
+@stop asteroid-choose-atom
+do: pick
+target: atom
+caption: One atom of its stone
+
+@stop asteroid-to-atom
+do: zoom
+rate: 0.4
+until-km: 6e-13
+caption: An atom of the asteroid: its nucleus, and its electrons where they may be
+
+@stop asteroid-round-atom
+do: arc
+rate: 0.03
+until-km: 2.5e-13
+turn: 14
+seconds: 12
+caption: Round it: the nucleus a spark, the electrons each in its orbital's shape
+
+@stop asteroid-through-electrons
+do: zoom
+rate: 0.3
+until-km: 5e-14
+pan: 12
+caption: In among its electrons
+
+@stop asteroid-choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop asteroid-to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward, through the empty space of the atom
+
+@stop asteroid-round-nucleus
+do: arc
+rate: 0
+until-km: 0
+turn: 24
+seconds: 7
+caption: Its nucleus: protons and neutrons, each three quarks in a gluon glow
+
+@stop asteroid-choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop asteroid-to-proton
+do: zoom
+rate: 0.35
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop asteroid-round-proton
+do: arc
+rate: 0
+until-km: 0
+turn: 20
+seconds: 6
+caption: Three quarks in a storm of gluons
+
+@stop asteroid-choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop asteroid-to-quark
+do: zoom
+rate: 0.35
+until-km: 6e-19
+caption: One quark: the smallest thing we know
+
+@stop asteroid-let-go
+do: pick
+target: none
+caption: And back out
+
+@stop asteroid-out-of-atom
+do: zoom
+rate: -0.9
+until-km: 1e-9
+caption: Back out through the atom, the crystal, the grain
+
 @stop off-asteroid
 do: zoom
 rate: -1.6
 until-km: 1e40
 out: yes
-caption: Back out to the rock
+caption: Back out to its surface, and its sky
 
 @stop comet
 do: pick

@@ -43,3 +43,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the singularity an uncountable mass, the nucleon's quarks never pulled apart): DNA-AND DESIGN 624.
 - 2026-11-07 (the singularity five hundred glows): DNA-AND DESIGN 625.
 - 2026-11-07 (the climb out as fast as the fall): DNA-AND DESIGN 626.
+- 2026-11-07 (the asteroid's caption its own make-up, its dive to a quark, the supernova logged): DNA-AND DESIGN 627-629.

@@ -102,7 +102,7 @@ shown: 400
 entry: asteroid main-belt
 size-km: 30
 colour: 0.6 0.55 0.5
-says: rock and metal left over from the making of the planets
+says: left over from the making of the planets, never gathered into a world; its own kind and make-up on its card
 shape: rock
 
 @place kuiper-object
@@ -112,7 +112,7 @@ shown: 300
 entry: far classical-kbo
 size-km: 100
 colour: 0.75 0.7 0.7
-says: ice and rock beyond the planets, where the comets of short period come from
+says: beyond the planets, where the comets of short period come from; its own kind and make-up on its card
 shape: rock
 
 @place oort-comet

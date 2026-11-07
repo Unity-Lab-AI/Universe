@@ -15,3 +15,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the cards short again): every line added today one clause, no card more than two thirds of the screen (DNA-AND DESIGN 588).
 - 2026-11-07 (the face and the ride, from the creator's shots): DNA-AND DESIGN 589.
 - 2026-11-07 (no balls, no sticks): DNA-AND DESIGN 590; `u08` updated.
+- 2026-11-07 (the well an inward spike, from the creator's shots): DNA-AND DESIGN 591.

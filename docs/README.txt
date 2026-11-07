@@ -14,7 +14,7 @@
   plain text in the content folder. Change them, add your own, and build
   universes for your own games and simulations.
 
-  Built from nothing: no engine, no libraries, no art, 1.7 MB installed,
+  Built from nothing: no engine, no libraries, no art, 1.4 MB installed,
   MIT licensed. Take it for any project that needs a universe.
 
 
@@ -48,7 +48,7 @@
     T ................... the tour; carries a paused tour on
     R ................... starts a paused tour again
     F12 ................. a screenshot (PNG)
-    F9 .................. start or stop a clip (MP4)
+    F9 .................. start or stop a clip (MP4; View > Clip size: auto, full, half, quarter)
     Esc ................. close
 
   A click, the wheel or a key pauses the tour, and a note says why.

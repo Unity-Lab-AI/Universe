@@ -24,7 +24,7 @@
 
 | | On disk | What it holds | How |
 |---|---|---|---|
-| **Universe** | **1.4 MB** installed (0.57 MB zipped; 0.68 MB installer) | About 10²² stars in about 100 billion galaxies, every world down to its grains, atoms and quarks, and on below them, in one unbroken zoom | Everything grown from one seed and 0.29 MB of templates; no stored art, no sound |
+| **Universe** | **1.4 MB** installed (0.58 MB zipped; 0.68 MB installer) | About 10²² stars in about 100 billion galaxies, every world down to its grains, atoms and quarks, and on below them, in one unbroken zoom | Everything grown from one seed and 0.29 MB of templates; no stored art, no sound |
 | [Noctis IV](https://archive.org/details/msdos_noctis_shareware "Noctis IV on the Internet Archive") (2002) | About 1 to 5 MB | One galaxy of about 78 billion stars, with planets to walk on | Grown from a seed, by one person, for DOS |
 | [Elite](https://www.theregister.com/2024/01/18/elite_game_retro/ "Elite at 40, The Register") (1984) | 22 KB | Eight galaxies of 256 planets | Grown from a seed: the first game to do it |
 | [.kkrieger](https://en.wikipedia.org/wiki/.kkrieger ".kkrieger on Wikipedia") (2004) | 96 KB | One shooter level, about ten minutes of play (not a universe: the famous size benchmark) | Textures, models and music grown at start-up |

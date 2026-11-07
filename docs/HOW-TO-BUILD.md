@@ -36,10 +36,10 @@ What is scratch-made and what comes from Windows, layer by layer. Nothing is dow
 | **Generators** | `GalaxyGen`, `StarGen`, `SpaceGen`, `PlanetGen`, `PlanetTerrain`, `BodyGen`, `GrainField`, `ElementGen`, `IconFont` (the blocky letters on screen) | nothing |
 | **Simulation** | `PlanetCore`, `PlanetPlates`, `PlanetSurface`, `PlanetAir`, `PlanetWeather`, `PlanetImpacts` | nothing |
 | **Views** | `UniverseView` (the camera, the zoom, picking, the cards, time, the tour), `MatterView`, `ScaleHud`, `PreviewText` | nothing |
-| **Captures** | `PngWriter` (chunks, filters, checksums), `GifWriter` (palette and LZW), `Mp4Writer` (every other frame handed to a sink writer, 30 a second, the encoder set to rate control by quality through its own knobs, so bits go only where the picture has detail; 6 megabits a second the ceiling at 1080p) | Media Foundation for the H.264 inside an MP4; the framework's Deflate inside a PNG |
+| **Captures** | `PngWriter` (chunks, filters, checksums), `GifWriter` (palette and LZW), `Mp4Writer` (every other frame handed to a sink writer, 30 a second, the encoder set to rate control by quality through its own knobs, so bits go only where the picture has detail; 6 megabits a second the ceiling at 1080p; the clip's size against the screen from View > Clip size: auto, full, half or quarter) | Media Foundation for the H.264 inside an MP4; the framework's Deflate inside a PNG |
 | **Shipping** | `Setup.cs` (the installer wizard, carrying the payload inside itself), `MakeIcons` (the icons drawn by code) | Windows Forms for the wizard's controls |
 
-About 18,000 lines of C# and shader code in 61 files, and about 10,000 lines of templates in 30.
+About 19,600 lines of C# and shader code in 61 files, and about 10,900 lines of templates in 30.
 
 ---
 
@@ -117,7 +117,7 @@ Change the version at the top of `release.cmd`.
 | | |
 |---|---|
 | **Templates** | Each kind of thing is an entry in `content/` with ranges. A thing made from it takes its own value in each range from its seed (`PlanetTerrain.Instance`), so every world is its own and a seed always gives the same one. Which kind forms where is read from the template too (`SpaceGen.WorldKind`) |
-| **One camera** | `UniverseView` keeps the camera as an anchor (a galaxy's centre, a star, a world) plus an offset, in double precision, so it's exact from light-years to atoms. Nothing switches views |
+| **One camera** | `UniverseView` keeps the camera as an anchor (a galaxy's centre, a star, a world) plus an offset, in double precision, so it's exact from light-years to quarks and below. Nothing switches views |
 | **Zoom** | Each notch of the wheel moves a share of the way to the nearest thing, so it slows by itself and never runs out. Inward there is no floor: below the quark, `MatterView` keeps the point you ride (a quark or an electron) exactly at the focus with its glow filling the view, the scale bar names units down to quectometres and then the number itself, and the card says what is known there (nothing; below the Planck length, not even length). `MatterView.BottomKm` is only where double precision gives out. Outward, `HoldInside` keeps you inside the visible universe. W A S D Q E fly at half the distance to the nearest thing a second |
 | **Depth** | Reversed floating-point depth (`Mat4.Perspective`, compare GREATER), so near and far never fight |
 | **The galaxies** | About 100 billion within your horizon, 13.4 billion light-years across and centred on you (there is no edge: `SpawnRegion` makes regions wherever you go, each region's own, from its place; nothing made while crossing faster than a couple of regions a frame); beyond them, a glow of points along the same web that fades in just where the galaxies made in full fade out. The tour's far galaxy is made ahead from its own region and held until you arrive (`FarGalaxy`) |
@@ -142,8 +142,8 @@ Be warned before you open it: the code is **dense**. It is readable, but not the
 
 | | |
 |---|---|
-| **What it is like** | About 15,400 lines of code in 61 files. Most lines are ordinary (the middle line is 57 characters), but the hot paths are packed: one line in ten carries three or more statements, one in fourteen runs past 160 characters (the longest past a thousand), names are short, and the three big files are long (`UniverseView` 3,100 lines, `MatterView` 1,900, `PlanetTerrain` 1,550) |
-| **How to read it** | By its comments. A fifth of all lines are plain English (1,900 comment lines and 1,200 trailing ones): every block says in words what it is about to do and why, with the physics and the numbers. Read the comment, then the statement under it, and the long lines unpack |
+| **What it is like** | About 16,500 lines of code in 61 files. Most lines are ordinary (the middle line is 57 characters), but the hot paths are packed: one line in ten carries three or more statements, one in fourteen runs past 160 characters (the longest past a thousand), names are short, and the three big files are long (`UniverseView` 4,000 lines, `MatterView` 2,100, `PlanetTerrain` 1,560) |
+| **How to read it** | By its comments. Nearly a fifth of all lines are plain English (2,200 comment lines and 1,300 trailing ones): every block says in words what it is about to do and why, with the physics and the numbers. Read the comment, then the statement under it, and the long lines unpack |
 | **Where it is densest** | The per-pixel and per-frame work: the shaders (HLSL inside `Pipeline.cs` and `MeshPipeline.cs`), the camera and tour (`UniverseView`), the matter at its real sizes (`MatterView`), the ground (`PlanetTerrain`) |
 | **Where it is easiest** | The content (`content/`: every template is a few plain lines), the generators' entries, `Physics`, `Stats`, `Settings`, the writers (`PngWriter`, `GifWriter`) |
 | **The rule it follows** | Everything is said once, in English, next to the code that does it. Nothing is left for a reader to guess at; but nothing is spread out either |

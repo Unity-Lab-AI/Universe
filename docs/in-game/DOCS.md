@@ -8,7 +8,7 @@
 |---|---|
 | Know what this is, in a minute | **About** |
 | Fly it: the keys, the mouse, time, the tour, clips | **Readme: how to use it** |
-| Know how one camera gets from the galaxies to a quark, and what the physics is | **How it works** |
+| Know how one camera gets from the cosmic web of galaxies to a quark, and what the physics is | **How it works** |
 | The whole story, as the project tells it to the world | **The universe, in plain words** |
 | How it stands beside SpaceEngine, Elite Dangerous, No Man's Sky and the rest: size, scope, what each needs, how it runs | **Against the field** |
 | Add your own kinds of worlds, stars and galaxies, change the laws, write a tour | **Build your own universe** |

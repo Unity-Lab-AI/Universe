@@ -1299,7 +1299,10 @@ namespace Universe.Gen
             _gg = false;
             {
                 double cl = Math.Sqrt(camX * camX + camY * camY + camZ * camZ); var gm = Solid && !Shell && cl > 0 ? GrainMix(camY / cl) : null;
-                if (gm != null && gm.Size > 0 && SandOnCard && cl - Radius < gm.Size * 4000)
+                // (within a few thousand grains of the ground itself, not of the world's reference sphere: on land a few hundred metres
+                // up the sand never came, and from a millimetre down to the hand-over the ground was one blank colour)
+                double overGround = gm != null && gm.Size > 0 ? cl - Radius - GroundAt(camX / cl, camY / cl, camZ / cl) : double.MaxValue;
+                if (gm != null && gm.Size > 0 && SandOnCard && overGround < gm.Size * 4000)
                 {
                     double gs = gm.Size, ux = camX / cl, uy = camY / cl, uz = camZ / cl;
                     long bi = (long)Math.Floor(ux * Radius / gs), bj = (long)Math.Floor(uy * Radius / gs), bk = (long)Math.Floor(uz * Radius / gs);

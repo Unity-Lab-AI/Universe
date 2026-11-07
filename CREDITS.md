@@ -22,8 +22,8 @@
 
 | Who | What they do |
 |---|---|
-| **SpongeBong** (Sponge, hackall360) | Co-founder · engineer · infrastructure |
-| **GFourteen** (Gee) | Co-founder · engineer |
+| **GFourteen** (Gee) | Co-founder · engineer · financial advisor |
+| **SpongeBong** (Sponge, hackall360) | Co-founder · engineer · ethical hacker · sys admin |
 | **Alfreddo** | Engineer · agentic systems · research |
 | **Red** | Engineer · security · sys admin |
 
@@ -37,6 +37,8 @@
 | Electronegativity | Pauling's scale |
 | The nucleus | The semi-empirical (Bethe–Weizsäcker) mass formula and the valley of beta stability |
 | Grain and stone sizes | The Wentworth scale |
+| Supernovae | Rates, kinds, light curves and remnants from the published surveys and reviews noted at the top of `content/physics.unt` (`@law supernova`, `@supernova`) |
+| Supernovae | Rates, kinds, light curves and remnants from the published surveys and reviews noted at the top of `content/physics.unt` (`@law supernova`, `@supernova`) |
 
 ## The code
 

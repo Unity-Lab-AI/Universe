@@ -1934,7 +1934,7 @@ namespace Universe.Shell
                 // you take the controls: a click, the wheel or a key pauses it (it says so, and why); never in its first moments
                 // (only on purpose: the click that brings the window back to the front, Shift, Ctrl, Alt and the Windows keys, and
                 // shortcuts such as Alt+Tab or Win+Shift+S never stop it; nor do screenshots and recording)
-                if ((input.LeftClicked || input.RightClicked) && !input.JustActivated) { PauseTour("you clicked"); return; }
+                if (input.LeftClicked || input.RightClicked) { PauseTour("you clicked"); return; }   // (the click that brings the window to the front too: a click is a click, it stops the tour and picks as any other; it had picked nothing, and nothing seemed clickable)
                 if (input.Wheel != 0 && !input.JustActivated) { PauseTour("you turned the mouse wheel"); input.Wheel = 0; return; }
                 for (int k = 8; k < 256; k++) if (k != 0x78 && k != 0x7B && input.WasPressed(k) && input.Deliberate(k)) { PauseTour("you pressed " + KeyName(k)); return; }
             }
@@ -2588,7 +2588,7 @@ namespace Universe.Shell
             if (_tour != null && !Loading) TourStep(input, dt, w, h);   // (the tour begins once the universe is made)
             _matter.Glide = _tour != null ? 1.2 : 4;                                     // on the tour the matter glides as a film camera would                                  // a tour gives the controls what each stop asks
             // a click (pressed and let go without dragging) picks what is under the mouse
-            if (input.LeftClicked && !input.JustActivated) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }   // (the click that brings the window to the front picks nothing: on the tour it set a spot off to the side as the target, and the tour, which only moves where it looks, stood still)
+            if (input.LeftClicked) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }   // (the click that brings the window to the front picks too: it stops the tour first, so it never sets a spot off to the side as the tour's target)
             if (_pressed && input.LeftDown && Math.Abs(input.MouseX - _pressX) + Math.Abs(input.MouseY - _pressY) > 6) _dragged = true;   // dragging circles round the pick (or looks around if nothing is picked)
             if (_pressed && !input.LeftDown) { _pressed = false; if (!_dragged)
                 {

@@ -6,7 +6,7 @@
 # through: yes flies on into the next stop without slowing or pausing; pan: degrees a second a zoom circles what it flies to
 # (turn: degrees a second for the circling stops). There are no pauses: each caption stays on while the flight goes on.
 # The film's grammar: an establishing shot; a straight push in or pull back to change scale; a calm circle only round what
-# fills the view; a pan where it stands across what is vast; every move eased; circling 6 to 12 degrees a second; scale changing
+# fills the view; looking round the sky from the ground slow (a few degrees a second at most, the sky turning too); a pan where it stands across what is vast; every move eased; circling 6 to 12 degrees a second; scale changing
 # a third to a half of a tenfold a second; each shot 6 to 10 seconds. The director varies each shot every viewing.
 
 @stop start
@@ -214,21 +214,21 @@ caption: Standing
 @stop look-up
 do: look
 tilt: 55
-turn: 6
-seconds: 6
+turn: 1.5
+seconds: 10
 caption: Look up
 
 @stop sky
 do: orbit
-turn: 12
-seconds: 10
+turn: 3
+seconds: 12
 caption: Its star, the other worlds, the galaxy's stars beyond
 
 @stop look-down
 do: look
 tilt: -85
-turn: 4
-seconds: 5
+turn: 1.5
+seconds: 9
 caption: And down: there is as much below us as above
 
 @stop to-grains

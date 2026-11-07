@@ -377,32 +377,45 @@ namespace Universe.Shell
             }
         }
         private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap;
-        /// <summary>Inside the horizon, the fall's one reference: the gravity well as a grid, a blanket pressed down to a point, drawn
-        /// down the axis you came in on. Rings a tenfold of the way apart, each narrower than the one before (the funnel), spokes
-        /// between them, the singularity a point at the end; the rings flow past you as you fall, and turning the view turns round
-        /// the grid, since the axis is fixed in space.</summary>
+        /// <summary>Inside the horizon, the fall's one reference: the gravity well itself, in the world. The sheet of space round the
+        /// hole as a square grid (the rubber sheet), bent into Flamm's paraboloid outside the horizon (its depth 2 root(rs (r - rs)),
+        /// the exact shape of a still slice of Schwarzschild space, flat far out, vertical at the horizon's throat) and, inside the
+        /// throat, into the falling observer's own slice, a cone (its depth growing with the way in) down to the point, the singularity.
+        /// You are on the axis at your depth, the walls round you, every line of the grid running down to the point ahead; the axis is
+        /// the way you came in, fixed in space, so turning the view turns round the well. (A reference, not light: never bent by the
+        /// hole's lens.) Sources: Flamm 1916; the Gullstrand-Painleve slice for the infaller, a cone inside the horizon.</summary>
         private void DrawFallGrid(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
-            double s = Units.Km(_spaceScale), lg = Math.Log10(Math.Max(1e-300, _spaceScale)), fr = lg - Math.Floor(lg);   // (fr: where you are within this tenfold of the way: the rings glide past as it runs)
-            var pts = new List<StarVertex>(); const int Rings = 14, Spokes = 24, Per = 96;
-            Func<double, double> dist = k => s * (0.6 + k) * 1.1;                                 // each ring that much farther down the axis
-            Func<double, double> rad = k => s * (0.6 + k) * 0.95 * Math.Exp(-0.2 * k);           // and narrower: the funnel, a point at its end
-            for (int k = -1; k < Rings; k++)
+            // where you are down the well: the fall runs from the horizon (r = rs) to the quarks' size, 25 tenfolds; the cone inside
+            // the throat narrows to the point over that run
+            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), t = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / 25));
+            const double ConeDepth = 10; double rhoCam = 1 - t, zCam = 2 + ConeDepth * t;
+            double S = Units.Km(_spaceScale) * 1.5 / Math.Max(0.03, rhoCam);                 // the well's unit (one horizon radius) in the world: the wall about a view and a half from you
+            Func<double, double> depth = rho => rho >= 1 ? 2 * Math.Sqrt(rho - 1) : 2 + ConeDepth * (1 - rho);
+            var pts = new List<StarVertex>();
+            Action<double, double, float, float, float, float> put = (u, v, br, cr, cg, cb) =>
             {
-                double kk = k + fr; if (kk < 0.08) continue;
-                double d = dist(kk), r = rad(kk); float br = (float)(0.55 * Math.Exp(-kk * 0.12));
-                for (int q = 0; q < Per; q++) { double a = q * Math.PI * 2 / Per; var p = ax * (float)d + e1 * (float)(Math.Cos(a) * r) + e2 * (float)(Math.Sin(a) * r); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.012), R = 0.45f * br, G = 0.7f * br, B = 0.95f * br, A = 1 }); }
-            }
-            for (int sp = 0; sp < Spokes; sp++)
+                double rho = Math.Sqrt(u * u + v * v), z = depth(rho);
+                var p = e1 * (float)(u * S) + e2 * (float)(v * S) + ax * (float)((z - zCam) * S);
+                pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(S * 0.012), R = cr * br, G = cg * br, B = cb * br, A = 1 });
+            };
+            // the sheet's square grid, every half radius out to eight, each line sampled finely (and finer through the throat and the cone, where it plunges)
+            for (int li = -16; li <= 16; li++)
             {
-                double a = sp * Math.PI * 2 / Spokes;
-                for (int q = 0; q < 160; q++) { double kk = -1 + fr + q * (Rings + 1) / 160.0; if (kk < 0.08) continue; double d = dist(kk), r = rad(kk); float br = (float)(0.3 * Math.Exp(-kk * 0.12)); var p = ax * (float)d + e1 * (float)(Math.Cos(a) * r) + e2 * (float)(Math.Sin(a) * r); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.01), R = 0.2f * br, G = 0.3f * br, B = 0.45f * br, A = 1 }); }
+                double c0 = li * 0.5; bool axisLine = li == 0;
+                for (int q = 0; q <= 640; q++)
+                {
+                    double c1 = -8 + q * 16.0 / 640; double rho = Math.Sqrt(c0 * c0 + c1 * c1);
+                    float br = (float)(axisLine ? 0.6 : 0.4) * (float)Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08);
+                    put(c0, c1, br, 0.35f, 0.9f, 0.6f); put(c1, c0, br, 0.35f, 0.9f, 0.6f);
+                }
             }
-            { var p = ax * (float)dist(Rings + 0.5); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.05), R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all presses down to
+            for (int q = 0; q < 240; q++) { double a = q * Math.PI * 2 / 240; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); }   // the throat: the horizon's ring, bright
+            { var p = ax * (float)((depth(0) - zCam) * S); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(S * 0.06), R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all runs down to
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
-            float lz = _lens[2]; _lens[2] = 0;                                                  // (the grid is a reference, not light: never bent by the hole's lens, which had bent it clean out of the view)
+            float lz = _lens[2]; _lens[2] = 0;                                                  // (a reference, not light: never bent by the hole's lens)
             DrawPoints(_fallBuf, arr.Length, vp, right, up, 1f, 0.0012f, w, h, time, 0, 1f, 2f);
             _lens[2] = lz;
         }
@@ -1909,7 +1922,16 @@ namespace Universe.Shell
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
-                        if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
+                        if (_spaceScale > 0 && _matter.SpaceKind == 12)
+                        {
+                            // the fall, on the tour: in looking back up at the horizon's ring, the view turning over as you go, down the
+                            // well's wall, to face the point only near the end; and slowly round, so the grid wheels past
+                            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / 25)), th = Math.PI * Math.Min(1, tf * 1.15), ph = _tourT * 0.25;
+                            var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
+                            var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
+                            var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;
+                        }
+                        else if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
                         if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
@@ -2770,7 +2792,7 @@ namespace Universe.Shell
                         {
                             double rsKm = Physics.HorizonKm(exd.Mass);
                             _matter.SetHole(dspot, rsKm, exd.Mass); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1;
-                            { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); }   // the axis you came in on: the well's grid is drawn down it
+                            { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }
                         if (exd.Pl != null && (exd.Pl.Id.Contains("neutron") || exd.Pl.Id.Contains("pulsar") || exd.Pl.Id.Contains("magnetar")))
@@ -2984,6 +3006,7 @@ namespace Universe.Shell
         private double OffTarget()
         {
             if (_tKind == 2 && _ground != null && _tIndex == _planet) return 0;          // (coming down to the picked world the view looks ahead to its horizon, not at its middle: that is on course)
+            if (_spaceScale > 0) return 0;                                               // (dived into a body or a hole: the zoom goes on wherever you look; the fall is watched looking back at the horizon)
             double dx, dy, dz, r; if (_tKind < 0 || !TargetFromCamera(out dx, out dy, out dz, out r)) return 0;
             double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l <= 0) return 0; var lk = Look;
             double off = Math.Acos(Math.Max(-1, Math.Min(1, (dx * lk.X + dy * lk.Y + dz * lk.Z) / l)));

@@ -128,8 +128,7 @@ do: zoom
 rate: 0.7
 until-km: 1e-19
 through: yes
-pan: 6
-caption: In through the horizon: from here the way out needs more than light's speed; the well's graph shows the fall, a sharp step at the horizon down to a point; black, all the way to the middle
+caption: In through the horizon, looking back at it: the well itself round you, space's sheet bent into a funnel and, inside the throat, a cone, every line running down to the point; the way out needs more than light's speed; the view turns over as you fall, to face the point near the end
 
 @stop singularity
 do: orbit

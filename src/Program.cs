@@ -360,7 +360,8 @@ namespace Universe
                     if (gpu.Grabbed != null && clipPath == null)
                     {
                         if (wantShot && gpu.GrabW == gpu.Width) { try { Universe.Render.PngWriter.Save(System.IO.Path.Combine(caps, (shotName ?? Universe.Shell.PreviewText.AppName + " " + stamp) + ".png"), gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("screenshot error · " + ex.Message); } wantShot = false; shotName = null; }
-                        if (rec != null && !(recForTour && world != null && (world.TourPaused || world.Loading))) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
+                        // (a frame grabbed at full size for a screenshot is not the clip's size: that one is skipped, the clip goes on)
+                        if (rec != null && gpu.GrabW == gpu.Width / Math.Max(1, rec.Down) && !(recForTour && world != null && (world.TourPaused || world.Loading))) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
                         gpu.Grabbed = null;
                     }
                     if (wantShot || rec != null) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; }   // (a screenshot at full size; a clip at its own, half each way on a big screen)

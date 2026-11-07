@@ -136,6 +136,7 @@ namespace Universe.Shell
         // as a glow of points along the same web; the edge cannot be passed ──
         private List<string> _types, _typeNames; private ulong _seed;
         private double _farScale;                                                         // how far out the wheel has zoomed (universe units): out grows it, in brings it back
+        private double _statsLeft = double.MaxValue, _statsBottom;   // the frame counter and stats card's left edge and bottom on screen, so no other card lands on it
         private double _uRadius = 134000, _uGalaxies = 1e11, _webUnits = 4000, _webContrast = 6, _regionUnits = 20, _nearUnits = 400; private int _glowPoints = 300000;
         private double _darkMatter, _rimSpeed = 220, _darkEnergy, _hubble = 70;   // the dark universe (content/physics.unt @law cosmos): for the galaxies' cards and the horizon's words
         private readonly HashSet<long> _regions = new HashSet<long>(); private long _lastRegionCell = long.MinValue;
@@ -3001,8 +3002,11 @@ namespace Universe.Shell
                 if (stats) sl.AddRange(Stats.Lines);
                 int longest = 0; foreach (var l in sl) longest = Math.Max(longest, l.Length);
                 double spx = Math.Max(1, h / 540.0), scw = longest * 6.6 * spx + 12 * spx;
-                _hud.DrawCard(_meshes, sl, w - scw - 8 * spx, _tour != null ? h * 0.11 : 12 * Math.Max(1, h / 1080.0), w, h);
+                double sy0 = _tour != null ? h * 0.11 : 12 * Math.Max(1, h / 1080.0);
+                _hud.DrawCard(_meshes, sl, w - scw - 8 * spx, sy0, w, h);
+                _statsLeft = w - scw - 8 * spx; _statsBottom = sy0 + sl.Count * 11 * spx + 12 * spx;   // (where the stats sit: a pick's card never lands on them)
             }
+            else { _statsLeft = w; _statsBottom = 0; }
             double mdx, mdy, mdz, mrad, msx, msy;
             if (_tKind >= 0 && _matterScale <= 0 && TargetFromCamera(out mdx, out mdy, out mdz, out mrad) && ToScreen(mdx, mdy, mdz, out msx, out msy))
             {
@@ -3010,7 +3014,18 @@ namespace Universe.Shell
                 double rpx = Math.Max(14 * Math.Max(1, h / 1080.0), mrad / Math.Max(1e-30, l) / Math.Tan(0.45) * h * 0.5 * 1.25);
                 bool fills = rpx > h * 0.45;                                           // bigger than the view: no ring, the card sits top left
                 if (!fills) _hud.DrawRing(_meshes, msx, msy, rpx, w, h);
-                if (_hud.Visible) { if (fills) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 24 * Math.Max(1, h / 1080.0), w, h); else _hud.DrawCard(_meshes, Card(), msx + rpx + 12 * Math.Max(1, h / 1080.0), msy - rpx, w, h); }
+                if (_hud.Visible)
+                {
+                    if (fills) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 24 * Math.Max(1, h / 1080.0), w, h);
+                    else
+                    {
+                        // beside what you picked; never over the frame counter and the stats at the top right (a card drawn there
+                        // garbled both): under them instead
+                        double cx0 = msx + rpx + 12 * Math.Max(1, h / 1080.0), cy0 = msy - rpx;
+                        if (cy0 < _statsBottom && cx0 > _statsLeft - w * 0.3) cy0 = _statsBottom + 8 * Math.Max(1, h / 1080.0);
+                        _hud.DrawCard(_meshes, Card(), cx0, cy0, w, h);
+                    }
+                }
             }
         }
 

@@ -376,6 +376,34 @@ namespace Universe.Shell
                 _hud.DrawCone(_meshes, w, h, ux * _viewRight.X + uy * _viewRight.Y + uz * _viewRight.Z, ux * _viewUp.X + uy * _viewUp.Y + uz * _viewUp.Z, ux * lk.X + uy * lk.Y + uz * lk.Z, th);
             }
         }
+        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap;
+        /// <summary>Inside the horizon, the fall's one reference: the gravity well as a grid, a blanket pressed down to a point, drawn
+        /// down the axis you came in on. Rings a tenfold of the way apart, each narrower than the one before (the funnel), spokes
+        /// between them, the singularity a point at the end; the rings flow past you as you fall, and turning the view turns round
+        /// the grid, since the axis is fixed in space.</summary>
+        private void DrawFallGrid(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
+        {
+            var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
+            double s = Units.Km(_spaceScale), lg = Math.Log10(Math.Max(1e-300, _spaceScale)), fr = lg - Math.Floor(lg);   // (fr: where you are within this tenfold of the way: the rings glide past as it runs)
+            var pts = new List<StarVertex>(); const int Rings = 14, Spokes = 24, Per = 96;
+            Func<double, double> dist = k => s * (0.6 + k) * 1.1;                                 // each ring that much farther down the axis
+            Func<double, double> rad = k => s * (0.6 + k) * 0.95 * Math.Exp(-0.2 * k);           // and narrower: the funnel, a point at its end
+            for (int k = -1; k < Rings; k++)
+            {
+                double kk = k + fr; if (kk < 0.08) continue;
+                double d = dist(kk), r = rad(kk); float br = (float)(0.55 * Math.Exp(-kk * 0.12));
+                for (int q = 0; q < Per; q++) { double a = q * Math.PI * 2 / Per; var p = ax * (float)d + e1 * (float)(Math.Cos(a) * r) + e2 * (float)(Math.Sin(a) * r); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.012), R = 0.45f * br, G = 0.7f * br, B = 0.95f * br, A = 1 }); }
+            }
+            for (int sp = 0; sp < Spokes; sp++)
+            {
+                double a = sp * Math.PI * 2 / Spokes;
+                for (int q = 0; q < 160; q++) { double kk = -1 + fr + q * (Rings + 1) / 160.0; if (kk < 0.08) continue; double d = dist(kk), r = rad(kk); float br = (float)(0.3 * Math.Exp(-kk * 0.12)); var p = ax * (float)d + e1 * (float)(Math.Cos(a) * r) + e2 * (float)(Math.Sin(a) * r); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.01), R = 0.2f * br, G = 0.3f * br, B = 0.45f * br, A = 1 }); }
+            }
+            { var p = ax * (float)dist(Rings + 0.5); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(s * 0.05), R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all presses down to
+            if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
+            var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
+            DrawPoints(_fallBuf, arr.Length, vp, right, up, 1f, 0.0012f, w, h, time, 0, 1f, 2f);
+        }
         private UploadBuffer _wellBuf; private int _wellN;
         private void MakeWell()
         {
@@ -1626,7 +1654,7 @@ namespace Universe.Shell
         {
             if (_ground == null || !_ground.Solid) return 2e-9;
             double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? (_underSea ? GrainField.For("ocean") ?? _ground.GrainMix(y / r) : _ground.GrainMix(y / r)) : null;   // (under the sea: the bed's own grains)
-            return gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9;
+            return Math.Max(gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9, _ground.ReadyStep < 1e30 ? _ground.ReadyStep * 1.6 : 0);   // (and never later than the drawn pieces' own cell: their flat faces are the floor until then)
         }
         private double AboveGround()
         {
@@ -2728,6 +2756,7 @@ namespace Universe.Shell
                         {
                             double rsKm = Physics.HorizonKm(exd.Mass);
                             _matter.SetHole(dspot, rsKm, exd.Mass); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1;
+                            { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); }   // the axis you came in on: the well's grid is drawn down it
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }
                         if (exd.Pl != null && (exd.Pl.Id.Contains("neutron") || exd.Pl.Id.Contains("pulsar") || exd.Pl.Id.Contains("magnetar")))
@@ -2812,7 +2841,7 @@ namespace Universe.Shell
                     // ...but never inside the drawn ground: its pieces are flat triangles about ReadyStep across that can stand above
                     // the true ground, so stay at least 0.6 of a step above it until finer pieces are made (close enough to ask for them)
                     double floorKm = Math.Max(5e-7, Math.Min(ready, Math.Max(altBefore * 0.9, ready / 3 * 0.6)));
-                    if (altBefore < MatterView.OverlayKm) floorKm = 1e-9;                 // below a centimetre the grains cover the ground: no waiting, on down past the 30 micrometres where the matter takes over
+                    if (altBefore < MatterView.OverlayKm) floorKm = Math.Max(1e-9, _ground.ReadyStep < 1e30 ? _ground.ReadyStep * 1.2 : 1e-9);   // below a centimetre the grains cover the ground, but the drawn pieces are flat facets a cell across that can stand above the true ground: never under them (the sky showed through the planet), the matter takes over first                 // below a centimetre the grains cover the ground: no waiting, on down past the 30 micrometres where the matter takes over
                     {
                         // over the sea: no lower than a metre above the water, until the dive under the sea is in the universe view
                         double cx0, cy0, cz0; CamFromPlanet(out cx0, out cy0, out cz0); double r0 = Math.Sqrt(cx0 * cx0 + cy0 * cy0 + cz0 * cz0);
@@ -3462,7 +3491,7 @@ namespace Universe.Shell
                         // below): it split on down to microbe size under the overlay, a queue of a thousand pieces in flight for detail the
                         // grains already covered, and the frame rate went with it
                         var gmx = _ground.Solid && cr > 0 ? _ground.GrainMix(y / cr) : null;
-                        _ground.FinestEdgeKm = gmx != null && gmx.Size > 0 ? Math.Max(1e-7, gmx.Size * 4) : 0;
+                        _ground.FinestEdgeKm = gmx != null && gmx.Size > 0 ? Math.Max(1e-7, gmx.Size * 2) : 0;
                     }
                     _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), fogKm, fr, fg, fb, 0, 0, w, h, 400);   // detail scales with the GPU use
                 }
@@ -3489,7 +3518,7 @@ namespace Universe.Shell
                 if (!_matter.InSpace && _bodyUp != null) sv = MatterFrameFor(new Vec3((float)_bodyUp[0], (float)_bodyUp[1], (float)_bodyUp[2]), new Vec3((float)_bodyStar[0], (float)_bodyStar[1], (float)_bodyStar[2]), look);   // on a small body's ground: its own up and its star's light, as on a world's
                 else
                 {
-                    if (_matter.SpaceKind == 12) { _hud.DrawFill(_meshes, w, h, 0, 0, 0); _gpu.ClearDepth(); }   // inside a black hole: pitch black, all the way down
+                    if (_matter.SpaceKind == 12) { _hud.DrawFill(_meshes, w, h, 0, 0, 0); _gpu.ClearDepth(); DrawFallGrid(vp, right, up, w, h, time); _gpu.ClearDepth(); }   // inside a black hole: pitch black, all the way down, the well's grid the one reference
                     _matter.Light[0] = 0.4f; _matter.Light[1] = 0.7f; _matter.Light[2] = 0.6f;
                     var slk = Look; _matter.SetEye(slk.X, slk.Y, slk.Z);                     // in the gas too: your eye goes round the point you dive into
                     sv = Mat4.LookAt(new Vec3(0, 0, 0), slk, ViewUp());                // (the camera's own up: never flipping)

@@ -96,6 +96,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Every zoom ending at a crawl, the pull-outs from matter eased to the pop, chained zooms one movement:** (built: DNA-AND DESIGN 613; waits on the test) "u didnt fix the pull out to web it just instant stops i though i told u all movememnts need slow down a crawl once close to doing centematics"
 
+- [~] **The climb out of the hole looking up at the mouth the whole way:** (built: DNA-AND DESIGN 614; waits on the test) "and the balck hole climb out needs to be looking up on climb out not down"
+
 ---
 
 ## Pending

@@ -2016,7 +2016,7 @@ namespace Universe.Shell
                             // the grid turns past; the fall itself about a minute
                             double tf = Math.Max(0, Math.Min(1, _fallShare));
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
-                            double cyc = _tourT, thAim = cyc < 6 ? 0.2 : Math.PI - 0.08;   // (0: up, the mouth; pi: down, the point)
+                            double cyc = _tourT, thAim = sign < 0 ? 0.2 : cyc < 6 ? 0.2 : Math.PI - 0.08;   // (0: up, the mouth; pi: down, the point; climbing out: up at the mouth the whole way, never down at the point)
                             if (_fallTh < 0)
                             {
                                 // from the way you were looking as you came in (at the hole: down its axis), the turn's speed brought up from
@@ -2025,7 +2025,7 @@ namespace Universe.Shell
                                 _fallPh0 = Math.Atan2(l0.X * e2.X + l0.Y * e2.Y + l0.Z * e2.Z, l0.X * e1.X + l0.Y * e1.Y + l0.Z * e1.Z); _fallTurnT = 0;
                             }
                             _fallTurnT += dt; double fr = Math.Min(1, _fallTurnT / 1.5);
-                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * (cyc < 6 ? 1.1 : 0.6) * fr));   // (up to the mouth in the first seconds, then down the funnel, and held)
+                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * (cyc < 6 || sign < 0 ? 1.1 : 0.6) * fr));   // (up to the mouth in the first seconds, then down the funnel, and held; up again for the climb out)
                             double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _fallPh0 + _tourT * 0.12;
                             var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
                             var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;

@@ -9,6 +9,7 @@ namespace DnaAnd.Platform
         private const string ClassName = "DnaAndWindow";
         private readonly Win32.WndProc _proc; // kept alive so Windows can call it
         public IntPtr Handle { get; private set; }
+        [DllImport("gdi32.dll")] private static extern IntPtr GetStockObject(int i);
         public bool IsOpen { get; private set; }
         public readonly Input Input = new Input();
         public int Width { get { Win32.RECT r; Win32.GetClientRect(Handle, out r); return r.Right - r.Left; } }
@@ -153,6 +154,7 @@ namespace DnaAnd.Platform
                 lpszClassName = ClassName
             };
             Win32.OwnIcons(out wc.hIcon, out wc.hIconSm);                                   // its own icon in the title bar and the taskbar
+            wc.hbrBackground = GetStockObject(4);                                          // black from the first moment (before the card draws its first frame), never a white box
             if (Win32.RegisterClassEx(ref wc) == 0)
                 throw new InvalidOperationException("RegisterClassEx failed: " + Marshal.GetLastWin32Error());
 

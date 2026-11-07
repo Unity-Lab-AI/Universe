@@ -40,7 +40,7 @@ Change the version at the top of `release.cmd`.
 | `src/gen` | the universe's making: galaxies (`GalaxyGen`), star systems and units (`SpaceGen`), planet ground (`PlanetTerrain`), the CDF 9/7 wavelet (`Wavelet97`), mode-E detail (`ModeE`), the letters (`IconFont`) |
 | `src/shell` | the one world (`WorldView`: the camera, zoom, picking, info cards, time and days), the scale and cards on screen (`ScaleHud`), the matter below the ground at real sizes (`MatterView`: grains, crystals, molecules, atoms, electron shells, nuclei), the Help texts (`PreviewText`) |
 | `content/*.dnat` | the facts the universe is made from: the visible universe (`universe.dnat`: its size, its 100 billion galaxies, the cosmic web), tours (`tours/`), each kind of world (`terrain.dnat`), physics laws and gases (`physics.dnat`), kinds of stars (mass, radius, temperature), galaxies, zones (habitable, frost line), the 118 elements with their most common isotopes (`elements.dnat`), minerals and what each kind of ground is made of (`minerals.dnat`) |
-| `installer` | our own installer |
+| `installer` | our own installer, and the icons (`universe.ico`, `dna-and.ico`), drawn by our own `MakeIcons.cs` (a spiral galaxy, a double helix); every build puts its icon in the program and its installer |
 
 ## How the world holds together
 

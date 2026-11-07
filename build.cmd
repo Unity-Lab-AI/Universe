@@ -13,7 +13,7 @@ set OUT=build\Universe.exe
 if not "%1"=="" set OUT=build\%1\Universe.exe
 if not exist build mkdir build
 if not "%1"=="" if not exist build\%1 mkdir build\%1
-"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /unsafe /warnaserror+ /define:PREVIEW;UNIVERSE /out:%OUT% /resource:README.md,universe-readme.md /resource:docs\HOW-TO-BUILD.md,how-to-build.md /recurse:src\*.cs
+"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /unsafe /warnaserror+ /define:PREVIEW;UNIVERSE /win32icon:installer\universe.ico /out:%OUT% /resource:README.md,universe-readme.md /resource:docs\HOW-TO-BUILD.md,how-to-build.md /recurse:src\*.cs
 if errorlevel 1 (
   echo Build failed.
   exit /b 1

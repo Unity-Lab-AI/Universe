@@ -146,6 +146,7 @@ internal static class Setup
         public Wizard(string dir, bool update)
         {
             _update = update; _need = PayloadBytes();
+            try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }   // its own icon (the program's)
             Text = AppName + " " + Version + " Setup"; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false;
             StartPosition = FormStartPosition.CenterScreen; Font = new Font("Segoe UI", 10f); AutoScaleMode = AutoScaleMode.Dpi; ClientSize = new Size(640, 440);
             var head = new Panel { Dock = DockStyle.Top, Height = 70, BackColor = Color.FromArgb(10, 12, 20) };

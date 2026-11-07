@@ -7,6 +7,13 @@ namespace DnaAnd.Platform
 {
     internal static class Win32
     {
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode)] public static extern uint ExtractIconEx(string file, int index, IntPtr[] large, IntPtr[] small, uint n);
+        /// <summary>The program's own icon (large, small), from its file: for its windows and the taskbar.</summary>
+        public static void OwnIcons(out IntPtr large, out IntPtr small)
+        {
+            large = small = IntPtr.Zero; var l = new IntPtr[1]; var s = new IntPtr[1];
+            try { if (ExtractIconEx(System.Reflection.Assembly.GetEntryAssembly().Location, 0, l, s, 1) > 0) { large = l[0]; small = s[0]; } } catch { }
+        }
         public const uint WS_OVERLAPPEDWINDOW = 0x00CF0000;
         public const uint WS_VISIBLE = 0x10000000;
         public const int CW_USEDEFAULT = unchecked((int)0x80000000);

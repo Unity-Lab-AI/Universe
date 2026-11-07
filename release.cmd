@@ -22,7 +22,7 @@ copy /y "%~dp0CREDITS.md" "%STAGE%\docs\CREDITS.md" > nul
 if exist "%~dp0release\payload.zip" del "%~dp0release\payload.zip"
 powershell -NoProfile -Command "Compress-Archive -Path '%STAGE%\*' -DestinationPath '%~dp0release\payload.zip' -Force" || exit /b 1
 copy /y "%~dp0release\payload.zip" "%~dp0release\Universe-%VER%-windows.zip" > nul
-"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /warnaserror+ /define:UNIVERSE /out:"%~dp0release\Universe-Setup-%VER%.exe" /resource:"%~dp0release\payload.zip",payload.zip /r:"%FW%\System.IO.Compression.dll" /r:"%FW%\System.IO.Compression.FileSystem.dll" /r:System.Windows.Forms.dll /r:System.Drawing.dll "%~dp0installer\Setup.cs" || exit /b 1
+"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /warnaserror+ /define:UNIVERSE /win32icon:"%~dp0installer\universe.ico" /out:"%~dp0release\Universe-Setup-%VER%.exe" /resource:"%~dp0release\payload.zip",payload.zip /r:"%FW%\System.IO.Compression.dll" /r:"%FW%\System.IO.Compression.FileSystem.dll" /r:System.Windows.Forms.dll /r:System.Drawing.dll "%~dp0installer\Setup.cs" || exit /b 1
 rmdir /s /q "%STAGE%"
 del "%~dp0release\payload.zip"
 echo Built release\Universe-Setup-%VER%.exe and release\Universe-%VER%-windows.zip

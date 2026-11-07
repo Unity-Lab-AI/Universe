@@ -26,7 +26,7 @@ namespace DnaAnd.Platform
         private const uint WS_CHILD = 0x40000000, WS_VISIBLE = 0x10000000, WS_TABSTOP = 0x00010000, WS_CAPTION = 0x00C00000, WS_SYSMENU = 0x00080000, WS_VSCROLL = 0x00200000;
         private const uint BS_DEFPUSHBUTTON = 0x1, BS_AUTOCHECKBOX = 0x3, ES_NUMBER = 0x2000, ES_AUTOHSCROLL = 0x80, CBS_DROPDOWNLIST = 0x3, WS_EX_CLIENTEDGE = 0x200;
         private const uint WM_CLOSE = 0x10, WM_SETFONT = 0x30, WM_COMMAND = 0x111, WM_CTLCOLORSTATIC = 0x138, WM_CTLCOLOREDIT = 0x133, BM_GETCHECK = 0xF0, BM_SETCHECK = 0xF1;
-        private const uint CB_RESETCONTENT = 0x14B, CB_ADDSTRING = 0x143, CB_SETCURSEL = 0x14E, CB_GETCURSEL = 0x147, EM_SETCUEBANNER = 0x1501, EM_LIMITTEXT = 0xC5;
+        private const uint CB_SETDROPPEDWIDTH = 0x160, CB_RESETCONTENT = 0x14B, CB_ADDSTRING = 0x143, CB_SETCURSEL = 0x14E, CB_GETCURSEL = 0x147, EM_SETCUEBANNER = 0x1501, EM_LIMITTEXT = 0xC5;
         private const uint Back = 0x140C0A, Ink = 0xF2EEEA, Dim = 0xB4AAA0;                 // (colours as 0x00BBGGRR)
         private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12;
 
@@ -48,10 +48,11 @@ namespace DnaAnd.Platform
             {
                 _proc = Proc;
                 var wc = new Win32.WNDCLASSEX { cbSize = (uint)Marshal.SizeOf(typeof(Win32.WNDCLASSEX)), lpfnWndProc = _proc, hInstance = inst, hCursor = Win32.LoadCursor(IntPtr.Zero, (IntPtr)32512), hbrBackground = _brush, lpszClassName = "UniverseLanding" };
+                Win32.OwnIcons(out wc.hIcon, out wc.hIconSm);
                 Win32.RegisterClassEx(ref wc); _registered = true;
             }
             float s = Math.Max(1f, SafeDpi(owner) / 96f);
-            int W = (int)(560 * s), H = (int)(620 * s), sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1);
+            int W = (int)(560 * s), H = (int)(660 * s), sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1);
             _wnd = Win32.CreateWindowEx(0, "UniverseLanding", DnaAnd.Shell.PreviewText.AppName, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, (sw - W) / 2, (sh - H) / 2, W, H, owner, IntPtr.Zero, inst, IntPtr.Zero);
             _big = CreateFont(-(int)(46 * s), 0, 0, 0, 300, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI Light");
             _font = CreateFont(-(int)(16 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");
@@ -68,9 +69,10 @@ namespace DnaAnd.Platform
             _record = Child("BUTTON", "Film the tour (an MP4 clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small); y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
-            _clips = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClips, x + (int)(64 * s), y, cw - (int)(64 * s) - (int)(196 * s), (int)(300 * s), _small);
-            Child("BUTTON", "Play", WS_TABSTOP, IdPlay, x + cw - (int)(188 * s), y, (int)(80 * s), row, _small);
-            Child("BUTTON", "Open folder", WS_TABSTOP, IdFolder, x + cw - (int)(100 * s), y, (int)(100 * s), row, _small); y += row + (int)(24 * s);
+            _clips = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClips, x + (int)(64 * s), y, cw - (int)(64 * s), (int)(300 * s), _small);   // the whole width, so a clip's name fits
+            SendMessage(_clips, CB_SETDROPPEDWIDTH, (IntPtr)(cw - (int)(64 * s)), IntPtr.Zero); y += row + (int)(6 * s);
+            Child("BUTTON", "Play", WS_TABSTOP, IdPlay, x + (int)(64 * s), y, (int)(100 * s), row, _small);
+            Child("BUTTON", "Open folder", WS_TABSTOP, IdFolder, x + (int)(172 * s), y, (int)(120 * s), row, _small); y += row + (int)(24 * s);
             ListClips();
             _fps = Child("BUTTON", "Show frames a second", BS_AUTOCHECKBOX | WS_TABSTOP, IdFps, x, y, cw / 2, row, _small);
             _invert = Child("BUTTON", "Invert up and down", BS_AUTOCHECKBOX | WS_TABSTOP, IdInvert, x + cw / 2, y, cw / 2, row, _small); y += row + (int)(6 * s);
@@ -83,10 +85,11 @@ namespace DnaAnd.Platform
             SendMessage(_fps, BM_SETCHECK, (IntPtr)(Settings.Get("show-fps", true) ? 1 : 0), IntPtr.Zero);
             SendMessage(_invert, BM_SETCHECK, (IntPtr)(Settings.Get("invert-up-down", false) ? 1 : 0), IntPtr.Zero);
             SendMessage(_record, BM_SETCHECK, (IntPtr)(Settings.Get("film-tour", false) ? 1 : 0), IntPtr.Zero);
-            EnableWindow(owner, false); SetForegroundWindow(_wnd);
+            Window.LandingOpen = true; Window.CloseAsked = false; SetForegroundWindow(_wnd);   // (the game's window stays enabled: its own close button quits too, never a refusing beep)
             Win32.MSG msg;
             while (_done == null)
             {
+                if (Window.CloseAsked) { _done = Choice.Quit; break; }
                 while (Win32.PeekMessage(out msg, IntPtr.Zero, 0, 0, 1))
                 {
                     if (!IsDialogMessage(_wnd, ref msg)) { Win32.TranslateMessage(ref msg); Win32.DispatchMessage(ref msg); }
@@ -100,7 +103,7 @@ namespace DnaAnd.Platform
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
             RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
-            EnableWindow(owner, true); Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
+            Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;
         }
 
@@ -121,7 +124,7 @@ namespace DnaAnd.Platform
                 }
             }
             catch { }
-            if (_clipFiles.Length == 0) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, "(none yet: tick Film the tour, or F9 while flying)");
+            if (_clipFiles.Length == 0) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, "none yet (Film the tour, or F9 in flight)");
             foreach (var f in _clipFiles) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, System.IO.Path.GetFileNameWithoutExtension(f));
             SendMessage(_clips, CB_SETCURSEL, IntPtr.Zero, IntPtr.Zero);
         }

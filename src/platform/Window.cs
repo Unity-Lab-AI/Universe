@@ -64,6 +64,8 @@ namespace DnaAnd.Platform
         public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211;
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
+        /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
+        public static volatile bool LandingOpen, CloseAsked;
         /// <summary>Frames a second, measured over the last half second or so (shown on screen when View > Show FPS is on).</summary>
         public static double Fps;
         public const int CmdTimeBase = 90;    // time speed i is CmdTimeBase + i
@@ -150,6 +152,7 @@ namespace DnaAnd.Platform
                 hCursor = Win32.LoadCursor(IntPtr.Zero, (IntPtr)Win32.IDC_ARROW),
                 lpszClassName = ClassName
             };
+            Win32.OwnIcons(out wc.hIcon, out wc.hIconSm);                                   // its own icon in the title bar and the taskbar
             if (Win32.RegisterClassEx(ref wc) == 0)
                 throw new InvalidOperationException("RegisterClassEx failed: " + Marshal.GetLastWin32Error());
 
@@ -202,6 +205,7 @@ namespace DnaAnd.Platform
             if (msg == Win32.WM_COMMAND) { MenuCommand = (int)((long)wParam & 0xFFFF); return IntPtr.Zero; }
             if (msg == Win32.WM_ENTERSIZEMOVE) InSizeMove = true;
             if (msg == Win32.WM_EXITSIZEMOVE) InSizeMove = false;
+            if (msg == 0x10 && LandingOpen) { CloseAsked = true; return IntPtr.Zero; }   // the window's own close while the landing page is up: Quit
             if (msg == Win32.WM_DESTROY)
             {
                 Win32.PostQuitMessage(0);

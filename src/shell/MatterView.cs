@@ -2093,9 +2093,9 @@ namespace Universe.Shell
                     L.Add("inside the event horizon: no light out");
                     L.Add(ScaleHud.Words(r) + " from the middle (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
                     L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
-                    L.Add("to a watcher far away your clock slowed toward a stop as you neared the horizon, and they never see you cross it; by your own clock you did, and it runs on to the middle");
+                    L.Add("a far watcher never sees you cross the horizon; your own clock runs on to the middle");
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
-                    if (_holeSpin > 0) L.Add("the hole spins (" + _holeSpin.ToString("0.00") + " of the most it could): frame dragging sweeps space, and you, round with it; the funnel's spokes twist with it, more the deeper you go");
+                    if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round; the spokes twist");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }
                 }
                 else
@@ -2159,7 +2159,7 @@ namespace Universe.Shell
                 double bind = BindingMeV(ne.Z, ne.A);
                 if (ne.A > 1) L.Add("held by the strong force: " + bind.ToString("0") + " MeV in all, " + (bind / ne.A).ToString("0.0") + " MeV each, against its protons' electric push (" + (_aC * ne.Z * (ne.Z - 1) / Math.Pow(ne.A, 1 / 3.0)).ToString("0") + " MeV)");
                 L.Add(Decay(ne));
-                if (ne.HalfLifeS > 0) L.Add("half-life: " + Span(ne.HalfLifeS) + " (" + DecayWords(ne.Decays) + "); by the clock here (" + _speedName + ") half of them go in " + Span(ne.HalfLifeS / _simPerReal));
+                if (ne.HalfLifeS > 0) L.Add("half-life " + Span(ne.HalfLifeS) + " (" + ne.Decays + "); here half go in " + Span(ne.HalfLifeS / _simPerReal));
                 L.Add("width: about " + ScaleHud.Words(NucleusRadius(ne) * 2));
                 L.Add("about 100,000 times smaller than its atom");
                 return L;
@@ -2209,8 +2209,8 @@ namespace Universe.Shell
             L.Add((_picked != null ? "an atom of " : "under you: ") + e.Name.ToLowerInvariant() + " (" + e.Symbol + ")");
             L.Add("atomic number " + e.Z + ", mass " + e.A);
             L.Add("protons: " + e.Z + ", neutrons: " + (e.A - e.Z) + ", electrons: " + e.Z);
-            if (e.HalfLifeS > 0) L.Add("half-life: " + Span(e.HalfLifeS) + " (" + DecayWords(e.Decays) + "); by the clock here (" + _speedName + ") half of them go in " + Span(e.HalfLifeS / _simPerReal));
-            if (_picked == null && _focusParent != null) L.Add("decayed " + Span(_focusSince * _simPerReal) + " ago (" + DecayWords(_focusParent.Decays) + ") from " + _focusParent.Name.ToLowerInvariant() + "-" + _focusParent.A + "; its own decays follow in their own time");
+            if (e.HalfLifeS > 0) L.Add("half-life " + Span(e.HalfLifeS) + " (" + e.Decays + "); here half go in " + Span(e.HalfLifeS / _simPerReal));
+            if (_picked == null && _focusParent != null) L.Add("decayed " + Span(_focusSince * _simPerReal) + " ago (" + _focusParent.Decays + ") from " + _focusParent.Name.ToLowerInvariant() + "-" + _focusParent.A);
             L.Add("shells: " + string.Join(", ", Array.ConvertAll(e.Shells, x => x.ToString())));
             L.Add("width: about " + ScaleHud.Words(AtomRadius(e) * 2) + ", nucleus " + ScaleHud.Words(NucleusRadius(e) * 2));
             if (_space && _gasParts != null) { var top = (SpaceGen.Part[])_gasParts.Clone(); Array.Sort(top, (a, b) => b.Share.CompareTo(a.Share)); L.Add("made of: " + top[0].Name + ", " + top[1].Name + (top.Length > 2 ? ", " + top[2].Name : "")); }

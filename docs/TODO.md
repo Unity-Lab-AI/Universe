@@ -49,6 +49,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Clip size on the landing page, the clip's text measured right:** (built: DNA-AND DESIGN 587; waits on the test) "the text isnt sclaed correctly and i didnt have a resolution selection i could see for the recording"
 
+- [~] **Every card line one short clause; no card more than two thirds of the screen:** (built: DNA-AND DESIGN 588; waits on the test) "like currently the text is full from top to bottom and takes up too much screen"
+
 ---
 
 ## Pending

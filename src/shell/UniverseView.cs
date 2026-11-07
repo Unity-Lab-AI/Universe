@@ -1286,7 +1286,33 @@ namespace Universe.Shell
             if (moons > 0) parts.Add(moons == 1 ? "its moon" : "its " + moons + " moons");
             if (worlds > 0) parts.Add(worlds == 1 ? "another of its star's worlds" : worlds + " of its star's other worlds");
             parts.Add(day ? "the day sky, its star's light through the air" : "the galaxy's stars beyond");
-            string w = string.Join(", ", parts.ToArray()); return char.ToUpperInvariant(w[0]) + w.Substring(1);
+            string w = string.Join(", ", parts.ToArray()); w = char.ToUpperInvariant(w[0]) + w.Substring(1);
+            // the air, and what it does to the light: its make-up (the world's own, from its kind), the sky's colour (the air's own
+            // colour, as the game draws it), and the star's colour from its surface heat, seen through that air or not at all
+            string airHere = null; bool hasAir = _ground.AirKm > 0 && PlanetTerrain.Air.TryGetValue(_ground.Kind, out airHere) && !string.IsNullOrEmpty(airHere);
+            if (!hasAir) airHere = null;
+            string starCol = StarColourWords(_system.TempK), starKind = _system.StarName != null ? _system.StarName.ToLowerInvariant() : "its star";
+            if (!hasAir) return w + ". No air here: the sky is black by day, the stars shine beside its star, and its light comes unchanged, " + starCol + " (a " + starKind + ", " + _system.TempK.ToString("N0") + " K)";
+            string gases = AirGasesWords(airHere); string skyCol = ColourWords(_ground.AirR, _ground.AirG, _ground.AirB);
+            bool clear = airHere.ToLowerInvariant().StartsWith("nitrogen") || airHere.ToLowerInvariant().StartsWith("oxygen");
+            return w + ". The air, " + gases + ", " + (clear ? "scatters the blue of its star's light, so the sky is " + skyCol + " by day and reddens toward the horizon, where the light crosses the most air" : "tints the sky " + skyCol + " by day, its haze and dust scattering the light") + "; its star, a " + starKind + " at " + _system.TempK.ToString("N0") + " K, is " + starCol + ", and shows " + (clear ? "a little yellower" : "dimmer and redder") + " through the air than from space";
+        }
+        // the colour of a star from its surface heat (a black body: blue-white when hottest, red when coolest)
+        private static string StarColourWords(double k) { return k >= 10000 ? "blue-white" : k >= 7500 ? "white" : k >= 6000 ? "yellow-white" : k >= 5000 ? "yellow-orange" : k >= 3700 ? "orange" : k >= 2500 ? "red" : "a dim deep red"; }
+        // a colour in words, from its red, green and blue
+        private static string ColourWords(float r, float g, float b)
+        {
+            float mx = Math.Max(r, Math.Max(g, b)), mn = Math.Min(r, Math.Min(g, b)); if (mx <= 0.08f) return "nearly black";
+            if (mx - mn < 0.08f) return mx > 0.7f ? "white" : "grey";
+            if (b >= r && b >= g) return g > b * 0.8f ? "pale blue" : r > b * 0.6f ? "violet" : "blue";
+            if (r >= g && r >= b) return g > r * 0.75f ? "yellow" : g > r * 0.45f ? "orange, butterscotch" : "red";
+            return b > g * 0.7f ? "blue-green" : "green";
+        }
+        // an air's main gases in words, from its make-up line ("nitrogen 78%, oxygen 21%, ...": the first three, with their shares)
+        private static string AirGasesWords(string air)
+        {
+            var names = new List<string>(); foreach (var bit in air.Split(',')) { string t = bit.Trim(); int pc = t.IndexOf('%'); if (pc < 0) { int sp = t.IndexOf("  ("); if (sp > 0) t = t.Substring(0, sp); if (t.Length > 0 && names.Count < 3) names.Add(t); continue; } int sp2 = t.LastIndexOf(' ', pc); string nm = sp2 > 0 ? t.Substring(0, sp2).Trim() : t; string share = sp2 > 0 ? t.Substring(sp2 + 1, pc - sp2) : ""; if (names.Count < 3) names.Add(nm + (share.Length > 0 ? " " + share : "")); }
+            return names.Count == 0 ? "thin" : string.Join(", ", names.ToArray());
         }
         // a galaxy far across the universe (the stop's far-ly: a crossing of billions of light-years): a destination ahead of you,
         // inside the visible universe; the regions round it hold the same galaxies they always will (each from its own place), so

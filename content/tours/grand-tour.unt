@@ -264,7 +264,7 @@ do: look
 tilt: 55
 turn: 1.5
 seconds: 10
-caption: Look up
+caption: Look up: {sky}
 
 @stop sky
 do: orbit

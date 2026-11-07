@@ -63,15 +63,20 @@ namespace Universe.Gen
             int surface = compact ? 1200 : white ? 2000 : 6000;
             float cell = giant ? 1.6f : brown ? 1f : 5f;       // noise frequency: giants have huge convection cells
 
-            var normals = new Vec3[surface];
+            var normals = new Vec3[surface]; double spacing = Math.Sqrt(4 * Math.PI / surface);
             for (int i = 0; i < surface; i++)
             {
-                // even spread over the sphere
+                // even spread over the sphere, then each point jittered off its place by up to half the spacing, every way: the even
+                // spread alone is a spiral lattice, and near a big star, where its points stand apart, it read as rows of evenly
+                // spaced dots across the sky (the "patterning" seen in systems)
                 double yv = 1 - 2 * (i + 0.5) / surface, rr = Math.Sqrt(1 - yv * yv), th = i * 2.399963229728653;
-                normals[i] = new Vec3((float)(Math.Cos(th) * rr), (float)yv, (float)(Math.Sin(th) * rr));
+                var q = new Vec3((float)(Math.Cos(th) * rr), (float)yv, (float)(Math.Sin(th) * rr));
+                var e1 = Vec3.Cross(q, Math.Abs(q.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(q, e1).Normalized;
+                double ja = rng.NextDouble() * Math.PI * 2, jr = Math.Sqrt(rng.NextDouble()) * spacing * 0.5;
+                normals[i] = (q + e1 * (float)(Math.Cos(ja) * jr) + e2 * (float)(Math.Sin(ja) * jr)).Normalized;
             }
             // points just touching, not piled up: spacing on a sphere of radius 1 is about sqrt(4 pi / count)
-            float size = radius * (float)Math.Sqrt(4 * Math.PI / surface) * 0.62f;
+            float size = radius * (float)Math.Sqrt(4 * Math.PI / surface) * 0.9f;   // (wide enough to overlap its neighbours: one sheet of plasma close up, never separate dots)
             surface = 0;
             bool hot = r < g || b > 0.95f;
             var surf = new StarSurface { Normals = normals, Radius = radius, Size = size, Cell = cell, R = r, G = g, B = b,

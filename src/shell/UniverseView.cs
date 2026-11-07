@@ -400,14 +400,14 @@ namespace Universe.Shell
             // far sheet is above and behind you, the throat's ring at depth 0, the point at depth 2. You are at your real r
             double rhoCam = Math.Max(0, Math.Min(1, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs)));
             // the well inside the horizon is the dilation itself, not the hole's size: the funnel is drawn in the fall's own measure,
-            // each tenfold of the radius two views of length (T tenfolds from the horizon to the singularity at the quarks' size:
-            // about twenty-five for a stellar hole, thirty for a supermassive one), so it is far longer than the space the hole takes
+            // each tenfold of the radius two views of length, forty tenfolds from the horizon to the point for every hole (the way
+            // in is not the hole's size: inside there is near-infinite space and no space at once), so it is far longer than the space the hole takes
             // up, and it is complete at every depth: an inward spike. The mouth (the horizon's ring, the big opening) is above you,
             // the wall less than half a view out round you, and the cone squeezes straight down, linear, to the point ahead, where
             // it ends in no space at all: so far ahead and so thin that it closes to a single line long before the tip. Looking down
             // you see the whole run to the point; looking up, the whole run back to the opening
             const double PerTenfold = 2.0;
-            double T = Math.Max(3, Math.Log10(Math.Max(1e-300, _matter.HoleRs) / MatterView.KnownKm));   // tenfolds from the horizon to the end
+            double T = 40;                                                                              // tenfolds from the horizon to the end: the same immense run for every hole
             double tCam = Math.Min(T - 0.01, -Math.Log10(Math.Max(1e-300, rhoCam)));                   // your own depth in tenfolds below the horizon
             Func<double, double> radiusAt = t => 0.4 * Math.Max(0, T - t) / (T - tCam);                 // the cone's radius at a depth, in views: four tenths of a view at yours, nothing at the point: a spike
             double Smouth = radiusAt(0);                                                                 // the mouth's radius in views: the sheet outside the horizon is drawn at that scale (one horizon radius = Smouth)

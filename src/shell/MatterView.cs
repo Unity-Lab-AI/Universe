@@ -176,6 +176,7 @@ namespace Universe.Shell
             }
             Add(glow, 0, 0, 0, s * 0.06, 1f, 1f, 1f, s);
         }
+        private static string WayWords(double km) { double ly = km / 9.4607e12; return ly >= 1e9 ? (ly / 1e9).ToString("0.#") + " billion light-years" : ly >= 1e6 ? (ly / 1e6).ToString("0.#") + " million light-years" : ly >= 1 ? ly.ToString(ly >= 100 ? "N0" : "0.#") + " light-years" : ScaleHud.Words(km); }
         private static string Secs(double t)
         {
             if (t < 1e-3) return (t * 1e6).ToString("0.#") + " microseconds";
@@ -2106,6 +2107,7 @@ namespace Universe.Shell
                     L.Add(ScaleHud.Words(r) + " from the middle (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
                     L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
                     L.Add("a far watcher never sees you cross the horizon; your own clock runs on to the middle");
+                    { double way = _holeRs * (_holeRs / Math.Max(1e-300, r) - 1); L.Add("the way in so far: " + WayWords(way) + " (not the hole's size: space inside stretches without end, and closes to nothing)"); }
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
                     if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round; the spokes twist");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }

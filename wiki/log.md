@@ -17,3 +17,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (no balls, no sticks): DNA-AND DESIGN 590; `u08` updated.
 - 2026-11-07 (the well an inward spike, from the creator's shots): DNA-AND DESIGN 591.
 - 2026-11-07 (looking round the well as you fall): DNA-AND DESIGN 592.
+- 2026-11-07 (the patterning found; the way into a hole not its size): DNA-AND DESIGN 593, 594.

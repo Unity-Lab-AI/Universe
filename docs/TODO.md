@@ -59,6 +59,9 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Looking round the well as you fall, by hand and on the tour:** (built: DNA-AND DESIGN 592; waits on the test) "and as you fall u should be able to pan around slightly below and abow and to the sides to proply show the sturcture and shape of the grid u are falling into to is singularity"
 
+- [~] **The patterning found: a star's surface no longer a lattice of dots:** (built: DNA-AND DESIGN 593; waits on the test) "please tell me u finally see the scren sot of the petterning of the solar systems ive talked about so much before that is a random chance to find them but they are out there patterned lines up planets and bodies"
+- [~] **The way into a hole not its size: forty tenfolds for every hole, the way in on the card into the light-years:** (built: DNA-AND DESIGN 594; waits on the test) "and remeber traveling into a black hole is not relative to its size in a black hole there is near infinater space and no space at the same time. ie u cvasn trvel light years into ablack hole before reching the singularit at the internal funnel length is noit proptionasl to the size of the black hole space is infinate but at same time funnels down to no space at emense distances and scales"
+
 ---
 
 ## Pending

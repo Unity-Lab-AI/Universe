@@ -17,7 +17,8 @@ namespace Universe
         private static int Main(string[] args)
         {
             // any crash, on any thread, is written to the log with where it happened, before the program goes
-            AppDomain.CurrentDomain.UnhandledException += (o, ev) => { try { System.IO.Directory.CreateDirectory("build"); System.IO.File.AppendAllText(System.IO.Path.Combine("build", "last-run.log"), "crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine); } catch { } };
+            AppDomain.CurrentDomain.UnhandledException += (o, ev) => { try { if (OpenClip != null) OpenClip.Dispose(); } catch { } try {   // (a clip being filmed is finished first, so what was filmed still plays)
+                                                                                     System.IO.Directory.CreateDirectory("build"); System.IO.File.AppendAllText(System.IO.Path.Combine("build", "last-run.log"), "crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine); } catch { } };
             // --smoke <ms>: a timed test run that closes itself after <ms> milliseconds.
             int smokeMs = -1; bool testStall = false; int testDeep = -1; double testZoom = -1; bool testVisit = false, testCore = false; int openSet = 0; int openLook = 0; double testEvolve = 0; int testPlanet = -1; double clickAt = -1, clickX = 0.5, clickY = 0.5; double wheelFrom = -1, wheelFor = 0, backFrom = -1, backFor = 0; int pressKey = -1; double pressAt = -1; int testDyson = -1; bool testInside = false; int testJumps = 0; bool testFieldView = false; double testAlt = -1; double[] tour = null; int tourStep = 0; string tourName = "tour"; double shotAt = -1; string shotPath = null; int testSpeed = -1; double tryEvery = -1; int wheelEvery = 1; bool aimCentre = false; double journeyAt = -1, deepSince = -1; double clipAt = -1, clipFor = 10; string clipPath = null; Universe.Render.GifWriter clip = null; int clipFrame = 0; bool wantShot = false, wantRecord = false, wantTour = false; Universe.Render.Mp4Writer rec = null; double shotsEvery = -1, shotsNext = 0; int shotsN = 0; string shotName = null; string recordTour = null; bool recForTour = false;
             for (int i = 0; i < args.Length; i++)
@@ -348,17 +349,17 @@ namespace Universe
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
                     if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
-                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { rec = new Universe.Render.Mp4Writer(recordTour, gpu.Width, gpu.Height); recForTour = true; } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
+                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { rec = OpenClip = new Universe.Render.Mp4Writer(recordTour, gpu.Width, gpu.Height); recForTour = true; } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
                     if (recForTour && world != null && !world.Touring && !(world.TourPaused && !world.TourFinished)) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
                     if (wantRecord)
                     {
                         wantRecord = false; menuDirty = true;
                         if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; recForTour = false; }
-                        else try { rec = new Universe.Render.Mp4Writer(System.IO.Path.Combine(caps, "Universe " + stamp + ".mp4"), gpu.Width, gpu.Height); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec = null; }
+                        else try { rec = OpenClip = new Universe.Render.Mp4Writer(System.IO.Path.Combine(caps, Universe.Shell.PreviewText.AppName + " " + stamp + ".mp4"), gpu.Width, gpu.Height); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec = null; }
                     }
                     if (gpu.Grabbed != null && clipPath == null)
                     {
-                        if (wantShot && gpu.GrabW == gpu.Width) { try { Universe.Render.PngWriter.Save(System.IO.Path.Combine(caps, (shotName ?? "Universe " + stamp) + ".png"), gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("screenshot error · " + ex.Message); } wantShot = false; shotName = null; }
+                        if (wantShot && gpu.GrabW == gpu.Width) { try { Universe.Render.PngWriter.Save(System.IO.Path.Combine(caps, (shotName ?? Universe.Shell.PreviewText.AppName + " " + stamp) + ".png"), gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("screenshot error · " + ex.Message); } wantShot = false; shotName = null; }
                         if (rec != null && !(recForTour && world != null && (world.TourPaused || world.Loading))) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
                         gpu.Grabbed = null;
                     }
@@ -448,6 +449,8 @@ namespace Universe
         private const bool PreviewBuild = false;
 #endif
 
+        // the clip being filmed, if any: a crash finishes it first, so it still plays
+        private static Universe.Render.Mp4Writer OpenClip;
         private static void WriteLog(string line)
         {
             try

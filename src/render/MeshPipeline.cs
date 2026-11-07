@@ -125,7 +125,7 @@ float woctaveD(double3 p, uint key, uint k)
 float woctavesD(double3 p, uint key, float f0, float amp0, float gain, float maxF)
 {
     float sum = 0, amp = amp0, f = f0;
-    for (uint k = 0; k < 40; k++)
+    for (uint k = 0; k < 14u; k++)                                    // (never more than fourteen octaves for a pixel: the twelve stored, two of mode-E)
     {
         float fine = maxF / f; if (fine < 0.5) break;
         sum += min(1, fine - 0.5) * amp * woctaveD(p * (double)f, key, k);
@@ -157,7 +157,7 @@ float g01(uint key, uint j, uint seedW) { return (ghash(key, j, seedW) & 0xFFFFF
 float woctaves(float3 p, uint key, float f0, float amp0, float gain, float maxF)
 {
     float sum = 0, amp = amp0, f = f0;
-    for (uint k = 0; k < 40; k++)
+    for (uint k = 0; k < 14u; k++)                                    // (never more than fourteen octaves for a pixel: the twelve stored, two of mode-E)
     {
         float fine = maxF / f; if (fine < 0.5) break;
         sum += min(1, fine - 0.5) * amp * woctave(p * f, key, k);
@@ -222,7 +222,7 @@ float4 PS(VO i) : SV_Target
         // where this pixel is on the grain, in its own frame (radius 1), in double precision: the part the camera's place gives
         // (high and low halves) and the pixel's own small offset
         double3 L = (double3)i.wp * (double)detA.w + (double3)detA.xyz + double3(light.w, cam.w, fog.w); uint key = asuint(detB.x);
-        float fw = max(1e-15, length(fwidth(i.wp)) * detA.w), maxF = 0.5 / fw;        // this pixel's size on the grain (from the view, exact)
+        float fw = max(1e-15, length(fwidth(i.wp)) * detA.w), maxF = min(0.5 / fw, 16384);   // this pixel's size on the grain (from the view, exact); never more than about thirteen octaves for any pixel (each past the stored twelve runs mode-E: twenty-eight of them on every pixel of a big screen were seconds of work in one frame, and Windows reset the card). Finer than that the face's detail is its atomic terraces and atoms
         float h = woctavesD(L, key, 2.5, 0.16, 0.5, maxF) * detB.y;                    // in view units
         // close in, the face steps in single atomic layers: flat terraces with a step one layer high between them, as on a real
         // crystal face. They come in from about a micrometre across the view (a pixel three layers wide) to a tenth of that,
@@ -247,7 +247,7 @@ float4 PS(VO i) : SV_Target
             float3 gv = sign(det) * (dhx * r1 + dhy * r2) / abs(det); float gl = length(gv); if (gl > 1.2) gv *= 1.2 / gl;
             n = normalize(n - gv);
         }
-        float lim = min(maxF * 0.8, 5e5);
+        float lim = min(maxF * 0.8, 16384);
         float iron = woctavesD(L, key * 7u + 300u, 2.0, 1, 0.6, lim), clay = woctavesD(L + double3(9, 0, -4), key * 7u + 400u, 2.0, 1, 0.6, lim);
         float crk = woctavesD(L * 1.7, key * 7u + 500u, 2.0, 1, 0.6, lim), dark = clamp(0.5 - abs(crk) * 3, 0, 0.6);
         float ir = clamp(iron / 2.4 * 2.4 - 0.15, 0, 0.6), cl = clamp(clay / 2.4 * 2.4 - 0.2, 0, 0.5);

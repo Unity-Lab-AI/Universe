@@ -47,13 +47,13 @@ namespace Universe.Platform
             if (!_registered)
             {
                 _proc = Proc;
-                var wc = new Win32.WNDCLASSEX { cbSize = (uint)Marshal.SizeOf(typeof(Win32.WNDCLASSEX)), lpfnWndProc = _proc, hInstance = inst, hCursor = Win32.LoadCursor(IntPtr.Zero, (IntPtr)32512), hbrBackground = _brush, lpszClassName = "UniverseLanding" };
+                var wc = new Win32.WNDCLASSEX { cbSize = (uint)Marshal.SizeOf(typeof(Win32.WNDCLASSEX)), lpfnWndProc = _proc, hInstance = inst, hCursor = Win32.LoadCursor(IntPtr.Zero, (IntPtr)32512), hbrBackground = _brush, lpszClassName = Universe.Shell.PreviewText.AppName.Replace("-", "") + "Landing" };
                 Win32.OwnIcons(out wc.hIcon, out wc.hIconSm);
                 Win32.RegisterClassEx(ref wc); _registered = true;
             }
             float s = Math.Max(1f, SafeDpi(owner) / 96f);
             int W = (int)(560 * s), H = (int)(660 * s), sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1);
-            _wnd = Win32.CreateWindowEx(0, "UniverseLanding", Universe.Shell.PreviewText.AppName, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, (sw - W) / 2, (sh - H) / 2, W, H, owner, IntPtr.Zero, inst, IntPtr.Zero);
+            _wnd = Win32.CreateWindowEx(0, Universe.Shell.PreviewText.AppName.Replace("-", "") + "Landing", Universe.Shell.PreviewText.AppName, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, (sw - W) / 2, (sh - H) / 2, W, H, owner, IntPtr.Zero, inst, IntPtr.Zero);
             _big = CreateFont(-(int)(46 * s), 0, 0, 0, 300, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI Light");
             _font = CreateFont(-(int)(16 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");
             _small = CreateFont(-(int)(14 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");

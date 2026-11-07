@@ -350,14 +350,14 @@ namespace DnaAnd.Shell
                 var m = Mat4.RotationY(spin); var tilt = Mat4.Identity; tilt.M22 = ct; tilt.M23 = st; tilt.M32 = -st; tilt.M33 = ct;
                 var scale = Mat4.Identity; scale.M11 = sc; scale.M22 = sc; scale.M33 = sc;
                 var place = m * tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz);
-                DrawPoints(_bhDisc, _bhDiscN, place * vp, right, up, sc, 0.0012f, w, h, time, 0.02f, 1f, 2f);
-                if (ex.Feeding == 2) DrawPoints(_bhJets, _bhJetsN, tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz) * vp, right, up, sc, 0.0012f, w, h, time, 0.02f, 1f, 2f);
+                DrawPoints(_bhDisc, _bhDiscN, place * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 1f, 2f);   // (sizes in its own units: the placing scales them, and the view-distance limits are in its units too)
+                if (ex.Feeding == 2) DrawPoints(_bhJets, _bhJetsN, tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz) * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 1f, 2f);
             }
         }
         // -- asteroids and comets close in: a lumpy cratered rock lit from its star's side, made once (radius about 1) and drawn for
         // each, turned to its star and spinning on that line (so its lit side stays lit); a comet's dark nucleus in its coma, with
         // its ion tail straight away from the star and its wider curved dust tail --
-        private UploadBuffer _rockBuf, _cometBuf; private int _rockN, _cometN;
+        private UploadBuffer _rockBuf, _cometBuf, _nucBuf; private int _rockN, _cometN, _nucN;
         private bool ShapeShown(Extra ex, int h)
         {
             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
@@ -384,6 +384,7 @@ namespace DnaAnd.Shell
             var rock = new List<StarVertex>(); RockPoints(rock, new Rng(0x5A57E1UL), 30000, 0.75f, 0.68f, 0.6f, 1.0);
             _rockN = rock.Count; _rockBuf = new UploadBuffer(_gpu.Device, (long)_rockN * Stride); _rockBuf.Write(rock.ToArray(), _rockN);
             var cm = new List<StarVertex>(); var rng = new Rng(0xC0CE7UL); RockPoints(cm, rng, 20000, 0.5f, 0.48f, 0.46f, 0.35);   // a comet's nucleus: among the darkest things known
+            _nucN = cm.Count; _nucBuf = new UploadBuffer(_gpu.Device, (long)_nucN * Stride); _nucBuf.Write(cm.ToArray(), _nucN); cm.Clear();
             for (int k = 0; k < 9000; k++)
             {
                 // the coma: gas and dust round the nucleus, densest close in, out to about 2000 times its size
@@ -420,8 +421,9 @@ namespace DnaAnd.Shell
                 m.M21 = y2.X * sc; m.M22 = y2.Y * sc; m.M23 = y2.Z * sc;
                 m.M31 = z2.X * sc; m.M32 = z2.Y * sc; m.M33 = z2.Z * sc;
                 m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
-                if (ex.Shape == "comet") DrawPoints(_cometBuf, _cometN, m * vp, right, up, sc, 0.0012f, w, h, time, 0.05f, 1f, 2f);
-                else DrawPoints(_rockBuf, _rockN, m * vp, right, up, sc, 0.0012f, w, h, time, 0.05f, 1f, 2f);
+                if (ex.Shape == "comet") DrawPoints(_nucBuf, _nucN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
+                if (ex.Shape == "comet") DrawPoints(_cometBuf, _cometN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 0f);   // (its own units: the placing scales them; the coma and tails soft glows)
+                else DrawPoints(_rockBuf, _rockN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
             }
         }
         private UploadBuffer _extraBuf; private StarVertex[] _extraV = new StarVertex[0]; private readonly float[] _lens = new float[4], _web = new float[5];

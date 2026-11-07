@@ -188,7 +188,16 @@ namespace DnaAnd
                 if (chosen.HasValue) { Seed = chosen.Value; WriteLog("universe seed " + Seed + " (chosen on the landing page)"); }
             }
             WorldView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new WorldView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the one world: one camera through every scale
-            if (landing && landed == DnaAnd.Platform.Launcher.Choice.Tour && world != null) world.StartTour("grand-tour");
+            if (landing && landed == DnaAnd.Platform.Launcher.Choice.Tour && world != null)
+            {
+                world.StartTour("grand-tour");
+                if (DnaAnd.Platform.Launcher.RecordTour)
+                {
+                    // filmed: the whole tour as an MP4 clip in the captures folder, finished when the tour ends
+                    try { System.IO.Directory.CreateDirectory(DnaAnd.Platform.Launcher.Captures); } catch { }
+                    recordTour = System.IO.Path.Combine(DnaAnd.Platform.Launcher.Captures, "tour " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4");
+                }
+            }
             { int ti = Array.IndexOf(args, "--tour"); if (world != null && ti >= 0) world.StartTour(ti + 1 < args.Length && !args[ti + 1].StartsWith("--") ? args[ti + 1] : "grand-tour"); }   // a tour (content/tours/name.dnat)
             if (journey && Array.IndexOf(args, "--test-system") >= 0) { deep = new DeepView(gpu, pipeline, content, viewer.TypeOf(0), viewer.NameOf(0), Seed); deep.TestJourney(gpu.Width, gpu.Height); }
             if (testDeep >= 0) deep = new DeepView(gpu, pipeline, content, viewer.TypeOf(testDeep), viewer.NameOf(testDeep), Seed + (ulong)testDeep * 7919UL);

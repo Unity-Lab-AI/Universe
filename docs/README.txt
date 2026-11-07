@@ -7,7 +7,8 @@ Every part of it comes from one seed: the same seed always makes the same univer
 
 Start
   The landing page opens first. Type a seed (or press Random, or leave it blank for a new one), then Begin, or Take the
-  tour for a five-minute film of the whole journey. Settings and the Guide and wiki are there too.
+  tour for a five-minute film of the whole journey (tick Film the tour to save it as an MP4 clip). Clips lists the
+  clips filmed so far: Play one, or Open folder to see where they are. Settings and the Guide and wiki are there too.
 
 Controls
   Click                   pick a galaxy, star, planet, grain or atom: the camera turns to it and the wheel flies to it

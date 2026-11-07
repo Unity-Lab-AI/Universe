@@ -392,7 +392,7 @@ namespace Universe.Shell
             }
         }
         private UploadBuffer _photonBuf; private StarVertex[] _photonV = new StarVertex[0];
-        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap; private Extra _fallHole; private double _fallTau, _fallRate = 1; private bool _fallDeep;   // the fall's clock: proper time since the horizon, its rate against real time; deep: past a thousandth of a radius, the zoom carries on to the quarks   // the hole you are falling into: the camera itself travels down the axis toward its middle
+        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap; private Extra _fallHole; private double _fallTau, _fallRate = 1; private double _fallShare, _fallScale0;   // the way in, 0 at the horizon to 1 at the point (the fall's own measure: the view held at the horizon's scale till the walls meet, then the zoom into the point)   // the fall's clock: proper time since the horizon, its rate against real time; deep: past a thousandth of a radius, the zoom carries on to the quarks   // the hole you are falling into: the camera itself travels down the axis toward its middle
         /// <summary>Inside the horizon, the fall's one reference: the gravity well itself, in the world. The sheet of space round the
         /// hole as a square grid (the rubber sheet), bent into Flamm's paraboloid outside the horizon (its depth 2 root(rs (r - rs)),
         /// the exact shape of a still slice of Schwarzschild space, flat far out, vertical at the horizon's throat) and, inside the
@@ -411,7 +411,7 @@ namespace Universe.Shell
             // equation with its sign flipped (there g_rr is negative: space and time have swapped roles, and the depth is timelike),
             // 2 root(1 - r), running from the throat down to the point at r = 0, two radii below it. Down is toward the point: the
             // far sheet is above and behind you, the throat's ring at depth 0, the point at depth 2. You are at your real r
-            double rhoCam = Math.Max(0, Math.Min(1, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs)));
+            double rhoCam = Math.Pow(10, -Math.Max(0, _fallShare) * MatterView.FallTenfolds);   // your depth: the way in, in the fall's own measure
             // the well inside the horizon is the dilation itself, not the hole's size: the funnel is drawn in the fall's own measure,
             // each tenfold of the radius two views of length, forty tenfolds from the horizon to the point for every hole (the way
             // in is not the hole's size: inside there is near-infinite space and no space at once), so it is far longer than the space the hole takes
@@ -437,14 +437,19 @@ namespace Universe.Shell
             };
             // the sheet outside the horizon: its square grid every half radius out to eight, bent into Flamm's bowl down to the throat,
             // at the mouth's own scale (a view and a half), always: the opening you look back up at from any depth
-            for (int li = -16; li <= 16; li++)
             {
-                double c0 = li * 0.5; bool axisLine = li == 0;
-                for (int q = 0; q <= 640; q++)
+                // rings of the sheet at every radius out to eight, and spokes from the throat out: a gravity well, round from the top
+                // (a square grid read as a square at the mouth)
+                double[] sheetRings = { 1.08, 1.2, 1.4, 1.7, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8 };
+                foreach (double rho in sheetRings)
                 {
-                    double c1 = -8 + q * 16.0 / 640; double rho = Math.Sqrt(c0 * c0 + c1 * c1); if (rho < 1) continue;
-                    float br = (float)(axisLine ? 0.6 : 0.4) * (float)Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08);
-                    put(c0, c1, br, 0.35f, 0.9f, 0.6f); put(c1, c0, br, 0.35f, 0.9f, 0.6f);
+                    float br = (float)(0.45 * Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08)); int n = (int)Math.Max(96, Math.Min(2400, rho * Smouth * 2 * Math.PI / 0.02));
+                    for (int q = 0; q < n; q++) { double a = q * Math.PI * 2 / n; put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
+                }
+                for (int sp = 0; sp < 36; sp++)
+                {
+                    double a = sp * Math.PI * 2 / 36; int n = (int)Math.Max(100, Math.Min(1200, 7 * Smouth / 0.02));
+                    for (int q = 0; q <= n; q++) { double rho = 1 + 7.0 * q / n; float br = (float)(0.4 * Math.Max(0.25, 1 - Math.Abs(rho - 1) * 0.08)); put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
                 }
             }
             // inside: the whole cone, a ring every sixth of a tenfold from the mouth to the point and spokes the whole way down
@@ -559,7 +564,7 @@ namespace Universe.Shell
         // the picked hole's radius from you in horizon radii (outside, within sixty of them; inside, the fall), for the well's graph; 0 for none
         private double HoleRadii()
         {
-            if (_spaceScale > 0 && _matter.SpaceKind == 12) return _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs);
+            if (_spaceScale > 0 && _matter.SpaceKind == 12) return Math.Pow(10, -Math.Max(0, _fallShare) * MatterView.FallTenfolds);
             if (_tKind != 6 || _tIndex < 0 || _tIndex >= _extras.Count || !_extras[_tIndex].Hole || _extras[_tIndex].Mass <= 0) return 0;
             var ex = _extras[_tIndex]; double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) / rs;
             return d < 60 ? d : 0;
@@ -2002,7 +2007,7 @@ namespace Universe.Shell
                             // into it), held for the first seconds, then turned down along the funnel to its absolute point, and held
                             // there for the rest of the fall, the walls closing in round the view and meeting at it; a slow wheel, so
                             // the grid turns past; the fall itself about a minute
-                            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / MatterView.FallTenfolds));
+                            double tf = Math.Max(0, Math.Min(1, _fallShare));
                             double cyc = _tourT, thAim = cyc < 6 ? Math.PI - 0.2 : 0.08;
                             if (_tourT <= dt * 1.5) _fallTh = Math.PI - 0.2;                            // (up from the first frame)
                             _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 0.6));                   // (then down the funnel over some seconds, and held)
@@ -2013,9 +2018,8 @@ namespace Universe.Shell
                         }
                         else if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
-                        if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
-                        if (_spaceScale > 0 && _matter.SpaceKind == 12 && -Math.Log10(Math.Max(1e-300, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs))) >= MatterView.FallTenfolds) { done = true; _tourRate = 0; input.Wheel = 0; }   // the fall's point reached: the whole run, at the pace set
-                        else if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
+                        if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_spaceScale > 0 && _matter.SpaceKind == 12 && _fallShare < 1) || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
+                        if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
                     }
                     break;
                 case "shot":
@@ -2788,23 +2792,35 @@ namespace Universe.Shell
             if (_spaceScale > 0)
             {
                 // in a nebula's or cluster's gas: the same zoom, kept finely enough for atoms; out past where it began, back to space
-                if (input.Wheel != 0) _spaceScale *= Math.Pow(0.87, input.Wheel);
-                if (input.Wheel > 0) _matter.Landmarks(_spaceScale);                      // (on a body's ground: the wheel comes down onto an atom, its nucleus, a nucleon, a quark, as on a world's)
-                if (_spaceScale > _spaceTop) _spaceScale = 0; else _spaceScale = Math.Max(MatterView.BottomKm, _spaceScale);
-                if (_matter.SpaceKind == 12 && _fallHole != null)
+                bool falling = _matter.SpaceKind == 12 && _fallHole != null;
+                if (falling)
                 {
-                    // the fall itself, by the law: from rest far away, r^1.5 shrinks at a steady rate in your own time (dr/dtau = -c root(rs/r)),
-                    // so r(tau) = rs (1 - tau/tauEnd)^(2/3) from the horizon; the view follows r. Past a thousandth of a radius the time left
-                    // is a hundred-thousandth of the whole, and the zoom carries on at its own pace to the quarks' size (the wheel or the
-                    // tour); zooming out from there climbs back up
-                    double rsKm0 = _matter.HoleRs, tauEnd = 2.0 / 3 * rsKm0 / 299792.458;
-                    if (!_fallDeep && _spaceScale > 0)
+                    // the fall is a travel first and a zoom last: the way in from the horizon to the point (millions of light-years, the
+                    // fall's own measure) is run with the view held at the horizon's own scale, the walls of the well closing in round you
+                    // as it goes, each notch of the wheel a step of the way; only once the walls have met at the point does the wheel
+                    // zoom the view on into it, down to the quarks' size, where the singularity shows. Back out the same way
+                    const double NotchTenfolds = 0.060480747;                                     // a notch: 13% of the scale, in tenfolds
+                    if (input.Wheel != 0)
                     {
-                        _fallTau = Math.Min(tauEnd, _fallTau + dt * _fallRate);
-                        double rNow = rsKm0 * Math.Pow(Math.Max(0, 1 - _fallTau / tauEnd), 2.0 / 3);
-                        if (rNow < rsKm0 * 1e-3) _fallDeep = true; else _spaceScale = Math.Max(MatterView.BottomKm, rNow / 0.6);
+                        bool zooming = _fallShare >= 1 && (input.Wheel > 0 || _spaceScale < _fallScale0 * 0.999);
+                        if (zooming) _spaceScale = Math.Min(_fallScale0, Math.Max(MatterView.BottomKm, _spaceScale * Math.Pow(0.87, input.Wheel * 3)));
+                        else _fallShare = Math.Max(-0.001, Math.Min(1, _fallShare + input.Wheel * NotchTenfolds / MatterView.FallTenfolds));
+                        if (_fallShare < 1) _spaceScale = _fallScale0;
                     }
-                    { double rK = Math.Max(_spaceScale, MatterView.BottomKm) * 0.6; _matter.SetFallClock(_fallTau, _fallRate, Math.Sqrt(rsKm0 / Math.Max(1e-300, rK))); }
+                    if (_fallShare < 0) { _spaceScale = 0; _fallHole = null; falling = false; }   // climbed back out past the horizon
+                }
+                else
+                {
+                    if (input.Wheel != 0) _spaceScale *= Math.Pow(0.87, input.Wheel);
+                    if (input.Wheel > 0) _matter.Landmarks(_spaceScale);                      // (on a body's ground: the wheel comes down onto an atom, its nucleus, a nucleon, a quark, as on a world's)
+                    if (_spaceScale > _spaceTop) _spaceScale = 0; else _spaceScale = Math.Max(MatterView.BottomKm, _spaceScale);
+                }
+                if (falling)
+                {
+                    // the fall's clock: the whole way in takes two thirds of rs over c of your own time, run with the way
+                    double rsKm0 = _matter.HoleRs, tauEnd = 2.0 / 3 * rsKm0 / 299792.458;
+                    _fallTau = tauEnd * Math.Max(0, _fallShare);
+                    { double rK = rsKm0 * Math.Pow(10, -Math.Max(0, _fallShare) * MatterView.FallTenfolds); _matter.SetFallClock(_fallTau, _fallRate, Math.Sqrt(rsKm0 / Math.Max(1e-300, rK))); _matter.SetFallShare(Math.Max(0, _fallShare)); }
                     // the fall is travel as well as a zoom: from the horizon to the middle the camera itself goes down the axis it came in
                     // on, always at the view's own distance from the middle, the scale shrinking with it (both at once); climbing out it
                     // comes back up the same way, and leaves the dive just outside the horizon
@@ -2916,7 +2932,7 @@ namespace Universe.Shell
                             // the fall's clock: from the horizon to the middle takes two thirds of rs over c of your own time (26 seconds for a
                             // four-million-solar-mass hole, 70 microseconds for a stellar one, eleven minutes for a hundred-million-solar-mass one); it is
                             // shown over about thirty seconds, slowed or sped as that needs, and the card says by how much
-                            { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = Math.Max(1, tauEnd / 8.0); _fallDeep = false; }   // (the stretch on the hole's own clock, from the horizon to a thousandth of it, shown in about eight seconds whatever the hole: a big hole's seven hundred seconds took a minute; never slower than real)
+                            { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = Math.Max(1, tauEnd / 50.0); _fallShare = 0; _fallScale0 = _spaceScale; }   // (the stretch on the hole's own clock, from the horizon to a thousandth of it, shown in about eight seconds whatever the hole: a big hole's seven hundred seconds took a minute; never slower than real)
                             { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }

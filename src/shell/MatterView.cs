@@ -147,6 +147,9 @@ namespace Universe.Shell
         }
         private double _holeRs, _holeMass, _fallTau, _fallRate = 1, _fallSpeed;   // the fall's own clock: your proper time since the horizon, how fast it is shown against real time, your speed inward
         public void SetFallClock(double tau, double rate, double speedC) { _fallTau = tau; _fallRate = rate; _fallSpeed = speedC; }
+        private double _fallShare;
+        /// <summary>The way in, 0 at the horizon to 1 at the point: the fall's own measure (the view is held at the horizon's scale till the walls meet).</summary>
+        public void SetFallShare(double share) { _fallShare = share; }
         public double HoleRs { get { return _holeRs; } }
         /// <summary>Inside a black hole's horizon: the fall, pitch black (no light from anything here reaches anything else), down to
         /// the singularity at the middle, where the zoom finds quarks pressed closer than anything, as far as the laws we have go.</summary>
@@ -2103,14 +2106,14 @@ namespace Universe.Shell
                 // exactly light's; inside it is more, and outside it is less: content/physics.unt); the time left to the middle on
                 // your own clock (a radial fall from rest far away, the same in Newton's and Einstein's gravity: two thirds of
                 // r^1.5 over the root of 2GM); the stretch head to foot (the tide: 2GM over r cubed, across two metres)
-                double r = _scale * 0.6, rM = r * 1000, gm = Universe.Core.Physics.GmSol * _holeMass; bool at = _scale <= Nucleon * 8;
+                double r = _fallShare < 1 ? _holeRs * Math.Pow(10, -_fallShare * FallTenfolds) : Math.Min(_scale * 0.6, _holeRs * Math.Pow(10, -FallTenfolds)), rM = r * 1000, gm = Universe.Core.Physics.GmSol * _holeMass; bool at = _fallShare >= 1 && _scale <= Nucleon * 8;
                 if (!at)
                 {
                     L.Add("inside the event horizon: no light out");
                     L.Add(ScaleHud.Words(r) + " from the middle (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
                     L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
                     L.Add("a far watcher never sees you cross the horizon; your own clock runs on to the middle");
-                    { double share = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, r / _holeRs)) / FallTenfolds)); L.Add("the way in: " + WayWords(_wayInKm * share) + " of " + WayWords(_wayInKm) + " from the horizon to the singularity, by its mass (space inside stretches without end, and closes to nothing)"); }
+                    { double share = Math.Max(0, Math.Min(1, _fallShare)); L.Add("the way in: " + WayWords(_wayInKm * share) + " of " + WayWords(_wayInKm) + " from the horizon to the singularity, by its mass (space inside stretches without end, and closes to nothing)"); }
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
                     if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }

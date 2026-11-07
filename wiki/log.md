@@ -27,3 +27,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the well rings and straight spokes, the look up then down): DNA-AND DESIGN 601.
 - 2026-11-07 (the fall's grid at every scale): DNA-AND DESIGN 602.
 - 2026-11-07 (the disc's far side over the rim, the horizon stop pulled back): DNA-AND DESIGN 603.
+- 2026-11-07 (the sheet round, the fall a travel first): DNA-AND DESIGN 604.

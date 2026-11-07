@@ -80,6 +80,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The disc's far side bent over the shadow's rim, never hidden; the horizon stop where the shadow is a round orb:** (built: DNA-AND DESIGN 603; waits on the test) "anmd the black hold has a none round shape like half the acretion disk is invisible as there is like a shost blackness that not a real orb black hole centered in the accrtion disk its like it has a nig block build to the top of it that makes it not look like a orb black hole"
 
+- [~] **The sheet rings and spokes, round from the top; the fall a travel first and a zoom last:** (built: DNA-AND DESIGN 604; waits on the test) "okay the ggrid is square not correctl round at the top and its starts zooming in with never traveling the millions of light years to the singularity.. it only goes in like 200000m or something stufppid and starts zooming in way to quickly before the funnel even squeezes in" / "i toolk snaps"
+
 ---
 
 ## Pending

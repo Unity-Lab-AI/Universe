@@ -133,6 +133,23 @@ float woctavesD(double3 p, uint key, float f0, float amp0, float gain, float max
     }
     return sum;
 }
+// a world's clouds on the card, worked out for each pixel (never at the mesh's corners, which drew their edges as the
+// triangles' straight lines): value noise whose every finer layer is turned to its own angle, so nothing lines up in rows
+float cvh(int3 c, uint s) { return wh01(asuint(c.x) * 73856093u ^ asuint(c.y) * 19349663u ^ asuint(c.z) * 83492791u, s); }
+float cvn(float3 p, uint s)
+{
+    float3 fl = floor(p), f = p - fl; f = f * f * (3 - 2 * f); int3 c = (int3)fl;
+    float a = cvh(c, s), b = cvh(c + int3(1, 0, 0), s), cc = cvh(c + int3(0, 1, 0), s), d = cvh(c + int3(1, 1, 0), s);
+    float e = cvh(c + int3(0, 0, 1), s), g = cvh(c + int3(1, 0, 1), s), h = cvh(c + int3(0, 1, 1), s), k = cvh(c + int3(1, 1, 1), s);
+    return lerp(lerp(lerp(a, b, f.x), lerp(cc, d, f.x), f.y), lerp(lerp(e, g, f.x), lerp(h, k, f.x), f.y), f.z);
+}
+float cfbm(float3 p, uint s)
+{
+    static const float3x3 turn = float3x3(0.00, 0.80, 0.60, -0.80, 0.36, -0.48, -0.60, -0.48, 0.64);
+    float sum = 0, amp = 0.5, norm = 0;
+    for (uint k = 0; k < 9u; k++) { sum += cvn(p + k * 17.3, s + k * 101u) * amp; norm += amp; amp *= 0.5; p = mul(turn, p) * 2.0; }
+    return sum / norm;
+}
 // the ground's grains on the card: the same 32-bit hash and cells as the processor's grain field, so the very same grains
 static const int GPALB = 6 * WT * WT, GPALM = 16, GPALS = 2 + 16 + 48;
 uint ghash(uint i, uint j, uint seedW) { uint h = i * 0x9E3779B1u ^ j * 0x85EBCA77u ^ seedW; h ^= h >> 16; h *= 0x7FEB352Du; h ^= h >> 15; h *= 0x846CA68Bu; h ^= h >> 16; return h; }
@@ -261,10 +278,10 @@ float4 PS(VO i) : SV_Target
         if (gw > 0)
         {
             float3 up = float3(light.w, cam.w, fog.w); uint seedW = asuint(detB.w); uint3 base = uint3(asuint(detB.x), asuint(detB.y), asuint(detB.z));
-            float3 q = i.wp * invG + detA.xyz; int3 c0 = (int3)floor(q);
+            float3 q = i.wp * invG + detA.xyz; int3 c0 = (int3)floor(q - 0.5);              // the eight cells nearest this point: a grain is at most half a cell wide, its middle within the middle of its cell, so the one on top here is in one of them (27 cells were three times the work, and on a big screen more than a frame may take)
             int pb = GPALB + ((int)(nightCol.a + 0.5) - 1) * GPALS; int nm = (int)wave[pb];
             float best = -1e9; bool any = false; float3 bc = 0, bn = up;
-            for (int dz = -1; dz <= 1; dz++) for (int dy = -1; dy <= 1; dy++) for (int dx = -1; dx <= 1; dx++)
+            for (int dz = 0; dz <= 1; dz++) for (int dy = 0; dy <= 1; dy++) for (int dx = 0; dx <= 1; dx++)
             for (uint layer = 0; layer < 2; layer++)
             {
                 int3 cc = c0 + int3(dx, dy, dz); uint3 u = base + (uint3)cc;
@@ -302,6 +319,15 @@ float4 PS(VO i) : SV_Target
     float3 c = misc.z > 1.5 && misc.z < 2.5 ? i.col.rgb * max(lit, gl) * sc : baseCol * max(lit3, gl);
     c *= stain;
     float alpha = misc.z > 1.5 ? i.col.a : 1;
+    if (misc.z > 1.5 && misc.z < 2.5 && detA.w > 0)
+    {
+        // the cloud cover here, for this pixel: where on the world (in its radii, in the clouds' own turning frame), the
+        // kind's own share of cloud (detB.x), and a tidally locked world's day side cloudier (detB.y)
+        float3 d = normalize(i.wp * detA.w + detA.xyz);
+        float cc = cfbm(d * 2.4, asuint(detB.z)) + 0.1 * cos(d.y * 7) + detB.x;
+        if (detB.y > 0.5) cc += 0.25 * smoothstep(-0.3, 0.3, dot(d, light.xyz)) - 0.18;
+        alpha = smoothstep(0.54, 0.7, cc) * 0.92 * light.w;                 // (light.w: the kind's cloud thickness)
+    }
     if (misc.z < 0.5 && i.col.a < 0.995)
     {
         // a lustre (from the mineral's data): a = 0.9 vitreous, 0.8 metallic, 0.7 pearly, 0.6 resinous/waxy, 0.5 wet;

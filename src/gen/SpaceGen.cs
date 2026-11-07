@@ -217,18 +217,25 @@ namespace Universe.Gen
         {
             public string Kind; public double OrbitUnits, RadiusUnits, Period, Phase; public float R, G, B;
             /// <summary>Its kind's template in content/terrain.unt (null for a moon), and whether it is a giant (no ground).</summary>
-            public string Terrain; public bool Giant, Rings;
+            public string Terrain; public bool Giant, Rings, Locked;   // Locked: one face always to its star (by its orbit: physics.unt tidal-lock)
             /// <summary>What it is made of, for its card; and how much the tour's director wants to visit it.</summary>
             public string[] MakeUp, MakeUpDry; public double Interest = 1;
             // its orbit's tilt to the system's plane and where it crosses it (radians): planets lie within a few degrees of one
             // plane (ours: Mercury 7, Pluto 17; around other stars mostly 1 to 3 degrees between planets, some far out of line);
             // close moons in their planet's plane, far captured ones at any tilt, even going round backwards
             public double Incl, Node;
+            /// <summary>Its orbit's eccentricity (0 a circle) and where its closest point lies along it, from where it crosses the plane (radians).</summary>
+            public double Ecc, Peri;
             /// <summary>Where on its orbit it is at angle <paramref name="ang"/> from where it crosses the plane, from what it circles.</summary>
             public void At(double ang, out double x, out double y, out double z)
             {
-                double cu = Math.Cos(ang), su = Math.Sin(ang), cn = Math.Cos(Node), sn = Math.Sin(Node), ci = Math.Cos(Incl), si = Math.Sin(Incl);
-                x = OrbitUnits * (cn * cu - sn * su * ci); y = OrbitUnits * su * si; z = OrbitUnits * (sn * cu + cn * su * ci);
+                // ang runs evenly with time (the mean anomaly): Kepler's equation gives where on its ellipse that puts it, fast
+                // at its closest point, slow at its farthest; its distance from what it circles follows
+                double e = Math.Min(0.95, Math.Max(0, Ecc)), M = ang % (2 * Math.PI), E = M + e * Math.Sin(M);
+                for (int it = 0; it < 12; it++) { double dE = (E - e * Math.Sin(E) - M) / (1 - e * Math.Cos(E)); E -= dE; if (Math.Abs(dE) < 1e-12) break; }
+                double nu = 2 * Math.Atan2(Math.Sqrt(1 + e) * Math.Sin(E / 2), Math.Sqrt(1 - e) * Math.Cos(E / 2)), r = OrbitUnits * (1 - e * Math.Cos(E)), u = nu + Peri;
+                double cu = Math.Cos(u), su = Math.Sin(u), cn = Math.Cos(Node), sn = Math.Sin(Node), ci = Math.Cos(Incl), si = Math.Sin(Incl);
+                x = r * (cn * cu - sn * su * ci); y = r * su * si; z = r * (sn * cu + cn * su * ci);
             }
             public int Parent = -1; // index of the planet a moon circles
         }
@@ -297,6 +304,7 @@ namespace Universe.Gen
                 b.Terrain = k.Id; b.Giant = giant; b.Kind = k.Label; b.MakeUp = k.MakeUp; b.MakeUpDry = k.MakeUpDry; b.Interest = k.Interest;
                 b.RadiusUnits = Units.Km(k.SpreadLo != k.SpreadHi ? k.SizeKm * rng.Range((float)k.SpreadLo, (float)k.SpreadHi) : k.SizeKm * k.SpreadLo);
                 b.R = k.Dot[0]; b.G = k.Dot[1]; b.B = k.Dot[2];
+                b.Locked = a < LockAu(content) * Math.Pow(mass, 1 / 3.0);                      // close enough to its star to be tidally locked: its day is its year
                 // rings by its template's chance (rings-chance), from its own place, so the seed's other worlds stay as they were
                 { ulong rh = (seed ^ (ulong)(i + 1) * 0x9E3779B97F4A7C15UL) * 0xBF58476D1CE4E5B9UL; rh ^= rh >> 31; b.Rings = (rh >> 11) * (1.0 / 9007199254740992.0) < k.RingChance; }
                 if (giant) { if (firstGiant == 0) firstGiant = a; } else lastRocky = a;
@@ -304,12 +312,21 @@ namespace Universe.Gen
                 int planetIndex = sys.Bodies.Count - 1;
                 var mk = WorldKind(content, null, 0, 0, 0, null, b.Terrain); int moons = mk.MoonsLo + rng.Int(mk.MoonsHi - mk.MoonsLo + 1);
                 for (int m = 0; m < moons; m++)
-                    sys.Bodies.Add(new Body
+                {
+                    var mo = new Body
                     {
-                        Kind = "Moon", Parent = planetIndex, OrbitUnits = b.RadiusUnits * rng.Range(3f, 40f),
-                        RadiusUnits = b.RadiusUnits * rng.Range(0.03f, 0.12f), Period = rng.Range(0.002f, 0.08f), Phase = rng.NextDouble() * Math.PI * 2,
-                        R = 0.8f, G = 0.78f, B = 0.75f
-                    });
+                        Parent = planetIndex, OrbitUnits = b.RadiusUnits * rng.Range(3f, 40f),
+                        RadiusUnits = b.RadiusUnits * rng.Range(0.03f, 0.12f), Period = rng.Range(0.002f, 0.08f), Phase = rng.NextDouble() * Math.PI * 2
+                    };
+                    // a moon is a world too: its kind from the same templates as the planets (moon-weight), by where its planet
+                    // circles the star; most airless rock or ice, now and then an ocean, a lava world or one with air (chosen from
+                    // its own place, so the system's other worlds stay as they were)
+                    var mr = new Rng(seed ^ ((ulong)(planetIndex + 1) * 0x9E3779B97F4A7C15UL) ^ ((ulong)(m + 1) * 0xBF58476D1CE4E5B9UL));
+                    var mkd = WorldKind(content, "moon", a / sys.HabitableAu, a / sys.FrostLineAu, sys.Luminosity, mr);
+                    mo.Kind = mkd.Label; mo.Terrain = mkd.Id; mo.MakeUp = mkd.MakeUp; mo.MakeUpDry = mkd.MakeUpDry; mo.Interest = mkd.Interest * 0.5;
+                    mo.R = mkd.Dot[0]; mo.G = mkd.Dot[1]; mo.B = mkd.Dot[2];
+                    sys.Bodies.Add(mo);
+                }
             }
             sys.Planets = count;
             foreach (var b in sys.Bodies)
@@ -322,6 +339,17 @@ namespace Universe.Gen
                 {
                     double far = b.OrbitUnits / Math.Max(1e-30, sys.Bodies[b.Parent].RadiusUnits);
                     b.Incl = far > 25 ? Math.Acos(1 - 2 * u1) : u1 * 2 * Math.PI / 180;    // close moons in the planet's plane; far ones captured, any tilt (past 90: backwards)
+                }
+                // its orbit's shape: an ellipse, from its own numbers (content/physics.unt orbits)
+                double u4 = Frac(Math.Sin(b.Phase * 7.7 + 2.3) * 31415.9265), u5 = Frac(Math.Sin(b.Phase * 3.1 + 7.9) * 27182.818), u6 = Frac(Math.Sin(b.Phase * 5.3 + 1.1) * 16180.339);
+                b.Peri = u5 * Math.PI * 2;
+                if (b.Parent < 0)
+                    b.Ecc = u6 < Orbit(content, "wild-share", 0.08) ? Orbit(content, "wild-ecc", 0.3) + (Orbit(content, "wild-ecc", 0.85, true) - Orbit(content, "wild-ecc", 0.3)) * u4
+                          : Math.Min(0.6, Orbit(content, "planet-ecc", 0.12) * Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, u4))));   // most gently oval, a share wild
+                else
+                {
+                    double far = b.OrbitUnits / Math.Max(1e-30, sys.Bodies[b.Parent].RadiusUnits);
+                    b.Ecc = far > Orbit(content, "moon-far-radii", 25) ? Orbit(content, "moon-far-ecc", 0.1) + (Orbit(content, "moon-far-ecc", 0.6, true) - Orbit(content, "moon-far-ecc", 0.1)) * u4 : Orbit(content, "moon-close-ecc", 0.04) * u4;
                 }
             }
 
@@ -357,7 +385,7 @@ namespace Universe.Gen
         public sealed class WorldKindRule
         {
             public string Id, Label, Forms; public double HzLo = -1, HzHi = -1, FrostLo = -1, FrostHi = -1, LumLo = -1, LumHi = -1, Weight = 1, Interest = 1;
-            public double SizeKm = 6371, SpreadLo = 1, SpreadHi = 1, RingChance; public int MoonsLo, MoonsHi; public float[] Dot = { 0.75f, 0.65f, 0.55f };
+            public double SizeKm = 6371, SpreadLo = 1, SpreadHi = 1, RingChance, MoonWeight; public int MoonsLo, MoonsHi; public float[] Dot = { 0.75f, 0.65f, 0.55f };
             public string[] MakeUp, MakeUpDry;
         }
         private static List<WorldKindRule> _kinds;
@@ -367,7 +395,7 @@ namespace Universe.Gen
             var list = new List<WorldKindRule>(); var ci = global::System.Globalization.CultureInfo.InvariantCulture; var nf = global::System.Globalization.NumberStyles.Float;
             foreach (var e in content.OfKind("terrain.unt", "terrain"))
             {
-                if (!e.Props.ContainsKey("forms")) continue;
+                if (!e.Props.ContainsKey("forms") && !e.Props.ContainsKey("moon-weight")) continue;
                 var k = new WorldKindRule { Id = e.Id, Label = e.Get("label", e.Name), Forms = e.Get("forms", "rocky") };
                 double lo, hi;
                 if (e.TryRange("orbit-hz", out lo, out hi)) { k.HzLo = lo; k.HzHi = hi; }
@@ -375,6 +403,7 @@ namespace Universe.Gen
                 if (e.TryRange("star-brightness", out lo, out hi)) { k.LumLo = lo; k.LumHi = hi; }
                 if (e.TryRange("weight", out lo, out hi)) k.Weight = lo;
                 if (e.TryRange("interest", out lo, out hi)) k.Interest = lo;
+                if (e.TryRange("moon-weight", out lo, out hi)) k.MoonWeight = lo;
                 if (e.TryRange("rings-chance", out lo, out hi)) k.RingChance = lo;
                 if (e.TryRange("size-km", out lo, out hi)) k.SizeKm = lo;
                 if (e.TryRange("size-spread", out lo, out hi)) { k.SpreadLo = lo; k.SpreadHi = hi; }
@@ -395,19 +424,34 @@ namespace Universe.Gen
             var all = Kinds(content);
             if (byId != null) { foreach (var k in all) if (k.Id == byId) return k; return new WorldKindRule { Id = byId, Label = byId }; }
             var fit = new List<WorldKindRule>(); double total = 0;
+            bool moon = forms == "moon";
             foreach (var k in all)
             {
-                if (k.Forms != forms) continue;
+                if (moon ? k.MoonWeight <= 0 : k.Forms != forms) continue;      // (a moon: any kind that can be one, by its moon-weight)
                 if (k.HzLo >= 0 && (x < k.HzLo || x >= k.HzHi)) continue;
                 if (k.FrostLo >= 0 && (f < k.FrostLo || f >= k.FrostHi)) continue;
                 if (k.LumLo >= 0 && (lum < k.LumLo || lum >= k.LumHi)) continue;
-                fit.Add(k); total += k.Weight;
+                fit.Add(k); total += moon ? k.MoonWeight : k.Weight;
             }
-            if (fit.Count == 0) { foreach (var k in all) if (k.Forms == forms) return k; return new WorldKindRule { Id = "default", Label = "World" }; }
+            if (fit.Count == 0) { foreach (var k in all) if (moon ? k.MoonWeight > 0 : k.Forms == forms) return k; return new WorldKindRule { Id = "default", Label = "World" }; }
             if (fit.Count == 1) return fit[0];
             double pick = rng.NextDouble() * total;
-            foreach (var k in fit) { pick -= k.Weight; if (pick <= 0) return k; }
+            foreach (var k in fit) { pick -= moon ? k.MoonWeight : k.Weight; if (pick <= 0) return k; }
             return fit[fit.Count - 1];
+        }
+
+        // a number of the law of orbit shapes (content/physics.unt orbits): a range's low end, or its high end
+        private static double Orbit(ContentLibrary content, string key, double fallback, bool high = false)
+        {
+            foreach (var e in content.OfKind("physics.unt", "law")) { double lo, hi; if (e.Id == "orbits" && e.TryRange(key, out lo, out hi)) return high ? hi : lo; }
+            return fallback;
+        }
+
+        // how close to a star of the Sun's mass a world is tidally locked (content/physics.unt tidal-lock)
+        private static double LockAu(ContentLibrary content)
+        {
+            foreach (var e in content.OfKind("physics.unt", "law")) { double lo, hi; if (e.Id == "tidal-lock" && e.TryRange("lock-au-sun", out lo, out hi)) return lo; }
+            return 0.5;
         }
 
         private static double ZoneAu(ContentLibrary content, string id, double fallback)

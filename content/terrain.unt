@@ -28,6 +28,8 @@
 # rings-chance: how often a world of the kind has rings (1 always: every giant of ours has them; rocky worlds now and then,
 #   from a moon torn apart inside its planet's pull); rings-colour: their colour; rings: how many specks make them; rings-radii: from and to, in its radii; rings-gap: a gap in them;
 #   rings-shade: banded (bright and banded, like Saturn's) or a number (faint and even, like Uranus's).
+# moon-weight: how often a moon is of this kind (moons are worlds too: rocky, icy, now and then an ocean, lava or air world),
+#   by where its planet circles the star. grains: the ground its matter is made of (content/minerals.unt mixes).
 # volcano-count: how many great volcanoes (30 usual); seafloor-volcanoes: volcanoes deep under the sea too; rivers: no for none.
 # Spec: docs/CONTENT-FORMAT.md · content/planets.unt
 
@@ -72,6 +74,7 @@ rings: 900
 rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
+moon-weight: 0.3
 
 @terrain ocean
 name: An ocean world
@@ -99,6 +102,7 @@ rings: 900
 rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
+moon-weight: 0.4
 
 @terrain desert
 name: A desert world
@@ -131,6 +135,7 @@ rings: 900
 rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
+moon-weight: 1.5
 
 @terrain lava
 name: A lava world
@@ -164,6 +169,7 @@ rings: 900
 rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
+moon-weight: 0.6
 
 @terrain snowball
 name: A snowball world
@@ -194,8 +200,10 @@ rings: 900
 rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
+moon-weight: 1
 
 @terrain tidally-locked
+# (a look for samples only: any world close enough to its star is locked by its orbit, physics.unt tidal-lock)
 name: A tidally locked world
 radius-km: 6700
 air-colour: 0.45 0.56 0.9
@@ -206,22 +214,7 @@ polar-ice: no
 dry: yes
 day-hours: 2000
 tides: 0.1
-forms: rocky
-label: Tidally locked world
-orbit-hz: 0.5..1.6
-star-brightness: 0..0.08
-weight: 3
-size-km: 6371
-size-spread: 0.5..1.6
-moons: 0..0
-dot-colour: 0.7 0.6 0.75
-interest: 4
-makeup: rock: silicate crust, iron core; one face scorched, one frozen; air: carbon dioxide, nitrogen
-rings-chance: 0.02
-rings: 900
-rings-radii: 1.4..2.2
-rings-shade: 0.3
-rings-colour: 0.6 0.56 0.52
+river-colour: 0.46 0.4 0.35
 
 @terrain gas-giant
 name: A gas giant
@@ -311,3 +304,49 @@ clouds: no
 @terrain dyson-shell
 name: A Dyson shell's inner land
 clouds: no
+
+@terrain moon
+name: A rocky moon
+label: Moon
+forms: moon
+moon-weight: 10
+radius-km: 1737
+clouds: no
+air-km: 0
+water: no
+dry: yes
+rivers: no
+life: no
+polar-ice: no
+volcano-count: 0
+land-share: 1
+rock-colour: 0.42 0.41 0.4 .. 0.55 0.53 0.5
+ground: 99 0.46 0.44 0.42 tinted
+dot-colour: 0.8 0.78 0.75
+interest: 1
+day-hours: 10..40
+grains: moon
+makeup: rock and dust, iron-poor; no air; craters from strikes
+
+@terrain icy-moon
+name: An icy moon
+label: Icy moon
+forms: moon
+moon-weight: 8
+orbit-frost: 1..1e9
+radius-km: 1560
+clouds: no
+air-km: 0
+water: yes
+frozen-sea: yes
+snow-patches: yes
+rivers: no
+life: no
+volcano-count: 0
+land-share: 0.1
+air-colour: 0.6 0.76 1
+ground: 99 0.78 0.82 0.88 tinted
+dot-colour: 0.9 0.95 1
+interest: 1.5
+grains: ice
+makeup: a crust of ice; perhaps a dark sea of water beneath; no air

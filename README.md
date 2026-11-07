@@ -128,7 +128,9 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | | |
 |---|---|
 | **Black holes** | A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets; quiet ones are a shadow and bent starlight |
-| **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, tidally locked worlds round red dwarfs, gas giants, ice giants and hot Jupiters. Some have **rings** |
+| **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, gas giants, ice giants and hot Jupiters. Some have **rings**. Those that orbit close to their star are **tidally locked**: one face always toward it, a day as long as a year |
+| **Moons** | Worlds in their own right: mostly airless rock or ice, now and then an ocean, a lava world or one with air |
+| **Orbits** | Never perfect circles: every orbit an ellipse, most gently oval, some long and wild, each body fastest at its closest point |
 | **Comets** | A dark nucleus, a glowing coma, an ion tail straight from the star and a curved dust tail |
 | **Asteroids** | Lumpy, cratered rock in a star's belts |
 | **Wanderers** | Neutron stars and rogue planets drifting between the stars |

@@ -97,9 +97,12 @@ Change the version at the top of `release.cmd`.
 | **Worlds** | Ground is built in the background on every core, finer under the camera. Changes (mountains, craters) are stored as CDF 9/7 wavelet terms and swapped in whole |
 | **Grains and matter** | `GrainField` is one field of loose rock for a whole world. `MatterView` places grains, crystals, atoms, electrons and nuclei at their real sizes round where you dive in |
 | **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
+| **Clouds and patterns** | A world's cloud cover is worked out for each pixel on the card, so cloud edges are soft at any distance; every layer of noise, on the card and on the processor, is turned to its own angle, so no pattern lines up in rows |
 | **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
 | **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.unt`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
 | **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
+| **Tidal locking** | A world close enough to its star (`tidal-lock` in `content/physics.unt`) turns once each orbit: its day is its year, one face always lit |
+| **Orbits** | Every orbit an ellipse (`orbits` in `content/physics.unt`); `Body.At` solves Kepler's equation, so each body is fastest at its closest point. Moons choose their kind from the same templates as planets (`moon-weight`) |
 
 ---
 

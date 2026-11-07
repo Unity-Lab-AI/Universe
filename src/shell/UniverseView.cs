@@ -62,6 +62,7 @@ namespace Universe.Shell
         {
             var b = _system.Bodies[i];
             if (b.Parent >= 0 || b.Terrain == null) return Math.Max(1, b.Parent >= 0 ? b.Period * 8766 : 24);
+            if (b.Locked) return Math.Max(1, b.Period * 8766);                          // tidally locked: it turns once each orbit, one face always to its star
             return Math.Max(1, PlanetTerrain.Instance(b.Terrain, WorldSeed(i)).DayHours);
         }
         // the seed a world of this system is made from (its ground, its own traits)
@@ -514,6 +515,9 @@ namespace Universe.Shell
                 m.M21 = y2.X * sc; m.M22 = y2.Y * sc; m.M23 = y2.Z * sc;
                 m.M31 = z2.X * sc; m.M32 = z2.Y * sc; m.M33 = z2.Z * sc;
                 m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
+                // a comet's coma first: thin gas, bright from afar, only a faint haze once you are inside it (its points stacked
+                // into a white blaze that hid the nucleus); its dark nucleus is drawn over it
+                if (ex.Shape == "comet") { float inC = (float)Math.Max(0.06, Math.Min(1, Math.Sqrt(Math.Sqrt(dx * dx + dy * dy + dz * dz) / Math.Max(1e-30, ex.R * 3000)))); DrawPoints(_cometBuf, _cometN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, inC, 0f); }
                 // the body itself, solid stone lit from its star (its camera's place in its own frame, for which faces show)
                 {
                     var mvp = m * vp; var mc = new float[BillboardPipeline.ConstantCount];
@@ -526,7 +530,7 @@ namespace Universe.Shell
                     _gpu.ClearDepth();
                     _meshes.Solid.Draw(comet ? _nucSolid : round ? _roundSolid : _rockSolid, comet ? _nucSolidN : round ? _roundSolidN : _rockSolidN, mc, 0, 0, w, h);
                 }
-                if (ex.Shape == "comet") DrawPoints(_cometBuf, _cometN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 0f);   // (its own units: the placing scales them; the coma and tails soft glows)
+
             }
         }
         private UploadBuffer _extraBuf; private StarVertex[] _extraV = new StarVertex[0]; private readonly float[] _lens = new float[4], _web = new float[5];
@@ -903,7 +907,7 @@ namespace Universe.Shell
                 var b = _system.Bodies[best];
                 _planet = best;
                 _spinRef = Spin(best);                                                     // (its day as it is now: the light where its star really is)
-                _ground = new PlanetTerrain(_gpu.Device, b.Terrain ?? DeepView.TerrainKind(b.Kind), b.Kind, WorldSeed(best), false, b.RadiusUnits / Units.Km(1)) { MixId = b.Kind == "Moon" ? "moon" : null };   // (a moon: its own regolith grains)
+                _ground = new PlanetTerrain(_gpu.Device, b.Terrain ?? DeepView.TerrainKind(b.Kind), b.Kind, WorldSeed(best), false, b.RadiusUnits / Units.Km(1)) { Locked = b.Locked || (b.Parent < 0 && PlanetTerrain.TerrainKind(b.Terrain).Locked) };   // (a moon: its own regolith grains)
             }
             if (_planet >= 0) BodyPos(_planet, out _px, out _py, out _pz);
         }
@@ -985,7 +989,7 @@ namespace Universe.Shell
             _matterSpot = spot; _matterPlanet = _planet; _mox = x / r; _moy = y / r; _moz = z / r;
             float mr0, mg0, mb0, mglow; _ground.Height(x / r, y / r, z / r, 30, out mr0, out mg0, out mb0, out mglow);
             bool molten = mglow > 0.5;                                                    // glowing molten ground: the matter there is melt
-            _matter.Set(molten ? "melt" : _system.Bodies[_planet].Kind == "Moon" ? "moon" : _ground.Kind, sea, ice, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
+            _matter.Set(molten ? "melt" : _ground.MixId ?? _ground.Kind, sea, ice, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
             // the planet's own grains, on the land's slope here: the same ones its ground is the top of
             {
                 double ux = x / r, uy = y / r, uz = z / r, ex, ey, ez, nx, ny, nz; GrainField.Axes(ux, uy, uz, out ex, out ey, out ez, out nx, out ny, out nz);
@@ -996,8 +1000,8 @@ namespace Universe.Shell
                 if (double.IsNaN(he) || Math.Abs(he) > 20) he = 0; if (double.IsNaN(hn) || Math.Abs(hn) > 20) hn = 0;
                 var gm = _ground.GrainMix(uy);
                 _matter.SetGround(R, ux, uy, uz, sea || molten ? null : gm != null ? gm.Id : null, _ground.GrainSeed, he, hn);
-                _matter.SetLife(_ground.HasWater && _ground.Traits.Life && _system.Bodies[_planet].Kind != "Moon");   // microbes on a living world's grains
-                string airHere; _matter.SetAirAbove(_system.Bodies[_planet].Kind == "Moon" || !PlanetTerrain.Air.TryGetValue(_ground.Kind, out airHere) ? null : airHere);   // its own air (a moon: none)
+                _matter.SetLife(_ground.HasWater && _ground.Traits.Life);   // microbes on a living world's grains
+                string airHere; _matter.SetAirAbove(_ground.AirKm <= 0 || !PlanetTerrain.Air.TryGetValue(_ground.Kind, out airHere) ? null : airHere);   // its own air (a moon: none)
             }
         }
 
@@ -1119,7 +1123,7 @@ namespace Universe.Shell
         // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
         // the last galaxy's kind, so the next is another kind
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
-        private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin;
+        private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin, _shotTurnT = 2;
         private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
         {
@@ -1201,7 +1205,11 @@ namespace Universe.Shell
                             _shotEl1 = Math.Max(-1.3, Math.Min(1.3, _shotEl0 + st.Rise * Math.PI / 180));
                             double decades = Math.Abs(Math.Log10(_shotD1 / _shotD0));
                             _shotLen = Math.Max(st.Seconds, decades / Math.Max(0.05, st.MaxRate) + 2);
-                            _shotT = 0; _shotLook0 = new[] { _fx, _fy, _fz };   // (where it looks as the shot begins: it turns from there to the subject, never snapping)
+                            _shotT = 0; _shotLook0 = new[] { _fx, _fy, _fz };
+                            // a turn takes as long as it needs at no more than about 20 degrees a second (eased in and out), and the shot
+                            // is long enough to hold it: a pick far behind you is turned to calmly, never whipped round to
+                            double turnDeg = Math.Acos(Math.Max(-1, Math.Min(1, -(_fx * tdx + _fy * tdy + _fz * tdz) / tl * -1))) * 180 / Math.PI;
+                            _shotTurnT = Math.Max(1.5, turnDeg / 20 * 1.5); _shotLen = Math.Max(_shotLen, _shotTurnT + 3);   // (where it looks as the shot begins: it turns from there to the subject, never snapping)
                         }
                         if (!WebNotMade) _shotT += dt;                                          // (held while the web's light is made)
                         double u = Math.Min(1, _shotT / _shotLen), e = u * u * (3 - 2 * u);
@@ -1211,7 +1219,7 @@ namespace Universe.Shell
                         // the camera to where the shot has it now (the subject where it is now: worlds move on their orbits)
                         _ox += tdx + vx * D; _oy += tdy + vy * D; _oz += tdz + vz * D;
                         // the look glides from where it was to the subject over the shot's first part (eased both ends), never a snap
-                        double lb = Math.Min(1, _shotT / Math.Max(1.5, Math.Min(3.5, _shotLen * 0.35))); lb = lb * lb * (3 - 2 * lb);
+                        double lb = Math.Min(1, _shotT / Math.Max(1.5, _shotTurnT)); lb = lb * lb * (3 - 2 * lb);
                         if (_shotLook0 != null && lb < 1)
                         {
                             double ax = _shotLook0[0], ay = _shotLook0[1], az0 = _shotLook0[2], bx = -vx, by = -vy, bz = -vz;
@@ -2796,10 +2804,12 @@ namespace Universe.Shell
                 {
                     double au = b.OrbitUnits / Units.Au(1);
                     L.Add("orbit: " + Au(b.OrbitUnits) + ", year " + (b.Period >= 1 ? b.Period.ToString("0.#") + " years" : (b.Period * 365.25).ToString("0") + " days"));
+                    L.Add("its orbit: " + (b.Ecc < 0.05 ? "near round" : b.Ecc < 0.25 ? "oval" : "a long ellipse") + " (eccentricity " + b.Ecc.ToString("0.00") + "), from " + Au(b.OrbitUnits * (1 - b.Ecc)) + " to " + Au(b.OrbitUnits * (1 + b.Ecc)));
                     L.Add(au >= sy.HabitableAu * 0.75 && au <= sy.HabitableAu * 1.4 ? "in the habitable zone" : au < sy.HabitableAu * 0.75 ? "inside the habitable zone: too hot" : "outside the habitable zone: too cold");
                     L.Add("moons: " + moons);
+                    if (b.Locked) L.Add("tidally locked: one face always toward its star, its day as long as its year");
                 }
-                else L.Add("orbit: " + Km(b.OrbitUnits) + " from its planet");
+                else L.Add("orbit: " + Km(b.OrbitUnits) + " from its planet" + (b.Ecc >= 0.05 ? ", " + (b.Ecc < 0.25 ? "oval" : "a long ellipse") + " (eccentricity " + b.Ecc.ToString("0.00") + ")" : ""));
                 bool here = _ground != null && _planet == _tIndex;
                 foreach (var m in MakeUp(b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water)) L.Add(m);
                 if (here) { L.Add("air: " + (_ground.AirKm > 0 ? "about " + _ground.AirKm.ToString("0") + " km deep" : "none") + (_ground.HasClouds ? ", clouds" : "")); }

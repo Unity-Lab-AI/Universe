@@ -101,7 +101,7 @@ namespace Universe.Gen
             if (radiusKm > 0) Radius = radiusKm;
             Solid = tk.Solid; HasWater = tk.Water; HasClouds = tk.Clouds;
             CloudKm = tk.CloudKm; AirKm = tk.AirKm; AirR = tk.Air[0]; AirG = tk.Air[1]; AirB = tk.Air[2];
-            _tk = tk;
+            _tk = tk; MixId = tk.Grains;                                                 // (the ground its matter is made of: its kind's grains)
         }
 
         // ── each kind of world is a template in content/terrain.unt (none named in code): any number may be a range
@@ -110,13 +110,15 @@ namespace Universe.Gen
         public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
             public double LandShare = 0.06, CloudShift, DayHours = 24, Tides = 0.5, Bands = 19, GreatStorm = 1;
             public bool Molten, Dunes, FrozenSea, SnowPatches, Locked, PolarIce = true, Dry, TropicalSoil, Life = true, ManyVolcanoes, Rivers = true, SeaFloorVolcanoes;
-            public double VolcanoCount = 30;
+            public double VolcanoCount = 30; public string Grains;
             public double[][] Ground;                  // land colours by height: below h, r g b, and 1 if the ground's patchiness tints it
             public float[] BandLow = { 0.42f, 0.26f, 0.16f }, BandHigh = { 0.96f, 0.88f, 0.78f }, Storm = { 0.96f, 0.93f, 0.86f }, River = { 0.1f, 0.3f, 0.5f }; }
         private static readonly Dictionary<string, TerrainKindData> Kinds = new Dictionary<string, TerrainKindData>();
         private static readonly Dictionary<string, ContentEntry> KindEntries = new Dictionary<string, ContentEntry>();
         private static ContentEntry _defEntry;
         private TerrainKindData _tk;
+        /// <summary>Whether one face always points at its star (by its orbit, not its kind): scorched day side, frozen night side, a twilight ring.</summary>
+        public bool Locked { get { return _tk.Locked; } set { _tk.Locked = value; } }
         /// <summary>This world's own traits (its kind's template, with its own values from its seed).</summary>
         public TerrainKindData Traits { get { return _tk; } }
         /// <summary>A kind's template, each range at its middle (for what is the same for every world of the kind).</summary>
@@ -164,7 +166,7 @@ namespace Universe.Gen
             t.Molten = yes("molten", false); t.Dunes = yes("dunes", false); t.FrozenSea = yes("frozen-sea", false); t.SnowPatches = yes("snow-patches", false);
             t.Locked = yes("tidally-locked", false); t.PolarIce = yes("polar-ice", true); t.Dry = yes("dry", false); t.TropicalSoil = yes("tropical-soil", false);
             t.Life = yes("life", true); t.ManyVolcanoes = g("volcanoes") == "many";
-            t.Rivers = yes("rivers", true); t.SeaFloorVolcanoes = yes("seafloor-volcanoes", false); t.VolcanoCount = d("volcano-count", 30);
+            t.Grains = g("grains").Length > 0 ? g("grains") : null; t.Rivers = yes("rivers", true); t.SeaFloorVolcanoes = yes("seafloor-volcanoes", false); t.VolcanoCount = d("volcano-count", 30);
             t.BandLow = c("band-dark", t.BandLow); t.BandHigh = c("band-light", t.BandHigh); t.Storm = c("storm-colour", t.Storm); t.River = c("river-colour", t.River);
             var gl = g("ground");
             if (gl.Length > 0)
@@ -202,11 +204,19 @@ namespace Universe.Gen
             return y0 + (y1 - y0) * fz;
         }
 
+        // each finer layer of noise turned to its own angle (the same turn as the card's clouds), so no layer's grid lines up
+        // with the one before: nature does not build in straight lines, and noise on one grid shows its rows
+        private static void TurnLayer(ref double x, ref double y, ref double z)
+        {
+            double a = 0.00 * x + 0.80 * y + 0.60 * z, b = -0.80 * x + 0.36 * y - 0.48 * z, c = -0.60 * x - 0.48 * y + 0.64 * z;
+            x = a; y = b; z = c;
+        }
+
         /// <summary>Layered noise, 0..1. <paramref name="first"/> is the first layer's frequency.</summary>
         private static double Fbm(double x, double y, double z, uint seed, double first, int layers)
         {
             double sum = 0, amp = 0.5, norm = 0, f = first;
-            for (int i = 0; i < layers; i++) { sum += Value(x * f + i * 17.3, y * f - i * 9.1, z * f + i * 3.7, seed + (uint)i * 101u) * amp; norm += amp; amp *= 0.5; f *= 2; }
+            for (int i = 0; i < layers; i++) { sum += Value(x * f + i * 17.3, y * f - i * 9.1, z * f + i * 3.7, seed + (uint)i * 101u) * amp; norm += amp; amp *= 0.5; f *= 2; TurnLayer(ref x, ref y, ref z); }
             return sum / norm;
         }
 
@@ -215,7 +225,7 @@ namespace Universe.Gen
         private static double Rough(double x, double y, double z, uint seed, double first, int layers, double gain)
         {
             double sum = 0, amp = 1, f = first;
-            for (int i = 0; i < layers; i++) { sum += (Value(x * f + i * 7.7, y * f - i * 3.3, z * f + i * 1.9, seed + (uint)i * 31u) * 2 - 1) * amp; amp *= gain; f *= 2; }
+            for (int i = 0; i < layers; i++) { sum += (Value(x * f + i * 7.7, y * f - i * 3.3, z * f + i * 1.9, seed + (uint)i * 31u) * 2 - 1) * amp; amp *= gain; f *= 2; TurnLayer(ref x, ref y, ref z); }
             return sum;
         }
 
@@ -241,7 +251,7 @@ namespace Universe.Gen
             for (int i = 0; i < layers; i++)
             {
                 double v = 1 - Math.Abs(Value(x * f + 5.1, y * f + i, z * f - 2.3, seed + 7000u + (uint)i) * 2 - 1);
-                sum += v * v * amp; norm += amp; amp *= 0.5; f *= 2;
+                sum += v * v * amp; norm += amp; amp *= 0.5; f *= 2; TurnLayer(ref x, ref y, ref z);
             }
             return sum / norm;
         }
@@ -1367,6 +1377,13 @@ namespace Universe.Gen
                     c[19] = rx; c[23] = ry; c[31] = rz;
                     c[27] = _drawingHull ? 2 : 1;
                 }
+                else if (surface == 2 && Solid)
+                {
+                    // the clouds worked out per pixel on the card: this piece's place in the world's radii (its corners are its
+                    // own offsets from it), the kind's share of cloud, whether one side always faces its star, the seed, the thickness
+                    c[40] = (float)(p.Cx / Radius); c[41] = (float)(p.Cy / Radius); c[42] = (float)(p.Cz / Radius); c[43] = (float)(1 / Radius);
+                    c[44] = (float)_tk.CloudShift; c[45] = _tk.Locked ? 1 : 0; c[46] = Bits(_seed + 500u); c[47] = 0; c[19] = (float)_tk.CloudThick;
+                }
                 else if (_gg && surface == 0)
                 {
                     // the sand on the card: this piece's place in grains from the cell under you, that cell (wrapped as the keys
@@ -1398,6 +1415,7 @@ namespace Universe.Gen
         // the air: one glowing shell around the planet, brightest at its edge, seen from space and from the ground alike
         private void DrawAir(MeshDrawer drawer, double camX, double camY, double camZ, Mat4 viewRot, Mat4 proj, float lx, float ly, float lz, int x, int y, int w, int h)
         {
+            if (AirKm <= 0) return;                                                      // (an airless world, as most moons are: no glow at its edge)
             if (_airShell == null)
             {
                 const int Lon = 96, Lat = 48;

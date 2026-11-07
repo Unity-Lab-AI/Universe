@@ -101,6 +101,8 @@ ground: 99 0.14 0.13 0.13 tinted
 | `orbit-frost` | Where its orbit lies against the **frost line**, where ices can form |
 | `star-brightness` | Only round stars this bright (the Sun is `1`; red dwarfs are below `0.08`) |
 | `weight` | When several kinds fit the same orbit, how often this one is chosen |
+| `moon-weight` | How often a **moon** is of this kind. Moons are worlds too: any kind with a moon-weight can be one, by where its planet circles the star. `@terrain moon` and `@terrain icy-moon` are the usual airless rock and ice |
+| `grains` | The ground its matter is made of, down to the atoms (a mix in `content/minerals.unt`) |
 
 > The liquid-water zone is often called the *habitable* zone, but it's only habitable for life like ours. Universe uses it purely as a place: where water can be liquid.
 
@@ -125,7 +127,9 @@ ground: 99 0.14 0.13 0.13 tinted
 | `land-share` | More land (higher) or more sea (lower) |
 | `water`, `dry`, `frozen-sea`, `molten`, `dunes`, `snow-patches`, `polar-ice` | What its surface is like |
 | `bands`, `band-dark`, `band-light`, `great-storm`, `storm-colour` | For giants: belts, zones and storms |
-| `tidally-locked`, `tides`, `volcanoes`, `volcano-count`, `seafloor-volcanoes`, `rivers`, `life` | Its behaviour |
+| `tides`, `volcanoes`, `volcano-count`, `seafloor-volcanoes`, `rivers`, `life` | Its behaviour |
+
+> **Tidal locking is not a kind.** Any world whose orbit is close enough to its star turns once each orbit, one face always toward it: its day is its year, its day side scorched and its night side frozen. How close is a law of physics (`tidal-lock` in `content/physics.unt`), not a trait of the kind.
 
 #### Rings
 
@@ -246,6 +250,8 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 
 | Law | What it sets |
 |---|---|
+| `@law orbits` | The shapes of orbits: every one an ellipse. `planet-ecc` how oval most planets are, `wild-share` and `wild-ecc` the share stretched into long ellipses, `moon-close-ecc` and `moon-far-ecc` for moons near and far. Each body moves by Kepler's law, fastest at its closest point |
+| `@law tidal-lock` | How close to a star a world turns once each orbit, one face always toward it (`lock-au-sun`: half an AU for a star of the Sun's mass, growing with the cube root of the star's mass) |
 | `@law air-density` | How many molecules are in each cubic centimetre of air at about one bar, so you meet the right number going into an air |
 | `@gas ...` | The atoms in each molecule of each gas, so an air's make-up gives the atoms you find in it |
 | `@law star-plasma` | What a star's surface is made of, and how dense it is |

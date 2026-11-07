@@ -965,7 +965,7 @@ namespace DnaAnd.Shell
 
         // ── a tour: a flight of stops read from content/tours/<name>.dnat, flown with the real controls (the wheel's zoom at one
         // steady rate, the drag's circling and looking, the same picks a click makes) so it shows the one world as it is ──
-        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
+        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds, Pan; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
         private List<TourStop> _tour; private int _tourAt; private double _tourClock, _tourStall, _tourLastD, _tourT, _tourRate;
         /// <summary>Starts the tour of that name (content/tours/name.dnat); false if there is none.</summary>
         public bool StartTour(string name)
@@ -974,7 +974,7 @@ namespace DnaAnd.Shell
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
             foreach (var e in _content.OfKind("tours/" + name + ".dnat", "stop"))
                 list.Add(new TourStop { Name = e.Id, Do = e.Get("do", "orbit"), Target = e.Get("target", "none"), Caption = e.Get("caption", ""), Rate = num(e.Get("rate", "0.3"), 0.3),
-                    UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes" });
+                    UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes", Pan = num(e.Get("pan", "0"), 0) });
             if (list.Count == 0) return false;
             _tour = list; _tourAt = 0; _tourT = 0; _tourRate = 0; _tourClock = 0;
             if (TimeStep == 0) SetTime(1);                                              // time runs on the tour (the planets turn, the electrons move)
@@ -983,7 +983,7 @@ namespace DnaAnd.Shell
         public bool Touring { get { return _tour != null; } }
         /// <summary>Stops the tour; the controls are yours again.</summary>
         public void StopTour() { _tour = null; _pressed = false; }
-        private double _tourH0, _tourLook, _tourLookFrom;
+        private double _tourH0, _tourLookFrom;
         // how fast the tour may go now: never faster than the world round you is made (slower when the frames a second drop below
         // about 45, and while many pieces of ground are still waiting to be built), eased so it never jerks
         private double _tourPace = 1;
@@ -1001,7 +1001,8 @@ namespace DnaAnd.Shell
         }
         // the tour is looking round (up at the sky, round the view, gliding): the view is its own, never turned back to the pick
         private bool TourLooking { get { if (_tour == null || _tourAt >= _tour.Count) return false; var d = _tour[_tourAt].Do; return _ground != null && (d == "look" || d == "glide" || (d == "orbit" && _tKind != 2)); } }
-        private string TourCaption { get { return _tour != null && _tourAt < _tour.Count ? _tour[_tourAt].Caption + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        // the caption: the stop's own (a pick, over in a moment, shows the next stop's, so every caption stays on through its flight)
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {
@@ -1026,6 +1027,7 @@ namespace DnaAnd.Shell
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OffTarget() < 0.07 ? sign * notches : 0;                     // never moving one way while looking another
+                        if (st.Pan != 0 && _tKind >= 0) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
                         if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
@@ -1121,18 +1123,9 @@ namespace DnaAnd.Shell
                     break;
                 default: done = true; break;
             }
-            // the story is read, never rushed: a stop goes on only once its words have had time to be read (a moment to look, then a
-            // quarter of a second a word); a zoom that has arrived holds still till then
+            // no pauses: each stop goes straight on into the next (its caption stays on through the flight); the looking round is
+            // done by the circling stops at the points that matter
             if (done && WebNotMade) { done = false; input.Wheel = 0; }               // (never on past the web before it shows)
-            if (done && st.Do != "pick" && !st.Through && _tourT < 1.5 + st.Caption.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length * 0.25)
-            {
-                // arrived and waiting for the words to be read: never frozen, it looks around, a slow eased turn with a gentle rise
-                // and fall, as a person would on reaching somewhere new
-                done = false; input.Wheel = 0; _tourLook = Math.Min(1, _tourLook + dt / 2);
-                double e = _tourLook * _tourLook * (3 - 2 * _tourLook);
-                if (_matterScale <= 0 && _spaceScale <= 0 && !(_ground != null && AboveGround() < Units.Km(MatterView.OverlayKm))) TourTurn(1.5 * Math.PI / 180 * dt * e, Math.Sin(_tourClock * 0.35) * 0.6 * Math.PI / 180 * dt * e);   // (among the grains and deep in the matter it holds steady: the view there is held on what you dive into)
-            }
-            else _tourLook = 0;
             if (done) { _tourAt++; _tourT = 0; }
         }
         // what a stop picks, as a click would

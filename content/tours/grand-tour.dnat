@@ -11,7 +11,7 @@ caption: Where we begin
 
 @stop open
 do: arc
-rate: -0.06
+rate: -0.2
 until-km: 2e18
 turn: 16
 seconds: 8
@@ -44,7 +44,7 @@ caption: Across the universe, past galaxy after galaxy, to one far away among a 
 
 @stop round-galaxy
 do: arc
-rate: 0.03
+rate: 0.15
 until-km: 8e17
 turn: 18
 seconds: 8

@@ -990,7 +990,7 @@ namespace DnaAnd.Shell
         public bool Touring { get { return _tour != null; } }
         /// <summary>Stops the tour; the controls are yours again.</summary>
         public void StopTour() { _tour = null; _pressed = false; }
-        private double _tourH0, _tourLookFrom;
+        private double _tourH0, _tourLookFrom; private bool _tourWaiting;
         // how fast the tour may go now: never faster than the world round you is made (slower when the frames a second drop below
         // about 45, and while many pieces of ground are still waiting to be built), eased so it never jerks
         private double _tourPace = 1;
@@ -1009,7 +1009,7 @@ namespace DnaAnd.Shell
         // the tour is looking round (up at the sky, round the view, gliding): the view is its own, never turned back to the pick
         private bool TourLooking { get { if (_tour == null || _tourAt >= _tour.Count) return false; var d = _tour[_tourAt].Do; return _ground != null && (d == "look" || d == "glide" || (d == "orbit" && _tKind != 2)); } }
         // the caption: the stop's own (a pick, over in a moment, shows the next stop's, so every caption stays on through its flight)
-        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {
@@ -1133,6 +1133,10 @@ namespace DnaAnd.Shell
             // no pauses: each stop goes straight on into the next (its caption stays on through the flight); the looking round is
             // done by the circling stops at the points that matter
             if (done && WebNotMade) { done = false; input.Wheel = 0; }               // (never on past the web before it shows)
+            // held back while what is ahead is still being made (the web's light, the ground): never still, so it never looks frozen;
+            // it keeps circling what it shows, and the caption says what it is waiting for
+            _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _ground.Backlog > 80);
+            if (_tourWaiting && _matterScale <= 0) TourTurn(10 * Math.PI / 180 * dt, 0);
             if (done) { _tourAt++; _tourT = 0; }
         }
         // what a stop picks, as a click would

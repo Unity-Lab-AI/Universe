@@ -247,6 +247,26 @@ A bar shows the universe being made, then it opens, whole.
 
 ---
 
+## Still to come
+
+Universe is a 0.1 preview of a program that is finished in its shape and growing in its depth. What it still owes, on its own:
+
+| | |
+|---|---|
+| **A star's layers** | Down through a star from its surface to the heavier elements at its core; today the dive goes into its surface plasma |
+| **Gravity as a live force** | Orbits shaped moment by moment by every body's pull (today every orbit follows Kepler's law exactly), and a switch to turn gravity off and watch every body fly straight on |
+| **The rest of relativity** | Length contraction, redshift and frame dragging, beside the turning perihelion, the slowed clocks and the horizons already in |
+| **Decay before your eyes** | Each nucleus already says how it would decay; it will do it |
+| **The fields** | The fields that particles are waves in, below the quarks' points |
+| **Light below its wavelength** | Today the grain's face goes to greys there, as an electron microscope sees; a true rendering of light that small is for later |
+| **The waveform everywhere** | The CDF 9/7 waveform carrying every field from the cosmic web to the microbes: gas and star fields, the ground itself, clouds, stars' surfaces |
+| **Native Linux and Mac** | Today Linux runs it through Wine with the script in the zip; native builds come with their own windowing and graphics |
+| **Screens in these pages** | The landing page, the installer and the document viewer, from the program itself |
+
+What it will never hold is life: that grows in **DNA-AND**, the game the lab builds on this universe.
+
+---
+
 ## Which guide
 
 | | Who it is for | What is in it |

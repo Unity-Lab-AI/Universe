@@ -108,4 +108,4 @@ There is no engine under this, no library beside it and no art inside it. The wi
 
 ## Still to come
 
-The waveform carrying every field from the cosmic web to the microbes (gas and star fields, the ground itself, clouds, stars' surfaces); a star's layers down to its core; then life on the worlds, and the larger game the lab builds on this universe.
+A star's layers down to its core; gravity as a live force, with a switch to turn it off; the rest of relativity (length contraction, redshift, frame dragging); decay happening before your eyes, and the fields particles are waves in; light rendered truly below its wavelength; the waveform carrying every field from the cosmic web to the microbes (gas and star fields, the ground itself, clouds, stars' surfaces); native Linux and Mac builds. Then life on the worlds, and the larger game the lab builds on this universe: that is DNA-AND's, never this program's.

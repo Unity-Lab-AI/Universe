@@ -766,6 +766,19 @@ namespace Universe.Shell
         }
 
         // how close the nearest thing is (universe units): a star of the near galaxy, or the edge of the nearest galaxy
+        // the nearest thing drawn round you: the nearest galaxy, star, world or ground, and the bodies drawn close (asteroids, comets,
+        // black holes' discs), so a shot's departure is paced from the one you were beside
+        private double NearestDrawn()
+        {
+            double best = NearestDistance();
+            foreach (var ex in _extras)
+            {
+                if (ex.Shape.Length == 0 && !ex.Hole) continue;
+                double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
+                if (d > 0 && d < best) best = d;
+            }
+            return best;
+        }
         private double NearestDistance()
         {
             if (_matterScale > 0) return Units.Km(_matterScale) * 0.5;
@@ -1389,7 +1402,10 @@ namespace Universe.Shell
                             double decades = Math.Abs(Math.Log10(_shotD1 / _shotD0));
                             _shotLen = Math.Max(st.Seconds, decades / Math.Max(0.05, st.MaxRate) + 2);
                             _shotT = 0; _shotLook0 = new[] { _fx, _fy, _fz };
-                            _shotP0 = new[] { _ax + _ox, _ay + _oy, _az + _oz }; _shotR0 = Math.Max(Units.Km(ViewDistanceKm()), Units.Km(1e-6));
+                            // the departure is paced from what was in view where the shot began: the nearest thing drawn (the asteroid or comet
+                            // you were beside, a world's ground, a star), never the distance to the new subject (its pick is made before the
+                            // shot starts, so that was an AU wide while the asteroid filled the view, and the asteroid was gone in a frame)
+                            _shotP0 = new[] { _ax + _ox, _ay + _oy, _az + _oz }; _shotR0 = Math.Max(Math.Min(Units.Km(ViewDistanceKm()), NearestDrawn()), Units.Km(1e-6));
                             // a turn takes as long as it needs at no more than about 20 degrees a second (eased in and out), and the shot
                             // is long enough to hold it: a pick far behind you is turned to calmly, never whipped round to
                             double turnDeg = Math.Acos(Math.Max(-1, Math.Min(1, -(_fx * tdx + _fy * tdy + _fz * tdz) / tl * -1))) * 180 / Math.PI;

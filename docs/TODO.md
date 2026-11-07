@@ -82,6 +82,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The sheet rings and spokes, round from the top; the fall a travel first and a zoom last:** (built: DNA-AND DESIGN 604; waits on the test) "okay the ggrid is square not correctl round at the top and its starts zooming in with never traveling the millions of light years to the singularity.. it only goes in like 200000m or something stufppid and starts zooming in way to quickly before the funnel even squeezes in" / "i toolk snaps"
 
+- [~] **The fall's look the right way round: up through the mouth, then down to the point:** (built: DNA-AND DESIGN 605; waits on the test) "i didnt see the walls of the spike cone fuuneel thing.. i only saw an opening at the top i was falling into"
+
 ---
 
 ## Pending

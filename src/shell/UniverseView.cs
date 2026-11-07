@@ -2008,8 +2008,8 @@ namespace Universe.Shell
                             // there for the rest of the fall, the walls closing in round the view and meeting at it; a slow wheel, so
                             // the grid turns past; the fall itself about a minute
                             double tf = Math.Max(0, Math.Min(1, _fallShare));
-                            double cyc = _tourT, thAim = cyc < 6 ? Math.PI - 0.2 : 0.08;
-                            if (_tourT <= dt * 1.5) _fallTh = Math.PI - 0.2;                            // (up from the first frame)
+                            double cyc = _tourT, thAim = cyc < 6 ? 0.2 : Math.PI - 0.08;   // (0: up, the mouth; pi: down, the point)
+                            if (_tourT <= dt * 1.5) _fallTh = 0.2;                                      // (up from the first frame)
                             _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 0.6));                   // (then down the funnel over some seconds, and held)
                             double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * 0.12;
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;

@@ -108,7 +108,7 @@ caption: Edge on, its gravity bends the light behind it into a thin ring round i
 
 @stop horizon
 do: shot
-to-radii: 1.3
+to-radii: 2.5
 sweep: 50
 rise: 10
 max-rate: 0.35

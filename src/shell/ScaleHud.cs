@@ -233,7 +233,7 @@ namespace Universe.Shell
         public void DrawCone(MeshPipes pipes, int w, int h, double dx, double dy, double dz, double theta)
         {
             double t = Math.Tan(0.45), aspect = w / (double)Math.Max(1, h), ct = Math.Cos(theta);
-            var l = new List<StarVertex>(); int step = Math.Max(1, h / 540);
+            var l = new List<StarVertex>(); int step = 1;   // (every row: a shadow's rim is a circle to the pixel, never a staircase of three-pixel rows)
             for (int y = 0; y < h; y += step)
             {
                 double ny = (1 - (y + step * 0.5) / h * 2) * t;

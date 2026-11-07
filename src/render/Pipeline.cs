@@ -153,11 +153,20 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             float3 rel = s.pos - cam; float along = dot(rel, toHole); float dz = along - rc;
             if (dz > 0)
             {
-                // behind the hole: what lies within its shadow's cone is behind the horizon as seen from here, and not seen (the shadow's
-                // half-angle from where the camera stands: sin^2 = (27/4)(rs/r)^2 (1 - rs/r), 2.6 radii across from afar, half the sky at
-                // the photon sphere, nearly all of it at the horizon)
+                // behind the hole: what lies within its shadow's cone as seen from here (the shadow's half-angle from where the camera
+                // stands: sin^2 = (27/4)(rs/r)^2 (1 - rs/r), 2.6 radii across from afar, half the sky at the photon sphere) is not lost:
+                // its light comes round the hole, and it shows bent over the shadow's rim, the deeper inside the farther over (the
+                // disc's far side as an arc above the shadow and another below it, the look of a hole in its disc from the side)
                 float s2 = 6.75 / (rc * rc) * max(0.0, 1.0 - 1.0 / rc); float th = rc >= 1.5 ? asin(sqrt(saturate(s2))) : 3.14159265 - asin(sqrt(saturate(s2)));
-                if (dot(normalize(rel), toHole) > cos(th)) holeHidden = true;
+                float3 rd = normalize(rel); float cang = dot(rd, toHole);
+                if (cang > cos(th))
+                {
+                    float ang = acos(saturate(cang)), ang2 = min(3.0, th * 1.03 + (th - ang) * 0.55);
+                    float3 perp = rd - toHole * cang; float pl = length(perp);
+                    if (pl < 1e-5) perp = normalize(cross(toHole, float3(0, 1, 0.001))); else perp /= pl;
+                    float3 nd = toHole * cos(ang2) + perp * sin(ang2);
+                    s.pos = cam + nd * length(rel); s.color.rgb *= 0.85;
+                }
             }
         }
     }

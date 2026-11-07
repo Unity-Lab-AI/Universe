@@ -78,6 +78,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The fall's grid drawn at every scale, never faded with the sky:** (built: DNA-AND DESIGN 602; waits on the test) "anbd near atom scales the grid just stopped being projected"
 
+- [~] **The disc's far side bent over the shadow's rim, never hidden; the horizon stop where the shadow is a round orb:** (built: DNA-AND DESIGN 603; waits on the test) "anmd the black hold has a none round shape like half the acretion disk is invisible as there is like a shost blackness that not a real orb black hole centered in the accrtion disk its like it has a nig block build to the top of it that makes it not look like a orb black hole"
+
 ---
 
 ## Pending

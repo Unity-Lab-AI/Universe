@@ -14,3 +14,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the clip's size on the landing page, its text measured right): DNA-AND DESIGN 587; `u09` updated.
 - 2026-11-07 (the cards short again): every line added today one clause, no card more than two thirds of the screen (DNA-AND DESIGN 588).
 - 2026-11-07 (the face and the ride, from the creator's shots): DNA-AND DESIGN 589.
+- 2026-11-07 (no balls, no sticks): DNA-AND DESIGN 590; `u08` updated.

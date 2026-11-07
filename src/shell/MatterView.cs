@@ -1361,29 +1361,9 @@ namespace Universe.Shell
             }
         }
 
-        // a bond's stick: a six-sided tube from one atom's middle to the other's, shaded smooth round it
-        private void Stick(List<StarVertex> mesh, double ax, double ay, double az, double bx, double by, double bz, double rad, float r, float g, float b, double s)
-        {
-            if (rad / s < 0.0008) return;
-            double dx = bx - ax, dy = by - ay, dz = bz - az, l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l < 1e-20) return; dx /= l; dy /= l; dz /= l;
-            // two directions square to the stick
-            double ux = Math.Abs(dy) < 0.9 ? 0 : 1, uy = Math.Abs(dy) < 0.9 ? 1 : 0, uz = 0;
-            double px = dy * uz - dz * uy, py = dz * ux - dx * uz, pz = dx * uy - dy * ux, pl = Math.Sqrt(px * px + py * py + pz * pz); px /= pl; py /= pl; pz /= pl;
-            double qx = dy * pz - dz * py, qy = dz * px - dx * pz, qz = dx * py - dy * px;
-            Func<double, double, double, double, double, double, StarVertex> V = (x, y, z, nx, ny, nz) => new StarVertex { X = (float)((x - _fx) / s + _ex), Y = (float)((y + _yOff - _fy) / s + _ey), Z = (float)((z - _fz) / s + _ez), Size = PackNormal(nx, ny, nz), R = r, G = g, B = b, A = 0.9f + 0.002f };
-            for (int k = 0; k < 6; k++)
-            {
-                double a0 = k * Math.PI / 3, a1 = (k + 1) * Math.PI / 3;
-                double n0x = px * Math.Cos(a0) + qx * Math.Sin(a0), n0y = py * Math.Cos(a0) + qy * Math.Sin(a0), n0z = pz * Math.Cos(a0) + qz * Math.Sin(a0);
-                double n1x = px * Math.Cos(a1) + qx * Math.Sin(a1), n1y = py * Math.Cos(a1) + qy * Math.Sin(a1), n1z = pz * Math.Cos(a1) + qz * Math.Sin(a1);
-                var v0 = V(ax + n0x * rad, ay + n0y * rad, az + n0z * rad, n0x, n0y, n0z); var v1 = V(ax + n1x * rad, ay + n1y * rad, az + n1z * rad, n1x, n1y, n1z);
-                var v2 = V(bx + n1x * rad, by + n1y * rad, bz + n1z * rad, n1x, n1y, n1z); var v3 = V(bx + n0x * rad, by + n0y * rad, bz + n0z * rad, n0x, n0y, n0z);
-                mesh.Add(v0); mesh.Add(v1); mesh.Add(v2); mesh.Add(v0); mesh.Add(v2); mesh.Add(v3);
-            }
-        }
-
-        // the bonds between the atoms drawn, as sticks of small beads, grey, from one atom to the other
-        private void Bonds(List<StarVertex> glow, List<StarVertex> mesh, List<CAtom> atoms, double s, double time, float f, bool sticks)
+        // the bonds between the atoms drawn, each as what it is: the two atoms' outer electrons shared between them (never a stick:
+        // that is the picture from before the quantum theory and the mapping of the electrons)
+        private void Bonds(List<StarVertex> glow, List<CAtom> atoms, double s, double time, float f)
         {
             if (f <= 0.02 || atoms.Count < 2) return;
             double cell = 3.2e-13; var grid = new Dictionary<long, List<int>>();
@@ -1402,8 +1382,7 @@ namespace Universe.Shell
                         double ex = b.X - a.X, ey = b.Y - a.Y, ez = b.Z - a.Z, d = Math.Sqrt(ex * ex + ey * ey + ez * ez), lim = (Cov(a.E) + Cov(b.E)) * 1.2;
                         if (d < 1e-16 || d > lim) continue;
                         bonds++;
-                        if (sticks && mesh != null) Stick(mesh, a.X, a.Y, a.Z, b.X, b.Y, b.Z, AtomSpacing * 0.07, 0.62f, 0.62f, 0.66f, s);   // the lattice's level: a grey stick, the ball-and-stick picture
-                        else SharedPair(glow, a, b, s, time, bonds, f);
+                        SharedPair(glow, a, b, s, time, bonds, f);
                     }
                 }
             }
@@ -1618,9 +1597,10 @@ namespace Universe.Shell
                 double px = 2.0 * s / Math.Max(1, _viewH); float f = 1;
                 var drawnAt = new List<CAtom>(); double bondReach = Math.Min(1.2 * s, AtomSpacing * 22);
                 double depth = s < AtomSpacing * 14 ? AtomSpacing * 9 : AtomSpacing * 3;     // close in, deep: solid every way you look
-                // one picture at a level, never two at once: the lattice's level (down to about a nanometre, four spacings) is the
-                // ball-and-stick picture, every atom a ball at its bonded size and the bonds sticks, nothing of the electrons; the
-                // atom's level below it has no balls: each atom its nucleus and its electrons on their paths (an atom is not a ball)
+                // one picture at a level, never two at once, and neither the picture from before the quantum theory: the lattice's
+                // level (down to about a nanometre, four spacings) is every atom as its electron cloud at its real size, its nucleus a
+                // spark at the middle, the bonds the shared electrons between neighbours; the atom's level below it is each atom's
+                // nucleus and its electrons on their paths and in their orbitals (an atom is never a ball, a bond never a stick)
                 bool lattice = s >= AtomSpacing * 4;
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
                 {
@@ -1633,19 +1613,19 @@ namespace Universe.Shell
                     // from afar a ball in its colour, growing up out of the face; close in the ball gives way to the atom's own system
                     // (its nucleus and its electrons on their paths), as the electrons are what an atom's size really is
                     if (ar < px * 0.5) continue;                                                 // (too small to show yet: the face's dots stand for it)
-                    long akey = (long)(at.X / 1e-14) ^ (long)(at.Z / 1e-14) * 31;   // each atom at its own size, its colour coming in   // ball and stick: the balls small, so the bonds show
+                    long akey = (long)(at.X / 1e-14) ^ (long)(at.Z / 1e-14) * 31;   // each atom at its own size, its colour coming in
                     if ((at.X - _fx) * (at.X - _fx) + (at.Z - _fz) * (at.Z - _fz) < bondReach * bondReach) drawnAt.Add(new CAtom { E = at.E, X = at.X, Y = ay, Z = at.Z });
-                    // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom a
-                    // ball of its element's colour at its bonded size, with the bonds between them: the ball-and-stick model, never a
-                    // dark field of nuclei too small to see
-                    if (lattice) { if (ar > px * 2) Add(solid, at.X, ay, at.Z, ar * 0.45, (0.45f + 0.55f * at.E.R) * sh, (0.45f + 0.55f * at.E.G) * sh, (0.45f + 0.55f * at.E.B) * sh, s); }
+                    // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom as
+                    // its electron cloud: a soft glow of its element's colour at its real size (the cloud of where its electrons may be,
+                    // densest at the middle), its nucleus a spark at the middle; never a ball
+                    if (lattice) { if (ar > px * 2) { Add(glow, at.X, ay, at.Z, ar * 1.1, (0.45f + 0.55f * at.E.R) * sh * 0.3f, (0.45f + 0.55f * at.E.G) * sh * 0.3f, (0.45f + 0.55f * at.E.B) * sh * 0.3f, s); Add(glow, at.X, ay, at.Z, ar * 0.45, (0.45f + 0.55f * at.E.R) * sh * 0.35f, (0.45f + 0.55f * at.E.G) * sh * 0.35f, (0.45f + 0.55f * at.E.B) * sh * 0.35f, s); Add(glow, at.X, ay, at.Z, Math.Max(NucleusRadius(at.E), s * 0.002), 1f * sh, 0.95f * sh, 0.9f * sh, s); } }
                     // the atom's level: one drawing of each atom (its nucleus and its electrons, each shown once big enough to see),
                     // the ones near where you look with their electrons' paths too
                     else if (NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
                     else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
                     { int nb = _bodies.Count; AddBody(1, 0, 0, at.X, ay, at.Z, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = at.E.Symbol; }   // every layer's atoms
                 }
-                if (AtomSpacing > px * 3) Bonds(glow, mesh, drawnAt, s, time, lattice ? 1f : 0.4f, lattice);   // (bonds once they span a few pixels: sticks at the lattice's level, the shared pairs themselves at the atom's, dimmer among the electrons)
+                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, lattice ? 1f : 0.4f);   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
@@ -2106,7 +2086,7 @@ namespace Universe.Shell
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
             // is for later)
-            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths; no ball)" : "level: the lattice (balls at their bonded size, sticks for the bonds)"); }   // (one picture at a level, named)
+            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths; no ball)" : "level: the lattice (each atom its electron cloud, the bonds their shared electrons)"); }   // (one picture at a level, named)
             if (!_space && Greyness > 0 && L.Count > 0) L.Add(Greyness >= 1 ? "no colour this small: below light's wavelength, in greys as an electron microscope sees; the atoms' and electrons' colours are marks, not light" : "colour is going: the view is nearing light's wavelength");
             return L;
         }

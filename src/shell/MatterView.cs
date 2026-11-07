@@ -288,7 +288,7 @@ namespace Universe.Shell
                     var els = ElectronsOf(e);
                     for (int k = 0; k < els.Length; k++)
                     {
-                        var el = els[k]; bool valence = el.N == shells; double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz);
+                        var el = els[k]; bool valence = el.N == shells; double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz, ElectronDrift(time));
                         Add(glow, x + ox * ar, y + oy * ar, z + oz * ar, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
                     }
                 }
@@ -360,7 +360,7 @@ namespace Universe.Shell
         }
         // where an electron is on its path (as a share of the atom's size, from its nucleus) at phase a, its orbital's shape
         // turned its own way for this atom (key)
-        private void ElectronAt(Electron el, long key, double a, out double x, out double y, out double z)
+        private void ElectronAt(Electron el, long key, double a, out double x, out double y, out double z, double drift = 0)
         {
             double r = el.R; a += el.Spin * Math.PI;                                       // (its partner of opposite spin: across from it)
             double u, v, w;
@@ -369,7 +369,7 @@ namespace Universe.Shell
                 case 0:
                     {
                         // s: round, a path on its sphere, tilted its own way
-                        double tilt = Hash(key + el.Sub, el.Spin, 33, _seed) * Math.PI;
+                        double tilt = Hash(key + el.Sub, el.Spin, 33, _seed) * Math.PI + drift * 0.5;   // (its plane turning slowly: a path never the same twice)
                         u = Math.Cos(a) * r; v = Math.Sin(a) * r * Math.Sin(tilt); w = Math.Sin(a) * r * Math.Cos(tilt); break;
                     }
                 case 1:
@@ -397,12 +397,15 @@ namespace Universe.Shell
                         u = Math.Cos(a) * q; v = Math.Sin(b) * Math.Sin(a) * q; w = Math.Cos(b) * Math.Sin(a) * q; break;
                     }
             }
-            // the whole atom's orbitals turned one way for this atom (its own place in the crystal)
-            double turn = Hash(key, 7, 34, _seed) * Math.PI * 2, ct = Math.Cos(turn), st = Math.Sin(turn);
-            x = u * ct - w * st; y = v; z = u * st + w * ct;
+            // the whole atom's orbitals turned one way for this atom (its own place in the crystal), and turning on slowly with time
+            // (drift: each subshell and orbital its own way), so every path keeps changing, as an electron's does
+            double turn = Hash(key, 7, 34, _seed) * Math.PI * 2 + drift * (0.6 + 0.25 * el.Sub + 0.1 * el.M), ct = Math.Cos(turn), st = Math.Sin(turn);
+            double x1 = u * ct - w * st, z1 = u * st + w * ct, tb = drift * 0.37 * (1 + 0.2 * el.Sub), cb = Math.Cos(tb), sb = Math.Sin(tb);
+            x = x1; y = v * cb - z1 * sb; z = v * sb + z1 * cb;
         }
         // how far round its path an electron is at a time (inner and more tightly held electrons faster; slowed to be watched)
-        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.5 * el.W + k * 2.399963229728653; }
+        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.15 * el.W + k * 2.399963229728653; }   // (slowed to be watched: a third of before)
+        private static double ElectronDrift(double time) { return time * 0.06; }   // how far the paths have turned on (radians): a slow precession, a whole turn in about two minutes
 
         private static int[] Shells(int z)
         {
@@ -895,7 +898,7 @@ namespace Universe.Shell
                 // a level floor of the face's own colour under its rings, far out all round, at the bed the grain lies on (never at
                 // its top, which buried the grains round it to their middles): never a hole or the dark past its edge
                 float fr = m.R * FocusShade * 0.85f, fg = m.G * FocusShade * 0.85f, fb = m.B * FocusShade * 0.85f, n0 = PackNormal(0, 1, 0);
-                double fy = (gy - rad * 0.9 + _yOff - _fy) / s + _ey, big = 400;
+                double fy = (Math.Max(gy - rad * 0.9, -_yOff - 6 * s) + _yOff - _fy) / s + _ey, big = 400;   // (deep in, just under the face: a backdrop past the rings, never black)
                 Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = m.Lustre };
                 _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, big));
             }
@@ -1538,14 +1541,15 @@ namespace Universe.Shell
                 for (int k = 0; k < els.Length; k++)
                 {
                     var el = els[k]; bool valence = el.N == shells;
-                    // its path, faint (only one of each orbital's pair: they share it)
+                    // its path, seen (only one of each orbital's pair: they share it), turning on slowly with the electron, so the
+                    // orbital's shape is read and is never the same twice
                     if (el.Spin == 0)
-                        for (int q = 0; q < 28; q++)
+                        for (int q = 0; q < 48; q++)
                         {
-                            double px, py, pz; ElectronAt(el, key, q * Math.PI * 2 / 28, out px, out py, out pz);
-                            Add(glow, x + px * ar, y + py * ar, z + pz * ar, dot * 0.35, (valence ? 0.16f : 0.08f) * f, (valence ? 0.12f : 0.12f) * f, (valence ? 0.04f : 0.2f) * f, s);
+                            double px, py, pz; ElectronAt(el, key, q * Math.PI * 2 / 48, out px, out py, out pz, ElectronDrift(time));
+                            Add(glow, x + px * ar, y + py * ar, z + pz * ar, dot * 0.4, (valence ? 0.4f : 0.2f) * f, (valence ? 0.3f : 0.3f) * f, (valence ? 0.1f : 0.5f) * f, s);
                         }
-                    double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz);
+                    double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz, ElectronDrift(time));
                     double exx = x + ox * ar, eyy = y + oy * ar, ezz = z + oz * ar;
                     // the electron you picked moves on its path: the camera keeps going to where it is now, and once all but
                     // there rides with it exactly (a point, however far in you go)

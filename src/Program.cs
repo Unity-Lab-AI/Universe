@@ -234,7 +234,8 @@ namespace Universe
                 else if (cmd == Window.CmdAbout) DocViewer.Show(window.Handle, PreviewText.Docs(), 1);
                 else if (cmd == Window.CmdReadme) DocViewer.Show(window.Handle, PreviewText.Docs(), 2);
                 else if (cmd == Window.CmdHowItWorks) DocViewer.Show(window.Handle, PreviewText.Docs(), 3);
-                else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 7);
+                else if (cmd == Window.CmdCompared) DocViewer.Show(window.Handle, PreviewText.Docs(), 5);
+                else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 8);
                 else if (cmd == Window.CmdStats) { Settings.Set("show-stats", !Settings.Get("show-stats", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertX) { Settings.Set("invert-left-right", !Settings.Get("invert-left-right", false)); menuDirty = true; }
                 else if (cmd == Window.CmdShot) wantShot = true;

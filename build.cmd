@@ -13,7 +13,7 @@ set OUT=build\Universe.exe
 if not "%1"=="" set OUT=build\%1\Universe.exe
 if not exist build mkdir build
 if not "%1"=="" if not exist build\%1 mkdir build\%1
-"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /unsafe /warnaserror+ /define:PREVIEW;UNIVERSE /win32icon:installer\universe.ico /out:%OUT% /resource:README.md,universe-readme.md /resource:docs\HOW-TO-BUILD.md,how-to-build.md /resource:docs\in-game\DOCS.md,docs.md /resource:docs\in-game\ABOUT.md,about.md /resource:docs\in-game\README.md,readme.md /resource:docs\in-game\HOW-IT-WORKS.md,how-it-works.md /resource:CREDITS.md,credits.md /resource:docs\GUIDE.md,guide.md /recurse:src\*.cs
+"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /unsafe /warnaserror+ /define:PREVIEW;UNIVERSE /win32icon:installer\universe.ico /out:%OUT% /resource:README.md,universe-readme.md /resource:docs\HOW-TO-BUILD.md,how-to-build.md /resource:docs\in-game\DOCS.md,docs.md /resource:docs\COMPARED.md,compared.md /resource:docs\in-game\ABOUT.md,about.md /resource:docs\in-game\README.md,readme.md /resource:docs\in-game\HOW-IT-WORKS.md,how-it-works.md /resource:CREDITS.md,credits.md /resource:docs\GUIDE.md,guide.md /recurse:src\*.cs
 if errorlevel 1 (
   echo Build failed.
   exit /b 1

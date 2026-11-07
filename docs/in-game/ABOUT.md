@@ -25,15 +25,7 @@ There's no life here yet, but the worlds aren't frozen. Their insides cool, plat
 
 ## Against the field
 
-| | On disk | What it holds |
-|---|---|---|
-| **Universe** | **1.7 MB** | About 10²² stars in 100 billion galaxies, every world down to its atoms and quarks, in one zoom |
-| Noctis IV (2002) | 1 to 5 MB | One galaxy of 78 billion stars, with planets to walk on |
-| SpaceEngine | 4 GB, 50 GB with its HD packs | Billions of galaxies, down to a world's ground |
-| Elite Dangerous | About 25 GB | One galaxy of 400 billion star systems |
-| No Man's Sky | 6 GB at launch, 10 to 15 GB now | 18 quintillion planets |
-
-Nothing in that list goes from the cosmic web to a quark in one camera, and nothing but Noctis comes near the size. To be fair, the others carry sound, stored art, gameplay and years of polish, which Universe doesn't yet. The full table, with sources, is in *The universe, in plain words*.
+Nothing else goes from the cosmic web to a quark in one camera, and nothing but two tiny pioneers comes near the size. The whole comparison, every project's own numbers, what each needs and how Universe runs, is its own page: *Against the field*.
 
 ## Built from nothing, meant to be taken
 

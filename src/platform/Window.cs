@@ -62,7 +62,7 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215;
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216;
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
@@ -110,6 +110,7 @@ namespace Universe.Platform
             Win32.AppendMenu(help, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdReadme, "Readme");
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdHowItWorks, "How it works (waveform, infinite zoom)");
+            Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdCompared, "Against the field (size, scope, performance)");
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdCredits, "Credits");
             Win32.AppendMenu(help, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdAbout, "About " + Universe.Shell.PreviewText.AppName);

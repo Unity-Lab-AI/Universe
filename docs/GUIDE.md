@@ -3,6 +3,8 @@
 <p align="center">
   <a href="../README.md" title="What Universe is, and how to fly it">Universe</a>
   &nbsp;·&nbsp;
+  <a href="COMPARED.md" title="Size, scope and performance against the other universe programs">Against the field</a>
+  &nbsp;·&nbsp;
   <a href="GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
   &nbsp;·&nbsp;
   <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>

@@ -1205,7 +1205,7 @@ namespace Universe.Shell
             get
             {
                 double want = Math.Max(0.5, Math.Min(1, Window.Fps / 40.0));
-                if (_ground != null && _ground.Backlog > 80) want *= Math.Max(0.6, 80.0 / _ground.Backlog);
+                if (_ground != null && _matterScale <= 0 && _ground.Backlog > 80) want *= Math.Max(0.6, 80.0 / _ground.Backlog);
                 if (WebNotMade) want = 0.05;                                            // out among the web before its light is made: wait for it
                 if (_matterScale > 0 || _spaceScale > 0) want = 1;                     // in the matter nothing is waited for (the ground's building behind you never slows it)
                 _tourPace += (want - _tourPace) * 0.05; return _tourPace;
@@ -1480,7 +1480,7 @@ namespace Universe.Shell
             if (done && WebNotMade) { done = false; input.Wheel = 0; }               // (never on past the web before it shows)
             // held back while what is ahead is still being made (the web's light, the ground): never still, so it never looks frozen;
             // it keeps circling what it shows, and the caption says what it is waiting for
-            _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _ground.Backlog > 80);
+            _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _matterScale <= 0 && _ground.Backlog > 80);   // (in the matter the ground is not being made: its old count means nothing)
             _waitSpin += ((WebNotMade ? 1 : 0) - _waitSpin) * (1 - Math.Exp(-dt * 0.8));   // (eased in and out, never a sudden start or stop)
             if (_waitSpin > 0.002) TourTurn(6 * _waitSpin * Math.PI / 180 * dt, 0);                   // (out among the galaxies only: by a world it never circles while it waits)
             if (done) { _tourAt++; _tourT = 0; NewShot(); }
@@ -2555,6 +2555,9 @@ namespace Universe.Shell
             // inside a galaxy its own stars fill the sky and the other galaxies show fainter behind them (as Andromeda
             // is barely seen with the eye): the others and the web's glow fade to a sixth as you go in
             float others = (float)(1 - 0.45 * Math.Max(0, Math.Min(1, within)));   // (dimmed a little: the other galaxies still show in its sky)
+            // the web's points, each a far galaxy, dimmer and smaller the nearer a galaxy you are, so from a galaxy's edge its own
+            // stars (sharp, in their colours) and the web's galaxies behind (soft, faint) are never taken for each other
+            float webNear = (float)(1 - 0.75 * Math.Max(0, Math.Min(1, within)));
             {
                 // the rest of the universe's galaxies, a glow along the cosmic web (remade without the near ones as you move far)
                 if (double.IsNaN(_glowAtX) || _glowReady != null || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
@@ -2565,7 +2568,7 @@ namespace Universe.Shell
                 if (webFade > 0.01 && !skyHidden)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
                 _web[0] = (float)(2.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)_nearUnits;   // (from where the galaxies made in full begin to fade out, the web fades in over the same span: they hand over, never both at once, never a gap)
-                DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f, w, h, time, 0.007f, others * webFade, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
+                DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f * (0.5f + 0.5f * webNear), w, h, time, 0.007f * (0.5f + 0.5f * webNear), others * webFade * webNear, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd
             }

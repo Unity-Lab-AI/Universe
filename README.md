@@ -13,6 +13,8 @@
 <p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.7 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
 <p align="center">
+  <a href="docs/COMPARED.md" title="Size, scope and performance against the other universe programs">Against the field</a>
+  &nbsp;·&nbsp;
   <a href="docs/GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
   &nbsp;·&nbsp;
   <a href="docs/HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
@@ -93,24 +95,7 @@ So the 1.7 MB is the **recipe**, not the meal: the rules of the universe, and th
 
 ### Against the field
 
-The honest comparison, with each project's own published numbers: every well-known program that makes or shows a universe, and the two tiny pioneers that showed the way. Sizes are what each asks for on disk.
-
-| | On disk | What it holds | How |
-|---|---|---|---|
-| **Universe** | **1.7 MB** | About 10²² stars in about 100 billion galaxies, every world down to its grains, atoms and quarks, in one unbroken zoom | Everything grown from one seed and 0.26 MB of templates; no stored art, no sound |
-| [Noctis IV](https://archive.org/details/msdos_noctis_shareware "Noctis IV on the Internet Archive") (2002) | About 1 to 5 MB | One galaxy of about 78 billion stars, with planets to walk on | Grown from a seed, by one person, for DOS |
-| [Elite](https://www.theregister.com/2024/01/18/elite_game_retro/ "Elite at 40, The Register") (1984) | 22 KB | Eight galaxies of 256 planets | Grown from a seed: the first game to do it |
-| [.kkrieger](https://en.wikipedia.org/wiki/.kkrieger ".kkrieger on Wikipedia") (2004) | 96 KB | One shooter level, about ten minutes of play (not a universe: the famous size benchmark) | Textures, models and music grown at start-up |
-| [SpaceEngine](https://store.steampowered.com/app/314650/SpaceEngine/ "SpaceEngine on Steam") | 4 GB, 50 GB with its HD packs | Billions of galaxies of billions of stars, down to a world's ground; 130,000 real catalogued objects | Grown from position, plus catalogues and textures |
-| [Elite Dangerous](https://www.elitedangerous.com/explore "Elite Dangerous: Explore") | About 25 GB | One galaxy, 400 billion star systems | Stellar Forge grows systems from first principles, plus art and sound |
-| [No Man's Sky](https://www.gamespot.com/articles/no-mans-skys-18-quintillion-planets-take-up-just-6/1100-6441663/ "GameSpot, 2016: 18 quintillion planets in 6 GB") | 6 GB at launch (mostly sound), 10 to 15 GB now | 18 quintillion planets | Grown from a 64-bit seed, plus art and sound |
-| [Universe Sandbox](https://universesandbox.com/faq/ "Universe Sandbox FAQ") | 4 GB | A system of bodies at a time, under gravity | A physics toy, not a universe to fly through |
-| [Celestia](https://en.wikipedia.org/wiki/Celestia "Celestia on Wikipedia") 1.6 | About 36 MB | 118,000 real stars and the known worlds | Catalogues, nothing grown |
-| [Pioneer](https://sourceforge.net/projects/pioneer-space-simulator.mirror/files/20260907/ "Pioneer downloads") | About 550 MB | A galaxy of millions of systems to fly and trade in | Grown from a seed, plus art and sound |
-
-**Where it stands.** Nothing in that table goes from the cosmic web to a quark in one unbroken camera, and nothing but the two tiny pioneers comes near the size. Noctis is the closest in spirit: one person, one galaxy, a few megabytes, twenty years ago. SpaceEngine is the closest in scope, more than two thousand times the size, and it stops at the ground.
-
-**To be fair.** The others carry what Universe doesn't yet: sound, stored art and textures, gameplay, ships, trade, missions, years of polish. Universe is a 0.1 preview with no life on its worlds yet. And the size is small because every pixel is worked out on the graphics card from equations, so it needs a Direct3D 12 card and does its work there; on a card with little memory it starts at a lower render scale by itself.
+Nothing else goes from the cosmic web to a quark in one unbroken camera, and nothing but two tiny pioneers of the 1980s and 2000s comes near the size; the nearest in scope, SpaceEngine, is more than two thousand times bigger and stops at the ground. The full comparison, with every project's own published numbers, what each needs and how Universe runs, is its own page: [**Against the field**](docs/COMPARED.md "Size, scope and performance against the other universe programs").
 
 ---
 
@@ -238,6 +223,7 @@ A bar shows the universe being made, then it opens, whole.
 | | Who it is for | What is in it |
 |---|---|---|
 | **This page**, and the **Help** menu's pages in the program | Anyone, in plain words | What it is, how to fly it, how it works |
+| [**Against the field**](docs/COMPARED.md "Size, scope and performance against the other universe programs") | Anyone | Size, scope and performance beside the other universe programs, with their own published numbers |
 | [**Build your own universe**](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours, features") | Builders: no code needed | Add kinds of worlds, stars and galaxies, change the physics, write tours |
 | [**Technical guide**](docs/HOW-TO-BUILD.md "Build, ship and change the code") | Coders (the code is dense: unless you are an advanced one, we suggest an AI coding assistant for changes) | Build it, ship it, find your way round the code, change it |
 

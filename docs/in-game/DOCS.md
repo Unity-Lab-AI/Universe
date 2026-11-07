@@ -10,6 +10,7 @@
 | Fly it: the keys, the mouse, time, the tour, clips | **Readme: how to use it** |
 | Know how one camera gets from the galaxies to a quark, and what the physics is | **How it works** |
 | The whole story, as the project tells it to the world | **The universe, in plain words** |
+| How it stands beside SpaceEngine, Elite Dangerous, No Man's Sky and the rest: size, scope, what each needs, how it runs | **Against the field** |
 | Add your own kinds of worlds, stars and galaxies, change the laws, write a tour | **Build your own universe** |
 | Build the program, make the installer, find your way round the code | **Build your own (technical)** |
 | Who made it, and the science it is made from | **Credits** |
@@ -23,6 +24,7 @@
 | **About** | What Universe is; the scales it holds, from the cosmic web to the quarks; why a whole universe fits in under 2 MB; how it stands against the other universe programs; that it is built from nothing and meant to be taken; the dead-but-alive worlds | A minute |
 | **Readme: how to use it** | Starting up; flying (the wheel, the keys, picking, dragging); time and days; the grand tour and pausing it; screenshots and clips; what is on screen (the scale bar, the cards, the stats, the menus); what you will see on the way down | Five minutes |
 | **How it works** | One camera and a zoom with no floor; precision from a moving anchor; the waveform engine and mode-E; the matter at its real sizes; the four forces, for real; a galaxy that fills in round you; living worlds and the dive under their seas; time and days; built from scratch; your own computer | Ten minutes |
+| **Against the field** | Size and scope against every well-known universe program and the two tiny pioneers, each with its own published numbers and sources; what each needs and how Universe runs on the lab's machine; where it stands, and what is fair to say for the others | Five minutes |
 | **The universe, in plain words** | The project's own front page: what you fall through; a universe to fly and a toolkit to build with; taking it for your own project; how it fits in under 2 MB, with the comparison; templates, not things; how the zoom never ends; built from nothing; real physics; what is out there; the controls; the grand tour; how to start; which guide is which | Ten minutes |
 
 ## For builders: templates, no code
@@ -52,7 +54,7 @@
 | | |
 |---|---|
 | **In the program** | Every page here is built into the program, so this copy and the project always say the same. **Help** on the menu bar opens any of them; the **Guide and wiki** button on the landing page opens this list |
-| **In the project** | The same pages as plain Markdown: `README.md` and `CREDITS.md` at the top, `docs/GUIDE.md` and `docs/HOW-TO-BUILD.md`, and the in-game pages in `docs/in-game/` |
+| **In the project** | The same pages as plain Markdown: `README.md` and `CREDITS.md` at the top, `docs/COMPARED.md`, `docs/GUIDE.md` and `docs/HOW-TO-BUILD.md`, and the in-game pages in `docs/in-game/` |
 | **The licence** | MIT. Take it, change it, ship it inside your own project, free |
 
 ## Using this viewer

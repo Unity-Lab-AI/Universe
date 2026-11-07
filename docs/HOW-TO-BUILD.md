@@ -3,6 +3,8 @@
 <p align="center">
   <a href="../README.md" title="What Universe is, and how to fly it">Universe</a>
   &nbsp;·&nbsp;
+  <a href="COMPARED.md" title="Size, scope and performance against the other universe programs">Against the field</a>
+  &nbsp;·&nbsp;
   <a href="GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
   &nbsp;·&nbsp;
   <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
@@ -100,7 +102,7 @@ Change the version at the top of `release.cmd`.
 | `src/shell` | The universe view (`UniverseView`: camera, zoom, picking, info cards, time, days, the tour), the scale and cards on screen (`ScaleHud`), the matter below the ground (`MatterView`), the Help menu's documents (`PreviewText`) |
 | `src/render` | Direct3D 12: the device, picking the graphics card, timing its work, the point and mesh pipelines and their shaders |
 | `src/platform` | The window, input, menus, the landing page (`Launcher`), settings (`%LOCALAPPDATA%\Universe\settings.txt`), the document viewer (`DocViewer`), the stats on screen (`Stats`), the watchdog (`Watchdog`) |
-| `docs/` | The guides. They're built into the program too (`build.cmd`'s `/resource` lines), so **Help** shows the same pages; **Help > Documents** is the directory of them all (`docs/in-game/DOCS.md`) |
+| `docs/` | The guides: `COMPARED.md` (against the field), `GUIDE.md`, `HOW-TO-BUILD.md`, the in-game pages. They're built into the program too (`build.cmd`'s `/resource` lines), so **Help** shows the same pages; **Help > Documents** is the directory of them all (`docs/in-game/DOCS.md`) |
 | `docs/img/` | The logo, the journey clip the readme shows, and the repo page's share images (`social.png` for the link preview, `avatar.png` for the repo's own picture) |
 | `installer` | Our own installer, and the icons, drawn by our own `MakeIcons.cs` |
 

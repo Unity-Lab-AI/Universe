@@ -27,7 +27,7 @@ namespace Universe.Shell
         }
 
         /// <summary>Every document for the viewer: the directory of them all first (what each is made of and when to read it),
-        /// then About, Readme, How it works, the universe in plain words, the builders' guide, the technical guide, Credits.</summary>
+        /// then About, Readme, How it works, the universe in plain words, against the field, the builders' guide, the technical guide, Credits.</summary>
         public static System.Collections.Generic.List<Universe.Platform.DocViewer.Doc> Docs()
         {
             return new System.Collections.Generic.List<Universe.Platform.DocViewer.Doc>
@@ -37,6 +37,7 @@ namespace Universe.Shell
                 new Universe.Platform.DocViewer.Doc { Title = "Readme: how to use it", Text = Built("readme.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "How it works", Text = Built("how-it-works.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "The universe, in plain words", Text = Built("universe-readme.md") },
+                new Universe.Platform.DocViewer.Doc { Title = "Against the field: size, scope, performance", Text = Built("compared.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "Build your own universe", Text = Built("guide.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "Build your own (technical)", Text = Built("how-to-build.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "Credits", Text = Built("credits.md") },

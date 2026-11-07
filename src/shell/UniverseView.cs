@@ -482,7 +482,7 @@ namespace Universe.Shell
             for (int i = 0; i < _system.Bodies.Count && i + 1 < _bodyCount; i++)
             {
                 var b = _system.Bodies[i]; if (!b.Rings || b.Terrain == null) continue;
-                double dx = _bodyVerts[i + 1].X - _ox, dy = _bodyVerts[i + 1].Y - _oy, dz = _bodyVerts[i + 1].Z - _oz, dl = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                double dx = _bodyVerts[i + 1].X, dy = _bodyVerts[i + 1].Y, dz = _bodyVerts[i + 1].Z, dl = Math.Sqrt(dx * dx + dy * dy + dz * dz);   // (already from the camera: drawn after the system has placed its bodies)
                 if (dl <= 0 || b.RadiusUnits / dl * h < 3) continue;                       // (too small on screen to show)
                 UploadBuffer buf;
                 if (!_ringBufs.TryGetValue(i, out buf))
@@ -2451,8 +2451,7 @@ namespace Universe.Shell
             }
             UpdateExtras();
             DrawBlackHoles(vp, right, up, w, h, time);                               // the feeding ones' discs and jets
-            DrawSmallBodies(vp, right, up, w, h, time);
-            DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them                              // asteroids and comets close in: their own bodies
+                              // asteroids and comets close in: their own bodies
             {
                 // the black hole that bends the most light on screen: its Einstein ring, sqrt(2 Rs / distance) radians (light from far
                 // behind it), set for every point drawn
@@ -2537,6 +2536,10 @@ namespace Universe.Shell
                     DrawPoints(_coronaBuf, _starCorona.Length, m * vp, right, up, 1f, 0f, w, h, time);
                 }
             }
+            // the solid small bodies (asteroids, comets' nuclei) and worlds' rings last of everything in space: after every star,
+            // belt and orbit behind them, so nothing shows through a solid body (the glows are drawn without looking at what is in front)
+            DrawSmallBodies(vp, right, up, w, h, time);
+            DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them
             if (_ground != null && _matterScale <= 0)   // (in the matter the grain's own face fills the view: the planet's ground mesh is not drawn behind it, one picture only)
             {
                 // the planet's real ground, in km around its centre, with the same view turn; near and far follow the height

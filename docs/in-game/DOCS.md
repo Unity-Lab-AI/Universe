@@ -35,7 +35,7 @@
 
 | Document | What it is made of | Takes |
 |---|---|---|
-| **Build your own (technical)** | Everything above the compiler is ours (what is scratch-made and what is Windows'); what you need; build it in one command; start-up options; make the installer and the zip; where things are (every folder of the source and content); how it holds together (templates, one camera, the zoom, depth, galaxies, worlds, grains and matter, the card's time, the stats, physics, orbits); change it; the licence | Twenty minutes, with the code open |
+| **Build your own (technical)** | Everything above the compiler is ours (what is scratch-made and what is Windows'); what you need; build it in one command; start-up options; make the installer and the zip; where things are (every folder of the source and content); how it holds together (templates, one camera, the zoom, depth, galaxies, worlds, grains and matter, the card's time, the stats, physics, orbits); reading the code (it is dense: read it by its comments); change it; the licence | Twenty minutes, with the code open |
 
 ## And
 

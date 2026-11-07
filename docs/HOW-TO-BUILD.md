@@ -130,6 +130,20 @@ Change the version at the top of `release.cmd`.
 
 ---
 
+## Reading the code
+
+Be warned before you open it: the code is **dense**. It is readable, but not the way a textbook is.
+
+| | |
+|---|---|
+| **What it is like** | About 15,400 lines of code in 61 files. Most lines are ordinary (the middle line is 57 characters), but the hot paths are packed: one line in ten carries three or more statements, one in fourteen runs past 160 characters (the longest past a thousand), names are short, and the three big files are long (`UniverseView` 3,100 lines, `MatterView` 1,900, `PlanetTerrain` 1,550) |
+| **How to read it** | By its comments. A fifth of all lines are plain English (1,900 comment lines and 1,200 trailing ones): every block says in words what it is about to do and why, with the physics and the numbers. Read the comment, then the statement under it, and the long lines unpack |
+| **Where it is densest** | The per-pixel and per-frame work: the shaders (HLSL inside `Pipeline.cs` and `MeshPipeline.cs`), the camera and tour (`UniverseView`), the matter at its real sizes (`MatterView`), the ground (`PlanetTerrain`) |
+| **Where it is easiest** | The content (`content/`: every template is a few plain lines), the generators' entries, `Physics`, `Stats`, `Settings`, the writers (`PngWriter`, `GifWriter`) |
+| **The rule it follows** | Everything is said once, in English, next to the code that does it. Nothing is left for a reader to guess at; but nothing is spread out either |
+
+---
+
 ## Change it
 
 | You want to change | Go to |

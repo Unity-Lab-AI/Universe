@@ -249,7 +249,7 @@ namespace Universe.Shell
             }
             if (l.Count == 0) return;
             var arr = l.ToArray(); var buf = Slot(arr, arr.Length);
-            var m2 = Mat4.Identity; m2.M11 = 2f / w; m2.M22 = -2f / h; m2.M33 = 0; m2.M41 = -1; m2.M42 = 1; m2.M43 = 0.0001f; m2.M44 = 1;
+            var m2 = Mat4.Identity; m2.M11 = 2f / w; m2.M22 = -2f / h; m2.M33 = 0; m2.M41 = -1; m2.M42 = 1; m2.M43 = 0f; m2.M44 = 1;
             var c2 = new float[BillboardPipeline.ConstantCount];
             c2[0] = m2.M11; c2[5] = m2.M22; c2[10] = m2.M33; c2[12] = m2.M41; c2[13] = m2.M42; c2[14] = m2.M43; c2[15] = m2.M44; c2[18] = 1; c2[22] = 1;
             pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);

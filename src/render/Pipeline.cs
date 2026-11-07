@@ -137,30 +137,17 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             s.size = s.size * (0.6 + 2 * s0) + head * 1.5; s.pos = p;
         }
         {
-            // seen past the hole: a ray from the far side bends round it (general relativity), so the disc's far side is lifted into an
-            // arch over and under the shadow, the lift growing with how far past the hole the point lies (sqrt(b^2 + 2 dz) for its
-            // offset b from the line of sight, in horizon radii); and what lies within the shadow's cone behind the hole is captured,
-            // never seen. The shadow's half-angle from where the camera stands: sin^2 = (27/4)(rs/r)^2 (1 - rs/r), the law for a
-            // static observer, 2.6 radii across from afar, half the sky at the photon sphere, nearly all of it at the horizon
+            // the hole's own things seen past it: what lies within its shadow's cone is hidden by the shadow (the light from the far side
+            // that reaches you round the hole is the background lens's work: its ring for light from well behind)
             float3 cam = webA.xyz; float rc = max(1.001, length(cam)); float3 toHole = -cam / rc;
             float3 rel = s.pos - cam; float along = dot(rel, toHole); float dz = along - rc;
             if (dz > 0)
             {
-                float3 q = rel - toHole * along; float b = length(q);
-                float bn = sqrt(b * b + 2.0 * dz);
-                float3 axis = float3(0, 1, 0) - toHole * toHole.y + float3(1e-4, 0, 0);
-                float3 qdir = b > 0.02 ? q / b : normalize(axis);
-                s.pos = cam + toHole * along + qdir * bn; rel = s.pos - cam;
+                // behind the hole: what lies within its shadow's cone is behind the horizon as seen from here, and not seen (the shadow's
+                // half-angle from where the camera stands: sin^2 = (27/4)(rs/r)^2 (1 - rs/r), 2.6 radii across from afar, half the sky at
+                // the photon sphere, nearly all of it at the horizon)
                 float s2 = 6.75 / (rc * rc) * max(0.0, 1.0 - 1.0 / rc); float th = rc >= 1.5 ? asin(sqrt(saturate(s2))) : 3.14159265 - asin(sqrt(saturate(s2)));
-                float3 rn = normalize(rel); float ca = dot(rn, toHole);
-                if (ca > cos(th))
-                {
-                    // within the shadow's cone: its light reaches you bent round the shadow's edge, so it is seen just outside the edge
-                    // at its own azimuth (the bright ring hugging the shadow, as the Event Horizon Telescope's)
-                    float3 perp = rn - toHole * ca; float pl = length(perp); float3 pd = pl > 1e-4 ? perp / pl : normalize(axis);
-                    float th2 = th + 0.03; float3 nd = toHole * cos(th2) + pd * sin(th2);
-                    s.pos = cam + nd * length(rel); s.color.rgb *= 0.85;
-                }
+                if (dot(normalize(rel), toHole) > cos(th)) holeHidden = true;
             }
         }
     }

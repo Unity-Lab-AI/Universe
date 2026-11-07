@@ -417,6 +417,20 @@ namespace Universe.Shell
                     put(c0, c1, br, 0.35f, 0.9f, 0.6f); put(c1, c0, br, 0.35f, 0.9f, 0.6f);
                 }
             }
+            // inside the throat the surface runs on down twenty-five tenfolds to the point: rings of the grid at every tenfold of the radius
+            // from a hundredth of where you are out to the throat (so the structure is round you at every scale of the fall), and spokes
+            // down between them, every one running to the point
+            for (int k = -12; k <= 60; k++)
+            {
+                double rho = rhoCam * Math.Pow(10, k / 6.0); if (rho >= 1) break; if (rho < 1e-30) continue;
+                float br = (float)(0.55 * Math.Max(0.3, 1 - Math.Abs(k) * 0.04));
+                for (int q = 0; q < 96; q++) { double a = q * Math.PI * 2 / 96; put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
+            }
+            for (int sp = 0; sp < 24; sp++)
+            {
+                double a = sp * Math.PI * 2 / 24, lo = Math.Max(rhoCam * 0.01, 1e-30);
+                for (int q = 0; q <= 200; q++) { double rho = lo * Math.Pow(1 / lo, q / 200.0); if (rho > 1) break; put(Math.Cos(a) * rho, Math.Sin(a) * rho, 0.3f, 0.35f, 0.9f, 0.6f); }
+            }
             for (int q = 0; q < 240; q++) { double a = q * Math.PI * 2 / 240; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); }   // the throat: the horizon's ring, bright
             { var p = ax * (float)((depth(0) - zCam) * S); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = (float)(S * 0.06), R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all runs down to
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
@@ -885,7 +899,7 @@ namespace Universe.Shell
                 // stretch round a mass), rings and spokes from the horizon out to forty radii, and at the horizon a sharp step straight down to
                 // a point: the singularity. Round every hole, feeding or quiet; the disc, swarm and jets only round a feeding one
                 if (_wellBuf == null) MakeWell();
-                { float wellF = (float)Math.Max(0, Math.Min(1, (d / rs - 30) / 40)); if (wellF > 0.02 && _tExtra == ex) DrawPoints(_wellBuf, _wellN, place * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 0.5f * wellF, 2f); }   // (the picked hole's, fading in past thirty radii out: a map of the dip from afar, never drawn over the disc close in; the fall has its graph on screen)
+                // (no well drawn in space: the shadow, the disc and the bent light are what a hole shows from outside; the well is the fall's own, inside)
                 if (ex.Feeding > 0) DrawPoints(hp.Disc, hp.DiscN, place * vp, right, up, 1f, 0.0012f / sc, w, h, tt, 0.02f / sc, 1f, 2f, hp.K, 1, hx, hy, hz);
                 if (ex.Feeding == 2) DrawPoints(hp.Jets, hp.JetsN, place * vp, right, up, 1f, 0.0012f / sc, w, h, time, 0.02f / sc, 1f, 2f);
                 if (ex.Feeding > 0 && hp.SwarmN > 0) DrawPoints(hp.Swarm, hp.SwarmN, place * vp, right, up, 1f, 0.0018f / sc, w, h, tt, 0.03f / sc, 1f, 2f, hp.K, 2, hx, hy, hz);
@@ -3584,7 +3598,7 @@ namespace Universe.Shell
             }
             _gpu.ClearDepth();                                                         // the scale, cards and rings always on top of everything
             DrawScale(w, h);
-            { double hr = HoleRadii(); if (hr > 0) _hud.DrawWell(_meshes, w, h, hr); }   // a black hole picked and near, or the fall into it: its gravity well graphed, and where you are on it
+            // (no graph of the well on screen: the well itself is drawn round you inside, and the card carries the numbers)   // a black hole picked and near, or the fall into it: its gravity well graphed, and where you are on it
             if (_tour != null)
             {
                 // the tour is a film: letterbox bars, the caption in the lower one, faded in after a moment and out before the cut
@@ -3636,7 +3650,7 @@ namespace Universe.Shell
             }
             else { _statsLeft = w; _statsBottom = 0; }
             double mdx, mdy, mdz, mrad, msx, msy;
-            if (_tKind >= 0 && _matterScale <= 0 && TargetFromCamera(out mdx, out mdy, out mdz, out mrad) && ToScreen(mdx, mdy, mdz, out msx, out msy))
+            if (_tKind >= 0 && _matterScale <= 0 && _spaceScale <= 0 && TargetFromCamera(out mdx, out mdy, out mdz, out mrad) && ToScreen(mdx, mdy, mdz, out msx, out msy))   // (in a dive, the matter's card alone: the two drawn together garbled each other)
             {
                 double l = Math.Sqrt(mdx * mdx + mdy * mdy + mdz * mdz);
                 double rpx = Math.Max(14 * Math.Max(1, h / 1080.0), mrad / Math.Max(1e-30, l) / Math.Tan(0.45) * h * 0.5 * 1.25);

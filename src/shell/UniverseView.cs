@@ -563,7 +563,14 @@ namespace Universe.Shell
         private Extra MakeExtra(Place pl, double x, double y, double z)
         {
             var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm * (pl.Shape == "rock" ? Math.Exp(-1.6 + 3.2 * Math.Pow(Math.Abs(Math.Sin(x * 3.1 + y * 5.7 + z * 1.9) * 7919.1) % 1, 2.5)) : 1)), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>() };
-            ex.Lines.Add(pl.Name); if (pl.Says.Length > 0) ex.Lines.Add(pl.Says);
+            ex.Lines.Add(pl.Name);
+            {
+                // its id, as a star's: a code for its kind, then six digits from where it is (the same body, the same id, every time)
+                string kid = pl.Id.Contains("comet") ? "CM" : pl.Id.Contains("asteroid") ? "AS" : pl.Id.Contains("neutron") || pl.Id.Contains("pulsar") ? "NS" : pl.Id.Contains("rogue") ? "RP" : pl.Id.Contains("hole") || pl.Id.Contains("black") ? "BH" : pl.Id.Contains("kuiper") ? "KO" : pl.Id.Contains("intergalactic") ? "IS" : "B";
+                long hid = ((long)(x / Units.Km(1e6)) * 73856093L ^ (long)(y / Units.Km(1e6)) * 19349663L ^ (long)(z / Units.Km(1e6)) * 83492791L) & 0xFFFFFF;
+                ex.Lines.Add("id: " + kid + "-" + hid.ToString("X6"));
+            }
+            if (pl.Says.Length > 0) ex.Lines.Add(pl.Says);
             if (pl.Shape == "comet")
             {
                 // its coma and tail, each comet its own size in its kind's ranges (from where it is): real comets' comas a hundred

@@ -39,7 +39,7 @@ namespace Universe.Platform
         private const uint LBS_NOTIFY = 0x1, LBS_NOINTEGRALHEIGHT = 0x100;
         private const uint WM_DESTROY = 0x2, WM_SIZE = 0x5, WM_CLOSE = 0x10, WM_SETFONT = 0x30, WM_NOTIFY = 0x4E, WM_COMMAND = 0x111, WM_KEYDOWN = 0x100, WM_SETTEXT = 0xC, WM_LBUTTONUP = 0x202;
         private const uint LB_ADDSTRING = 0x180, LB_RESETCONTENT = 0x184, LB_SETCURSEL = 0x186, LB_GETCURSEL = 0x188, LBN_SELCHANGE = 1, BN_CLICKED = 0;
-        private const uint EM_SETRECT = 0xB3, EM_SETSEL = 0xB1, EM_SCROLLCARET = 0xB7, EM_GETFIRSTVISIBLELINE = 0xCE, EM_LINESCROLL = 0xB6, EM_LINEFROMCHAR = 0xC9, EM_SETCUEBANNER = 0x1501;
+        private const uint EM_SETRECT = 0xB3, EM_SETSEL = 0xB1, EM_SCROLLCARET = 0xB7, EM_GETFIRSTVISIBLELINE = 0xCE, EM_LINESCROLL = 0xB6, EM_LINEFROMCHAR = 0xC9, EM_LINEINDEX = 0xBB, EM_SETCUEBANNER = 0x1501;
         private const uint WM_USER = 0x400, EM_EXGETSEL = WM_USER + 52, EM_EXSETSEL = WM_USER + 55, EM_SETEVENTMASK = WM_USER + 69, EM_SETBKGNDCOLOR = WM_USER + 67;
         private const uint EM_GETTEXTRANGE = WM_USER + 75, EM_AUTOURLDETECT = WM_USER + 91, EM_FINDTEXTEXW = WM_USER + 124, EM_SETZOOM = WM_USER + 225;
         private const int ENM_LINK = 0x04000000, EN_LINK = 0x070B, FR_DOWN = 1;
@@ -105,7 +105,7 @@ namespace Universe.Platform
         private static void Layout()
         {
             Win32.RECT r; Win32.GetClientRect(_wnd, out r); float s = Scale();
-            int W = r.Right, H = r.Bottom, pad = (int)(8 * s), bar = (int)(34 * s), left = (int)(270 * s), bh = bar - pad;
+            int W = r.Right, H = r.Bottom, pad = (int)(8 * s), bar = (int)(34 * s), left = (int)(Math.Min(340 * s, W * 0.3)), bh = bar - pad;   // (the list wide enough for its headings)
             int x = pad;
             MoveWindow(_search, x, pad, (int)(320 * s), bh, true); x += (int)(320 * s) + pad;
             MoveWindow(_find, x, pad, (int)(90 * s), bh, true); x += (int)(90 * s) + pad;
@@ -128,31 +128,32 @@ namespace Universe.Platform
                     if (line.StartsWith("## ")) hs.Add(Plain(line.Substring(3).Trim()));
                 _heads.Add(hs);
                 SendMessage(_list, LB_ADDSTRING, IntPtr.Zero, _docs[d].Title); _items.Add(new[] { d, -1 });
-                for (int k = 0; k < hs.Count; k++) { SendMessage(_list, LB_ADDSTRING, IntPtr.Zero, "      " + hs[k]); _items.Add(new[] { d, k }); }
+                for (int k = 0; k < hs.Count; k++) { SendMessage(_list, LB_ADDSTRING, IntPtr.Zero, "    " + hs[k]); _items.Add(new[] { d, k }); }
             }
         }
 
         private static void Open(int d, int heading, bool remember)
         {
             if (d < 0 || d >= _docs.Count) return;
-            if (remember && _doc >= 0) _history.Push(new[] { _doc, (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero) });
+            if (remember && _doc >= 0) _history.Push(new[] { _doc, TopChar() });
             if (d != _doc)
             {
                 _doc = d;
                 // the page as formatted text, said outright (EM_SETTEXTEX: default flags, the ANSI code page); handed over as plain
                 // window text the box can take the formatting itself for words and show it raw
-                // the page's margins, and its tables fitted to the width between them
+                // the page's margins, and its tables fitted to the width between them. The text size is in the formatting itself
+                // (every size scaled by the zoom), never the box's own zoom: with our own margins that laid the lines out at the
+                // unzoomed width and drew them bigger, so they ran off the right edge
                 Win32.RECT pr; Win32.GetClientRect(_page, out pr); int m = (int)(Math.Max(24, pr.Right * 0.05)), mt = (int)(18 * Scale());
                 Win32.RECT fr = new Win32.RECT { Left = m, Top = mt, Right = Math.Max(m + 50, pr.Right - m), Bottom = Math.Max(mt + 50, pr.Bottom - mt) };
                 IntPtr frp = Marshal.AllocHGlobal(16); Marshal.StructureToPtr(fr, frp, false); SendMessage(_page, EM_SETRECT, IntPtr.Zero, frp); Marshal.FreeHGlobal(frp);
-                int twips = (int)((fr.Right - fr.Left) * 1440.0 / (96 * Scale()) * 100 / Math.Max(60, _zoom)) - 240;
+                int twips = (int)((fr.Right - fr.Left) * 1440.0 / (96 * Scale())) - 240;
                 _links.Clear();
-                byte[] rtf = Encoding.ASCII.GetBytes(ToRtf(_docs[d].Text, Math.Max(4000, twips)) + "\0");
+                byte[] rtf = Encoding.ASCII.GetBytes(Sized(ToRtf(_docs[d].Text, Math.Max(3000, twips)), _zoom) + "\0");
                 IntPtr ste = Marshal.AllocHGlobal(8), txt = Marshal.AllocHGlobal(rtf.Length);
                 Marshal.WriteInt32(ste, 0, 0); Marshal.WriteInt32(ste, 4, 0); Marshal.Copy(rtf, 0, txt, rtf.Length);
                 SendMessage(_page, WM_USER + 97, ste, txt);
                 Marshal.FreeHGlobal(ste); Marshal.FreeHGlobal(txt);
-                SendMessage(_page, EM_SETZOOM, (IntPtr)_zoom, (IntPtr)100);
                 Win32.SetWindowText(_wnd, Universe.Shell.PreviewText.AppName + " · " + _docs[d].Title);
             }
             int pos = 0;
@@ -168,6 +169,25 @@ namespace Universe.Platform
             SendMessage(_page, EM_SETSEL, (IntPtr)pos, (IntPtr)pos);
             int line = (int)SendMessage(_page, EM_LINEFROMCHAR, (IntPtr)pos, IntPtr.Zero), first = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero);
             SendMessage(_page, EM_LINESCROLL, IntPtr.Zero, (IntPtr)(line - first));
+        }
+        // the character the page's first visible line starts at (a place in the page that survives laying it out again)
+        private static int TopChar()
+        {
+            int first = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero);
+            return Math.Max(0, (int)SendMessage(_page, EM_LINEINDEX, (IntPtr)first, IntPtr.Zero));
+        }
+        // the page laid out again (the window a new size, or the text a new size), at the same place
+        private static void Relayout()
+        {
+            if (_doc < 0) return;
+            int d = _doc, at = TopChar(); _doc = -1; Open(d, -1, false); Top(at);
+        }
+        // the rich text with every size in it (type, line spacing, space before and after, indents, cell padding) scaled by the
+        // zoom, so the page is laid out at its true width at any text size
+        private static string Sized(string rtf, int zoom)
+        {
+            if (zoom == 100) return rtf;
+            return System.Text.RegularExpressions.Regex.Replace(rtf, @"\\(fs|sl|sa|sb|li|fi|ri|trgaph|trpaddt|trpaddb|brsp)(-?\d+)", mm => "\\" + mm.Groups[1].Value + (int)Math.Round(int.Parse(mm.Groups[2].Value) * zoom / 100.0));
         }
 
         // where text first appears at or after from (or -1); select it if asked
@@ -209,7 +229,7 @@ namespace Universe.Platform
 
         private static void SetStatus(string s) { Win32.SetWindowText(_status, s); }
 
-        private static void Zoom(int by) { _zoom = Math.Max(60, Math.Min(260, _zoom + by)); SendMessage(_page, EM_SETZOOM, (IntPtr)_zoom, (IntPtr)100); SetStatus("text size " + _zoom + "%"); }
+        private static void Zoom(int by) { _zoom = Math.Max(60, Math.Min(260, _zoom + by)); Relayout(); SetStatus("text size " + _zoom + "%"); }
 
         /// <summary>Keys for the viewer, before Windows hands them on: Enter or F3 finds the next match, Ctrl+F goes to the search
         /// box, Ctrl and + or - change the text size, Esc closes. True when the key was the viewer's.</summary>
@@ -233,8 +253,7 @@ namespace Universe.Platform
                     if (_page != IntPtr.Zero)
                     {
                         Layout();
-                        // laid out again to the new width (its tables and margins), at the same place
-                        if (_doc >= 0) { int d = _doc, first = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero); _doc = -1; Open(d, -1, false); int now = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero); SendMessage(_page, EM_LINESCROLL, IntPtr.Zero, (IntPtr)(first - now)); }
+                        Relayout();                                                    // (to the new width: its lines, tables and margins, at the same place)
                     }
                     return IntPtr.Zero;
                 case WM_COMMAND:
@@ -250,9 +269,7 @@ namespace Universe.Platform
                         else if (code == BN_CLICKED && id == IdBigger) Zoom(10);
                         else if (code == BN_CLICKED && id == IdBack && _history.Count > 0)
                         {
-                            var b = _history.Pop(); Open(b[0], -1, false);
-                            int first = (int)SendMessage(_page, EM_GETFIRSTVISIBLELINE, IntPtr.Zero, IntPtr.Zero);
-                            SendMessage(_page, EM_LINESCROLL, IntPtr.Zero, (IntPtr)(b[1] - first));
+                            var b = _history.Pop(); Open(b[0], -1, false); Top(b[1]);
                         }
                         return IntPtr.Zero;
                     }

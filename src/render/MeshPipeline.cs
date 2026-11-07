@@ -76,12 +76,17 @@ float wmodeE(float X0, float Y0, float zoom, float seed, float kb, float ang)
     for (int oc = 0; oc < 4; oc++) { c += amp * wcell(X0, Y0, f, bi); tot += amp; amp *= 0.5; f *= 3.16227766; }
     return (0.4 + 0.6 * (it / 24.0)) * (0.45 + 0.9 * pow(c / tot, 0.55));
 }
+// the three sheets of pattern a surface's detail is read from, tilted to the diagonals: laid flat along the axes, a level
+// face (or any face square to an axis) saw two of the three collapse into stripes, which crossed into a grid of straight
+// edges, tiles and saws. Tilted, every face square to an axis reads a full pattern from all three
+static const float3 WPLANE_A[3] = { float3(0.7071, -0.7071, 0), float3(0.7071, 0.7071, 0), float3(0.7071, -0.7071, 0) };
+static const float3 WPLANE_B[3] = { float3(0.4082, 0.4082, -0.8165), float3(-0.4082, 0.4082, -0.8165), float3(-0.4082, -0.4082, -0.8165) };
 float woctave(float3 p, uint key, uint k)
 {
     float sum = 0;
     for (uint pl = 0; pl < 3; pl++)
     {
-        float u = pl == 0 ? p.x : pl == 1 ? p.y : p.z, v = pl == 0 ? p.y : pl == 1 ? p.z : p.x;
+        float u = dot(p, WPLANE_A[pl]), v = dot(p, WPLANE_B[pl]);
         float a = wh01(key + pl * 31u, k) * 6.2832, c = cos(a), s = sin(a);
         float uu = u * c - v * s + wh01(key + pl * 31u, k + 97u) * 37, vv = u * s + v * c + wh01(key + pl * 31u, k + 191u) * 41;
         if (k < (uint)WSTORED) sum += wtile(k + pl, uu * 0.02, vv * 0.02);
@@ -105,6 +110,7 @@ float wtileR(uint k, float mu, float mv)
 {
     mu = mu > WT - 1 ? 2.0 * (WT - 1) - mu : mu; mv = mv > WT - 1 ? 2.0 * (WT - 1) - mv : mv;
     int x0 = (int)mu, y0 = (int)mv, x1 = min(WT - 1, x0 + 1), y1 = min(WT - 1, y0 + 1); float fx = mu - x0, fy = mv - y0;
+    fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy);   // eased between the stored points, so the height bends smoothly (straight blends put a kink at every point: a terrace's edge ran as a saw)
     int b = (int)(k % 6) * WT * WT;
     float a0 = lerp(wave[b + y0 * WT + x0], wave[b + y0 * WT + x1], fx), a1 = lerp(wave[b + y1 * WT + x0], wave[b + y1 * WT + x1], fx);
     return lerp(a0, a1, fy);
@@ -114,7 +120,7 @@ float woctaveD(double3 p, uint key, uint k)
     float sum = 0;
     for (uint pl = 0; pl < 3; pl++)
     {
-        double u = pl == 0 ? p.x : pl == 1 ? p.y : p.z, v = pl == 0 ? p.y : pl == 1 ? p.z : p.x;
+        double u = p.x * (double)WPLANE_A[pl].x + p.y * (double)WPLANE_A[pl].y + p.z * (double)WPLANE_A[pl].z, v = p.x * (double)WPLANE_B[pl].x + p.y * (double)WPLANE_B[pl].y + p.z * (double)WPLANE_B[pl].z;
         float a = wh01(key + pl * 31u, k) * 6.2832, c = cos(a), s = sin(a);
         double uu = u * (double)c - v * (double)s + (double)(wh01(key + pl * 31u, k + 97u) * 37), vv = u * (double)s + v * (double)c + (double)(wh01(key + pl * 31u, k + 191u) * 41);
         if (k < (uint)WSTORED) sum += wtileR(k + pl, wreduce(uu * (double)(0.02 * WT), 2.0 * (WT - 1)), wreduce(vv * (double)(0.02 * WT), 2.0 * (WT - 1)));

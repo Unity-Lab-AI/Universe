@@ -1630,6 +1630,10 @@ namespace Universe.Shell
         }
         /// <summary>True when a planet's ground is being drawn (what the GPU use tunes, so far).</summary>
         public bool AtGround { get { return _ground != null; } }
+        /// <summary>How wide the view is where you are looking (km): the distance to the nearest thing.</summary>
+        public double ViewKm { get { return ViewDistanceKm(); } }
+        /// <summary>The scale in the matter (km), or 0 above it: for the test runs, so a wheel can end on the last landmark.</summary>
+        public double MatterKm { get { return _matterScale > 0 ? _matterScale : _spaceScale > 0 ? _spaceScale : 0; } }
         /// <summary>How many ground pieces are waiting (0 when not at a planet).</summary>
         public int GroundBacklog { get { return _ground != null ? _ground.Backlog : 0; } } private double _autoLogT;
         // ── what you clicked: the camera turns to face it and the wheel flies to it ──
@@ -2047,6 +2051,7 @@ namespace Universe.Shell
                 // below a millimetre or so: the same zoom, with your height kept finely enough for atoms (the wheel moves
                 // you the same share of the way each notch; W A S D Q E fly at the same speed for the scale; time runs on)
                 if (input.Wheel != 0) _matterScale *= Math.Pow(0.87, input.Wheel);
+                if (input.Wheel > 0) _matter.Landmarks(_matterScale);                     // (the wheel goes down onto the landmark at each size: an atom, its nucleus, a nucleon, a quark; never between them into nothing)
                 {
                     double mf = (input.IsDown(0x57) ? 1 : 0) - (input.IsDown(0x53) ? 1 : 0), mr = (input.IsDown(0x44) ? 1 : 0) - (input.IsDown(0x41) ? 1 : 0), mu = (input.IsDown(0x45) ? 1 : 0) - (input.IsDown(0x51) ? 1 : 0);
                     if (mf != 0 || mr != 0 || mu != 0)
@@ -2417,6 +2422,7 @@ namespace Universe.Shell
         // inside a star cluster: its own stars made round you at its real density (a globular cluster's core about 1,000 stars a
         // cubic light-year, thinning outward; an open cluster's a few), stable (each from its own cell), in universe units
         private readonly List<double[]> _cstars = new List<double[]>(); private UploadBuffer _cstarBuf; private StarVertex[] _cstarV = new StarVertex[0];
+        private double _cstarCX, _cstarCY, _cstarCZ, _cstarR;   // the cluster's middle (universe units) and size, for its light on screen
         private int _cstarFeature = -1; private double _cgx = double.NaN, _cgy, _cgz, _cstarHalf;
         private void ClusterStars()
         {
@@ -2439,7 +2445,7 @@ namespace Universe.Shell
             double nHere = n0 * Math.Pow(1 + r2 / (core * core), -2.5);                       // thinning outward (a Plummer sphere)
             double half = Math.Max(0.05 * ly, Math.Pow(4000 / Math.Max(1e-6, nHere), 1 / 3.0) * 0.5 * ly);   // about 4,000 stars round you
             if (inF == _cstarFeature && !double.IsNaN(_cgx) && Math.Abs(px - _cgx) + Math.Abs(py - _cgy) + Math.Abs(pz - _cgz) < half * 0.25 && Math.Abs(half / _cstarHalf - 1) < 0.5) return;
-            _cstarFeature = inF; _cgx = px; _cgy = py; _cgz = pz; _cstarHalf = half; _cstars.Clear();
+            _cstarFeature = inF; _cgx = px; _cgy = py; _cgz = pz; _cstarHalf = half; _cstars.Clear(); _cstarCX = cx; _cstarCY = cy; _cstarCZ = cz; _cstarR = Rc;
             double cell = half / 4; long i0 = (long)Math.Floor(px / cell), j0 = (long)Math.Floor(py / cell), k0 = (long)Math.Floor(pz / cell);
             for (long i = i0 - 4; i <= i0 + 4; i++)
                 for (long j = j0 - 4; j <= j0 + 4; j++)
@@ -2600,8 +2606,10 @@ namespace Universe.Shell
                 // so each is dimmed by how many share the galaxy's patch (its true glow and colour, at any distance)
                 double gdx = g.X - _cx, gdy = g.Y - _cy, gdz = g.Z - _cz, gd = Math.Max(1e-9, Math.Sqrt(gdx * gdx + gdy * gdy + gdz * gdz));
                 double gpx = g.Scale / gd * h / (2 * Math.Tan(0.45)), dotPx = Math.Max(1.5, 0.0016 * h);
-                float crowd = (float)Math.Max(0.06, Math.Min(1, Math.PI * gpx * gpx / (count * dotPx * dotPx) * 1.2)) * nearF * (i == _near ? 1f : others);   // a visible soft smudge in its own colours from afar: never a white blot, never gone
-                DrawPoints(buf, count, Placement(g) * vp, right, up, 0.006f * g.Scale * shrink * glow, 0.0016f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
+                // (its light at a third of a full point a pixel on the average: its dense heart glows, its thin rim fades to nothing, so
+                // from afar it is a soft shape in its own colours with a fine edge, never a solid white disc or a white spiral icon)
+                float crowd = (float)Math.Max(0.015, Math.Min(1, Math.PI * gpx * gpx / (count * dotPx * dotPx) * 0.35)) * nearF * (i == _near ? 1f : others);
+                DrawPoints(buf, count, Placement(g) * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
             }
             double inside = InsideShare();
             {
@@ -2658,7 +2666,12 @@ namespace Universe.Shell
                 }
                 if (_cstarBuf == null || _cstarBuf.Bytes < (long)_cstars.Count * Stride) { if (_cstarBuf != null) _cstarBuf.Dispose(); _cstarBuf = new UploadBuffer(_gpu.Device, (long)(_cstars.Count + 1024) * Stride); }
                 _cstarBuf.Write(_cstarV, _cstars.Count);
-                DrawPoints(_cstarBuf, _cstars.Count, vp, right, up, 1f, 0.0022f, w, h, time);
+                // its light, never more than it has: from afar its thousands of stars would stack into a solid white ball with a hard
+                // rim, so each is dimmed by how many share the cluster's patch of screen (as the galaxies' stars are); among them, points
+                double ccx = (_cstarCX - _ax) - _ox, ccy = (_cstarCY - _ay) - _oy, ccz = (_cstarCZ - _az) - _oz, ccd = Math.Max(1e-12, Math.Sqrt(ccx * ccx + ccy * ccy + ccz * ccz));
+                double cpx = _cstarR / ccd * h / (2 * Math.Tan(0.45)), cdot = Math.Max(1.5, 0.0016 * h);
+                float ccrowd = (float)Math.Max(0.03, Math.Min(1, Math.PI * cpx * cpx / (_cstars.Count * cdot * cdot) * 0.35));
+                DrawPoints(_cstarBuf, _cstars.Count, vp, right, up, 1f, 0.0016f, w, h, time, 0f, ccrowd);
             }
             Render.GpuLog.Pass = "the stars round you";
             if (_near >= 0 && _localCount > 0 && inside > 0 && !skyHidden)

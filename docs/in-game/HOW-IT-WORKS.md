@@ -10,7 +10,7 @@ Each roll of the wheel moves the camera **a share of the way to the nearest thin
 
 ### No floor
 
-Inward there is no end. Below the quark, which shows no size down to a ten-thousandth of a femtometre, the zoom keeps going: the scale bar counts down through attometres, zeptometres and yoctometres, past the Planck length, as far as a double-precision number can count (10⁻²⁹⁰ km, which is to say for ever in practice). What is there is what physics knows, which is nothing, and the card says so. Outward you are held inside the visible universe: past its edge there is nothing anyone can see.
+Rolling in, the wheel comes down onto what is there at each size: an atom, then its nucleus, then a proton or neutron, then a quark, and whatever it comes down onto stays in the picture however fast you roll. Inward there is no end. Below the quark, which shows no size down to a ten-thousandth of a femtometre, the zoom keeps going: the scale bar counts down through attometres, zeptometres and yoctometres, past the Planck length, as far as a double-precision number can count (10⁻²⁹⁰ km, which is to say for ever in practice). What is there is what physics knows, which is nothing, and the card says so. Outward you are held inside the visible universe: past its edge there is nothing anyone can see.
 
 ## Precision at every scale
 

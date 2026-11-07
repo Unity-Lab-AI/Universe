@@ -22,9 +22,12 @@ namespace Universe
                                                                                      System.IO.Directory.CreateDirectory("build"); System.IO.File.AppendAllText(System.IO.Path.Combine("build", "last-run.log"), "crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine + (Universe.Render.Gpu.DeviceForLog != IntPtr.Zero ? Universe.Render.GpuLog.Describe(Universe.Render.Gpu.DeviceForLog) + Environment.NewLine : "")); } catch { } };
             // --smoke <ms>: a timed test run that closes itself after <ms> milliseconds.
             int smokeMs = -1; bool testStall = false; int testDeep = -1; double testZoom = -1; bool testVisit = false, testCore = false; int openSet = 0; int openLook = 0; double testEvolve = 0; int testPlanet = -1; double clickAt = -1, clickX = 0.5, clickY = 0.5; double wheelFrom = -1, wheelFor = 0, backFrom = -1, backFor = 0; int pressKey = -1; double pressAt = -1; int testDyson = -1; bool testInside = false; int testJumps = 0; bool testFieldView = false; double testAlt = -1; double[] tour = null; int tourStep = 0; string tourName = "tour"; double shotAt = -1; string shotPath = null; int testSpeed = -1; double tryEvery = -1; int wheelEvery = 1; bool aimCentre = false; double journeyAt = -1, deepSince = -1; double clipAt = -1, clipFor = 10; string clipPath = null; Universe.Render.GifWriter clip = null; int clipFrame = 0; bool wantShot = false, wantRecord = false, wantTour = false; Universe.Render.Mp4Writer rec = null; double shotsEvery = -1, shotsNext = 0; int shotsN = 0; string shotName = null; string recordTour = null; bool recForTour = false;
+            double shotsBelowKm = -1; bool shotsBmp = false;   // --shotsbelow <km>: shots only once the view is narrower than that; --bmp: shots as BMP (fast to write, so a test's frames stay quick)
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "--smoke" && i + 1 < args.Length) int.TryParse(args[i + 1], out smokeMs);
+                if (args[i] == "--shotsbelow" && i + 1 < args.Length) double.TryParse(args[i + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out shotsBelowKm);
+                if (args[i] == "--bmp") shotsBmp = true;
                 if (args[i] == "--test-stall") testStall = true; // proves the watchdog fires
                 if (args[i] == "--deep" && i + 1 < args.Length) int.TryParse(args[i + 1], out testDeep);       // open deep zoom on a row
                 if (args[i] == "--zoom" && i + 1 < args.Length) double.TryParse(args[i + 1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out testZoom);
@@ -269,7 +272,7 @@ namespace Universe
                 if (aimCentre) { window.Input.MouseX = gpu.Width / 2; window.Input.MouseY = gpu.Height / 2; }
                 if (deep != null && deepSince < 0) deepSince = clock.Total;
                 if (deep != null && journeyAt >= 0 && clock.Total >= deepSince + journeyAt) { deep.TestJourney(gpu.Width, gpu.Height); journeyAt = -1; }
-                if (wheelFrom >= 0 && clock.Total >= wheelFrom && clock.Total < wheelFrom + wheelFor && frames % wheelEvery == 0) window.Input.Notch(1);
+                if (wheelFrom >= 0 && clock.Total >= wheelFrom && clock.Total < wheelFrom + wheelFor && frames % wheelEvery == 0 && (world == null || world.MatterKm <= 0 || world.MatterKm > Universe.Shell.MatterView.KnownKm)) window.Input.Notch(1);   // (the test's wheel ends on the last landmark, the quark, never on into nothing)
                 if (backFrom >= 0 && clock.Total >= backFrom && clock.Total < backFrom + backFor) window.Input.Notch(-1);
                 if (clickAt >= 0 && clock.Total >= clickAt) { window.Input.MouseX = (int)(clickX * gpu.Width); window.Input.MouseY = (int)(clickY * gpu.Height); window.Input.LeftClicked = true; clickAt = -1; }
                 window.Input.Glide(clock.Delta, window.Input.IsDown(0x11));      // the wheel glides in smoothly; hold Ctrl: eight times as fast, in every view
@@ -350,7 +353,11 @@ namespace Universe
                 {
                     var inp = window.Input; string caps = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "captures"), stamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss");
                     if (inp.WasPressed(0x7B)) wantShot = true;
-                    if (shotsEvery > 0 && clock.Total >= shotsNext) { shotsNext = clock.Total + shotsEvery; wantShot = true; shotName = "shot_" + (shotsN++).ToString("00"); }
+                    if (shotsEvery > 0 && clock.Total >= shotsNext && (shotsBelowKm <= 0 || (world != null && world.ViewKm < shotsBelowKm)))
+                    {
+                        shotsNext = clock.Total + shotsEvery; string nm = "shot_" + (shotsN++).ToString("00");
+                        if (shotsBmp) gpu.CaptureNext = System.IO.Path.Combine(caps, nm + ".bmp"); else { wantShot = true; shotName = nm; }
+                    }
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
                     if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }

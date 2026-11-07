@@ -404,8 +404,8 @@ namespace Universe.Shell
             x = x1; y = v * cb - z1 * sb; z = v * sb + z1 * cb;
         }
         // how far round its path an electron is at a time (inner and more tightly held electrons faster; slowed to be watched)
-        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.15 * el.W + k * 2.399963229728653; }   // (slowed to be watched: a third of before)
-        private static double ElectronDrift(double time) { return time * 0.06; }   // how far the paths have turned on (radians): a slow precession, a whole turn in about two minutes
+        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.05 * el.W + k * 2.399963229728653; }   // (slowed to be watched: a ninth of the first speed)
+        private static double ElectronDrift(double time) { return time * 0.025; }   // how far the paths have turned on (radians): a slow precession, a whole turn in about four minutes
 
         private static int[] Shells(int z)
         {
@@ -1474,17 +1474,17 @@ namespace Universe.Shell
                         double[][] qp = new double[3][];
                         for (int qi = 0; qi < 3; qi++)
                         {
-                            double a1 = time * (0.25 + qi * 0.08) + qi * 2.1 + k * 0.77, a2 = time * (0.18 + qi * 0.06) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.15 + qi + k));   // (slowed to be watched)
+                            double a1 = time * (0.07 + qi * 0.02) + qi * 2.1 + k * 0.77, a2 = time * (0.05 + qi * 0.016) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.05 + qi + k));   // (slowed to be watched: a quark crosses its nucleon in about half a minute)
                             qp[qi] = new[] { nx + qr * Math.Sin(a2) * Math.Cos(a1), ny + qr * Math.Cos(a2), nz + qr * Math.Sin(a2) * Math.Sin(a1) };
                         }
                         double ycx = (qp[0][0] + qp[1][0] + qp[2][0]) / 3, ycy = (qp[0][1] + qp[1][1] + qp[2][1]) / 3, ycz = (qp[0][2] + qp[1][2] + qp[2][2]) / 3;
                         for (int qi = 0; qi < 3; qi++)
                             for (int t2 = 1; t2 < 10; t2++)
                             {
-                                double tt = t2 / 10.0; float fl = gf * (float)(0.35 + 0.25 * Math.Sin(time * 9 + t2 + qi * 2)) * 0.5f;
+                                double tt = t2 / 10.0; float fl = gf * (float)(0.35 + 0.25 * Math.Sin(time * 1.5 + t2 + qi * 2)) * 0.5f;   // (the tubes breathe slowly: never a flicker)
                                 Add(glow, qp[qi][0] + (ycx - qp[qi][0]) * tt, qp[qi][1] + (ycy - qp[qi][1]) * tt, qp[qi][2] + (ycz - qp[qi][2]) * tt, Nucleon * 0.12, colour[qi][0] * fl, colour[qi][1] * fl, colour[qi][2] * fl, s);
                             }
-                        long qt = (long)Math.Floor(time * 4);
+                        long qt = (long)Math.Floor(time * 0.7);                                       // (a pair lasts over a second: watchable, never a strobe)
                         for (int sp = 0; sp < 6; sp++)
                         {
                             if (Hash(k, sp, qt, _seed) > 0.5) continue;                       // a virtual pair, there for a moment
@@ -1493,7 +1493,7 @@ namespace Universe.Shell
                         }
                         for (int qi = 0; qi < 3; qi++)
                         {
-                            double a1 = time * (0.25 + qi * 0.08) + qi * 2.1 + k * 0.77, a2 = time * (0.18 + qi * 0.06) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.15 + qi + k));   // (slowed to be watched)
+                            double a1 = time * (0.07 + qi * 0.02) + qi * 2.1 + k * 0.77, a2 = time * (0.05 + qi * 0.016) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.05 + qi + k));   // (slowed to be watched: a quark crosses its nucleon in about half a minute)
                             double qx = nx + qr * Math.Sin(a2) * Math.Cos(a1), qy = ny + qr * Math.Cos(a2), qz = nz + qr * Math.Sin(a2) * Math.Sin(a1);
                             // the quark you picked moves on: the view keeps going to where it is now (as with an electron), and
                             // once it is all but there it rides with it exactly, so the zoom in goes on into it without end
@@ -1503,7 +1503,7 @@ namespace Universe.Shell
                                 double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
                             }
                             // a point as far as anyone has measured: its glow fills the view and stays, however far in you go
-                            Add(glow, qx, qy, qz, Math.Min(s * 300, Math.Max(s * 0.003, Nucleon * 0.05)), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);
+                            Add(glow, qx, qy, qz, Math.Min(s * 4, Math.Max(s * 0.003, Nucleon * 0.05)), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);   // (never wider than a few screens: a glow hundreds of screens wide was dropped on some frames and kept on others, a strobe)
                             int nb = _bodies.Count; AddBody(4, qi, q[qi] == 'u' ? 1 : 0, qx, qy, qz, Nucleon * 0.3, s); if (_bodies.Count > nb) { _bodies[nb].Sym = q[qi] == 'u' ? "up" : "down"; _bodies[nb].Key = k + 1; }
                         }
                         continue;
@@ -1590,9 +1590,21 @@ namespace Universe.Shell
             double k = 1 - Math.Exp(-dt * Glide);
             // an electron moves on its path faster than the view could glide after it: once you are almost at it the view rides with
             // it, so zooming in goes to it, never past
-            if (_picked != null && (_picked.Kind == 3 || _picked.Kind == 4)) { double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(_scale * 3, 2)) k = 1; }
-            if (k >= 1) { _fx = _tfx; _fz = _tfz; _fy = _tfy; }                                 // (exactly: a rounding's width is a whole screen, far enough in)
-            else { _fx += (_tfx - _fx) * k; _fz += (_tfz - _fz) * k; _fy += (_tfy - _fy) * k; }
+            {
+                double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
+                if (_picked != null && (_picked.Kind == 3 || _picked.Kind == 4) && gd < scaleKm * 3) k = 1;
+                if (gd < scaleKm * 0.01) k = 1;                                                 // a hundredth of the picture away: there, exactly
+                if (k >= 1) { _fx = _tfx; _fz = _tfz; _fy = _tfy; }                             // (exactly: a rounding's width is a whole screen, far enough in)
+                else
+                {
+                    _fx += gx * k; _fz += gz * k; _fy += gy * k;
+                    // the zoom never outruns the glide: whatever you picked (an atom, its nucleus, a nucleon, a quark) stays
+                    // within the picture however fast the wheel goes, so coming down always comes down onto it, never past
+                    // it into black with its name on the card
+                    double left = gd * (1 - k), keep = scaleKm * 0.3;
+                    if (left > keep) { double pull = (left - keep) / gd; _fx += gx * pull; _fz += gz * pull; _fy += gy * pull; }
+                }
+            }
             var solid = new List<StarVertex>(20000); var glow = new List<StarVertex>(2000); var mesh = pipes != null ? new List<StarVertex>(60000) : null;
             _bodies.Clear();
             _clock = time; Build(scaleKm, time, solid, glow, mesh, overlay);
@@ -1726,6 +1738,19 @@ namespace Universe.Shell
         /// <summary>How far the point you dive into still is from what is picked, in shares of the view's size (0 with nothing
         /// picked): the tour flies in only once it is there, so it never flies past what it shows.</summary>
         public double PickOff { get { if (_picked == null) return 0; double dx = _tfx - _fx, dz = _tfz - _fz; return Math.Sqrt(dx * dx + dz * dz) / Math.Max(1e-40, _scale); } }   // (across: how high it sits is the zoom's own)
+        /// <summary>Zooming in by hand with nothing finer picked: the view locks onto the landmark at each size (the nearest atom,
+        /// then its nucleus, then a proton or neutron, then a quark), so the wheel goes down into matter, never between it into
+        /// nothing. Called on each wheel notch in, with the scale.</summary>
+        public void Landmarks(double s)
+        {
+            if (_space) return;
+            int k = _picked != null ? _picked.Kind : -1;
+            double fx, fy, fz; var fe = Focus(out fx, out fy, out fz); double ar = fe != null ? AtomRadius(fe) : AtomSpacing * 0.5;
+            if (s < Nucleon * 0.6) { if (k != 4) PickNearest("quark"); }
+            else if (s < Nucleon * 8) { if (k != 5 && k != 4) PickNearest("proton"); }
+            else if (s < ar * 0.5) { if (k != 7 && k != 5 && k != 4) PickNearest("nucleus"); }
+            else if (s < AtomSpacing * 6) { if (k != 1 && k != 3 && k != 6 && k != 7 && k != 5 && k != 4) PickNearest("atom"); }
+        }
         public void PickNearest(string what)
         {
             if (what == "bonded-atom")

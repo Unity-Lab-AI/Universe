@@ -1161,6 +1161,21 @@ namespace DnaAnd.Shell
                         if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; }
                     }
                     break;
+                case "far-galaxy":
+                    {
+                        // across the universe: the farthest galaxy made round you that lies ahead (in view), never a near one
+                        int bi = -1; double bs = double.MinValue; var lk = Look; var rng = new Rng(_seed ^ (ulong)Environment.TickCount);
+                        for (int i = 0; i < _galaxies.Count; i++)
+                        {
+                            var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                            if (d < 3 || d > _nearUnits * 1.7) continue;
+                            double ahead = (dx * lk.X + dy * lk.Y + dz * lk.Z) / d; if (ahead < 0.5) continue;
+                            double score = d * (0.85 + 0.3 * rng.NextDouble());
+                            if (score > bs) { bs = score; bi = i; }
+                        }
+                        if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; break; }
+                    }
+                    goto case "galaxy";                                                    // (none far ahead yet: one some way off)
                 case "galaxy":
                 case "next-galaxy":
                     {

@@ -32,15 +32,15 @@ caption: The cosmic web: galaxies along filaments, round vast empty voids
 
 @stop choose-galaxy
 do: pick
-target: galaxy
-caption: A galaxy
+target: far-galaxy
+caption: A far galaxy
 
 @stop to-galaxy
 do: zoom
-pan: 6
-rate: 0.4
+pan: 4
+rate: 0.5
 until-km: 1.5e18
-caption: We fall toward one galaxy among a hundred billion
+caption: Across the universe, past galaxy after galaxy, to one far away among a hundred billion
 
 @stop round-galaxy
 do: arc

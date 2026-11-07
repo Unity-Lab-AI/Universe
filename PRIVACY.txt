@@ -1,0 +1,13 @@
+Privacy
+
+This program collects nothing about you, sends nothing anywhere, and stores nothing of yours except on your own computer.
+
+  - No accounts, no sign-in, no tracking, no analytics, no advertising, no telemetry, no crash reports sent.
+  - It never connects to the internet. (Links in its documents open in your own browser only when you click them.)
+  - What stays on your computer, and only there:
+      your settings (frames a second, drag speed and the like), in your own profile folder;
+      the screenshots and clips you choose to make, in the captures folder where it is installed;
+      a short log of its last run, beside the program, to help if something goes wrong.
+  - Uninstalling removes the program, and, if you choose, your settings, screenshots and clips too.
+
+Made by the Unity AI Lab team - https://unityailab.com

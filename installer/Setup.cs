@@ -1,37 +1,55 @@
-// DNA-AND · installer · our own Windows installer, built with the C# compiler that comes with Windows (no outside tools).
-// It carries the game (DNA-AND.exe and its content folder) packed inside itself. Installing puts the game in the user's own
-// Programs folder (no administrator rights needed), adds Start menu and desktop shortcuts and an entry in Windows' Apps list,
-// and leaves an uninstaller beside the game. Run with /uninstall (as the Apps list does) to remove it all again.
+// DNA-AND · installer · our own Windows setup wizard, built with the C# compiler and the forms that come with Windows (no
+// outside tools). It carries the game packed inside itself. The wizard: welcome; the readme, the MIT License (accepted to go
+// on) and the privacy policy, read from the very files it installs; the requirements, each checked on this
+// computer (Windows 10 or 11, 64-bit; a Direct3D 12 graphics card; memory; disk space); where to install it (any folder,
+// Browse); shortcuts; installing, with a progress bar; finished, start it now. Run over an install it asks: update it,
+// uninstall everything, or leave it; a running copy is closed first. The uninstaller (in the Apps list and beside the game)
+// asks whether your settings, screenshots and clips go too, and leaves nothing else behind.
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
 internal static class Setup
 {
 #if UNIVERSE
-    private const string Name = "Universe";                                // the Universe release
+    private const string Name = "Universe";
+    private const string Tagline = "One universe you can zoom through without a break: from the cosmic web of galaxies down to the quarks inside a proton.";
 #else
     private const string Name = "DNA-AND";
+    private const string Tagline = "The universe of DNA-AND, a 3D god game of life (universe preview): from the cosmic web of galaxies down to the quarks.";
 #endif
     private const string Version = "0.1.0";
     private const string Publisher = "Unity AI Lab";
     private const string UninstallKey = @"Software\Microsoft\Windows\CurrentVersion\Uninstall\" + Name;
 
-    private static string InstallDir { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", Name); } }
+    private static string DefaultDir { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", Name); } }
     private static string StartMenuLink { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), Name + ".lnk"); } }
     private static string DesktopLink { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Name + ".lnk"); } }
+    private static string SettingsDir { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), Name); } }
 
     [STAThread]
     private static int Main(string[] args)
     {
+        Application.EnableVisualStyles(); Application.SetCompatibleTextRenderingDefault(false);
         try
         {
             if (Array.IndexOf(args, "/uninstall") >= 0) return Uninstall(Array.IndexOf(args, "/quiet") >= 0);
-            return Install(Array.IndexOf(args, "/quiet") >= 0);
+            string existing = InstalledAt();
+            if (existing != null)
+            {
+                var r = MessageBox.Show(Name + " is already installed in\n" + existing + "\n\nYes: update it (your settings, screenshots and clips stay)\nNo: uninstall it\nCancel: leave it alone",
+                    Name + " Setup", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (r == DialogResult.Cancel) return 2;
+                if (r == DialogResult.No) return Uninstall(false);
+            }
+            Application.Run(new Wizard(existing ?? DefaultDir, existing != null));
+            return 0;
         }
         catch (Exception ex)
         {
@@ -40,62 +58,242 @@ internal static class Setup
         }
     }
 
-    private static int Install(bool quiet)
+    private static string InstalledAt()
     {
-        if (!quiet && MessageBox.Show("Install " + Name + " " + Version + " (universe preview)?\n\nIt goes in:\n" + InstallDir +
-            "\n\nwith shortcuts on the Start menu and the desktop. No administrator rights are needed.",
-            Name + " Setup", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return 2;
+        using (var k = Registry.CurrentUser.OpenSubKey(UninstallKey))
+        {
+            var v = k == null ? null : k.GetValue("InstallLocation") as string;
+            return v != null && Directory.Exists(v) ? v : null;
+        }
+    }
 
-        // an earlier copy is replaced
-        if (Directory.Exists(InstallDir)) Directory.Delete(InstallDir, true);
-        Directory.CreateDirectory(InstallDir);
-        // the game, unpacked from inside this installer
-        using (var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip"))
+    // ── the requirements, checked on this computer ──
+    [DllImport("d3d12.dll")] private static extern int D3D12CreateDevice(IntPtr adapter, int minLevel, ref Guid riid, IntPtr device);
+    [StructLayout(LayoutKind.Sequential)] private struct MemStatus { public uint Length, Load; public ulong Total, Avail, TotalPage, AvailPage, TotalVirtual, AvailVirtual, AvailExtended; }
+    [DllImport("kernel32.dll")] private static extern bool GlobalMemoryStatusEx(ref MemStatus m);
+    internal static bool HasD3D12()
+    {
+        try { var iid = new Guid("189819f1-1db6-4b57-be54-1821339b85f7"); return D3D12CreateDevice(IntPtr.Zero, 0xb000, ref iid, IntPtr.Zero) >= 0; }   // asks for a device at feature level 11_0 (not made: only whether one can be)
+        catch { return false; }
+    }
+    internal static int WindowsMajor()
+    {
+        try { using (var k = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion")) { var v = k.GetValue("CurrentMajorVersionNumber"); return v is int ? (int)v : Environment.OSVersion.Version.Major; } }
+        catch { return Environment.OSVersion.Version.Major; }
+    }
+    internal static double MemoryGB() { var m = new MemStatus { Length = (uint)Marshal.SizeOf(typeof(MemStatus)) }; return GlobalMemoryStatusEx(ref m) ? m.Total / 1073741824.0 : 0; }
+    internal static long PayloadBytes()
+    {
+        using (var s = Payload()) using (var zip = new ZipArchive(s, ZipArchiveMode.Read)) { long n = 0; foreach (var e in zip.Entries) n += e.Length; return n + new FileInfo(Assembly.GetExecutingAssembly().Location).Length; }
+    }
+    internal static Stream Payload()
+    {
+        var s = Assembly.GetExecutingAssembly().GetManifestResourceStream("payload.zip");
+        if (s == null) throw new InvalidOperationException("this installer is missing the game inside it");
+        return s;
+    }
+    // a text file from inside the packed game (the readme, the licence, the privacy policy), as it will be installed
+    internal static string PayloadText(string name)
+    {
+        using (var s = Payload()) using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
         {
-            if (s == null) throw new InvalidOperationException("this installer is missing the game inside it");
-            using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
-                foreach (var e in zip.Entries)
+            var e = zip.GetEntry(name); if (e == null) return "(" + name + " is missing from this installer)";
+            using (var r = new StreamReader(e.Open())) return r.ReadToEnd();
+        }
+    }
+    internal static long FreeBytes(string dir)
+    {
+        try { var root = Path.GetPathRoot(Path.GetFullPath(dir)); return new DriveInfo(root).AvailableFreeSpace; } catch { return -1; }
+    }
+    internal static string Size(long b) { return b >= 1L << 30 ? (b / 1073741824.0).ToString("0.0") + " GB" : (b / 1048576.0).ToString("0.0") + " MB"; }
+
+    // ── the wizard ──
+    private sealed class Wizard : Form
+    {
+        private readonly Panel[] _pages = new Panel[9]; private readonly CheckBox _accept = new CheckBox(); private int _page;
+        private readonly Button _back = new Button(), _next = new Button(), _cancel = new Button();
+        private readonly TextBox _dir = new TextBox(); private readonly Label _space = new Label(), _file = new Label();
+        private readonly CheckBox _desktop = new CheckBox(), _start = new CheckBox(), _launch = new CheckBox();
+        private readonly ProgressBar _bar = new ProgressBar(); private readonly bool _update; private bool _blocked, _installed;
+        private readonly long _need;
+
+        public Wizard(string dir, bool update)
+        {
+            _update = update; _need = PayloadBytes();
+            Text = Name + " " + Version + " Setup"; FormBorderStyle = FormBorderStyle.FixedDialog; MaximizeBox = false; MinimizeBox = false;
+            StartPosition = FormStartPosition.CenterScreen; Font = new Font("Segoe UI", 10f); AutoScaleMode = AutoScaleMode.Dpi; ClientSize = new Size(640, 440);
+            var head = new Panel { Dock = DockStyle.Top, Height = 70, BackColor = Color.FromArgb(10, 12, 20) };
+            head.Controls.Add(new Label { Text = Name, ForeColor = Color.FromArgb(234, 238, 242), Font = new Font("Segoe UI Light", 22f), Location = new Point(18, 10), AutoSize = true });
+            head.Controls.Add(new Label { Text = "version " + Version + " · " + Publisher, ForeColor = Color.FromArgb(160, 170, 180), Location = new Point(22, 46), AutoSize = true });
+            Controls.Add(head);
+            var foot = new Panel { Dock = DockStyle.Bottom, Height = 52 };
+            _cancel.Text = "Cancel"; _next.Text = "Next >"; _back.Text = "< Back";
+            foreach (var b in new[] { _back, _next, _cancel }) { b.Size = new Size(100, 32); foot.Controls.Add(b); }
+            _back.Location = new Point(316, 10); _next.Location = new Point(420, 10); _cancel.Location = new Point(528, 10);
+            _back.Click += (o, e) => Show(_page - 1); _next.Click += (o, e) => Next(); _cancel.Click += (o, e) => { if (!_installed) Close(); };
+            Controls.Add(foot); AcceptButton = _next;
+            for (int i = 0; i < _pages.Length; i++) { _pages[i] = new Panel { Location = new Point(0, 70), Size = new Size(640, 318), Visible = false, Padding = new Padding(24) }; Controls.Add(_pages[i]); }
+
+            // 0 welcome
+            Add(0, "Welcome", "This will install " + Name + " " + Version + " on this computer.\n\n" + Tagline +
+                "\n\nIt installs for you alone (no administrator rights needed), adds shortcuts and an entry in Windows' Apps list, and can be removed again there." +
+                (update ? "\n\nIt is already installed: this will update it, keeping your settings, screenshots and clips." : "") + "\n\nClick Next to go on.");
+            // 1 readme, 2 licence, 3 privacy: the files that are installed, to read
+            Doc(1, "Readme", "README.txt", null);
+            Doc(2, "License", "LICENSE.txt", "I accept the terms of the MIT License");
+            Doc(3, "Privacy", "PRIVACY.txt", null);
+            // 4 requirements
+            int win = WindowsMajor(); bool x64 = Environment.Is64BitOperatingSystem, d3d = HasD3D12(); double mem = MemoryGB(); long free = FreeBytes(dir);
+            _blocked = win < 10 || !x64 || !d3d;
+            var req = "What " + Name + " needs, checked on this computer:\n\n" +
+                Mark(win >= 10) + "  Windows 10 or 11  (this is Windows " + win + ")\n" +
+                Mark(x64) + "  64-bit Windows\n" +
+                Mark(d3d) + "  A graphics card that runs Direct3D 12  " + (d3d ? "(found)" : "(none found: update the graphics driver)") + "\n" +
+                Mark(mem >= 8) + "  8 GB of memory or more  (this has " + mem.ToString("0") + " GB" + (mem < 8 ? "; it may run slowly" : "") + ")\n" +
+                Mark(free < 0 || free > _need * 2) + "  " + Size(_need) + " of disk space  (" + (free >= 0 ? Size(free) + " free" : "unknown") + ")\n\n" +
+                (_blocked ? "This computer does not have everything " + Name + " needs, so it cannot be installed." : "Everything it needs is here. It runs in a window and never changes your display settings.");
+            Add(4, "Requirements", req);
+            // 2 folder
+            Add(5, "Where to install it", "Choose the folder " + Name + " goes in. Your settings are kept in your own profile; screenshots and clips in a captures folder inside this one.");
+            _dir.Text = dir; _dir.Location = new Point(24, 120); _dir.Width = 470; _pages[5].Controls.Add(_dir);
+            var browse = new Button { Text = "Browse...", Location = new Point(504, 118), Size = new Size(100, 30) };
+            browse.Click += (o, e) => { using (var f = new FolderBrowserDialog { Description = "Install " + Name + " in:", SelectedPath = Directory.Exists(_dir.Text) ? _dir.Text : Path.GetDirectoryName(_dir.Text) }) if (f.ShowDialog(this) == DialogResult.OK) _dir.Text = Path.GetFileName(f.SelectedPath).Equals(Name, StringComparison.OrdinalIgnoreCase) ? f.SelectedPath : Path.Combine(f.SelectedPath, Name); };
+            _pages[5].Controls.Add(browse);
+            _space.Location = new Point(24, 160); _space.AutoSize = true; _pages[5].Controls.Add(_space);
+            _dir.TextChanged += (o, e) => SpaceText(); SpaceText();
+            if (update) { _dir.ReadOnly = true; browse.Enabled = false; }
+            // 3 options
+            Add(6, "Shortcuts", "Where you would like shortcuts to " + Name + ":");
+            _desktop.Text = "On the desktop"; _desktop.Checked = true; _desktop.Location = new Point(28, 110); _desktop.AutoSize = true; _pages[6].Controls.Add(_desktop);
+            _start.Text = "On the Start menu"; _start.Checked = true; _start.Location = new Point(28, 140); _start.AutoSize = true; _pages[6].Controls.Add(_start);
+            // 4 installing
+            Add(7, "Installing", "Please wait while " + Name + " is installed.");
+            _bar.Location = new Point(24, 120); _bar.Size = new Size(580, 26); _pages[7].Controls.Add(_bar);
+            _file.Location = new Point(24, 156); _file.Size = new Size(580, 40); _pages[7].Controls.Add(_file);
+            // 5 done
+            Add(8, "Finished", Name + " is installed in:\n" + "{dir}" + "\n\nYou can start it from its shortcuts, and remove it from Windows' Apps list.");
+            _launch.Text = "Start " + Name + " now"; _launch.Checked = true; _launch.Location = new Point(28, 200); _launch.AutoSize = true; _pages[8].Controls.Add(_launch);
+            Show(0);
+        }
+
+        private void Doc(int i, string title, string file, string accept)
+        {
+            _pages[i].Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 13f), Location = new Point(24, 16), AutoSize = true });
+            var box = new TextBox { Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Location = new Point(24, 52), Size = new Size(590, accept != null ? 220 : 252),
+                Font = new Font("Consolas", 9f), BackColor = Color.White, Text = PayloadText(file).Replace("\r\n", "\n").Replace("\n", "\r\n") };
+            _pages[i].Controls.Add(box);
+            if (accept != null) { _accept.Text = accept; _accept.Location = new Point(26, 282); _accept.AutoSize = true; _accept.CheckedChanged += (o, e) => Show(_page); _pages[i].Controls.Add(_accept); }
+        }
+        private static string Mark(bool ok) { return ok ? "✔" : "✖"; }
+        private void SpaceText() { long f = FreeBytes(_dir.Text); _space.Text = "Space needed: " + Size(_need) + "     Space free: " + (f >= 0 ? Size(f) : "unknown"); }
+        private void Add(int i, string title, string text)
+        {
+            _pages[i].Controls.Add(new Label { Text = title, Font = new Font("Segoe UI Semibold", 13f), Location = new Point(24, 16), AutoSize = true });
+            _pages[i].Controls.Add(new Label { Name = "body", Text = text, Location = new Point(24, 52), Size = new Size(590, i == 5 || i == 6 || i == 7 ? 60 : 250) });
+        }
+        private void Show(int i)
+        {
+            _page = Math.Max(0, Math.Min(8, i));
+            for (int k = 0; k < _pages.Length; k++) _pages[k].Visible = k == _page;
+            _back.Enabled = _page > 0 && _page < 7;
+            _next.Text = _page == 6 ? "Install" : _page == 8 ? "Finish" : "Next >";
+            _next.Enabled = !(_page == 4 && _blocked) && !(_page == 2 && !_accept.Checked) && _page != 7;
+            _cancel.Enabled = _page < 7;
+        }
+        private void Next()
+        {
+            if (_page == 5)
+            {
+                string d = _dir.Text.Trim();
+                if (d.Length == 0 || !Path.IsPathRooted(d)) { MessageBox.Show(this, "Choose a full folder path.", Text); return; }
+                long f = FreeBytes(d); if (f >= 0 && f < _need) { MessageBox.Show(this, "There is not enough space there: " + Size(_need) + " is needed.", Text); return; }
+            }
+            if (_page == 6) { Show(7); Install(); return; }
+            if (_page == 8)
+            {
+                if (_launch.Checked) { string exe = Path.Combine(_dir.Text, Name + ".exe"); Process.Start(new ProcessStartInfo(exe) { WorkingDirectory = _dir.Text }); }
+                Close(); return;
+            }
+            Show(_page + 1);
+        }
+
+        private void Install()
+        {
+            string dir = Path.GetFullPath(_dir.Text.Trim());
+            try
+            {
+                CloseRunning(this);
+                // an update replaces the game and keeps the captures; a fresh install starts empty
+                if (Directory.Exists(dir))
+                    foreach (var p in Directory.GetFileSystemEntries(dir))
+                    {
+                        if (Path.GetFileName(p).Equals("captures", StringComparison.OrdinalIgnoreCase)) continue;
+                        if (Directory.Exists(p)) Directory.Delete(p, true); else File.Delete(p);
+                    }
+                Directory.CreateDirectory(dir);
+                using (var s = Payload()) using (var zip = new ZipArchive(s, ZipArchiveMode.Read))
                 {
-                    string to = Path.GetFullPath(Path.Combine(InstallDir, e.FullName));
-                    if (!to.StartsWith(InstallDir, StringComparison.OrdinalIgnoreCase)) continue;        // never outside the install folder
-                    if (e.FullName.EndsWith("/")) { Directory.CreateDirectory(to); continue; }
-                    Directory.CreateDirectory(Path.GetDirectoryName(to));
-                    e.ExtractToFile(to, true);
+                    _bar.Maximum = zip.Entries.Count + 3; int n = 0;
+                    foreach (var e in zip.Entries)
+                    {
+                        string to = Path.GetFullPath(Path.Combine(dir, e.FullName));
+                        if (!to.StartsWith(dir, StringComparison.OrdinalIgnoreCase)) continue;            // never outside the install folder
+                        _file.Text = e.FullName; _bar.Value = ++n; Application.DoEvents();
+                        if (e.FullName.EndsWith("/")) { Directory.CreateDirectory(to); continue; }
+                        Directory.CreateDirectory(Path.GetDirectoryName(to)); e.ExtractToFile(to, true);
+                    }
                 }
+                _file.Text = "the uninstaller and shortcuts"; Application.DoEvents();
+                string uninstaller = Path.Combine(dir, "Uninstall " + Name + ".exe");
+                File.Copy(Assembly.GetExecutingAssembly().Location, uninstaller, true);
+                string exe = Path.Combine(dir, Name + ".exe");
+                if (_start.Checked) Shortcut(StartMenuLink, exe); else if (File.Exists(StartMenuLink)) File.Delete(StartMenuLink);
+                if (_desktop.Checked) Shortcut(DesktopLink, exe); else if (File.Exists(DesktopLink)) File.Delete(DesktopLink);
+                _bar.Value = Math.Min(_bar.Maximum, _bar.Value + 2);
+                using (var k = Registry.CurrentUser.CreateSubKey(UninstallKey))
+                {
+                    k.SetValue("DisplayName", Name); k.SetValue("DisplayVersion", Version); k.SetValue("Publisher", Publisher);
+                    k.SetValue("URLInfoAbout", "https://unityailab.com"); k.SetValue("InstallLocation", dir); k.SetValue("DisplayIcon", exe);
+                    k.SetValue("UninstallString", "\"" + uninstaller + "\" /uninstall"); k.SetValue("QuietUninstallString", "\"" + uninstaller + "\" /uninstall /quiet");
+                    k.SetValue("NoModify", 1); k.SetValue("NoRepair", 1); k.SetValue("EstimatedSize", (int)(DirSize(dir) / 1024));
+                }
+                _bar.Value = _bar.Maximum; _installed = true;
+                foreach (Control c in _pages[8].Controls) if (c.Name == "body") c.Text = c.Text.Replace("{dir}", dir);
+                Show(8);
+            }
+            catch (Exception ex) { MessageBox.Show(this, "It could not be installed:\n\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error); Show(5); }
         }
-        // the uninstaller: this same program, kept beside the game
-        string uninstaller = Path.Combine(InstallDir, "Uninstall " + Name + ".exe");
-        File.Copy(Assembly.GetExecutingAssembly().Location, uninstaller, true);
-        string exe = Path.Combine(InstallDir, Name + ".exe");
-        Shortcut(StartMenuLink, exe); Shortcut(DesktopLink, exe);
-        // listed in Windows' Apps list, for this user
-        using (var k = Registry.CurrentUser.CreateSubKey(UninstallKey))
-        {
-            k.SetValue("DisplayName", Name + " (universe preview)");
-            k.SetValue("DisplayVersion", Version);
-            k.SetValue("Publisher", Publisher);
-            k.SetValue("URLInfoAbout", "https://unityailab.com");
-            k.SetValue("InstallLocation", InstallDir);
-            k.SetValue("DisplayIcon", exe);
-            k.SetValue("UninstallString", "\"" + uninstaller + "\" /uninstall");
-            k.SetValue("QuietUninstallString", "\"" + uninstaller + "\" /uninstall /quiet");
-            k.SetValue("NoModify", 1); k.SetValue("NoRepair", 1);
-            k.SetValue("EstimatedSize", (int)(DirSize(InstallDir) / 1024));
-        }
-        if (!quiet && MessageBox.Show(Name + " is installed.\n\nStart it now?", Name + " Setup", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
-            Process.Start(new ProcessStartInfo(exe) { WorkingDirectory = InstallDir });
-        return 0;
+    }
+
+    // a running copy is closed first (asked), so its files can be replaced or removed
+    private static void CloseRunning(IWin32Window owner)
+    {
+        var running = Process.GetProcessesByName(Name); if (running.Length == 0) return;
+        if (MessageBox.Show(owner, Name + " is running. Close it to go on?", Name + " Setup", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) throw new InvalidOperationException(Name + " is still running");
+        foreach (var p in running) { try { p.CloseMainWindow(); if (!p.WaitForExit(4000)) p.Kill(); p.WaitForExit(4000); } catch { } }
     }
 
     private static int Uninstall(bool quiet)
     {
-        if (!quiet && MessageBox.Show("Remove " + Name + " and its shortcuts?", Name + " Uninstall", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return 2;
-        foreach (var l in new[] { StartMenuLink, DesktopLink }) if (File.Exists(l)) File.Delete(l);
+        string dir = InstalledAt() ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        if (!quiet && MessageBox.Show("Remove " + Name + " from\n" + dir + "\nand its shortcuts?", Name + " Uninstall", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return 2;
+        bool all = !quiet && MessageBox.Show("Also remove your settings, screenshots and clips?\n\n" + SettingsDir + "\n" + Path.Combine(dir, "captures") + "\n\n(Cannot be undone.)", Name + " Uninstall", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+        if (!quiet) CloseRunning(null);
+        foreach (var l in new[] { StartMenuLink, DesktopLink }) try { if (File.Exists(l)) File.Delete(l); } catch { }
         Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, false);
-        // the folder holds this running uninstaller, so it is removed a moment after it closes
-        Process.Start(new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 3 > nul & rmdir /s /q \"" + InstallDir + "\"")
-            { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true });
-        if (!quiet) MessageBox.Show(Name + " has been removed.", Name + " Uninstall", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        if (all) try { if (Directory.Exists(SettingsDir)) Directory.Delete(SettingsDir, true); } catch { }
+        // everything in the folder but this running uninstaller (and the captures, unless they go too) goes now; the
+        // uninstaller and the emptied folder a moment after it closes
+        string self = Assembly.GetExecutingAssembly().Location;
+        foreach (var p in Directory.GetFileSystemEntries(dir))
+        {
+            if (p.Equals(self, StringComparison.OrdinalIgnoreCase)) continue;
+            if (!all && Path.GetFileName(p).Equals("captures", StringComparison.OrdinalIgnoreCase)) continue;
+            try { if (Directory.Exists(p)) Directory.Delete(p, true); else File.Delete(p); } catch { }
+        }
+        string after = all || !Directory.Exists(Path.Combine(dir, "captures")) ? "rmdir /s /q \"" + dir + "\"" : "del /f /q \"" + self + "\"";
+        Process.Start(new ProcessStartInfo("cmd.exe", "/c ping 127.0.0.1 -n 3 > nul & " + after) { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true });
+        if (!quiet) MessageBox.Show(Name + " has been removed." + (all ? "" : "\n\nYour screenshots and clips are kept in\n" + Path.Combine(dir, "captures")), Name + " Uninstall", MessageBoxButtons.OK, MessageBoxIcon.Information);
         return 0;
     }
 
@@ -107,7 +305,7 @@ internal static class Setup
         var st = sc.GetType();
         st.InvokeMember("TargetPath", BindingFlags.SetProperty, null, sc, new object[] { target });
         st.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, sc, new object[] { Path.GetDirectoryName(target) });
-        st.InvokeMember("Description", BindingFlags.SetProperty, null, sc, new object[] { Name + ": the universe, from galaxies to atoms" });
+        st.InvokeMember("Description", BindingFlags.SetProperty, null, sc, new object[] { Name });
         st.InvokeMember("Save", BindingFlags.InvokeMethod, null, sc, null);
     }
 

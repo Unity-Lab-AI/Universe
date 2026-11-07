@@ -13,6 +13,8 @@ mkdir "%STAGE%"
 copy /y "%~dp0build\release\Universe.exe" "%STAGE%\Universe.exe" > nul
 xcopy /e /i /q /y "%~dp0content" "%STAGE%\content" > nul
 copy /y "%~dp0docs\README.txt" "%STAGE%\README.txt" > nul
+copy /y "%~dp0LICENSE.txt" "%STAGE%\LICENSE.txt" > nul
+copy /y "%~dp0PRIVACY.txt" "%STAGE%\PRIVACY.txt" > nul
 mkdir "%STAGE%\docs"
 copy /y "%~dp0README.md" "%STAGE%\docs\README.md" > nul
 copy /y "%~dp0docs\HOW-TO-BUILD.md" "%STAGE%\docs\HOW-TO-BUILD.md" > nul
@@ -20,7 +22,7 @@ copy /y "%~dp0CREDITS.md" "%STAGE%\docs\CREDITS.md" > nul
 if exist "%~dp0release\payload.zip" del "%~dp0release\payload.zip"
 powershell -NoProfile -Command "Compress-Archive -Path '%STAGE%\*' -DestinationPath '%~dp0release\payload.zip' -Force" || exit /b 1
 copy /y "%~dp0release\payload.zip" "%~dp0release\Universe-%VER%-windows.zip" > nul
-"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /warnaserror+ /define:UNIVERSE /out:"%~dp0release\Universe-Setup-%VER%.exe" /resource:"%~dp0release\payload.zip",payload.zip /r:"%FW%\System.IO.Compression.dll" /r:"%FW%\System.IO.Compression.FileSystem.dll" /r:System.Windows.Forms.dll "%~dp0installer\Setup.cs" || exit /b 1
+"%CSC%" /nologo /target:winexe /platform:x64 /optimize+ /warnaserror+ /define:UNIVERSE /out:"%~dp0release\Universe-Setup-%VER%.exe" /resource:"%~dp0release\payload.zip",payload.zip /r:"%FW%\System.IO.Compression.dll" /r:"%FW%\System.IO.Compression.FileSystem.dll" /r:System.Windows.Forms.dll /r:System.Drawing.dll "%~dp0installer\Setup.cs" || exit /b 1
 rmdir /s /q "%STAGE%"
 del "%~dp0release\payload.zip"
 echo Built release\Universe-Setup-%VER%.exe and release\Universe-%VER%-windows.zip

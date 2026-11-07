@@ -342,7 +342,7 @@ namespace Universe.Gen
         // zooming in, the ground itself breaks into its grains (each its own mineral, shape and shade), never a layer laid over it
         private double Grains(double x, double y, double z, double h, int layers, ref float r, ref float g, ref float b, float glow)
         {
-            if (_noGrainsNow || !Solid || Shell || glow > 0.01 || (HasWater && h < 0) || layers <= 6) return h;
+            if (_noGrainsNow || !Solid || Shell || glow > 0.01 || layers <= 6) return h;   // (the sea bed too: it is dived to)
             var gm = GrainMix(y); if (gm == null || gm.Size <= 0) return h;
             double W = Math.Max(Radius * 0.1125 / Math.Pow(2, layers - 6) * 2, _cellAtLeast), G = gm.Size;   // the finest detail here (km): twice the real spacing of this piece's corners, so a stone comes into the ground's shape only once its corners can round it (never a single coloured corner: a soft hexagon)
             double big = GrainField.SizeOf(gm, GrainField.Classes(gm) - 1);              // the biggest stones come in first
@@ -1399,10 +1399,12 @@ namespace Universe.Gen
             }
         }
 
+        /// <summary>How much of the star's light reaches here (1 in the open; under the sea, less with depth).</summary>
+        public float Dim = 1;
         private void Light(float[] c)
         {
             if (SunColour == null || NightColour == null) return;
-            c[32] = SunColour[0]; c[33] = SunColour[1]; c[34] = SunColour[2]; c[35] = 1;
+            c[32] = SunColour[0] * Dim; c[33] = SunColour[1] * Dim; c[34] = SunColour[2] * Dim; c[35] = 1;
             c[36] = NightColour[0]; c[37] = NightColour[1]; c[38] = NightColour[2];
         }
 

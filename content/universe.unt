@@ -11,6 +11,9 @@
 # region-ly: the regions galaxies are made in round you, a million light-years across; near-ly: how far round you galaxies are
 #   made in full; glow-points: how many faint points show the rest of the universe's galaxies along the web (each stands
 #   for tens of thousands; they are made in the background at start).
+# real-stars-cube-ly: inside a galaxy, its real stars are made round you in cubes this wide (25 light-years), each cube the
+#   stars the galaxy's density gives it there, from its own place; real-stars-reach-ly: how far round you the cubes are made
+#   (60 light-years: the sky as deep in stars on every side of you).
 # Spec: docs/CONTENT-FORMAT.md · content/galaxies.unt
 
 @universe visible
@@ -23,3 +26,5 @@ web-contrast: 6
 region-ly: 1e6
 near-ly: 8e6
 glow-points: 1500000
+real-stars-cube-ly: 25
+real-stars-reach-ly: 60

@@ -43,6 +43,7 @@ caption: The cosmic web: galaxies along filaments and walls, round vast thin voi
 @stop choose-galaxy
 do: pick
 target: far-galaxy
+far-ly: 1e9..5e9
 caption: A far galaxy
 
 @stop cross
@@ -52,7 +53,7 @@ sweep: 20
 rise: 10
 max-rate: 0.45
 seconds: 8
-caption: Across the universe, straight to one far away among a hundred billion
+caption: Across the universe: billions of light-years, straight to one galaxy far away among a hundred billion
 
 @stop round-galaxy
 do: shot
@@ -218,6 +219,11 @@ sweep: 120
 rise: 10
 seconds: 10
 caption: Seas, land, clouds and a thin shell of air
+
+@stop choose-land
+do: pick
+target: land
+caption: Dry land
 
 @stop to-land
 do: zoom

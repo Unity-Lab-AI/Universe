@@ -286,6 +286,7 @@ Make the strong force reach further and nuclei pack differently. Change gravity'
 | `web-ly`, `web-wall-ly`, `web-contrast` | The cosmic web: the size of its cells, its walls, and how much galaxies crowd onto it |
 | `region-ly`, `near-ly` | How finely galaxies are made round you, and how far out they're made in full |
 | `glow-points` | How many points stand for the far galaxies |
+| `real-stars-cube-ly`, `real-stars-reach-ly` | Inside a galaxy, the cubes its real stars are made in round you, and how far round you they are made |
 
 A smaller universe with fewer galaxies? A web with sharper walls? Change the numbers.
 
@@ -313,6 +314,7 @@ Tours are lists of camera moves in `content/tours/`. The grand tour is `grand-to
 @stop pick-a-galaxy
 do: pick
 target: far-galaxy
+far-ly: 1e9..5e9
 caption: A far galaxy
 
 @stop fly-there
@@ -327,7 +329,7 @@ caption: Across the universe, straight to one far away
 
 | `do:` | What the camera does |
 |---|---|
-| `pick` | Chooses what to look at: `start-galaxy`, `far-galaxy` (a far galaxy ahead; one whose heart is feeding, when there is one), `black-hole` (a feeding one before a quiet one), `star`, `planet`, `asteroid`, `comet`, `quark` and more, or `none` |
+| `pick` | Chooses what to look at: `start-galaxy`; `far-galaxy` (with `far-ly: 1e9..5e9`, a true crossing: a galaxy that far ahead, made from its own region before you set off, one whose heart is feeding when there is one); `black-hole` (a feeding one before a quiet one); `star`; `planet` (never a world that is all sea); `land` (a spot of dry land under you, to come down on); `asteroid`, `comet`, `quark` and more, or `none` |
 | `shot` | A framed film shot round what is picked: `to-radii` or `to-km` (how far), `sweep` (degrees round), `rise` (degrees up), `max-rate` (how fast the scale may change) |
 | `zoom` | A straight push in or pull out, `until-km` |
 | `orbit`, `look`, `arc`, `fly`, `glide` | Circle, look round, dolly while circling, fly forward, skim over the land |

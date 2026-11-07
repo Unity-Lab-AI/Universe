@@ -63,7 +63,7 @@ Both go in the `captures` folder. On the landing page, tick **Film the tour** to
 
 1. **Galaxies**, each of its own kind. Close to one, its own stars fade in, made round you as you go. At its heart a giant black hole, feeding or quiet: the tour flies by a feeding one, round its disc and in to its shadow.
 2. **A star's system**: its worlds, moons, belts and the star itself.
-3. **A world**: its real ground, seas, clouds and air. Plates, volcanoes, quakes, weather, ice ages and impacts run on its own clock.
+3. **A world**: its real ground, seas, clouds and air. Plates, volcanoes, quakes, weather, ice ages and impacts run on its own clock. Its seas are dived into, down to the bed.
 4. **Below the ground**: grains, the crystal of their mineral, then atoms, electrons, the nucleus and its quarks.
 
 ---

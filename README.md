@@ -10,7 +10,7 @@
   <a href="https://github.com/Unity-Lab-AI/Universe/releases" title="Download Universe-Setup.exe from GitHub"><b>Download · GitHub</b></a>
 </p>
 
-<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.7 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks &nbsp;·&nbsp; built from scratch</p>
+<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.7 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
 <p align="center">
   <a href="docs/GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
@@ -36,6 +36,7 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 | **Inside a galaxy** | A hundred billion stars, made round you as you fly |
 | **At a star** | Its worlds, moons, belts and comets swinging round it |
 | **Over a world** | Seas, mountains, clouds, ice caps, volcanoes, rings |
+| **Under the sea** | Down through the water, the light dying with depth, to the bed and its silt |
 | **On the ground** | Stones, then grains, then the steps of a crystal's face |
 | **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them |
 
@@ -214,6 +215,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | | |
 |---|---|
 | **Shot afresh every time** | Each shot picks its own way round, speed and crane |
+| **A true crossing** | Billions of light-years, straight to one far galaxy, made from its own place before you set off |
 | **A feeding black hole** | It crosses to a galaxy whose heart is feeding, flies down to it, round its accretion disc, edge-on through the light it bends, in to the shadow at its horizon, and back out: with its jets, if it fires them |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
 | **Film it** | Tick **Film the tour** on the landing page; the **Clips** list plays them back |

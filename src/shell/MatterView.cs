@@ -70,7 +70,7 @@ namespace Universe.Shell
         // the air over the ground: its molecules (from the world's own air make-up), about 3.4 nm apart at one bar, jostling
         private List<KeyValuePair<string[], double>> _airMols; private double _airAbove;
         /// <summary>The air over this ground (the world's air make-up, as content gives it; none for a world without air).</summary>
-        public void SetAirAbove(string air)
+        public void SetAirAbove(string air, double perCc = 0)
         {
             _airMols = null; if (string.IsNullOrEmpty(air)) return;
             var l = new List<KeyValuePair<string[], double>>(); double total = 0;
@@ -83,7 +83,7 @@ namespace Universe.Shell
             }
             if (total <= 0) return;
             for (int i = 0; i < l.Count; i++) l[i] = new KeyValuePair<string[], double>(l[i].Key, l[i].Value / total);
-            _airMols = l; _airAbove = 1e-5 / Math.Pow(_airPerCc, 1 / 3.0);
+            _airMols = l; _airAbove = 1e-5 / Math.Pow(perCc > 0 ? perCc : _airPerCc, 1 / 3.0);   // (a liquid above, the sea over its bed: its own packing)
         }
         private void AirAbove(List<StarVertex> glow, double s)
         {
@@ -550,15 +550,17 @@ namespace Universe.Shell
             return (float)(l + (clarity == "clear" ? 0.02 : clarity == "translucent" ? 0.01 : 0) + 0.002);
         }
         // where a molecule of matter with no crystal is: on its site for a solid; loosely packed for a liquid, each site shaken
-        // off its place (no two layers alike) and jostling all the time (its thermal motion; paused when time is)
+        // off its place (no two layers alike). It does not sway: an atom's thermal motion is ten trillion times a second, which
+        // no eye could see as movement (only as the blur its cloud already is), and a slow sway drawn for it only made the view
+        // wobble, the atom you were on with it
         private double SiteA(Mineral m) { return m != null && m.Spacing > 0 ? m.Spacing : AtomSpacing; }
         private void SitePos(Mineral m, long i, long j, long k, out double x, out double y, out double z)
         {
             double a = SiteA(m); x = i * a; y = k * a; z = j * a;
             if (m == null || !m.Liquid) return;
-            x += (Hash(i, j, k + 80, _seed) - 0.5) * a * 0.7 + Math.Sin(_clock * 5.1 + Hash(i, j, k + 83, _seed) * 6.28) * a * 0.07;
-            y += (Hash(i, j, k + 81, _seed) - 0.5) * a * 0.5 + Math.Sin(_clock * 4.3 + Hash(i, j, k + 84, _seed) * 6.28) * a * 0.07;
-            z += (Hash(i, j, k + 82, _seed) - 0.5) * a * 0.7 + Math.Sin(_clock * 4.7 + Hash(i, j, k + 85, _seed) * 6.28) * a * 0.07;
+            x += (Hash(i, j, k + 80, _seed) - 0.5) * a * 0.7;
+            y += (Hash(i, j, k + 81, _seed) - 0.5) * a * 0.5;
+            z += (Hash(i, j, k + 82, _seed) - 0.5) * a * 0.7;
         }
         private long FocusAI { get { return (long)Math.Round(_fx / SiteA(FocusMineral)); } }
         private long FocusAJ { get { return (long)Math.Round(_fz / SiteA(FocusMineral)); } }

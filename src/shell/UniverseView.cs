@@ -104,6 +104,8 @@ namespace Universe.Shell
                 if (double.TryParse(e.Get("region-ly", "1e6"), fs, ci, out v)) _regionUnits = v / Units.LightYearsPerUnit;
                 if (double.TryParse(e.Get("near-ly", "2e7"), fs, ci, out v)) _nearUnits = v / Units.LightYearsPerUnit;
                 if (double.TryParse(e.Get("glow-points", "300000"), fs, ci, out v)) _glowPoints = (int)v;
+                if (double.TryParse(e.Get("real-stars-cube-ly", "25"), fs, ci, out v)) LocalCell = Math.Max(1, v) / 50000.0;
+                if (double.TryParse(e.Get("real-stars-reach-ly", "60"), fs, ci, out v)) LocalReach = Math.Max(1, v) / 50000.0;
             }
             {
                 // the web's mean over space, measured, so the regions hold the real total of galaxies; and home placed on a
@@ -212,10 +214,12 @@ namespace Universe.Shell
         private void DropFarGalaxies()
         {
             double far = _nearUnits * 1.8; var keep = new List<Galaxy>(_galaxies.Count); var map = new int[_galaxies.Count];
+            // the far galaxy the tour is crossing to: its whole region is held until you are near it (then the usual rules hold it)
+            if (_heldRegion != 0 && (_heldX - _cx) * (_heldX - _cx) + (_heldY - _cy) * (_heldY - _cy) + (_heldZ - _cz) * (_heldZ - _cz) < _nearUnits * _nearUnits) _heldRegion = 0;
             for (int i = 0; i < _galaxies.Count; i++)
             {
                 var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz;
-                bool held = i == 0 || i == _near || (_tKind == 0 && i == _tIndex) || i == _tGal || g.Pending != null || (g.Far == null && g.FarPts == null && g.Region != 0 && dx * dx + dy * dy + dz * dz < far * far);
+                bool held = i == 0 || i == _near || (_tKind == 0 && i == _tIndex) || i == _tGal || g.Pending != null || (_heldRegion != 0 && g.Region == _heldRegion) || (g.Far == null && g.FarPts == null && g.Region != 0 && dx * dx + dy * dy + dz * dz < far * far);
                 if (held || dx * dx + dy * dy + dz * dz < far * far) { map[i] = keep.Count; keep.Add(g); continue; }
                 map[i] = -1; if (g.Far != null) g.Far.Dispose(); if (g.Struct != null) g.Struct.Dispose(); _regions.Remove(g.Region);
             }
@@ -227,8 +231,14 @@ namespace Universe.Shell
         private void SpawnRegions()
         {
             double cx = _cx, cy = _cy, cz = _cz, R = _regionUnits; long ci = (long)Math.Floor(cx / R), cj = (long)Math.Floor(cy / R), ck = (long)Math.Floor(cz / R);
-            long here = ci * 73856093L ^ cj * 19349663L ^ ck * 83492791L; if (here == _lastRegionCell) return; _lastRegionCell = here;
+            long here = ci * 73856093L ^ cj * 19349663L ^ ck * 83492791L; if (here == _lastRegionCell) return;
+            // crossing the universe faster than a couple of regions a frame (the tour's crossing to a far galaxy, a zoom out to
+            // the web): nothing is made on the way (it would be gone before it was seen, and thousands of galaxies' stars would
+            // be asked for at once); the web's glow stands for them, and the regions round you are made as you slow
+            bool fast = _lastRegionCell != long.MinValue && (Math.Abs(ci - _lastRegionI) > 2 || Math.Abs(cj - _lastRegionJ) > 2 || Math.Abs(ck - _lastRegionK) > 2);
+            _lastRegionCell = here; _lastRegionI = ci; _lastRegionJ = cj; _lastRegionK = ck;
             DropFarGalaxies();
+            if (fast) return;
             int n = (int)Math.Ceiling(_nearUnits / R), made = 0;
             for (long i = ci - n; i <= ci + n; i++)
                 for (long j = cj - n; j <= cj + n; j++)
@@ -236,23 +246,31 @@ namespace Universe.Shell
                     {
                         double mx = (i + 0.5) * R, my = (j + 0.5) * R, mz = (k + 0.5) * R;
                         if ((mx - cx) * (mx - cx) + (my - cy) * (my - cy) + (mz - cz) * (mz - cz) > _nearUnits * _nearUnits) continue;
-                        if (mx * mx + my * my + mz * mz > _uRadius * _uRadius) continue;            // past the edge: nothing
-                        long key = i * 73856093L ^ j * 19349663L ^ k * 83492791L; if (!_regions.Add(key)) continue; _addingRegion = key;
-                        // how many galaxies this region holds: the mean for its volume, crowded or thinned by the web, the rest by chance
-                        var rng = new Rng((ulong)key * 0x9E3779B97F4A7C15UL ^ _seed);
-                        double lambda = MeanPerUnit3 * R * R * R * Web(mx, my, mz);
-                        int count = (int)Math.Floor(lambda) + (rng.NextDouble() < lambda - Math.Floor(lambda) ? 1 : 0);
-                        for (int q = 0; q < count && q < 40; q++)
-                        {
-                            double gx = (i + rng.NextDouble()) * R, gy = (j + rng.NextDouble()) * R, gz = (k + rng.NextDouble()) * R;
-                            if (gx * gx + gy * gy + gz * gz < 4) continue;                   // the first galaxy's own space (the one you begin in)
-                            int t = rng.Below(_types.Count);
-                            float scale = _types[t].StartsWith("dwarf") ? 0.35f : _types[t].StartsWith("giant") ? 1.6f : rng.Range(0.8f, 1.2f);
-                            AddGalaxy(t, _seed + (ulong)key * 104729UL + (ulong)q, gx, gy, gz, rng.Range(-1.2f, 1.2f), rng.Range(0, 6.28f), scale);
-                            made++;
-                        }
+                        made += SpawnRegion(i, j, k);
                     }
             if (made > 0) _glowAtX = double.NaN;                                           // the glow is remade without the near ones
+        }
+        private long _lastRegionI, _lastRegionJ, _lastRegionK;
+        // one region's galaxies, made from its own place (the same ones every time), if it is inside the universe and not made yet:
+        // how many it holds is the mean for its volume, crowded or thinned by the web, the rest by chance
+        private int SpawnRegion(long i, long j, long k)
+        {
+            double R = _regionUnits, mx = (i + 0.5) * R, my = (j + 0.5) * R, mz = (k + 0.5) * R;
+            if (mx * mx + my * my + mz * mz > _uRadius * _uRadius) return 0;                // past the edge: nothing
+            long key = i * 73856093L ^ j * 19349663L ^ k * 83492791L; if (!_regions.Add(key)) return 0; _addingRegion = key;
+            var rng = new Rng((ulong)key * 0x9E3779B97F4A7C15UL ^ _seed); int made = 0;
+            double lambda = MeanPerUnit3 * R * R * R * Web(mx, my, mz);
+            int count = (int)Math.Floor(lambda) + (rng.NextDouble() < lambda - Math.Floor(lambda) ? 1 : 0);
+            for (int q = 0; q < count && q < 40; q++)
+            {
+                double gx = (i + rng.NextDouble()) * R, gy = (j + rng.NextDouble()) * R, gz = (k + rng.NextDouble()) * R;
+                if (gx * gx + gy * gy + gz * gz < 4) continue;                               // the first galaxy's own space (the one you begin in)
+                int t = rng.Below(_types.Count);
+                float scale = _types[t].StartsWith("dwarf") ? 0.35f : _types[t].StartsWith("giant") ? 1.6f : rng.Range(0.8f, 1.2f);
+                AddGalaxy(t, _seed + (ulong)key * 104729UL + (ulong)q, gx, gy, gz, rng.Range(-1.2f, 1.2f), rng.Range(0, 6.28f), scale);
+                made++;
+            }
+            return made;
         }
         // the glow of the rest of the universe's galaxies: points drawn from the same web, each standing for many galaxies,
         // left out round you where the galaxies are made in full
@@ -733,7 +751,7 @@ namespace Universe.Shell
         // there (from how many sample stars share its big grid cell), placed from the cube's own position, so they are always the
         // same stars when you come back.
         private const double RealStars = 1e11;
-        private static readonly double LocalCell = 25 / 50000.0;           // 25 light-years, in galaxy units
+        private double LocalCell = 25 / 50000.0, LocalReach = 60 / 50000.0;   // the cubes (25 light-years) and how far round you they are made (60), in galaxy units: content/universe.unt real-stars-cube-ly and real-stars-reach-ly
         private readonly Dictionary<long, StarVertex[]> _localCells = new Dictionary<long, StarVertex[]>();
         private readonly List<StarVertex> _localList = new List<StarVertex>();   // in the near galaxy's own frame
         private readonly List<int> _localKind = new List<int>(); private readonly List<long> _localId = new List<long>();
@@ -766,9 +784,14 @@ namespace Universe.Shell
             _localKey = key;
             _localList.Clear(); _localKind.Clear(); _localId.Clear(); _localVersion++;   // (remade: put on the card again)
             var keep = new Dictionary<long, StarVertex[]>();
-            for (long ox = -1; ox <= 1; ox++) for (long oy = -1; oy <= 1; oy++) for (long oz = -1; oz <= 1; oz++)
+            // every cube within the reach of where you are (not of your cube: the sky is as deep in stars on every side), the ones
+            // already made kept, so moving a cube on makes only the new face
+            int nr = (int)Math.Ceiling(LocalReach / LocalCell); double r2 = Math.Pow(LocalReach + LocalCell * 0.87, 2);
+            for (long ox = -nr; ox <= nr; ox++) for (long oy = -nr; oy <= nr; oy++) for (long oz = -nr; oz <= nr; oz++)
             {
                 long x = cx + ox, y = cy + oy, z = cz + oz, id = (x * 73856093L) ^ (y * 19349663L) ^ (z * 83492791L);
+                double mx = (x + 0.5) * LocalCell - lx, my = (y + 0.5) * LocalCell - ly, mz = (z + 0.5) * LocalCell - lz;
+                if (mx * mx + my * my + mz * mz > r2 || _localList.Count > 600000) continue;
                 StarVertex[] cell;
                 if (!_localCells.TryGetValue(id, out cell))
                 {
@@ -973,12 +996,16 @@ namespace Universe.Shell
         private double SpunSince { get { return _ground != null && _planet >= 0 ? Spin(_planet) - _spinRef : 0; } }
         private void DropPlanet() { if (_ground != null) { _ground.Dispose(); _ground = null; } _planet = -1; }
 
-        // the top of what is under a direction, in km from the planet's radius: the sea's surface where there is sea, else the
-        // real ground (a dry basin below sea level is ground, not water)
-        private double Surface(double x, double y, double z)
+        // the top of what is under a direction, in km from the planet's radius: the sea's surface where there is sea and you are
+        // above it; the sea bed once you are at the water (the dive: on down through it to the bed); else the real ground (a dry
+        // basin below sea level is ground, not water)
+        private bool _underSea;                                                           // at or under the sea's surface: the floor under you is the sea bed
+        private double Surface(double x, double y, double z, double altKm = double.NaN)
         {
             double h = _ground.GroundAt(x, y, z, _surfaceCell);                           // the grains only as finely as your height needs
-            return h < 0 && _ground.HasWater ? 0 : h;
+            if (h >= 0 || !_ground.HasWater) { if (!double.IsNaN(altKm)) _underSea = false; return h; }
+            if (!double.IsNaN(altKm)) _underSea = altKm < 1e-3;                            // (within a metre of the water: on down through it)
+            return _underSea ? h : 0;
         }
 
         // what the matter under you is made of, set once for each spot (about a metre across), so its grains stay put
@@ -1018,7 +1045,8 @@ namespace Universe.Shell
             _matterSpot = spot; _matterPlanet = _planet; _mox = x / r; _moy = y / r; _moz = z / r;
             float mr0, mg0, mb0, mglow; _ground.Height(x / r, y / r, z / r, 30, out mr0, out mg0, out mb0, out mglow);
             bool molten = mglow > 0.5;                                                    // glowing molten ground: the matter there is melt
-            _matter.Set(molten ? "melt" : _ground.MixId ?? _ground.Kind, sea, ice, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
+            // under the sea the matter is the sea bed (the ocean mix: silt, sand, the sea floor's minerals), with the water above it
+            _matter.Set(molten ? "melt" : sea ? "ocean" : _ground.MixId ?? _ground.Kind, false, ice && !sea, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
             // the planet's own grains, on the land's slope here: the same ones its ground is the top of
             {
                 double ux = x / r, uy = y / r, uz = z / r, ex, ey, ez, nx, ny, nz; GrainField.Axes(ux, uy, uz, out ex, out ey, out ez, out nx, out ny, out nz);
@@ -1028,9 +1056,11 @@ namespace Universe.Shell
                 double hn = (H(ux + nx * d / R, uy + ny * d / R, uz + nz * d / R) - H(ux - nx * d / R, uy - ny * d / R, uz - nz * d / R)) / (2 * d);
                 if (double.IsNaN(he) || Math.Abs(he) > 20) he = 0; if (double.IsNaN(hn) || Math.Abs(hn) > 20) hn = 0;
                 var gm = _ground.GrainMix(uy);
-                _matter.SetGround(R, ux, uy, uz, sea || molten ? null : gm != null ? gm.Id : null, _ground.GrainSeed, he, hn);
+                _matter.SetGround(R, ux, uy, uz, molten ? null : sea ? "ocean" : gm != null ? gm.Id : null, _ground.GrainSeed, he, hn);
                 _matter.SetLife(_ground.HasWater && _ground.Traits.Life);   // microbes on a living world's grains
-                string airHere; _matter.SetAirAbove(_ground.AirKm <= 0 || !PlanetTerrain.Air.TryGetValue(_ground.Kind, out airHere) ? null : airHere);   // its own air (a moon: none)
+                string airHere;
+                if (sea) _matter.SetAirAbove("water 100%", 3.3e22);                      // the sea above the bed: water molecules, packed as a liquid is (about 0.31 nm apart)
+                else _matter.SetAirAbove(_ground.AirKm <= 0 || !PlanetTerrain.Air.TryGetValue(_ground.Kind, out airHere) ? null : airHere);   // its own air (a moon: none)
             }
         }
 
@@ -1064,7 +1094,7 @@ namespace Universe.Shell
         private double HandoffKm()
         {
             if (_ground == null || !_ground.Solid) return 2e-9;
-            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? _ground.GrainMix(y / r) : null;
+            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? (_underSea ? GrainField.For("ocean") ?? _ground.GrainMix(y / r) : _ground.GrainMix(y / r)) : null;   // (under the sea: the bed's own grains)
             return gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9;
         }
         private double AboveGround()
@@ -1073,7 +1103,7 @@ namespace Universe.Shell
             _surfaceCell = Math.Max(1e-11, _lastAbove / Units.Km(1) / 30);                   // (from the height last asked: a thirtieth of it)
             double x, y, z; CamFromPlanet(out x, out y, out z);
             double r = Math.Sqrt(x * x + y * y + z * z); if (r <= 0) return 0;
-            return _lastAbove = Math.Max(1e-9, (r - _ground.Radius - (_ground.Solid ? Surface(x / r, y / r, z / r) : -_ground.Radius * (1 - CoreShare)))) * Units.Km(1);   // a giant: down through its clouds and layers to its core
+            return _lastAbove = Math.Max(1e-9, (r - _ground.Radius - (_ground.Solid ? Surface(x / r, y / r, z / r, r - _ground.Radius) : -_ground.Radius * (1 - CoreShare)))) * Units.Km(1);   // a giant: down through its clouds and layers to its core
         }
 
         // the system's planets, moons and star placed around the star (anchor), and the nearest surface to the camera
@@ -1106,7 +1136,7 @@ namespace Universe.Shell
 
         // ── a tour: a flight of stops read from content/tours/<name>.unt, flown with the real controls (the wheel's zoom at one
         // steady rate, the drag's circling and looking, the same picks a click makes) so it shows the universe as it is ──
-        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds, Pan, ToRadii, ToKm, Sweep, Rise, MaxRate; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
+        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds, Pan, ToRadii, ToKm, Sweep, Rise, MaxRate, FarLo, FarHi; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom); FarLo..FarHi: a far-galaxy pick's crossing, light-years
         private List<TourStop> _tour; private int _tourAt; private double _tourClock, _tourStall, _tourLastD, _tourT, _tourRate;
         /// <summary>Starts the tour of that name (content/tours/name.unt); false if there is none.</summary>
         public bool StartTour(string name)
@@ -1114,9 +1144,12 @@ namespace Universe.Shell
             var list = new List<TourStop>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
             foreach (var e in _content.OfKind("tours/" + name + ".unt", "stop"))
+            {
                 list.Add(new TourStop { Name = e.Id, Do = e.Get("do", "orbit"), Target = e.Get("target", "none"), Caption = e.Get("caption", ""), Rate = num(e.Get("rate", "0.3"), 0.3),
                     UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes", Pan = num(e.Get("pan", "0"), 0),
                     ToRadii = num(e.Get("to-radii", "0"), 0), ToKm = num(e.Get("to-km", "0"), 0), Sweep = num(e.Get("sweep", "0"), 0), Rise = num(e.Get("rise", "0"), 0), MaxRate = num(e.Get("max-rate", "0.35"), 0.35) });
+                { double lo, hi; if (e.TryRange("far-ly", out lo, out hi)) { list[list.Count - 1].FarLo = lo; list[list.Count - 1].FarHi = hi; } }   // (a far-galaxy pick: how far the crossing is, light-years)
+            }
             if (list.Count == 0) return false;
             _tour = list; _tourName = name; _pausedTour = null; _pausedWhy = null; MenuChanged = true; _tourAt = 0; _tourT = 0; _tourRate = 0; _tourClock = 0; _shotRng = new Rng((ulong)Environment.TickCount ^ _seed); NewShot();
             if (TimeStep == 0) SetTime(1);                                              // time runs on the tour (the planets turn, the electrons move)
@@ -1199,6 +1232,34 @@ namespace Universe.Shell
             if (worlds > 0) parts.Add(worlds == 1 ? "another of its star's worlds" : worlds + " of its star's other worlds");
             parts.Add(day ? "the day sky, its star's light through the air" : "the galaxy's stars beyond");
             string w = string.Join(", ", parts.ToArray()); return char.ToUpperInvariant(w[0]) + w.Substring(1);
+        }
+        // a galaxy far across the universe (the stop's far-ly: a crossing of billions of light-years): a destination ahead of you,
+        // inside the visible universe; the regions round it hold the same galaxies they always will (each from its own place), so
+        // they are made now, whole, and held until you arrive. One whose heart is feeding first, and another kind than the last
+        private long _heldRegion; private double _heldX, _heldY, _heldZ;
+        private bool FarGalaxy(TourStop st)
+        {
+            var rng = new Rng(_seed ^ (ulong)(_tourAt * 7919 + Environment.TickCount)); var lk = Look; double R = _regionUnits;
+            for (int attempt = 0; attempt < 16; attempt++)
+            {
+                double d = (st.FarLo + (Math.Max(st.FarLo, st.FarHi) - st.FarLo) * rng.NextDouble()) / Units.LightYearsPerUnit;
+                // ahead of you, within about 25 degrees of where you look
+                double ax = lk.X + (rng.NextDouble() - 0.5) * 0.9, ay = lk.Y + (rng.NextDouble() - 0.5) * 0.9, az = lk.Z + (rng.NextDouble() - 0.5) * 0.9, al = Math.Sqrt(ax * ax + ay * ay + az * az);
+                double px = _cx + ax / al * d, py = _cy + ay / al * d, pz = _cz + az / al * d;
+                if (px * px + py * py + pz * pz > Math.Pow(_uRadius * 0.9, 2)) continue;    // (inside the visible universe, well in from its edge)
+                long ci = (long)Math.Floor(px / R), cj = (long)Math.Floor(py / R), ck = (long)Math.Floor(pz / R);
+                int best = -1; double bs = double.MinValue;
+                for (long i = ci - 1; i <= ci + 1; i++) for (long j = cj - 1; j <= cj + 1; j++) for (long k = ck - 1; k <= ck + 1; k++)
+                {
+                    int before = _galaxies.Count; SpawnRegion(i, j, k);                   // (the region's own galaxies, if it is not made yet)
+                    for (int g = before; g < _galaxies.Count; g++) { var gg = _galaxies[g]; double score = rng.NextDouble() + (HeartFeeds(gg) ? 10 : 0) + (gg.Type != _lastGalaxyType ? 1 : 0); if (score > bs) { bs = score; best = g; } }
+                }
+                if (best < 0) continue;
+                var gb = _galaxies[best]; _tKind = 0; _tIndex = best; _tName = gb.Name; _lastGalaxyType = gb.Type; _heldRegion = gb.Region; _heldX = gb.X; _heldY = gb.Y; _heldZ = gb.Z;
+                ZoomLog("far galaxy " + gb.Name + " at " + Units.Describe(Math.Sqrt((gb.X - _cx) * (gb.X - _cx) + (gb.Y - _cy) * (gb.Y - _cy) + (gb.Z - _cz) * (gb.Z - _cz))) + (HeartFeeds(gb) ? " (its heart feeding)" : ""));
+                return true;
+            }
+            return false;
         }
         // whether a galaxy's central black hole is feeding: the same place-hash and share the hole itself is made with (MakeExtra, from
         // content/bodies.unt), so the tour can choose a galaxy with a feeding heart before it is made
@@ -1381,8 +1442,8 @@ namespace Universe.Shell
                     {
                         // a pick that finds nothing yet (the stars round you, the star's worlds still being made) tries again each
                         // frame for up to twenty seconds, never going on with nothing chosen (every later stop would be lost)
-                        int k0 = _tKind, i0 = _tIndex, p0 = _matter.PickCount; double x0 = _tx; TourPick(st.Target);
-                        bool got = st.Target == "none" || (st.Target == "planet" && _tKind == 2 && _system != null) || (_tKind >= 0 && (_tKind != k0 || _tIndex != i0 || _tx != x0)) || _matter.PickCount != p0;
+                        int k0 = _tKind, i0 = _tIndex, p0 = _matter.PickCount; double x0 = _tx; TourPick(st.Target, st);
+                        bool got = st.Target == "none" || (st.Target == "planet" && _tKind == 2 && _system != null) || (st.Target == "land" && _tKind == 3) || (_tKind >= 0 && (_tKind != k0 || _tIndex != i0 || _tx != x0)) || _matter.PickCount != p0;
                         // while it looks (what it wants still being made round you, or none there at all) it never sits still: it looks
                         // round slowly, eased in, and goes on after a few seconds at most
                         if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
@@ -1402,7 +1463,7 @@ namespace Universe.Shell
             if (done) { _tourAt++; _tourT = 0; NewShot(); }
         }
         // what a stop picks, as a click would
-        private void TourPick(string what)
+        private void TourPick(string what, TourStop st = null)
         {
             switch (what)
             {
@@ -1437,6 +1498,7 @@ namespace Universe.Shell
                     }
                     break;
                 case "far-galaxy":
+                    if (st != null && st.FarLo > 0 && FarGalaxy(st)) break;                // (a true crossing: billions of light-years, to a galaxy made ahead from its own region)
                     {
                         // across the universe: the farthest galaxy made round you that lies ahead (in view), never a near one
                         int bi = -1; double bs = double.MinValue; var lk = Look; var rng = new Rng(_seed ^ (ulong)Environment.TickCount);
@@ -1496,12 +1558,41 @@ namespace Universe.Shell
                         for (int q = 1; q <= _system.Bodies.Count; q++) { int i = (start + q + _system.Bodies.Count) % _system.Bodies.Count; if (_system.Bodies[i].Parent < 0) { _tKind = 2; _tIndex = i; _tName = _system.Bodies[i].Kind; break; } }
                     }
                     break;
+                case "land":
+                    if (_ground != null && _ground.Solid)
+                    {
+                        // a spot of dry land to come down on, the nearest to under you (the seas are not dived into yet): rings of
+                        // directions round the point under you, wider and wider, out to the far side if need be
+                        double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); if (r <= 0) break;
+                        double ux = x / r, uy = y / r, uz = z / r;
+                        Func<double, double, double, bool> dry = (vx, vy, vz) => !_ground.HasWater || _ground.GroundAt(vx, vy, vz) > 0.02;
+                        if (dry(ux, uy, uz)) { _tKind = 3; _tx = ux; _ty = uy; _tz = uz; _tName = "land"; break; }
+                        double ex = Math.Abs(uy) < 0.9 ? 0 : 1, ey = Math.Abs(uy) < 0.9 ? 1 : 0, ez = 0;                     // a frame round the point under you
+                        double e1x = ey * uz - ez * uy, e1y = ez * ux - ex * uz, e1z = ex * uy - ey * ux, e1l = Math.Sqrt(e1x * e1x + e1y * e1y + e1z * e1z); e1x /= e1l; e1y /= e1l; e1z /= e1l;
+                        double e2x = uy * e1z - uz * e1y, e2y = uz * e1x - ux * e1z, e2z = ux * e1y - uy * e1x;
+                        bool found = false;
+                        for (double ang = 0.01; ang < Math.PI && !found; ang *= 1.4)
+                            for (int q = 0; q < 16 && !found; q++)
+                            {
+                                double th = q * Math.PI * 2 / 16 + ang, ca = Math.Cos(ang), sa = Math.Sin(ang), ct = Math.Cos(th), st2 = Math.Sin(th);
+                                double vx = ux * ca + (e1x * ct + e2x * st2) * sa, vy = uy * ca + (e1y * ct + e2y * st2) * sa, vz = uz * ca + (e1z * ct + e2z * st2) * sa;
+                                if (dry(vx, vy, vz)) { _tKind = 3; _tx = vx; _ty = vy; _tz = vz; _tName = "land"; found = true; }
+                            }
+                    }
+                    break;
                 case "planet":
                     if (_system != null)
                     {
-                        // exploring: one of the star's worlds, chosen afresh (a solid one where there is one, to go down to)
+                        // exploring: one of the star's worlds, chosen afresh (a solid one where there is one, to go down to; never a
+                        // world that is all sea, until the dive under the sea is built)
                         var rng = new Rng(_seed ^ (ulong)(Environment.TickCount + 31)); var opts = new List<int>();
-                        for (int i = 0; i < _system.Bodies.Count; i++) if (_system.Bodies[i].Parent < 0 && !_system.Bodies[i].Giant) opts.Add(i);
+                        for (int i = 0; i < _system.Bodies.Count; i++)
+                        {
+                            var b = _system.Bodies[i]; if (b.Parent >= 0 || b.Giant) continue;
+                            var tk = b.Terrain != null ? PlanetTerrain.TerrainKind(b.Terrain) : null;
+                            if (tk != null && tk.Water && tk.LandShare <= 0) continue;
+                            opts.Add(i);
+                        }
                         if (opts.Count == 0) for (int i = 0; i < _system.Bodies.Count; i++) if (_system.Bodies[i].Parent < 0) opts.Add(i);
                         // the director's eye: a world with seas and air most of all, then any solid world, by chance among them
                         double total = 0; var wts = new double[opts.Count];
@@ -2064,8 +2155,8 @@ namespace Universe.Shell
                     {
                         // over the sea: no lower than a metre above the water, until the dive under the sea is in the universe view
                         double cx0, cy0, cz0; CamFromPlanet(out cx0, out cy0, out cz0); double r0 = Math.Sqrt(cx0 * cx0 + cy0 * cy0 + cz0 * cz0);
-                        // over the sea the floor is the water itself, not the sea bed far below (whose pieces stay coarse): down to a millimetre
-                        if (_ground.HasWater && _ground.GroundAt(cx0 / r0, cy0 / r0, cz0 / r0) < 0) floorKm = 1e-9;
+                        // over the sea: the water's surface is the floor until you are a metre from it, then the sea bed is (the dive)
+                        if (_ground.HasWater && !_underSea && _ground.GroundAt(cx0 / r0, cy0 / r0, cz0 / r0) < 0) floorKm = Math.Max(floorKm, 5e-7);
                     }
                     if (AboveGround() < Units.Km(floorKm))
                     {
@@ -2643,7 +2734,20 @@ namespace Universe.Shell
                     float lit = (float)(Math.Exp(-depth / 300.0) * day), deep = 0.05f;
                     _hud.DrawFill(_meshes, w, h, _ground.AirR * (deep + 0.55f * lit), _ground.AirG * (deep + 0.55f * lit), _ground.AirB * (deep + 0.55f * lit));
                 }
-                else _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), 0, 0, 0, 0, 0, 0, w, h, 400);   // detail scales with the GPU use
+                else
+                {
+                    // under the sea: the water all round in its own colour, the light dying away with depth (sunlight is gone
+                    // within a few hundred metres), everything beyond about thirty metres lost in it; the sea bed drawn through it
+                    double cr = Math.Sqrt(x * x + y * y + z * z), seaAlt = cr - _ground.Radius; float fogKm = 0, fr = 0, fg = 0, fb = 0;
+                    if (_underSea && seaAlt < 0)
+                    {
+                        double lit = Math.Exp(-(-seaAlt * 1000) / 80.0) * 0.9 + 0.03;
+                        fr = (float)(0.08 * lit); fg = (float)(0.28 * lit); fb = (float)(0.42 * lit); fogKm = 0.03f;
+                        _hud.DrawFill(_meshes, w, h, fr, fg, fb); _gpu.ClearDepth(); _ground.Dim = (float)lit;
+                    }
+                    else _ground.Dim = 1;
+                    _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), fogKm, fr, fg, fb, 0, 0, w, h, 400);   // detail scales with the GPU use
+                }
             }
             double overAlt = _ground != null && _matterScale <= 0 ? AboveGround() / Units.Km(1) : 1e30;
             if (overAlt < MatterView.OverlayKm)

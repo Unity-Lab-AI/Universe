@@ -49,7 +49,7 @@ Below the finest ground, the camera goes on into what the ground is made of, eve
 | **Crystal** | Rock salt as sodium and chlorine on a cube grid 0.282 nm apart, quartz as a silica network, water molecules bent at 104.5° |
 | **Atoms** | Each atom's electrons in their real shells, round a nucleus about a hundred thousand times smaller than the atom |
 | **Nucleus** | That element's real protons and neutrons |
-| **Quarks** | Three in each proton and neutron, held by gluons, down to a hundredth of a femtometre |
+| **Quarks** | Three in each proton and neutron, held by gluons: points as far as anyone has measured, and the zoom goes on below them without a floor |
 
 Click any grain, atom, electron, proton, neutron or quark for its card.
 
@@ -68,7 +68,7 @@ Universe runs on the real laws of nature, with their real numbers (all in `conte
 
 ## A galaxy that fills in round you
 
-A galaxy holds about a hundred billion stars, and the game keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide. Each cube is made from its own position, so they are the same stars whenever you come back.
+A galaxy holds about a hundred billion stars, and the game keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide, every cube within about 60 light-years of you (both are traits of the universe template), so the sky is as deep in stars on every side. Each cube is made from its own position, so they are the same stars whenever you come back.
 
 ## A living world, even a dead one
 
@@ -79,6 +79,10 @@ Every rocky world runs on its own clock:
 - Ice ages come with the orbit's wobbles, mountains wear down, and rocks from space strike.
 
 Its ground changes all at once at big moments, never piece by piece in front of you.
+
+### Under the sea
+
+A world's seas are dived into. Over water the surface is the floor until you are a metre from it; then the sea bed is, and you go on down through the water: its own colour all round, the light dying away with depth (sunlight is gone within a few hundred metres), everything beyond about thirty metres lost in it, and the bed drawn through it. At the bed the matter is the sea floor's own (silt, sand, its minerals) with water molecules above the grains instead of air, and the zoom goes on into it as on land.
 
 ## Time and days
 

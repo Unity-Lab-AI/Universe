@@ -22,7 +22,7 @@
 |---|---|---|
 | **About** | What Universe is; the scales it holds, from the cosmic web to the quarks; why a whole universe fits in under 2 MB; how it stands against the other universe programs; that it is built from nothing and meant to be taken; the dead-but-alive worlds | A minute |
 | **Readme: how to use it** | Starting up; flying (the wheel, the keys, picking, dragging); time and days; the grand tour and pausing it; screenshots and clips; what is on screen (the scale bar, the cards, the stats, the menus); what you will see on the way down | Five minutes |
-| **How it works** | One camera and a zoom with no floor; precision from a moving anchor; the waveform engine and mode-E; the matter at its real sizes; the four forces, for real; a galaxy that fills in round you; living worlds; time and days; built from scratch; your own computer | Ten minutes |
+| **How it works** | One camera and a zoom with no floor; precision from a moving anchor; the waveform engine and mode-E; the matter at its real sizes; the four forces, for real; a galaxy that fills in round you; living worlds and the dive under their seas; time and days; built from scratch; your own computer | Ten minutes |
 | **The universe, in plain words** | The project's own front page: what you fall through; a universe to fly and a toolkit to build with; taking it for your own project; how it fits in under 2 MB, with the comparison; templates, not things; how the zoom never ends; built from nothing; real physics; what is out there; the controls; the grand tour; how to start; which guide is which | Ten minutes |
 
 ## For builders: templates, no code

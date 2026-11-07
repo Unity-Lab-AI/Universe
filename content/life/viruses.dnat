@@ -1,0 +1,153 @@
+# DNA-AND content · life · viruses
+# researched: Wikipedia "Baltimore classification", "Virus classification"; standard virology for
+#   capsid shapes, envelopes and the lytic and lysogenic cycles
+# Viruses are not cells; they sit outside the three domains. Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md
+
+# ── Baltimore groups (how a virus's genes get read) ──
+
+@virusgroup group-1
+name: Double-stranded DNA viruses (group I)
+real: yes
+example: herpes viruses, pox viruses, many bacteriophages
+
+@virusgroup group-2
+name: Single-stranded DNA viruses (group II)
+real: yes
+example: parvoviruses
+
+@virusgroup group-3
+name: Double-stranded RNA viruses (group III)
+real: yes
+example: rotavirus
+
+@virusgroup group-4
+name: Positive-sense RNA viruses (group IV)
+real: yes
+says: their RNA can be read straight away like a message
+example: cold viruses, coronaviruses, polio
+
+@virusgroup group-5
+name: Negative-sense RNA viruses (group V)
+real: yes
+says: their RNA must be copied before it can be read
+example: flu, measles, rabies, Ebola
+
+@virusgroup group-6
+name: RNA retroviruses (group VI)
+real: yes
+says: write their RNA back into DNA and splice it into the host's own genes
+example: HIV
+
+@virusgroup group-7
+name: DNA reverse-transcribing viruses (group VII)
+real: yes
+example: hepatitis B
+
+# ── Shapes and parts ──
+
+@part capsid
+name: Capsid
+real: yes
+says: the protein shell around the virus's genes
+
+@part envelope
+name: Envelope
+real: yes
+says: a fatty outer skin stolen from the last cell it left; some viruses have one, some are naked
+
+@part spikes
+name: Spikes
+real: yes
+says: proteins on the surface that latch onto a host cell
+
+@shape helical
+name: Helical virus
+real: yes
+says: a long spiral rod
+example: tobacco mosaic virus, rabies
+
+@shape icosahedral
+name: Twenty-sided virus
+real: yes
+says: a round 20-faced shell
+example: herpes, polio
+
+@shape complex
+name: Complex virus
+real: yes
+says: a head, a tail and legs, or other odd shapes
+example: T4 bacteriophage, pox viruses
+
+@shape giant
+name: Giant virus
+real: yes
+says: viruses bigger than some bacteria, with huge genomes
+example: mimivirus
+
+# ── Who they infect ──
+
+@host animal-viruses
+name: Animal viruses
+real: yes
+
+@host plant-viruses
+name: Plant viruses
+real: yes
+example: mosaic viruses
+
+@host bacteriophages
+name: Bacteriophages
+real: yes
+says: viruses that hunt bacteria; the most common biological things on Earth
+
+@host archaea-viruses
+name: Archaea viruses
+real: yes
+
+@host fungus-viruses
+name: Fungus viruses
+real: yes
+
+# ── Life cycles ──
+
+@cycle lytic
+name: Lytic cycle
+real: yes
+says: inject, copy, burst the cell open, spread
+
+@cycle lysogenic
+name: Lysogenic cycle
+real: yes
+says: hide inside the host's DNA, copied along with it, until something wakes the virus up
+
+@cycle latent
+name: Latency
+real: yes
+says: lie dormant in the body for years, then flare up
+example: herpes, chickenpox becoming shingles
+
+# ── Generator rules ──
+
+@rule virus-not-alive
+real: rule
+says: viruses have no cells and no metabolism; they only copy themselves inside a host
+
+@rule virus-chemistry-ai
+real: rule
+says: viruses run on the chemistry layer of the mini AI only: latch on, inject, copy, burst
+
+@rule virus-mutation
+real: rule
+says: RNA viruses mutate fastest; viruses jump between species when they mutate to fit a new host's cells
+
+@rule virus-gene-carry
+real: rule
+says: viruses can carry genes from one species into another (Viral Gene Carry power, and natural events)
+
+@rule virus-host-range
+real: rule
+says: a virus can only infect hosts whose cells its spikes can latch onto
+
+@rule virus-plagues
+real: rule
+says: dense populations let viruses spread fast; immunity, isolation and medicine slow them

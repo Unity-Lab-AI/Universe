@@ -1,0 +1,151 @@
+# DNA-AND content · how each kind of world's ground, air and clouds are drawn (the terrain kinds)
+# radius-km: its size when its system gives none (Earth 6,371 km; Jupiter 69,911; Neptune 24,622; hot Jupiters puffed up
+#   to about 1.4 Jupiter widths; the others typical of their kind). solid: has ground (giants have none). water: seas.
+# clouds: has a cloud deck; cloud-km: how high it floats; air-km: how deep the air glows at the edge; air-colour: the air's
+#   colour at the edge (Rayleigh blue on Earth-like air, dusty orange on deserts, ash-orange over lava). cloud-colour: the
+#   clouds' colour (water clouds white; ash grey over lava; ammonia ice cream on gas giants; methane ice pale blue on ice
+#   giants; dark haze on hot Jupiters; dust on deserts); cloud-thickness: how much of the sky they cover, 1 full.
+# land-share: more or less land than sea (0.06 Earth-like, about a third land). ground: the land's colours by height (km):
+#   "below r g b [tinted]; ...", the last for all higher ground (none given: soil patches, grey rock and snowy peaks).
+# molten: glowing cracks and molten lowlands. dunes: long dune ridges. frozen-sea: seas frozen flat. snow-patches: snow
+#   lying on the high and patchy ground. tidally-locked: one side always to its star (scorched day, frozen night, a living
+#   twilight ring between). polar-ice: ice caps at the poles. dry: no rivers or seas (salt flats, dry river beds).
+#   tropical-soil: red laterite in the warm wet tropics. life: can anything live there. volcanoes: many (and all active).
+# cloud-shift: more cloud (+) or less (-). day-hours: how long its day is. tides: how strong its tides are (Earth 0.5).
+# Giants: bands (how many belts across), band-dark and band-light (belts and zones), great-storm (one great red storm, 1)
+#   or storm-colour (its storms, e.g. Neptune's dark ones). river-colour: rivers, or dry river beds.
+# rock-colour: steep bare rock. base-k: its temperature from its star alone, before any greenhouse (Earth 255 K).
+# Spec: docs/CONTENT-FORMAT.md · content/planets.dnat
+
+@terrain default
+name: An Earth-like world
+radius-km: 6371
+solid: yes
+water: no
+clouds: yes
+cloud-km: 9
+air-km: 110
+air-colour: 0.35 0.56 1
+cloud-colour: 0.97 0.97 0.97
+cloud-thickness: 1
+rock-colour: 0.4 0.38 0.36
+base-k: 255
+river-colour: 0.1 0.3 0.5
+band-dark: 0.42 0.26 0.16
+band-light: 0.96 0.88 0.78
+
+@terrain temperate
+name: A temperate world
+water: yes
+tropical-soil: yes
+
+@terrain ocean
+name: An ocean world
+radius-km: 7400
+water: yes
+cloud-km: 10
+air-km: 120
+base-k: 252
+land-share: -0.38
+tropical-soil: yes
+
+@terrain desert
+name: A desert world
+radius-km: 5100
+cloud-km: 6
+air-km: 70
+air-colour: 0.95 0.62 0.38
+cloud-colour: 0.82 0.62 0.42
+cloud-thickness: 0.4
+rock-colour: 0.58 0.34 0.22
+base-k: 270
+land-share: 0.2
+dunes: yes
+dry: yes
+river-colour: 0.7 0.55 0.38
+ground: -1.2 0.92 0.9 0.84; 2.0 0.82 0.6 0.36 tinted; 99 0.6 0.36 0.24 tinted
+
+@terrain lava
+name: A lava world
+radius-km: 4300
+cloud-km: 12
+air-km: 150
+air-colour: 1 0.42 0.18
+cloud-colour: 0.24 0.21 0.2
+rock-colour: 0.12 0.1 0.1
+base-k: 700
+land-share: 0.1
+molten: yes
+life: no
+volcanoes: many
+cloud-shift: 0.12
+ground: 4 0.16 0.12 0.11 tinted; 99 0.3 0.26 0.24 tinted
+
+@terrain snowball
+name: A snowball world
+radius-km: 5900
+cloud-km: 5
+air-km: 50
+air-colour: 0.6 0.76 1
+base-k: 215
+land-share: 0.1
+frozen-sea: yes
+snow-patches: yes
+cloud-shift: -0.08
+ground: 99 0.42 0.43 0.47 tinted
+
+@terrain tidally-locked
+name: A tidally locked world
+radius-km: 6700
+air-colour: 0.45 0.56 0.9
+air-km: 80
+base-k: 250
+tidally-locked: yes
+polar-ice: no
+dry: yes
+day-hours: 2000
+tides: 0.1
+
+@terrain gas-giant
+name: A gas giant
+radius-km: 69911
+solid: no
+cloud-km: 55
+air-km: 2200
+air-colour: 0.95 0.82 0.6
+cloud-colour: 0.98 0.95 0.88
+bands: 19
+
+@terrain ice-giant
+name: An ice giant
+radius-km: 24622
+solid: no
+cloud-km: 45
+air-km: 1000
+air-colour: 0.45 0.65 1
+cloud-colour: 0.85 0.92 1
+bands: 9
+band-dark: 0.25 0.48 0.85
+band-light: 0.39 0.62 0.97
+great-storm: 0
+storm-colour: 0.08 0.15 0.42
+
+@terrain hot-jupiter
+name: A hot Jupiter
+radius-km: 95000
+solid: no
+cloud-km: 80
+air-km: 4500
+air-colour: 1 0.55 0.3
+cloud-colour: 0.45 0.3 0.26
+band-dark: 0.32 0.13 0.09
+band-light: 0.82 0.37 0.19
+
+@terrain dyson-hull
+name: A Dyson shell's outer hull
+solid: no
+clouds: no
+
+@terrain dyson-shell
+name: A Dyson shell's inner land
+clouds: no

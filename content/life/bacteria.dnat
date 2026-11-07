@@ -1,0 +1,200 @@
+# DNA-AND content · life · bacteria (domain Bacteria)
+# researched: Pearson biology study guides "Bacteria and Archaea: structure, diversity and roles";
+#   prokaryote classification notes; standard microbiology for endospores, biofilms and gene transfer
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md
+
+# ── Shapes ──
+
+@shape coccus
+name: Coccus
+real: yes
+says: a round cell
+forms: chains (streptococci), clusters (staphylococci), pairs
+
+@shape bacillus
+name: Bacillus
+real: yes
+says: a rod-shaped cell
+
+@shape spirillum
+name: Spirillum
+real: yes
+says: a stiff spiral cell
+
+@shape spirochete
+name: Spirochete
+real: yes
+says: a flexible corkscrew that twists through liquids
+
+@shape vibrio
+name: Vibrio
+real: yes
+says: a comma-shaped curved rod
+
+# ── Cell parts ──
+
+@part cell-wall
+name: Cell wall
+real: yes
+says: a tough wall around the cell
+kinds: gram-positive (thick wall), gram-negative (thin wall plus an outer membrane)
+
+@part flagellum
+name: Flagellum
+real: yes
+says: a spinning whip tail for swimming
+
+@part pili
+name: Pili
+real: yes
+says: hair-like threads for grabbing surfaces and swapping genes
+
+@part capsule
+name: Capsule
+real: yes
+says: a slimy outer coat that protects the cell
+
+@part plasmid
+name: Plasmid
+real: yes
+says: a small ring of extra genes that can be passed to other bacteria
+
+@part endospore
+name: Endospore
+real: yes
+says: a tough sleeping form that survives heat, cold, drying and radiation for years
+
+# ── How they get energy and food ──
+
+@metabolism photoautotroph
+name: Light-eater (photoautotroph)
+real: yes
+says: energy from starlight, carbon from carbon dioxide
+example: cyanobacteria
+
+@metabolism chemoautotroph
+name: Rock-eater (chemoautotroph)
+real: yes
+says: energy from chemicals like sulfur, ammonia or iron
+
+@metabolism heterotroph
+name: Food-eater (heterotroph)
+real: yes
+says: eats other living or dead things
+
+@metabolism photoheterotroph
+name: Light-and-food user
+real: yes
+says: energy from light, carbon from food
+
+@oxygen obligate-aerobe
+name: Needs oxygen
+real: yes
+
+@oxygen obligate-anaerobe
+name: Poisoned by oxygen
+real: yes
+
+@oxygen facultative
+name: Either way
+real: yes
+says: uses oxygen when it can, switches off when it can't
+
+# ── Main groups (phyla) ──
+
+@phylum proteobacteria
+name: Proteobacteria
+real: yes
+domain: bacteria
+example: E. coli, nitrogen fixers
+
+@phylum cyanobacteria
+name: Cyanobacteria
+real: yes
+domain: bacteria
+says: the first oxygen makers; built the oxygen air
+
+@phylum firmicutes
+name: Firmicutes
+real: yes
+domain: bacteria
+says: soil and gut bacteria, many make endospores
+
+@phylum actinobacteria
+name: Actinobacteria
+real: yes
+domain: bacteria
+says: soil bacteria that make many antibiotics
+
+@phylum bacteroidetes
+name: Bacteroidetes
+real: yes
+domain: bacteria
+says: gut partners that break down food
+
+@phylum spirochaetes
+name: Spirochaetes
+real: yes
+domain: bacteria
+says: corkscrew swimmers
+
+# ── Group life ──
+
+@behavior biofilm
+name: Biofilm
+real: yes
+says: a slimy city of bacteria stuck to a surface, tougher together than alone
+
+@behavior quorum-sensing
+name: Quorum sensing
+real: yes
+says: bacteria count each other by chemical signal and act together once there are enough
+
+@behavior chemotaxis
+name: Chemotaxis
+real: yes
+says: swimming toward food and away from poison
+
+@behavior stromatolite
+name: Stromatolite
+real: yes
+says: layered rock mounds built by mats of bacteria over thousands of years
+
+# ── Swapping genes ──
+
+@genes transformation
+name: Transformation
+real: yes
+says: picking up loose DNA from dead cells
+
+@genes conjugation
+name: Conjugation
+real: yes
+says: passing a plasmid to another bacterium through a pilus
+
+@genes transduction
+name: Transduction
+real: yes
+says: a virus carries genes from one bacterium to another
+
+# ── Generator rules ──
+
+@rule bacteria-fast
+real: rule
+says: bacteria split in two fast; populations explode when food is there and crash when it runs out
+
+@rule bacteria-gene-swap
+real: rule
+says: bacteria trade genes sideways, so useful traits like drug resistance spread fast between species
+
+@rule bacteria-everywhere
+real: rule
+says: bacteria live everywhere life can, from vents to guts, and recycle everything that dies
+
+@rule bacteria-oxygen
+real: rule
+says: cyanobacteria fill the air with oxygen over time, triggering the great oxidation and poisoning oxygen-hating life
+
+@rule bacteria-partners
+real: rule
+says: bacteria live inside other life as gut partners, root partners and parasites

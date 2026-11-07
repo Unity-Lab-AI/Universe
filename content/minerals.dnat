@@ -1,0 +1,1294 @@
+# DNA-AND content · minerals and what each kind of ground is made of
+# researched: standard mineralogy (mineral formulas as in mineral reference tables); crust make-up from geology
+#   references (Earth's continental crust is mostly feldspars and quartz, with pyroxene, clays, micas, calcite and
+#   iron oxides; basalt is mostly pyroxene, calcic plagioclase and olivine; the Moon's highlands are anorthite-rich,
+#   its seas basalt with ilmenite; Mars's dust is basalt minerals reddened by hematite; icy worlds are water ice with
+#   frozen carbon dioxide, nitrogen and methane). Shares are rough parts per 100 of the grains.
+# clasts: the bigger loose stones lying on the sand, by size class (Wentworth: granule 2-4 mm, pebble 4-64, cobble 64-256,
+#   boulder above 256), each with its size range in mm and how much of the ground it covers (soils carry few stones; desert
+#   pavement is mostly pebbles; lava fields are blocks and scoria; the Moon's boulders cover about a hundredth of its ground).
+# Each grain of ground is one mineral, picked from its ground's mix; zooming into it shows that mineral's own atoms.
+# grain-mm: the grains' sizes across, smallest to largest (Wentworth scale: sand 0.0625 to 2 mm, silt 0.0039 to 0.0625 mm,
+#   clay below 0.0039 mm; dune sand mostly 0.2 to 0.5 mm; the Moon's dust about 0.04 to 0.1 mm; snow grains 0.1 to 2 mm).
+# Crystal faces step down in single layers about 0.2 to 0.3 nm high, with flat terraces between usually 10 to 100 nm wide.
+# atoms: the formula's atoms written out one by one (its real ratio); colour: the grain's colour as seen (0 to 1).
+# cell: the unit cell, edges a b c in angstroms and angles alpha beta gamma in degrees; site: one atom position in it
+#   (fractions of the edges) and the atom on it, or several with their shares where they swap places (Si 0.75 Al 0.25);
+#   structure: its kind; structure-source: the published structure (Crystallography Open Database entry). molecule: the
+#   atoms round each first atom (nm), for molecules that turn freely (methane) or for matter with no crystal (sea water:
+#   water molecules, O-H 0.0957 nm at 104.5 degrees; methane C-H 0.109 nm, a tetrahedron).
+# state: liquid for matter with no crystal, its molecules packed loosely, no two layers alike, always jostling; spacing-nm:
+#   how far apart its molecules are (liquid water 0.31 nm: 1 g per cubic centimetre, 18 g a mole).
+# lustre: how its surface takes light (mineral reference tables: vitreous like glass, metallic, pearly, resinous, waxy,
+#   earthy (dull), wet); clarity: clear, translucent or opaque. Every grain, stone and thing is drawn by these, never by name.
+# Spec: docs/CONTENT-FORMAT.md · content/elements.dnat · content/geology.dnat
+
+@mineral quartz
+name: Quartz
+formula: SiO2
+atoms: Si O O
+colour: 0.86 0.82 0.74
+lustre: vitreous
+clarity: clear
+cell: 4.916 4.916 5.4054 90 90 120
+structure: alpha quartz, trigonal P3(1)21
+structure-source: COD 9000775 (Levien, L. et al. 1980)
+site: 0.4697 0.0000 0.0000 Si
+site: 0.0000 0.4697 0.6667 Si
+site: 0.5303 0.5303 0.3333 Si
+site: 0.4135 0.2669 0.1191 O
+site: 0.2669 0.4135 0.5476 O
+site: 0.7331 0.1466 0.7858 O
+site: 0.5865 0.8534 0.2142 O
+site: 0.8534 0.5865 0.4524 O
+site: 0.1466 0.7331 0.8809 O
+
+@mineral albite
+name: Albite (sodium feldspar)
+formula: NaAlSi3O8
+atoms: Na Al Si Si Si O O O O O O O O
+colour: 0.9 0.88 0.84
+lustre: vitreous
+clarity: translucent
+cell: 8.153 12.869 7.107 93.521 116.46 90.257
+structure: triclinic C-1 feldspar framework
+structure-source: COD 9000525 (Prewitt, C. T. et al. 1976)
+site: 0.2737 0.0073 0.1329 Na
+site: 0.7737 0.5073 0.1329 Na
+site: 0.7263 0.9927 0.8671 Na
+site: 0.2263 0.4927 0.8671 Na
+site: 0.0090 0.1650 0.2148 Si 0.75 Al 0.25
+site: 0.5090 0.6650 0.2148 Si 0.75 Al 0.25
+site: 0.9910 0.8350 0.7852 Si 0.75 Al 0.25
+site: 0.4910 0.3350 0.7852 Si 0.75 Al 0.25
+site: 0.0048 0.8145 0.2290 Si 0.75 Al 0.25
+site: 0.5048 0.3145 0.2290 Si 0.75 Al 0.25
+site: 0.9952 0.1855 0.7710 Si 0.75 Al 0.25
+site: 0.4952 0.6855 0.7710 Si 0.75 Al 0.25
+site: 0.6902 0.1079 0.3202 Si 0.75 Al 0.25
+site: 0.1902 0.6079 0.3202 Si 0.75 Al 0.25
+site: 0.3098 0.8921 0.6798 Si 0.75 Al 0.25
+site: 0.8098 0.3921 0.6798 Si 0.75 Al 0.25
+site: 0.6849 0.8776 0.3535 Si 0.75 Al 0.25
+site: 0.1849 0.3776 0.3535 Si 0.75 Al 0.25
+site: 0.3151 0.1224 0.6465 Si 0.75 Al 0.25
+site: 0.8151 0.6224 0.6465 Si 0.75 Al 0.25
+site: 0.0055 0.1351 0.9845 O
+site: 0.5055 0.6351 0.9845 O
+site: 0.9945 0.8649 0.0155 O
+site: 0.4945 0.3649 0.0155 O
+site: 0.5916 0.9907 0.2783 O
+site: 0.0916 0.4907 0.2783 O
+site: 0.4084 0.0093 0.7217 O
+site: 0.9084 0.5093 0.7217 O
+site: 0.8212 0.1084 0.1990 O
+site: 0.3212 0.6084 0.1990 O
+site: 0.1788 0.8916 0.8010 O
+site: 0.6788 0.3916 0.8010 O
+site: 0.8184 0.8470 0.2455 O
+site: 0.3184 0.3470 0.2455 O
+site: 0.1816 0.1530 0.7545 O
+site: 0.6816 0.6530 0.7545 O
+site: 0.0162 0.2902 0.2770 O
+site: 0.5162 0.7902 0.2770 O
+site: 0.9838 0.7098 0.7230 O
+site: 0.4838 0.2098 0.7230 O
+site: 0.0213 0.6873 0.2180 O
+site: 0.5213 0.1873 0.2180 O
+site: 0.9787 0.3127 0.7820 O
+site: 0.4787 0.8127 0.7820 O
+site: 0.1959 0.1123 0.3876 O
+site: 0.6959 0.6123 0.3876 O
+site: 0.8041 0.8877 0.6124 O
+site: 0.3041 0.3877 0.6124 O
+site: 0.1885 0.8675 0.4266 O
+site: 0.6885 0.3675 0.4266 O
+site: 0.8115 0.1325 0.5734 O
+site: 0.3115 0.6325 0.5734 O
+
+@mineral orthoclase
+name: Orthoclase (potassium feldspar)
+formula: KAlSi3O8
+atoms: K Al Si Si Si O O O O O O O O
+colour: 0.88 0.7 0.62
+lustre: vitreous
+clarity: translucent
+cell: 8.554 12.97 7.207 90 116.01 90
+structure: monoclinic C2/m feldspar framework
+structure-source: COD 9000161 (Colville, A. A. et al. 1968)
+site: 0.2835 0.0000 0.1369 K
+site: 0.7835 0.5000 0.1369 K
+site: 0.7165 0.0000 0.8631 K
+site: 0.2165 0.5000 0.8631 K
+site: 0.0094 0.1843 0.2247 Si 0.61 Al 0.39
+site: 0.5094 0.6843 0.2247 Si 0.61 Al 0.39
+site: 0.0094 0.8157 0.2247 Si 0.61 Al 0.39
+site: 0.5094 0.3157 0.2247 Si 0.61 Al 0.39
+site: 0.9906 0.1843 0.7753 Si 0.61 Al 0.39
+site: 0.4906 0.6843 0.7753 Si 0.61 Al 0.39
+site: 0.9906 0.8157 0.7753 Si 0.61 Al 0.39
+site: 0.4906 0.3157 0.7753 Si 0.61 Al 0.39
+site: 0.7079 0.1176 0.3443 Si 0.89 Al 0.11
+site: 0.2079 0.6176 0.3443 Si 0.89 Al 0.11
+site: 0.7079 0.8824 0.3443 Si 0.89 Al 0.11
+site: 0.2079 0.3824 0.3443 Si 0.89 Al 0.11
+site: 0.2921 0.1176 0.6557 Si 0.89 Al 0.11
+site: 0.7921 0.6176 0.6557 Si 0.89 Al 0.11
+site: 0.2921 0.8824 0.6557 Si 0.89 Al 0.11
+site: 0.7921 0.3824 0.6557 Si 0.89 Al 0.11
+site: 0.0000 0.1448 0.0000 O
+site: 0.5000 0.6448 0.0000 O
+site: 0.0000 0.8552 0.0000 O
+site: 0.5000 0.3552 0.0000 O
+site: 0.6354 0.0000 0.2840 O
+site: 0.1354 0.5000 0.2840 O
+site: 0.3646 0.0000 0.7160 O
+site: 0.8646 0.5000 0.7160 O
+site: 0.8276 0.1448 0.2277 O
+site: 0.3276 0.6448 0.2277 O
+site: 0.8276 0.8552 0.2277 O
+site: 0.3276 0.3552 0.2277 O
+site: 0.1724 0.1448 0.7723 O
+site: 0.6724 0.6448 0.7723 O
+site: 0.1724 0.8552 0.7723 O
+site: 0.6724 0.3552 0.7723 O
+site: 0.0351 0.3116 0.2590 O
+site: 0.5351 0.8116 0.2590 O
+site: 0.0351 0.6884 0.2590 O
+site: 0.5351 0.1884 0.2590 O
+site: 0.9649 0.3116 0.7410 O
+site: 0.4649 0.8116 0.7410 O
+site: 0.9649 0.6884 0.7410 O
+site: 0.4649 0.1884 0.7410 O
+site: 0.1818 0.1254 0.4075 O
+site: 0.6818 0.6254 0.4075 O
+site: 0.1818 0.8746 0.4075 O
+site: 0.6818 0.3746 0.4075 O
+site: 0.8182 0.1254 0.5925 O
+site: 0.3182 0.6254 0.5925 O
+site: 0.8182 0.8746 0.5925 O
+site: 0.3182 0.3746 0.5925 O
+
+@mineral anorthite
+name: Anorthite (calcium feldspar)
+formula: CaAl2Si2O8
+atoms: Ca Al Al Si Si O O O O O O O O
+colour: 0.82 0.82 0.8
+lustre: vitreous
+clarity: translucent
+cell: 8.175 12.873 14.17 93.11 115.89 91.28
+structure: triclinic P-1 feldspar framework
+structure-source: COD 9001258 (Angel, R. J. et al. 1990)
+site: 0.0090 0.1589 0.1039 Si
+site: 0.9910 0.8411 0.8961 Si
+site: 0.5067 0.6561 0.6045 Si
+site: 0.4933 0.3439 0.3955 Si
+site: 0.0069 0.1609 0.6111 Al
+site: 0.9931 0.8391 0.3889 Al
+site: 0.4988 0.6660 0.1129 Al
+site: 0.5012 0.3340 0.8871 Al
+site: 0.9909 0.8153 0.1176 Al
+site: 0.0091 0.1847 0.8824 Al
+site: 0.5082 0.3146 0.6214 Al
+site: 0.4918 0.6854 0.3786 Al
+site: 0.0057 0.8153 0.6132 Si
+site: 0.9942 0.1847 0.3868 Si
+site: 0.5050 0.3203 0.1103 Si
+site: 0.4950 0.6797 0.8897 Si
+site: 0.6844 0.1132 0.1512 Al
+site: 0.3156 0.8869 0.8488 Al
+site: 0.1910 0.6111 0.6677 Al
+site: 0.8090 0.3889 0.3323 Al
+site: 0.6817 0.1035 0.6647 Si
+site: 0.3183 0.8965 0.3353 Si
+site: 0.1707 0.6067 0.1490 Si
+site: 0.8293 0.3933 0.8509 Si
+site: 0.6739 0.8829 0.1877 Si
+site: 0.3261 0.1171 0.8123 Si
+site: 0.1761 0.3793 0.6733 Si
+site: 0.8239 0.6207 0.3267 Si
+site: 0.6814 0.8716 0.6724 Al
+site: 0.3186 0.1284 0.3276 Al
+site: 0.1855 0.3776 0.1816 Al
+site: 0.8145 0.6224 0.8184 Al
+site: 0.2652 0.9861 0.0869 Ca
+site: 0.7348 0.0139 0.9131 Ca
+site: 0.2683 0.0313 0.5430 Ca
+site: 0.7317 0.9687 0.4570 Ca
+site: 0.7735 0.5359 0.5412 Ca
+site: 0.2265 0.4641 0.4588 Ca
+site: 0.7637 0.5051 0.0751 Ca
+site: 0.2363 0.4949 0.9249 Ca
+site: 0.0263 0.1246 0.9957 O
+site: 0.9737 0.8754 0.0043 O
+site: 0.4860 0.6236 0.4859 O
+site: 0.5140 0.3764 0.5141 O
+site: 0.9811 0.1256 0.4836 O
+site: 0.0189 0.8744 0.5164 O
+site: 0.5179 0.6238 0.9965 O
+site: 0.4821 0.3762 0.0035 O
+site: 0.5757 0.9906 0.1434 O
+site: 0.4243 0.0094 0.8566 O
+site: 0.0721 0.4881 0.6346 O
+site: 0.9279 0.5119 0.3654 O
+site: 0.5723 0.9892 0.6370 O
+site: 0.4277 0.0108 0.3630 O
+site: 0.0716 0.4924 0.1383 O
+site: 0.9284 0.5076 0.8617 O
+site: 0.8133 0.1016 0.0798 O
+site: 0.1867 0.8984 0.9202 O
+site: 0.3331 0.5952 0.6053 O
+site: 0.6669 0.4048 0.3947 O
+site: 0.8117 0.0967 0.6057 O
+site: 0.1883 0.9033 0.3943 O
+site: 0.2857 0.6034 0.0791 O
+site: 0.7143 0.3966 0.9208 O
+site: 0.8177 0.8549 0.1444 O
+site: 0.1823 0.1451 0.8556 O
+site: 0.2984 0.3554 0.6110 O
+site: 0.7016 0.6445 0.3890 O
+site: 0.8105 0.8521 0.6025 O
+site: 0.1895 0.1479 0.3975 O
+site: 0.3421 0.3577 0.1342 O
+site: 0.6579 0.6423 0.8658 O
+site: 0.0151 0.2792 0.1354 O
+site: 0.9849 0.7208 0.8646 O
+site: 0.5095 0.7772 0.6350 O
+site: 0.4905 0.2228 0.3650 O
+site: 0.0201 0.2899 0.6477 O
+site: 0.9799 0.7101 0.3523 O
+site: 0.5087 0.7965 0.1499 O
+site: 0.4913 0.2035 0.8501 O
+site: 0.0000 0.6800 0.1038 O
+site: 0.0000 0.3200 0.8962 O
+site: 0.5168 0.1793 0.6104 O
+site: 0.4832 0.8207 0.3896 O
+site: 0.0084 0.6885 0.6006 O
+site: 0.9916 0.3115 0.3994 O
+site: 0.5071 0.1958 0.0976 O
+site: 0.4929 0.8042 0.9024 O
+site: 0.1832 0.1062 0.1922 O
+site: 0.8168 0.8938 0.8078 O
+site: 0.7006 0.6075 0.6783 O
+site: 0.2994 0.3925 0.3217 O
+site: 0.2135 0.1033 0.6835 O
+site: 0.7864 0.8966 0.3165 O
+site: 0.6894 0.6035 0.2005 O
+site: 0.3106 0.3965 0.7995 O
+site: 0.2037 0.8734 0.2098 O
+site: 0.7963 0.1266 0.7902 O
+site: 0.6890 0.3636 0.7327 O
+site: 0.3110 0.6364 0.2673 O
+site: 0.1727 0.8564 0.7192 O
+site: 0.8273 0.1436 0.2808 O
+site: 0.7001 0.3705 0.1968 O
+site: 0.2999 0.6295 0.8032 O
+
+@mineral forsterite
+name: Olivine (forsterite)
+formula: Mg2SiO4
+atoms: Mg Mg Si O O O O
+colour: 0.55 0.66 0.3
+lustre: vitreous
+clarity: translucent
+cell: 4.756 10.207 5.98 90 90 90
+structure: orthorhombic Pbnm olivine: separate SiO4 groups with magnesium between
+structure-source: COD 9000319 (Smyth, J. R. et al. 1973)
+site: 0.0000 0.0000 0.0000 Mg
+site: 0.0000 0.0000 0.5000 Mg
+site: 0.5000 0.5000 0.5000 Mg
+site: 0.5000 0.5000 0.0000 Mg
+site: 0.9915 0.2774 0.2500 Mg
+site: 0.0085 0.7226 0.7500 Mg
+site: 0.4915 0.2226 0.7500 Mg
+site: 0.5085 0.7774 0.2500 Mg
+site: 0.4262 0.0940 0.2500 Si
+site: 0.5738 0.9060 0.7500 Si
+site: 0.9262 0.4060 0.7500 Si
+site: 0.0738 0.5940 0.2500 Si
+site: 0.7657 0.0913 0.2500 O
+site: 0.2343 0.9087 0.7500 O
+site: 0.2657 0.4087 0.7500 O
+site: 0.7343 0.5913 0.2500 O
+site: 0.2215 0.4474 0.2500 O
+site: 0.7785 0.5526 0.7500 O
+site: 0.7215 0.0526 0.7500 O
+site: 0.2785 0.9474 0.2500 O
+site: 0.2777 0.1628 0.0331 O
+site: 0.2777 0.1628 0.4669 O
+site: 0.7223 0.8372 0.5331 O
+site: 0.7777 0.3372 0.5331 O
+site: 0.2223 0.6628 0.4669 O
+site: 0.2223 0.6628 0.0331 O
+site: 0.7777 0.3372 0.9669 O
+site: 0.7223 0.8372 0.9669 O
+
+@mineral fayalite
+name: Olivine (fayalite)
+formula: Fe2SiO4
+atoms: Fe Fe Si O O O O
+colour: 0.42 0.38 0.2
+lustre: vitreous
+clarity: translucent
+cell: 4.818 10.471 6.086 90 90 90
+structure: orthorhombic Pbnm olivine: separate SiO4 groups with iron between
+structure-source: COD 9000469 (Smyth, J. R. 1975)
+site: 0.0000 0.0000 0.0000 Fe
+site: 0.0000 0.0000 0.5000 Fe
+site: 0.5000 0.5000 0.5000 Fe
+site: 0.5000 0.5000 0.0000 Fe
+site: 0.9853 0.2800 0.2500 Fe
+site: 0.0147 0.7200 0.7500 Fe
+site: 0.4853 0.2200 0.7500 Fe
+site: 0.5147 0.7800 0.2500 Fe
+site: 0.4292 0.0975 0.2500 Si
+site: 0.5708 0.9025 0.7500 Si
+site: 0.9292 0.4025 0.7500 Si
+site: 0.0708 0.5975 0.2500 Si
+site: 0.7687 0.0928 0.2500 O
+site: 0.2313 0.9072 0.7500 O
+site: 0.2687 0.4072 0.7500 O
+site: 0.7313 0.5928 0.2500 O
+site: 0.2076 0.4529 0.2500 O
+site: 0.7924 0.5471 0.7500 O
+site: 0.7076 0.0471 0.7500 O
+site: 0.2924 0.9529 0.2500 O
+site: 0.2884 0.1637 0.0383 O
+site: 0.2884 0.1637 0.4617 O
+site: 0.7116 0.8363 0.5383 O
+site: 0.7884 0.3363 0.5383 O
+site: 0.2116 0.6637 0.4617 O
+site: 0.2116 0.6637 0.0383 O
+site: 0.7884 0.3363 0.9617 O
+site: 0.7116 0.8363 0.9617 O
+
+@mineral enstatite
+name: Pyroxene (enstatite)
+formula: MgSiO3
+atoms: Mg Si O O O
+colour: 0.4 0.38 0.3
+lustre: vitreous
+clarity: translucent
+cell: 18.216 8.813 5.179 90 90 90
+structure: orthorhombic Pbca pyroxene: single chains of SiO4
+structure-source: COD 9004117 (Hawthorne, F. C. et al. 1977)
+site: 0.2717 0.3415 0.0503 Si
+site: 0.2717 0.1585 0.5503 Si
+site: 0.7283 0.8415 0.4497 Si
+site: 0.2283 0.8415 0.0503 Si
+site: 0.7717 0.1585 0.9497 Si
+site: 0.7717 0.3415 0.4497 Si
+site: 0.2283 0.6585 0.5503 Si
+site: 0.7283 0.6585 0.9497 Si
+site: 0.4736 0.3373 0.7982 Si
+site: 0.4736 0.1627 0.2982 Si
+site: 0.5264 0.8373 0.7018 Si
+site: 0.0264 0.8373 0.7982 Si
+site: 0.9736 0.1627 0.2018 Si
+site: 0.9736 0.3373 0.7018 Si
+site: 0.0264 0.6627 0.2982 Si
+site: 0.5264 0.6627 0.2018 Si
+site: 0.3758 0.6539 0.8660 Mg
+site: 0.3758 0.8461 0.3660 Mg
+site: 0.6242 0.1539 0.6340 Mg
+site: 0.1242 0.1539 0.8660 Mg
+site: 0.8758 0.8461 0.1340 Mg
+site: 0.8758 0.6539 0.6340 Mg
+site: 0.1242 0.3461 0.3660 Mg
+site: 0.6242 0.3461 0.1340 Mg
+site: 0.3768 0.4870 0.3587 Mg
+site: 0.3768 0.0130 0.8587 Mg
+site: 0.6232 0.9870 0.1413 Mg
+site: 0.1232 0.9870 0.3587 Mg
+site: 0.8768 0.0130 0.6413 Mg
+site: 0.8768 0.4870 0.1413 Mg
+site: 0.1232 0.5130 0.8587 Mg
+site: 0.6232 0.5130 0.6413 Mg
+site: 0.1833 0.3399 0.0346 O
+site: 0.1833 0.1601 0.5346 O
+site: 0.8167 0.8399 0.4654 O
+site: 0.3167 0.8399 0.0346 O
+site: 0.6833 0.1601 0.9654 O
+site: 0.6833 0.3399 0.4654 O
+site: 0.3167 0.6601 0.5346 O
+site: 0.8167 0.6601 0.9654 O
+site: 0.3110 0.5024 0.0434 O
+site: 0.3110 0.9976 0.5434 O
+site: 0.6890 0.0024 0.4566 O
+site: 0.1890 0.0024 0.0434 O
+site: 0.8110 0.9976 0.9566 O
+site: 0.8110 0.5024 0.4566 O
+site: 0.1890 0.4976 0.5434 O
+site: 0.6890 0.4976 0.9566 O
+site: 0.3032 0.2226 0.8322 O
+site: 0.3032 0.2774 0.3322 O
+site: 0.6968 0.7226 0.6678 O
+site: 0.1968 0.7226 0.8322 O
+site: 0.8032 0.2774 0.1678 O
+site: 0.8032 0.2226 0.6678 O
+site: 0.1968 0.7774 0.3322 O
+site: 0.6968 0.7774 0.1678 O
+site: 0.5624 0.3402 0.7997 O
+site: 0.5624 0.1598 0.2997 O
+site: 0.4376 0.8402 0.7003 O
+site: 0.9376 0.8402 0.7997 O
+site: 0.0624 0.1598 0.2003 O
+site: 0.0624 0.3402 0.7003 O
+site: 0.9376 0.6598 0.2997 O
+site: 0.4376 0.6598 0.2003 O
+site: 0.4328 0.4832 0.6890 O
+site: 0.4328 0.0168 0.1890 O
+site: 0.5672 0.9832 0.8110 O
+site: 0.0672 0.9832 0.6890 O
+site: 0.9328 0.0168 0.3110 O
+site: 0.9328 0.4832 0.8110 O
+site: 0.0672 0.5168 0.1890 O
+site: 0.5672 0.5168 0.3110 O
+site: 0.4477 0.1950 0.6040 O
+site: 0.4477 0.3050 0.1040 O
+site: 0.5523 0.6950 0.8960 O
+site: 0.0523 0.6950 0.6040 O
+site: 0.9477 0.3050 0.3960 O
+site: 0.9477 0.1950 0.8960 O
+site: 0.0523 0.8050 0.1040 O
+site: 0.5523 0.8050 0.3960 O
+
+@mineral augite
+name: Pyroxene (augite)
+formula: CaMgSi2O6
+atoms: Ca Mg Si Si O O O O O O
+colour: 0.22 0.22 0.2
+lustre: vitreous
+clarity: opaque
+cell: 9.745 8.899 5.251 90 105.63 90
+structure: monoclinic C2/c pyroxene: single chains of SiO4 (diopside, the calcium end of augite)
+structure-source: COD 9000331 (Cameron, M. et al. 1973)
+site: 0.2862 0.0933 0.2293 Si
+site: 0.7862 0.5933 0.2293 Si
+site: 0.2862 0.9067 0.7293 Si
+site: 0.7862 0.4067 0.7293 Si
+site: 0.7138 0.0933 0.2707 Si
+site: 0.2138 0.5933 0.2707 Si
+site: 0.7138 0.9067 0.7707 Si
+site: 0.2138 0.4067 0.7707 Si
+site: 0.0000 0.9082 0.2500 Mg
+site: 0.5000 0.4082 0.2500 Mg
+site: 0.0000 0.0918 0.7500 Mg
+site: 0.5000 0.5918 0.7500 Mg
+site: 0.0000 0.3015 0.2500 Ca
+site: 0.5000 0.8015 0.2500 Ca
+site: 0.0000 0.6985 0.7500 Ca
+site: 0.5000 0.1985 0.7500 Ca
+site: 0.1156 0.0873 0.1422 O
+site: 0.6156 0.5873 0.1422 O
+site: 0.1156 0.9127 0.6422 O
+site: 0.6156 0.4127 0.6422 O
+site: 0.8844 0.0873 0.3578 O
+site: 0.3844 0.5873 0.3578 O
+site: 0.8844 0.9127 0.8578 O
+site: 0.3844 0.4127 0.8578 O
+site: 0.3611 0.2500 0.3180 O
+site: 0.8611 0.7500 0.3180 O
+site: 0.3611 0.7500 0.8180 O
+site: 0.8611 0.2500 0.8180 O
+site: 0.6389 0.2500 0.1820 O
+site: 0.1389 0.7500 0.1820 O
+site: 0.6389 0.7500 0.6820 O
+site: 0.1389 0.2500 0.6820 O
+site: 0.3505 0.0176 0.9953 O
+site: 0.8505 0.5176 0.9953 O
+site: 0.3505 0.9824 0.4953 O
+site: 0.8505 0.4824 0.4953 O
+site: 0.6495 0.0176 0.5047 O
+site: 0.1495 0.5176 0.5047 O
+site: 0.6495 0.9824 0.0047 O
+site: 0.1495 0.4824 0.0047 O
+
+@mineral kaolinite
+name: Clay (kaolinite)
+formula: Al2Si2O5(OH)4
+atoms: Al Al Si Si O O O O O O O O O H H H H
+colour: 0.84 0.78 0.66
+lustre: earthy
+clarity: opaque
+cell: 5.1554 8.9448 7.4048 91.7 104.86 89.822
+structure: triclinic C1 clay: sheets of SiO4 joined to sheets of aluminium and oxygen
+structure-source: COD 9009230 (Bish, D. L. et al. 1989)
+site: 0.2971 0.4957 0.4721 Al
+site: 0.7971 0.9957 0.4721 Al
+site: 0.7926 0.3300 0.4699 Al
+site: 0.2926 0.8300 0.4699 Al
+site: 0.9942 0.3393 0.0909 Si
+site: 0.4942 0.8393 0.0909 Si
+site: 0.5064 0.1665 0.0913 Si
+site: 0.0064 0.6665 0.0913 Si
+site: 0.0501 0.3539 0.3170 O
+site: 0.5501 0.8539 0.3170 O
+site: 0.1214 0.6604 0.3175 O
+site: 0.6214 0.1604 0.3175 O
+site: 0.0000 0.5000 0.0000 O
+site: 0.5000 0.0000 0.0000 O
+site: 0.2085 0.2305 0.0247 O
+site: 0.7085 0.7305 0.0247 O
+site: 0.2012 0.7657 0.0032 O
+site: 0.7012 0.2657 0.0032 O
+site: 0.0510 0.9698 0.3220 O
+site: 0.5510 0.4698 0.3220 O
+site: 0.9649 0.1665 0.6051 O
+site: 0.4649 0.6665 0.6051 O
+site: 0.0348 0.4769 0.6080 O
+site: 0.5348 0.9769 0.6080 O
+site: 0.0334 0.8570 0.6094 O
+site: 0.5334 0.3570 0.6094 O
+
+@mineral biotite
+name: Mica (biotite)
+formula: KMg3AlSi3O10(OH)2
+atoms: K Mg Mg Mg Al Si Si Si O O O O O O O O O O O O H H
+colour: 0.25 0.2 0.14
+lustre: pearly
+clarity: translucent
+cell: 5.32 9.21 10.16 90 100.03 90
+structure: monoclinic C2/m mica: sheets (phlogopite, the magnesium end of biotite)
+structure-source: COD 9000074 (Pabst, A. 1955)
+site: 0.0000 0.5000 0.0000 K
+site: 0.5000 0.0000 0.0000 K
+site: 0.0000 0.0000 0.5000 Mg
+site: 0.5000 0.5000 0.5000 Mg
+site: 0.0000 0.3300 0.5000 Mg
+site: 0.5000 0.8300 0.5000 Mg
+site: 0.0000 0.6700 0.5000 Mg
+site: 0.5000 0.1700 0.5000 Mg
+site: 0.5750 0.3300 0.2200 Si 0.75 Al 0.25
+site: 0.0750 0.8300 0.2200 Si 0.75 Al 0.25
+site: 0.5750 0.6700 0.2200 Si 0.75 Al 0.25
+site: 0.0750 0.1700 0.2200 Si 0.75 Al 0.25
+site: 0.4250 0.3300 0.7800 Si 0.75 Al 0.25
+site: 0.9250 0.8300 0.7800 Si 0.75 Al 0.25
+site: 0.4250 0.6700 0.7800 Si 0.75 Al 0.25
+site: 0.9250 0.1700 0.7800 Si 0.75 Al 0.25
+site: 0.0550 0.0000 0.1600 O
+site: 0.5550 0.5000 0.1600 O
+site: 0.9450 0.0000 0.8400 O
+site: 0.4450 0.5000 0.8400 O
+site: 0.8050 0.2500 0.1600 O
+site: 0.3050 0.7500 0.1600 O
+site: 0.8050 0.7500 0.1600 O
+site: 0.3050 0.2500 0.1600 O
+site: 0.1950 0.2500 0.8400 O
+site: 0.6950 0.7500 0.8400 O
+site: 0.1950 0.7500 0.8400 O
+site: 0.6950 0.2500 0.8400 O
+site: 0.6300 0.3300 0.3800 O
+site: 0.1300 0.8300 0.3800 O
+site: 0.6300 0.6700 0.3800 O
+site: 0.1300 0.1700 0.3800 O
+site: 0.3700 0.3300 0.6200 O
+site: 0.8700 0.8300 0.6200 O
+site: 0.3700 0.6700 0.6200 O
+site: 0.8700 0.1700 0.6200 O
+site: 0.6300 0.0000 0.3800 O
+site: 0.1300 0.5000 0.3800 O
+site: 0.3700 0.0000 0.6200 O
+site: 0.8700 0.5000 0.6200 O
+
+@mineral calcite
+name: Calcite
+formula: CaCO3
+atoms: Ca C O O O
+colour: 0.94 0.92 0.86
+lustre: vitreous
+clarity: clear
+cell: 4.99 4.99 17.061 90 90 120
+structure: trigonal R-3c: calcium and flat carbonate groups
+structure-source: COD 9000095 (Graf, D. L. 1961)
+site: 0.0000 0.0000 0.0000 Ca
+site: 0.6667 0.3333 0.3333 Ca
+site: 0.3333 0.6667 0.6667 Ca
+site: 0.0000 0.0000 0.5000 Ca
+site: 0.6667 0.3333 0.8333 Ca
+site: 0.3333 0.6667 0.1667 Ca
+site: 0.0000 0.0000 0.2500 C
+site: 0.6667 0.3333 0.5833 C
+site: 0.3333 0.6667 0.9167 C
+site: 0.0000 0.0000 0.7500 C
+site: 0.6667 0.3333 0.0833 C
+site: 0.3333 0.6667 0.4167 C
+site: 0.2578 0.0000 0.2500 O
+site: 0.9245 0.3333 0.5833 O
+site: 0.5911 0.6667 0.9167 O
+site: 0.2578 0.2578 0.7500 O
+site: 0.9245 0.5911 0.0833 O
+site: 0.5911 0.9245 0.4167 O
+site: 0.0000 0.2578 0.2500 O
+site: 0.6667 0.5911 0.5833 O
+site: 0.3333 0.9245 0.9167 O
+site: 0.7422 0.0000 0.7500 O
+site: 0.4089 0.3333 0.0833 O
+site: 0.0755 0.6667 0.4167 O
+site: 0.7422 0.7422 0.2500 O
+site: 0.4089 0.0755 0.5833 O
+site: 0.0755 0.4089 0.9167 O
+site: 0.0000 0.7422 0.7500 O
+site: 0.6667 0.0755 0.0833 O
+site: 0.3333 0.4089 0.4167 O
+
+@mineral hematite
+name: Hematite
+formula: Fe2O3
+atoms: Fe Fe O O O
+colour: 0.6 0.22 0.14
+lustre: metallic
+clarity: opaque
+cell: 5.038 5.038 13.772 90 90 120
+structure: trigonal R-3c corundum type: iron among packed oxygen
+structure-source: COD 9000139 (Blake, R. L. et al. 1966)
+site: 0.0000 0.0000 0.3553 Fe
+site: 0.6667 0.3333 0.6886 Fe
+site: 0.3333 0.6667 0.0220 Fe
+site: 0.0000 0.0000 0.8553 Fe
+site: 0.6667 0.3333 0.1886 Fe
+site: 0.3333 0.6667 0.5220 Fe
+site: 0.0000 0.0000 0.1447 Fe
+site: 0.6667 0.3333 0.4780 Fe
+site: 0.3333 0.6667 0.8114 Fe
+site: 0.0000 0.0000 0.6447 Fe
+site: 0.6667 0.3333 0.9780 Fe
+site: 0.3333 0.6667 0.3114 Fe
+site: 0.3059 0.0000 0.2500 O
+site: 0.9726 0.3333 0.5833 O
+site: 0.6392 0.6667 0.9167 O
+site: 0.3059 0.3059 0.7500 O
+site: 0.9726 0.6392 0.0833 O
+site: 0.6392 0.9726 0.4167 O
+site: 0.0000 0.3059 0.2500 O
+site: 0.6667 0.6392 0.5833 O
+site: 0.3333 0.9726 0.9167 O
+site: 0.6941 0.0000 0.7500 O
+site: 0.3608 0.3333 0.0833 O
+site: 0.0274 0.6667 0.4167 O
+site: 0.6941 0.6941 0.2500 O
+site: 0.3608 0.0274 0.5833 O
+site: 0.0274 0.3608 0.9167 O
+site: 0.0000 0.6941 0.7500 O
+site: 0.6667 0.0274 0.0833 O
+site: 0.3333 0.3608 0.4167 O
+
+@mineral magnetite
+name: Magnetite
+formula: Fe3O4
+atoms: Fe Fe Fe O O O O
+colour: 0.16 0.16 0.17
+lustre: metallic
+clarity: opaque
+cell: 8.3958 8.3958 8.3958 90 90 90
+structure: cubic Fd-3m spinel: iron among packed oxygen
+structure-source: COD 9000926 (Wechsler, B. A. et al. 1984)
+site: 0.1250 0.1250 0.1250 Fe
+site: 0.1250 0.6250 0.6250 Fe
+site: 0.6250 0.1250 0.6250 Fe
+site: 0.6250 0.6250 0.1250 Fe
+site: 0.8750 0.3750 0.3750 Fe
+site: 0.8750 0.8750 0.8750 Fe
+site: 0.3750 0.3750 0.8750 Fe
+site: 0.3750 0.8750 0.3750 Fe
+site: 0.5000 0.5000 0.5000 Fe
+site: 0.5000 0.0000 0.0000 Fe
+site: 0.0000 0.5000 0.0000 Fe
+site: 0.0000 0.0000 0.5000 Fe
+site: 0.2500 0.0000 0.7500 Fe
+site: 0.2500 0.5000 0.2500 Fe
+site: 0.7500 0.0000 0.2500 Fe
+site: 0.7500 0.5000 0.7500 Fe
+site: 0.0000 0.2500 0.7500 Fe
+site: 0.0000 0.7500 0.2500 Fe
+site: 0.5000 0.2500 0.2500 Fe
+site: 0.5000 0.7500 0.7500 Fe
+site: 0.2500 0.7500 0.0000 Fe
+site: 0.2500 0.2500 0.5000 Fe
+site: 0.7500 0.7500 0.5000 Fe
+site: 0.7500 0.2500 0.0000 Fe
+site: 0.2547 0.2547 0.2547 O
+site: 0.2547 0.7547 0.7547 O
+site: 0.7547 0.2547 0.7547 O
+site: 0.7547 0.7547 0.2547 O
+site: 0.0047 0.2453 0.5047 O
+site: 0.0047 0.7453 0.0047 O
+site: 0.5047 0.2453 0.0047 O
+site: 0.5047 0.7453 0.5047 O
+site: 0.4953 0.7547 0.9953 O
+site: 0.4953 0.2547 0.4953 O
+site: 0.9953 0.7547 0.4953 O
+site: 0.9953 0.2547 0.9953 O
+site: 0.7547 0.4953 0.9953 O
+site: 0.7547 0.9953 0.4953 O
+site: 0.2547 0.4953 0.4953 O
+site: 0.2547 0.9953 0.9953 O
+site: 0.2453 0.0047 0.5047 O
+site: 0.2453 0.5047 0.0047 O
+site: 0.7453 0.0047 0.0047 O
+site: 0.7453 0.5047 0.5047 O
+site: 0.7453 0.2453 0.2453 O
+site: 0.7453 0.7453 0.7453 O
+site: 0.2453 0.2453 0.7453 O
+site: 0.2453 0.7453 0.2453 O
+site: 0.0047 0.5047 0.2453 O
+site: 0.0047 0.0047 0.7453 O
+site: 0.5047 0.5047 0.7453 O
+site: 0.5047 0.0047 0.2453 O
+site: 0.4953 0.9953 0.7547 O
+site: 0.4953 0.4953 0.2547 O
+site: 0.9953 0.9953 0.2547 O
+site: 0.9953 0.4953 0.7547 O
+
+@mineral ilmenite
+name: Ilmenite
+formula: FeTiO3
+atoms: Fe Ti O O O
+colour: 0.18 0.17 0.17
+lustre: metallic
+clarity: opaque
+cell: 5.0884 5.0884 14.085 90 90 120
+structure: trigonal R-3: iron and titanium in layers among packed oxygen
+structure-source: COD 9000906 (Wechsler, B. A. et al. 1984)
+site: 0.0000 0.0000 0.3554 Fe
+site: 0.6667 0.3333 0.6887 Fe
+site: 0.3333 0.6667 0.0220 Fe
+site: 0.0000 0.0000 0.6446 Fe
+site: 0.6667 0.3333 0.9780 Fe
+site: 0.3333 0.6667 0.3113 Fe
+site: 0.0000 0.0000 0.1464 Ti
+site: 0.6667 0.3333 0.4797 Ti
+site: 0.3333 0.6667 0.8131 Ti
+site: 0.0000 0.0000 0.8536 Ti
+site: 0.6667 0.3333 0.1869 Ti
+site: 0.3333 0.6667 0.5203 Ti
+site: 0.3174 0.0233 0.2451 O
+site: 0.9841 0.3567 0.5784 O
+site: 0.6508 0.6900 0.9117 O
+site: 0.0233 0.7059 0.7549 O
+site: 0.6900 0.0392 0.0883 O
+site: 0.3567 0.3726 0.4216 O
+site: 0.7059 0.6826 0.2451 O
+site: 0.3726 0.0159 0.5784 O
+site: 0.0392 0.3492 0.9117 O
+site: 0.6826 0.9767 0.7549 O
+site: 0.3492 0.3100 0.0883 O
+site: 0.0159 0.6433 0.4216 O
+site: 0.9767 0.2941 0.2451 O
+site: 0.6433 0.6274 0.5784 O
+site: 0.3100 0.9608 0.9117 O
+site: 0.2941 0.3174 0.7549 O
+site: 0.9608 0.6508 0.0883 O
+site: 0.6274 0.9841 0.4216 O
+
+@mineral pyrite
+name: Pyrite
+formula: FeS2
+atoms: Fe S S
+colour: 0.8 0.7 0.36
+lustre: metallic
+clarity: opaque
+cell: 5.4166 5.4166 5.4166 90 90 90
+structure: cubic Pa-3: iron and sulfur pairs
+structure-source: COD 9000594 (Bayliss, P. 1977)
+site: 0.0000 0.0000 0.0000 Fe
+site: 0.5000 0.0000 0.5000 Fe
+site: 0.0000 0.5000 0.5000 Fe
+site: 0.5000 0.5000 0.0000 Fe
+site: 0.3851 0.3851 0.3851 S
+site: 0.8851 0.3851 0.1149 S
+site: 0.3851 0.1149 0.8851 S
+site: 0.1149 0.8851 0.3851 S
+site: 0.6149 0.6149 0.6149 S
+site: 0.8851 0.1149 0.6149 S
+site: 0.1149 0.6149 0.8851 S
+site: 0.6149 0.8851 0.1149 S
+
+@mineral gypsum
+name: Gypsum
+formula: CaSO4·2H2O
+atoms: Ca S O O O O O O H H H H
+colour: 0.95 0.94 0.9
+lustre: pearly
+clarity: clear
+cell: 6.277 15.181 5.672 90 114.11 90
+structure: monoclinic: layers of calcium and sulfate, with water between
+structure-source: COD 9013164 (Comodi, P. et al. 2008)
+site: 0.0000 0.1705 0.2500 Ca
+site: 0.5000 0.6705 0.2500 Ca
+site: 0.0000 0.8295 0.7500 Ca
+site: 0.5000 0.3295 0.7500 Ca
+site: 0.0000 0.3273 0.7500 S
+site: 0.5000 0.8273 0.7500 S
+site: 0.0000 0.6727 0.2500 S
+site: 0.5000 0.1727 0.2500 S
+site: 0.0832 0.2722 0.5910 O
+site: 0.5832 0.7722 0.5910 O
+site: 0.0832 0.7278 0.0910 O
+site: 0.5832 0.2278 0.0910 O
+site: 0.9168 0.2722 0.9090 O
+site: 0.4168 0.7722 0.9090 O
+site: 0.9168 0.7278 0.4090 O
+site: 0.4168 0.2278 0.4090 O
+site: 0.2000 0.3820 0.9130 O
+site: 0.7000 0.8820 0.9130 O
+site: 0.2000 0.6180 0.4130 O
+site: 0.7000 0.1180 0.4130 O
+site: 0.8000 0.3820 0.5870 O
+site: 0.3000 0.8820 0.5870 O
+site: 0.8000 0.6180 0.0870 O
+site: 0.3000 0.1180 0.0870 O
+site: 0.7918 0.0683 0.9217 O
+site: 0.2918 0.5683 0.9217 O
+site: 0.7918 0.9317 0.4217 O
+site: 0.2918 0.4317 0.4217 O
+site: 0.2082 0.0683 0.5783 O
+site: 0.7082 0.5683 0.5783 O
+site: 0.2082 0.9317 0.0783 O
+site: 0.7082 0.4317 0.0783 O
+site: 0.7420 0.0870 0.7660 H
+site: 0.2420 0.5870 0.7660 H
+site: 0.7420 0.9130 0.2660 H
+site: 0.2420 0.4130 0.2660 H
+site: 0.2580 0.0870 0.7340 H
+site: 0.7580 0.5870 0.7340 H
+site: 0.2580 0.9130 0.2340 H
+site: 0.7580 0.4130 0.2340 H
+site: 0.7560 0.0200 0.9230 H
+site: 0.2560 0.5200 0.9230 H
+site: 0.7560 0.9800 0.4230 H
+site: 0.2560 0.4800 0.4230 H
+site: 0.2440 0.0200 0.5770 H
+site: 0.7440 0.5200 0.5770 H
+site: 0.2440 0.9800 0.0770 H
+site: 0.7440 0.4800 0.0770 H
+
+@mineral halite
+name: Halite (rock salt)
+formula: NaCl
+atoms: Na Cl
+colour: 0.95 0.93 0.93
+lustre: vitreous
+clarity: clear
+cell: 5.62 5.62 5.62 90 90 90
+structure: cubic Fm-3m rock salt: sodium and chlorine alternating
+structure-source: COD 1000041 (Abrahams, S C et al. 1965)
+site: 0.0000 0.0000 0.0000 Na
+site: 0.0000 0.5000 0.5000 Na
+site: 0.5000 0.0000 0.5000 Na
+site: 0.5000 0.5000 0.0000 Na
+site: 0.5000 0.5000 0.5000 Cl
+site: 0.5000 0.0000 0.0000 Cl
+site: 0.0000 0.5000 0.0000 Cl
+site: 0.0000 0.0000 0.5000 Cl
+
+@mineral sulfur
+name: Sulfur
+formula: S8
+atoms: S S S S S S S S
+colour: 0.92 0.84 0.2
+lustre: resinous
+clarity: translucent
+cell: 10.465 12.866 24.486 90 90 90
+structure: orthorhombic Fddd: crowns of eight sulfur atoms
+structure-source: COD 9011362 (Rettig, S. J. et al. 1987)
+site: 0.8558 0.9527 0.9515 S
+site: 0.8558 0.4527 0.4515 S
+site: 0.3558 0.9527 0.4515 S
+site: 0.3558 0.4527 0.9515 S
+site: 0.6058 0.0473 0.7015 S
+site: 0.6058 0.5473 0.2015 S
+site: 0.1058 0.0473 0.2015 S
+site: 0.1058 0.5473 0.7015 S
+site: 0.8942 0.9527 0.7985 S
+site: 0.8942 0.4527 0.2985 S
+site: 0.3942 0.9527 0.2985 S
+site: 0.3942 0.4527 0.7985 S
+site: 0.1442 0.7027 0.7015 S
+site: 0.1442 0.2027 0.2015 S
+site: 0.6442 0.7027 0.2015 S
+site: 0.6442 0.2027 0.7015 S
+site: 0.8558 0.7973 0.7985 S
+site: 0.8558 0.2973 0.2985 S
+site: 0.3558 0.7973 0.2985 S
+site: 0.3558 0.2973 0.7985 S
+site: 0.6058 0.7027 0.0485 S
+site: 0.6058 0.2027 0.5485 S
+site: 0.1058 0.7027 0.5485 S
+site: 0.1058 0.2027 0.0485 S
+site: 0.8942 0.7973 0.9515 S
+site: 0.8942 0.2973 0.4515 S
+site: 0.3942 0.7973 0.4515 S
+site: 0.3942 0.2973 0.9515 S
+site: 0.1442 0.0473 0.0485 S
+site: 0.1442 0.5473 0.5485 S
+site: 0.6442 0.0473 0.5485 S
+site: 0.6442 0.5473 0.0485 S
+site: 0.7073 0.9798 0.0041 S
+site: 0.7073 0.4798 0.5041 S
+site: 0.2073 0.9798 0.5041 S
+site: 0.2073 0.4798 0.0041 S
+site: 0.4573 0.0202 0.7541 S
+site: 0.4573 0.5202 0.2541 S
+site: 0.9573 0.0202 0.2541 S
+site: 0.9573 0.5202 0.7541 S
+site: 0.0427 0.9798 0.7459 S
+site: 0.0427 0.4798 0.2459 S
+site: 0.5427 0.9798 0.2459 S
+site: 0.5427 0.4798 0.7459 S
+site: 0.2927 0.7298 0.7541 S
+site: 0.2927 0.2298 0.2541 S
+site: 0.7927 0.7298 0.2541 S
+site: 0.7927 0.2298 0.7541 S
+site: 0.7073 0.7702 0.7459 S
+site: 0.7073 0.2702 0.2459 S
+site: 0.2073 0.7702 0.2459 S
+site: 0.2073 0.2702 0.7459 S
+site: 0.4573 0.7298 0.9959 S
+site: 0.4573 0.2298 0.4959 S
+site: 0.9573 0.7298 0.4959 S
+site: 0.9573 0.2298 0.9959 S
+site: 0.0427 0.7702 0.0041 S
+site: 0.0427 0.2702 0.5041 S
+site: 0.5427 0.7702 0.5041 S
+site: 0.5427 0.2702 0.0041 S
+site: 0.2927 0.0202 0.9959 S
+site: 0.2927 0.5202 0.4959 S
+site: 0.7927 0.0202 0.4959 S
+site: 0.7927 0.5202 0.9959 S
+site: 0.7842 0.0302 0.0762 S
+site: 0.7842 0.5302 0.5762 S
+site: 0.2841 0.0302 0.5762 S
+site: 0.2841 0.5302 0.0762 S
+site: 0.5341 0.9698 0.8262 S
+site: 0.5341 0.4698 0.3262 S
+site: 0.0341 0.9698 0.3262 S
+site: 0.0341 0.4698 0.8262 S
+site: 0.9658 0.0302 0.6738 S
+site: 0.9658 0.5302 0.1738 S
+site: 0.4658 0.0302 0.1738 S
+site: 0.4658 0.5302 0.6738 S
+site: 0.2158 0.7802 0.8262 S
+site: 0.2158 0.2802 0.3262 S
+site: 0.7158 0.7802 0.3262 S
+site: 0.7158 0.2802 0.8262 S
+site: 0.7842 0.7198 0.6738 S
+site: 0.7842 0.2198 0.1738 S
+site: 0.2841 0.7198 0.1738 S
+site: 0.2841 0.2198 0.6738 S
+site: 0.5341 0.7802 0.9238 S
+site: 0.5341 0.2802 0.4238 S
+site: 0.0341 0.7802 0.4238 S
+site: 0.0341 0.2802 0.9238 S
+site: 0.9658 0.7198 0.0762 S
+site: 0.9658 0.2198 0.5762 S
+site: 0.4658 0.7198 0.5762 S
+site: 0.4658 0.2198 0.0762 S
+site: 0.2158 0.9698 0.9238 S
+site: 0.2158 0.4698 0.4238 S
+site: 0.7158 0.9698 0.4238 S
+site: 0.7158 0.4698 0.9238 S
+site: 0.7860 0.9077 0.1295 S
+site: 0.7860 0.4077 0.6295 S
+site: 0.2860 0.9077 0.6295 S
+site: 0.2860 0.4077 0.1295 S
+site: 0.5360 0.0923 0.8795 S
+site: 0.5360 0.5923 0.3795 S
+site: 0.0360 0.0923 0.3795 S
+site: 0.0360 0.5923 0.8795 S
+site: 0.9640 0.9077 0.6205 S
+site: 0.9640 0.4077 0.1205 S
+site: 0.4640 0.9077 0.1205 S
+site: 0.4640 0.4077 0.6205 S
+site: 0.2140 0.6577 0.8795 S
+site: 0.2140 0.1577 0.3795 S
+site: 0.7140 0.6577 0.3795 S
+site: 0.7140 0.1577 0.8795 S
+site: 0.7860 0.8423 0.6205 S
+site: 0.7860 0.3423 0.1205 S
+site: 0.2860 0.8423 0.1205 S
+site: 0.2860 0.3423 0.6205 S
+site: 0.5360 0.6577 0.8705 S
+site: 0.5360 0.1577 0.3705 S
+site: 0.0360 0.6577 0.3705 S
+site: 0.0360 0.1577 0.8705 S
+site: 0.9640 0.8423 0.1295 S
+site: 0.9640 0.3423 0.6295 S
+site: 0.4640 0.8423 0.6295 S
+site: 0.4640 0.3423 0.1295 S
+site: 0.2140 0.0923 0.8705 S
+site: 0.2140 0.5923 0.3705 S
+site: 0.7140 0.0923 0.3705 S
+site: 0.7140 0.5923 0.8705 S
+
+@mineral water-ice
+name: Water ice
+formula: H2O
+atoms: O H H
+colour: 0.88 0.93 0.98
+lustre: vitreous
+clarity: clear
+cell: 4.3815 4.3815 7.183 90 90 120
+structure: hexagonal P6(3)/mmc ice Ih: each oxygen bonded by hydrogen to four others
+structure-source: COD 1572227 (Chodkiewicz, Micha&#x142; Leszek et al. 2024)
+site: 0.3333 0.6667 0.5616 O
+site: 0.6667 0.3333 0.0616 O
+site: 0.6667 0.3333 0.4384 O
+site: 0.3333 0.6667 0.9384 O
+site: 0.4500 0.5500 0.5100 H 0.5
+site: 0.4500 0.9000 0.5100 H 0.5
+site: 0.1000 0.5500 0.5100 H 0.5
+site: 0.5500 0.4500 0.0100 H 0.5
+site: 0.5500 0.1000 0.0100 H 0.5
+site: 0.9000 0.4500 0.0100 H 0.5
+site: 0.5500 0.4500 0.4900 H 0.5
+site: 0.9000 0.4500 0.4900 H 0.5
+site: 0.5500 0.1000 0.4900 H 0.5
+site: 0.4500 0.5500 0.9900 H 0.5
+site: 0.1000 0.5500 0.9900 H 0.5
+site: 0.4500 0.9000 0.9900 H 0.5
+site: 0.3333 0.6667 0.7130 H 0.5
+site: 0.6667 0.3333 0.2130 H 0.5
+site: 0.6667 0.3333 0.2870 H 0.5
+site: 0.3333 0.6667 0.7870 H 0.5
+
+@mineral basalt-melt
+name: Molten basalt (lava)
+formula: SiO2 49, Al2O3 16, FeO 11, CaO 10, MgO 8 (parts per 100)
+atoms: O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O Si Si Si Si Si Si Si Si Si Si Si Si Al Al Al Al Fe Fe Ca Ca Mg Mg Mg Na
+colour: 1 0.45 0.12
+lustre: wet
+clarity: opaque
+state: liquid
+spacing-nm: 0.21
+
+@mineral cell-matter
+name: Living cell matter (a microbe's body)
+formula: about C5H7O2N (the average make-up of bacterial cells, by dry weight), in water
+atoms: C C C C C H H H H H H H O O N O H H
+colour: 0.62 0.78 0.55
+lustre: wet
+clarity: translucent
+state: liquid
+spacing-nm: 0.3
+
+@mineral sea-water
+name: Sea water
+formula: H2O with dissolved salt
+atoms: O H H O H H O H H O H H O H H O H H O H H O H H O H H Na Cl
+colour: 0.2 0.4 0.6
+lustre: wet
+clarity: clear
+state: liquid
+spacing-nm: 0.31
+molecule: O 0 0 0, H 0.0757 0.0586 0, H -0.0757 0.0586 0
+
+@mineral dry-ice
+name: Carbon dioxide ice
+formula: CO2
+atoms: C O O
+colour: 0.94 0.94 0.94
+lustre: vitreous
+clarity: translucent
+cell: 5.624 5.624 5.624 90 90 90
+structure: cubic Pa-3: straight CO2 molecules
+structure-source: COD 9007643 (Simon, A. et al. 1980)
+site: 0.0000 0.0000 0.0000 C
+site: 0.5000 0.0000 0.5000 C
+site: 0.0000 0.5000 0.5000 C
+site: 0.5000 0.5000 0.0000 C
+site: 0.1185 0.1185 0.1185 O
+site: 0.6185 0.1185 0.3815 O
+site: 0.1185 0.3815 0.6185 O
+site: 0.3815 0.6185 0.1185 O
+site: 0.8815 0.8815 0.8815 O
+site: 0.6185 0.3815 0.8815 O
+site: 0.3815 0.8815 0.6185 O
+site: 0.8815 0.6185 0.3815 O
+
+@mineral nitrogen-ice
+name: Nitrogen ice
+formula: N2
+atoms: N N
+colour: 0.92 0.88 0.86
+lustre: vitreous
+clarity: clear
+cell: 5.644 5.644 5.644 90 90 90
+structure: cubic Pa-3 alpha nitrogen: N2 pairs
+structure-source: COD 9008571 (Wyckoff, R. W. G. 1963)
+site: 0.0540 0.0540 0.0540 N
+site: 0.5540 0.0540 0.4460 N
+site: 0.0540 0.4460 0.5540 N
+site: 0.4460 0.5540 0.0540 N
+site: 0.9460 0.9460 0.9460 N
+site: 0.5540 0.4460 0.9460 N
+site: 0.4460 0.9460 0.5540 N
+site: 0.9460 0.5540 0.4460 N
+
+@mineral methane-ice
+name: Methane ice
+formula: CH4
+atoms: C H H H H
+colour: 0.82 0.74 0.66
+lustre: waxy
+clarity: translucent
+molecule: C 0 0 0, H 0.0629 0.0629 0.0629, H 0.0629 -0.0629 -0.0629, H -0.0629 0.0629 -0.0629, H -0.0629 -0.0629 0.0629
+cell: 5.89 5.89 5.89 90 90 90
+structure: cubic Fm-3m: methane molecules on a face-centred grid, each turning freely
+structure-source: COD 5900000
+site: 0 0 0 C
+site: 0 0.5 0.5 C
+site: 0.5 0 0.5 C
+site: 0.5 0.5 0 C
+
+# ── what each kind of ground is made of: mineral share, mineral share, ... (parts per 100) ──
+
+@mix temperate
+name: Land of a temperate world
+grain-mm: 0.1..0.5
+clasts: pebble 4..64 0.08, cobble 64..256 0.03, boulder 256..1500 0.005
+minerals: quartz 25, albite 18, orthoclase 14, kaolinite 12, augite 6, biotite 5, calcite 8, hematite 5, magnetite 3, forsterite 2, gypsum 2
+
+@mix desert
+name: Dry rocky ground
+grain-mm: 0.2..0.5
+clasts: granule 2..4 0.3, pebble 4..64 0.45, cobble 64..256 0.1, boulder 256..2000 0.02
+minerals: quartz 22, hematite 14, albite 14, augite 14, forsterite 10, enstatite 6, magnetite 6, gypsum 6, halite 4, calcite 4
+
+@mix lava
+name: Fresh basalt and lava rock
+grain-mm: 0.2..1
+clasts: pebble 4..64 0.3, cobble 64..256 0.25, boulder 256..3000 0.1
+minerals: augite 28, anorthite 26, forsterite 18, fayalite 6, magnetite 10, ilmenite 6, sulfur 4, pyrite 2
+
+@mix snowball
+name: Frozen ground
+grain-mm: 0.2..1
+clasts: pebble 4..64 0.1, cobble 64..256 0.05, boulder 256..2000 0.02
+minerals: water-ice 70, dry-ice 10, nitrogen-ice 5, methane-ice 5, forsterite 5, enstatite 5
+
+@mix moon
+name: Moon ground
+grain-mm: 0.04..0.1
+clasts: pebble 4..64 0.05, cobble 64..256 0.02, boulder 256..4000 0.01
+minerals: anorthite 40, augite 22, forsterite 14, ilmenite 14, fayalite 5, quartz 5
+
+@mix tidally-locked
+name: Ground of a tidally locked world
+grain-mm: 0.1..0.5
+clasts: pebble 4..64 0.25, cobble 64..256 0.06, boulder 256..2000 0.015
+minerals: augite 22, anorthite 18, quartz 14, hematite 14, forsterite 12, water-ice 10, magnetite 10
+
+@mix ocean
+name: Sea floor
+grain-mm: 0.01..0.06
+clasts: pebble 4..64 0.02
+minerals: augite 30, anorthite 25, forsterite 15, calcite 15, kaolinite 10, pyrite 5
+
+@mix melt
+name: Molten rock (a lava lake or flow, about 1,100 to 1,200 C)
+grain-mm: 0..0
+minerals: basalt-melt 100
+
+@mix core
+name: A giant planet's core (rock, iron and ice under enormous pressure)
+grain-mm: 0.1..0.5
+minerals: forsterite 30, magnetite 25, enstatite 15, water-ice 20, methane-ice 5, pyrite 5
+
+@mix sea
+name: The sea
+grain-mm: 0..0
+minerals: sea-water 100
+
+@mix ice
+name: Sea ice and ice sheets
+grain-mm: 0.2..1
+minerals: water-ice 100
+
+# ── what lies on a grain's surface, everywhere, at its real size (soil science: clay platelets 0.2 to 2 um across,
+#   iron-oxide coatings 0.1 to 1 um, iron-oxide nanoparticles 5 to 50 nm, and a film of water one or two molecules thick
+#   from the air on every mineral surface; and specks of silt, 4 to 62 um, stuck on sand grains by clay and water).
+#   mineral: ground means one of that ground's own minerals. life: yes only on a living world; aspect: how many times
+#   longer than wide (a rod). size-km: smallest to largest across; chance: how many of its cells hold one
+#   (a cell is 'spacing' of its largest size, 4 if not given: clay coats much of a sand grain, so it is packed close); mineral: what it is made of (you go into its own atoms); shape: flat (a plate or a
+#   skin, its thickness a share of its width: kaolinite plates about 1/15, coatings thinner), round, or molecule (drawn atom by atom from its mineral, with its bond length in nm and bond angle in degrees).
+@surface silt
+name: A speck of silt stuck to the grain
+mineral: ground
+size-km: 4e-9 6.2e-8
+chance: 0.5
+spacing: 2.5
+shape: round
+about: a tiny grain of the same ground, 4 to 62 micrometres across | held on by clay and the water film | wind and water carry it as dust and mud
+
+@surface bacterium-rod
+name: A rod-shaped bacterium (a bacillus)
+mineral: cell-matter
+size-km: 1e-9 5e-9
+chance: 0.25
+spacing: 3
+shape: round
+aspect: 3.5
+life: yes
+about: a single living cell, 1 to 5 micrometres long | soil holds about a billion bacteria in every gram | it feeds on what the water brings past the grain
+
+@surface bacterium-coccus
+name: A round bacterium (a coccus)
+mineral: cell-matter
+size-km: 5e-10 2e-9
+chance: 0.25
+spacing: 3
+shape: round
+life: yes
+about: a single living cell, 0.5 to 2 micrometres across | often in pairs, chains or clusters
+
+@surface biofilm
+name: A biofilm (a mat of microbes in their slime)
+mineral: cell-matter
+size-km: 5e-9 3e-8
+chance: 0.2
+spacing: 3
+shape: flat
+thickness: 0.05
+life: yes
+about: microbes living together in a skin of their own slime | it holds water and food to the grain | most soil microbes live in films like this
+
+@surface clay-platelet
+name: A clay platelet (kaolinite)
+mineral: kaolinite
+size-km: 2e-10 2e-9
+chance: 0.85
+spacing: 1.6
+shape: flat
+thickness: 0.07
+about: a thin six-sided plate, Al2Si2O5(OH)4 | left by water slowly weathering feldspar
+
+@surface iron-coating
+name: An iron-oxide coating
+mineral: hematite
+size-km: 1e-10 1e-9
+chance: 0.6
+spacing: 2
+shape: flat
+thickness: 0.03
+about: a skin of iron oxide (hematite, goethite) | it colours sand red, orange and yellow
+
+@surface nanoparticle
+name: An iron-oxide nanoparticle
+mineral: hematite
+size-km: 5e-12 5e-11
+chance: 0.6
+spacing: 2.5
+shape: round
+about: a speck of hematite or goethite, Fe2O3 / FeOOH | a few thousand atoms of iron and oxygen
+
+@surface water
+name: A water molecule of the surface film
+mineral: water-ice
+size-km: 2.8e-13 3.2e-13
+chance: 0.6
+shape: molecule
+bond-nm: 0.0957
+angle: 104.5
+about: H2O, bent at 104.5 degrees | from the air: every mineral surface wears a film | one or two molecules thick

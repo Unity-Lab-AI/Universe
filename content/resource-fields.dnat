@@ -1,0 +1,218 @@
+# DNA-AND content · resource fields (on planets and in space)
+# researched: earthsci.org "Classification of Mineral Deposits"; TU Clausthal economic geology notes;
+#   USGS porphyry copper summary; standard geology for fossil fuels; space-resource summaries
+#   (asteroid and comet makeup in content/small-bodies.dnat, giants in content/gas-giants.dnat)
+# The 100 space resources are listed on the public space page.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · wiki/systems/r10-space.md
+
+# ── Made by magma ──
+
+@deposit layered-intrusion
+name: Layered intrusion
+real: yes
+family: magmatic
+gives: chromium, platinum, nickel
+says: metals settling in layers inside a slowly cooling body of magma
+
+@deposit kimberlite
+name: Kimberlite pipe
+real: yes
+family: magmatic
+gives: diamonds
+says: a deep volcanic pipe that carried diamonds up from far below
+
+@deposit pegmatite
+name: Pegmatite
+real: yes
+family: magmatic
+gives: lithium, rare elements, gem crystals
+says: the last, slowest-cooling part of magma, with giant crystals
+
+# ── Made by hot fluids ──
+
+@deposit porphyry
+name: Porphyry deposit
+real: yes
+family: hydrothermal
+gives: copper, molybdenum, gold
+says: a huge, low-grade body of metal veins around a cooled magma body; the world's main copper source
+where: above plates sinking under other plates
+
+@deposit volcanic-sulfide
+name: Volcanic massive sulfide
+real: yes
+family: hydrothermal
+gives: copper, zinc, lead
+says: metal-rich mounds made by hot vents on the sea floor
+
+@deposit epithermal
+name: Epithermal vein
+real: yes
+family: hydrothermal
+gives: gold, silver
+says: shallow veins left by hot water near volcanoes
+
+@deposit skarn
+name: Skarn
+real: yes
+family: hydrothermal
+gives: tungsten, iron, copper
+says: limestone changed by hot fluids from nearby magma
+
+@deposit orogenic-gold
+name: Mountain-belt gold
+real: yes
+family: hydrothermal
+gives: gold
+says: gold veins formed while mountains are built
+
+# ── Made by water and time ──
+
+@deposit banded-iron
+name: Banded iron formation
+real: yes
+family: sedimentary
+gives: iron
+says: striped layers of iron laid down in ancient seas when oxygen first appeared; needs the oxygen-maker stage of life
+
+@deposit placer
+name: Placer
+real: yes
+family: sedimentary
+gives: gold, diamonds, tin
+says: heavy grains washed together by rivers and waves
+
+@deposit evaporite
+name: Evaporite
+real: yes
+family: sedimentary
+gives: salt, potash, gypsum
+says: minerals left behind when lakes and seas dry up
+
+@deposit sediment-copper
+name: Sediment-hosted copper
+real: yes
+family: sedimentary
+gives: copper, cobalt
+says: copper carried by salty underground water into buried sediments
+
+@deposit coal
+name: Coal seam
+real: yes
+family: sedimentary
+gives: coal
+says: buried ancient forests crushed into black rock; needs forests to have lived
+
+@deposit oil-gas
+name: Oil and gas reservoir
+real: yes
+family: sedimentary
+gives: oil, natural gas
+says: buried ancient sea life cooked by heat and pressure, trapped under rock; needs life to have lived
+
+# ── Made by weather ──
+
+@deposit laterite
+name: Laterite
+real: yes
+family: weathering
+gives: nickel, aluminum (bauxite)
+says: rock rotted by tropical rain and heat, leaving metals behind
+
+@deposit soil
+name: Fertile soil
+real: yes
+family: weathering
+gives: farmland
+says: broken rock plus the remains of life; grows food
+
+@field ocean-water
+name: Ocean water
+real: yes
+family: water
+gives: water, salt, dissolved metals
+where: seas and oceans
+says: the biggest field on a wet world; salt and metals are dissolved in it
+
+# ── Fields in space ──
+
+@field asteroid-metal
+name: Metal asteroid field
+real: yes
+gives: iron, nickel, platinum-group metals
+
+@field asteroid-carbon
+name: Carbon asteroid field
+real: yes
+gives: water, carbon, life chemistry
+
+@field asteroid-stony
+name: Stony asteroid field
+real: yes
+gives: silicates, metals
+
+@field ice-field
+name: Ice field
+real: yes
+gives: water, methane, ammonia
+where: comets, Kuiper-belt bodies, ice moons, shadowed polar craters
+
+@field regolith
+name: Regolith
+real: yes
+gives: oxygen bound in rock, metals, helium-3
+says: the dusty broken surface of airless moons and asteroids; helium-3 builds up in it from the star's wind
+
+@field giant-atmosphere
+name: Giant-planet atmosphere
+real: yes
+gives: hydrogen, helium-3, deuterium
+says: skimmed by fuel scoops
+
+@field nebula-gas
+name: Nebula gas
+real: yes
+gives: hydrogen, rare gases
+
+@field ring-ice
+name: Ring ice
+real: yes
+gives: water ice
+
+@field star-matter
+name: Star matter
+real: hypothetical
+gives: hydrogen, helium, heavy elements
+says: lifted straight off a star by a very advanced civilization
+
+@field black-hole-energy
+name: Black-hole energy
+real: hypothetical
+gives: energy
+says: drawn from a spinning black hole's ergosphere (content/black-holes.dnat)
+
+# ── Generator rules ──
+
+@rule deposit-geology
+real: rule
+says: deposits follow the planet's geology: magma bodies make magmatic deposits, plate edges and volcanoes make hydrothermal ones, seas and rivers make sedimentary ones, tropical weather makes laterites
+
+@rule deposit-life
+real: rule
+says: some resources need life to have existed first: banded iron needs oxygen makers, coal needs forests, oil and gas need ancient sea life
+
+@rule deposit-tectonics
+real: rule
+says: planets with plate tectonics make far more ore deposits than stagnant-lid worlds
+
+@rule deposit-depth
+real: rule
+says: deeper deposits need better mining tech; placers and surface ores come first
+
+@rule field-space
+real: rule
+says: space fields follow what the bodies are made of (small bodies, giants, nebulas, rings)
+
+@rule field-deplete
+real: rule
+says: every deposit and field can run out; civilizations that strip them must move on, as the endgame harvest says

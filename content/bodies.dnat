@@ -1,0 +1,97 @@
+# DNA-AND content · where the universe's other bodies are, and how many (made round you, all clickable)
+# where: galaxy-heart (one at the middle of every galaxy), galaxy (among a galaxy's stars), between-galaxies (in the space
+#   between them), belt (a star's asteroid belt), kuiper (its Kuiper belt), oort (its Oort cloud).
+# per-cubic-ly: how many in a cubic light-year (among a galaxy's stars near the Sun there are about 0.004 stars a cubic
+#   light-year; of every thousand stars about one ended as a black hole and one as a neutron star; there may be several free-
+#   floating, rogue, planets for every star; between galaxies, intracluster stars are about a ten-thousandth as common as in
+#   a galaxy); in a belt or cloud: shown, how many are made round you at a time.
+# entry: the content entry it is (its card); size-km: how big it is drawn (a black hole: its glowing disc); colour.
+# Spec: docs/CONTENT-FORMAT.md · content/black-holes.dnat · content/small-bodies.dnat · content/stars.dnat
+
+@place supermassive-black-hole
+# feeding-share: how many are feeding (a glowing accretion disc; counting the dim, slow-feeding ones, as most galaxies' are);
+#   jets-share: of those feeding, how many fire jets from their poles (radio galaxies, blazars, quasars)
+feeding-share: 0.3
+jets-share: 0.25
+name: A supermassive black hole
+where: galaxy-heart
+entry: blackhole supermassive
+size-km: 3e9
+colour: 1 0.7 0.35
+says: millions to billions of times the Sun's mass at the galaxy's heart, its disc of hot gas glowing as it falls in
+
+@place stellar-black-hole
+# feeding only with a close companion star to pull gas from (X-ray binaries), a few in a hundred; a third of those fire jets
+#   (microquasars, as SS 433)
+feeding-share: 0.05
+jets-share: 0.35
+name: A stellar-mass black hole
+where: galaxy
+per-cubic-ly: 4e-6
+entry: blackhole stellar
+size-km: 2e5
+colour: 0.9 0.55 0.3
+says: what is left of a star of more than about twenty times the Sun's mass; it may still feed on a companion
+
+@place neutron-star
+name: A neutron star
+where: galaxy
+per-cubic-ly: 4e-6
+entry: star neutron-star
+size-km: 20
+colour: 0.75 0.85 1
+says: a star's collapsed core, a city across, about one and a half times as heavy as the Sun
+
+@place rogue-planet
+name: A rogue planet
+where: galaxy
+per-cubic-ly: 0.008
+entry: planet rogue
+size-km: 12000
+colour: 0.45 0.45 0.55
+says: a planet with no star, thrown out of the system it formed in, wandering the galaxy in the dark
+
+@place intergalactic-star
+name: A star between the galaxies
+where: between-galaxies
+per-cubic-ly: 4e-7
+entry: star m-type
+size-km: 7e5
+colour: 1 0.7 0.5
+says: torn from its galaxy long ago (intracluster light): it drifts alone between the galaxies
+
+@place intergalactic-rogue
+name: A rogue planet between the galaxies
+where: between-galaxies
+per-cubic-ly: 8e-7
+entry: planet rogue
+size-km: 12000
+colour: 0.4 0.4 0.5
+says: thrown out of its system and out of its galaxy, alone in the dark between galaxies
+
+@place asteroid
+name: An asteroid
+where: belt
+shown: 400
+entry: asteroid main-belt
+size-km: 30
+colour: 0.6 0.55 0.5
+says: rock and metal left over from the making of the planets
+
+@place kuiper-object
+name: An icy body of the Kuiper belt
+where: kuiper
+shown: 300
+entry: asteroid centaur
+size-km: 100
+colour: 0.75 0.7 0.7
+says: ice and rock beyond the planets, where the comets of short period come from
+
+@place oort-comet
+name: A comet of the Oort cloud
+where: oort
+shown: 300
+entry: comet long-period
+size-km: 10
+colour: 0.8 0.88 1
+says: an icy nucleus far out in the star's huge spherical cloud; a nudge sends it falling in as a long-period comet

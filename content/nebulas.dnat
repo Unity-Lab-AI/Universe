@@ -1,0 +1,103 @@
+# DNA-AND content · nebulas and gas clouds
+# researched: PBS Star Gazers "The 5 Types of Nebulae"; WorldAtlas "The Different Types of Nebulae";
+#   astrophoton.com nebula guide; plus standard astronomy for star-forming structures
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
+
+# ── The five main kinds ──
+
+@nebula emission
+name: Emission nebula (H II region)
+real: yes
+color: mostly red
+says: gas lit up from inside by hot young stars; where new stars are being born
+example: the Orion Nebula
+
+@nebula reflection
+name: Reflection nebula
+real: yes
+color: blue
+says: dust that only reflects the light of nearby stars
+example: NGC 1999
+
+@nebula dark
+name: Dark nebula
+real: yes
+color: black against the stars
+says: dust so thick it blocks the light behind it
+example: the Horsehead Nebula, the Coalsack
+
+@nebula planetary
+name: Planetary nebula
+real: yes
+color: blue-green and red
+says: the glowing shell a dying Sun-like star throws off; nothing to do with planets
+example: the Helix Nebula
+
+@nebula supernova-remnant
+name: Supernova remnant
+real: yes
+says: the wreck of an exploded star, a shock wave sweeping up gas as it spreads
+example: the Crab Nebula, from a star seen exploding in 1054
+
+# ── Star-forming structures ──
+
+@cloud molecular-cloud
+name: Molecular cloud
+real: yes
+says: a huge, cold, dark cloud of gas and dust, the raw material for new stars
+
+@cloud giant-molecular-cloud
+name: Giant molecular cloud
+real: yes
+says: a molecular cloud big enough to build thousands of stars
+
+@cloud bok-globule
+name: Bok globule
+real: yes
+says: a small, dense, dark knot of dust where one or a few stars may form
+
+@cloud pillar
+name: Pillar of creation
+real: yes
+says: a tall column of dust and gas carved by the light of nearby hot stars, with new stars forming inside
+
+@cloud herbig-haro
+name: Herbig-Haro object
+real: yes
+says: bright knots where jets from a newborn star crash into the gas around it
+
+@cloud protoplanetary-nebula
+name: Protoplanetary nebula
+real: yes
+says: a short-lived cloud around a dying giant, just before it becomes a planetary nebula
+
+@cloud wind-bubble
+name: Stellar wind bubble
+real: yes
+says: a hollow blown in the gas by a strong star's wind
+
+# ── Generator rules ──
+
+@rule nebula-seed
+real: rule
+says: every nebula is generated live from the world seed; nothing is pre-built
+
+@rule nebula-light
+real: rule
+says: a cloud glows red if hot stars light it from inside, blue if it reflects starlight, and black if there's no light behind it
+
+@rule nebula-birth
+real: rule
+says: molecular clouds and their globules and pillars collapse into new stars and solar systems over time
+
+@rule nebula-death
+real: rule
+says: dying Sun-like stars leave planetary nebulas; exploding heavy stars leave supernova remnants that seed new clouds with heavy elements
+
+@rule nebula-place
+real: rule
+says: star-forming nebulas sit mostly in a galaxy's spiral arms
+
+@rule nebula-travel
+real: rule
+says: thick nebulas block sight and slow travel; they are also rich in gas resources

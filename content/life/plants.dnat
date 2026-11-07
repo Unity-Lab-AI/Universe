@@ -1,0 +1,233 @@
+# DNA-AND content · life · plants (domain Eukaryotes, kingdom Plantae)
+# researched: land-plant phylogeny summaries (Wikipedia "Embryophyte", Macmillan biology ch. 33);
+#   plant kingdom overviews; standard botany for gymnosperm lines, monocots and eudicots, organs,
+#   vascular tissue, C3/C4/CAM photosynthesis and alternation of generations
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md
+
+# ── Groups (phyla and lines) ──
+
+@group liverworts
+name: Liverworts
+real: yes
+kingdom: plants
+says: flat, leafy, damp-ground plants with no veins; among the first on land
+
+@group mosses
+name: Mosses
+real: yes
+kingdom: plants
+says: soft carpets with no veins; need water to breed
+
+@group hornworts
+name: Hornworts
+real: yes
+kingdom: plants
+says: small plants with horn-shaped spore stalks
+
+@group lycophytes
+name: Club mosses and spike mosses
+real: yes
+kingdom: plants
+says: ancient spore plants with veins; once giant trees in coal-age swamps
+
+@group ferns-horsetails
+name: Ferns and horsetails
+real: yes
+kingdom: plants
+says: spore plants with veins and big fronds or jointed stems
+
+@group cycads
+name: Cycads
+real: yes
+kingdom: plants
+says: palm-like seed plants with cones
+
+@group ginkgo
+name: Ginkgo
+real: yes
+kingdom: plants
+says: one living species left, a living fossil tree
+
+@group conifers
+name: Conifers
+real: yes
+kingdom: plants
+says: pines, firs, spruces, cedars and redwoods; needles and cones
+
+@group gnetophytes
+name: Gnetophytes
+real: yes
+kingdom: plants
+says: a small, strange group of seed plants
+
+@group flowering-plants
+name: Flowering plants
+real: yes
+kingdom: plants
+says: by far the biggest group, over 380,000 species: flowers, enclosed seeds, fruit
+kinds: monocots (grasses, palms, orchids, lilies), eudicots (most flowers, trees and crops)
+
+# ── Big splits ──
+
+@split non-vascular
+name: Plants without veins
+real: yes
+says: mosses, liverworts, hornworts; small, close to the ground, need damp
+
+@split vascular
+name: Plants with veins
+real: yes
+says: tubes carry water up and food down, so they can grow tall
+
+@split spore-plants
+name: Spore plants
+real: yes
+says: breed with spores, not seeds
+
+@split naked-seed
+name: Naked-seed plants
+real: yes
+says: gymnosperms: seeds on cones, not inside fruit
+
+@split enclosed-seed
+name: Enclosed-seed plants
+real: yes
+says: flowering plants: seeds grow inside fruit
+
+# ── Organs and tissues ──
+
+@part roots
+name: Roots
+real: yes
+says: anchor the plant and drink water and minerals
+
+@part rhizoids
+name: Rhizoids
+real: yes
+says: simple root-like threads on mosses and liverworts
+
+@part stem
+name: Stem
+real: yes
+says: holds the plant up and carries water and food
+
+@part leaves
+name: Leaves
+real: yes
+says: catch starlight and make food
+
+@part flower
+name: Flower
+real: yes
+says: the breeding part, often built to lure pollinators
+
+@part seed
+name: Seed
+real: yes
+says: a baby plant packed with food in a tough coat
+
+@part fruit
+name: Fruit
+real: yes
+says: wraps the seeds, often to be eaten and carried away by animals
+
+@part xylem
+name: Xylem
+real: yes
+says: tubes carrying water up from the roots; in trees it becomes wood
+
+@part phloem
+name: Phloem
+real: yes
+says: tubes carrying food from the leaves to the rest of the plant
+
+@part bark
+name: Bark
+real: yes
+says: the protective skin of woody stems
+
+@part thorns
+name: Thorns and spines
+real: yes
+says: defense against eaters
+
+# ── How they make food ──
+
+@photosynthesis c3
+name: Standard photosynthesis (C3)
+real: yes
+says: the most common way; works best in mild, damp places
+
+@photosynthesis c4
+name: Hot-climate photosynthesis (C4)
+real: yes
+says: concentrates carbon dioxide to work in heat and bright light
+example: corn, sugarcane, many grasses
+
+@photosynthesis cam
+name: Desert photosynthesis (CAM)
+real: yes
+says: opens its pores only at night to save water
+example: cacti, agave, pineapple
+
+@photosynthesis parasitic
+name: Plant parasites
+real: yes
+says: some plants steal food from other plants instead of making their own
+
+@photosynthesis carnivorous
+name: Carnivorous plants
+real: yes
+says: trap insects for extra nutrients
+example: Venus flytrap, pitcher plants
+
+# ── How they breed ──
+
+@breed alternation
+name: Alternation of generations
+real: yes
+says: plants swap between a spore-making form and a sex-cell-making form each generation
+
+@breed spores
+name: Spores
+real: yes
+
+@breed pollen
+name: Pollen
+real: yes
+says: carried by wind, insects, birds or bats
+
+@breed seeds
+name: Seeds
+real: yes
+
+@breed runners
+name: Runners and cloning
+real: yes
+says: copies of themselves from roots, runners or broken pieces
+
+# ── Generator rules ──
+
+@rule plant-land
+real: rule
+says: plants climb onto land from green algae, with root-partner fungi helping; veins let them grow tall; seeds free them from water
+
+@rule plant-climate
+real: rule
+says: climate decides the kind: C3 in mild damp places, C4 in hot grasslands, CAM in deserts
+
+@rule plant-forests
+real: rule
+says: forests make soil and air, and when buried they become coal
+
+@rule plant-partners
+real: rule
+says: flowering plants and pollinators evolve together; fruit evolves with the animals that spread it
+
+@rule plant-defense
+real: rule
+says: plants fight back with thorns, poisons, bark and chemical warnings to their neighbors
+
+@rule plant-farming
+real: rule
+says: thinking species farm, breed and engineer plants (Farming, Selective Breeding, Genetic Engineering)

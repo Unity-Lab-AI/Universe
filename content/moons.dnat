@@ -1,0 +1,136 @@
+# DNA-AND content · moons
+# researched: Wikipedia "Regular moon", "Natural satellite"; Oxford "Moons: A Very Short Introduction";
+#   university astronomy lectures (Oregon, Ohio State) on ring and moon systems
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md · wiki/systems/r06-planet.md
+
+# ── By how they formed ──
+
+@moon regular
+name: Regular moon
+real: yes
+says: formed in the disk around its planet, like a mini solar system; close, round, flat orbits
+
+@moon irregular
+name: Irregular moon
+real: yes
+says: a captured asteroid or icy body on a far, tilted, stretched or backward orbit
+example: Triton, Phobos, Deimos
+
+@moon transitional
+name: Transitional moon
+real: yes
+says: between regular and irregular
+example: Iapetus
+
+@moon impact-moon
+name: Impact moon
+real: yes
+says: formed from the debris of a giant collision with its planet
+example: Earth's Moon
+
+@moon moonlet
+name: Moonlet
+real: yes
+says: a tiny moon, often inside a ring
+
+# ── By surface and inside ──
+
+@moon rocky-airless
+name: Rocky airless moon
+real: yes
+says: cratered rock, no air
+
+@moon volcanic
+name: Volcanic moon
+real: yes
+says: tides squeeze it until it erupts constantly, maybe over a magma ocean
+example: Io
+
+@moon ice-shell-ocean
+name: Ice-shell ocean moon
+real: yes
+says: a crust of ice over a global ocean of liquid water, kept warm by tides; a possible home for life
+example: Europa, Enceladus
+
+@moon cryovolcanic
+name: Cryovolcanic moon
+real: yes
+says: shoots geysers of water vapor and ice through cracks in its shell
+example: Enceladus
+
+@moon thick-air
+name: Thick-air moon
+real: yes
+says: a moon with heavy air, weather, and lakes and rain of liquid hydrocarbons
+example: Titan
+
+@moon icy-dead
+name: Frozen dead moon
+real: yes
+says: ice and rock, no activity, ancient cratered surface
+
+@moon habitable
+name: Habitable moon
+real: hypothetical
+says: an Earth-like moon orbiting a giant planet in its star's habitable zone
+
+# ── By orbit ──
+
+@moon tidally-locked
+name: Tidally locked moon
+real: yes
+says: always shows the same face to its planet; most big moons are locked
+
+@moon shepherd
+name: Shepherd moon
+real: yes
+says: a small moon whose pull herds a planet's ring into a sharp band
+
+@moon trojan
+name: Trojan moon
+real: yes
+says: a small moon sharing a bigger moon's orbit, 60° ahead or behind it
+example: the trojan moons of Tethys and Dione at Saturn
+
+@moon resonant
+name: Resonant moons
+real: yes
+says: moons whose orbits keep a steady beat with each other, squeezing each other with tides
+example: Io, Europa and Ganymede (1:2:4)
+
+@moon retrograde
+name: Retrograde moon
+real: yes
+says: orbits backward, against its planet's spin; usually captured
+example: Triton
+
+@moon sub-moon
+name: Moon of a moon
+real: hypothetical
+says: a tiny moon circling a moon; none confirmed
+
+# ── Generator rules ──
+
+@rule moon-seed
+real: rule
+says: every moon is generated live from the world seed; nothing is pre-built
+
+@rule moon-count
+real: rule
+says: giants collect many moons, both regular and captured; rocky planets have few or none
+
+@rule moon-tides
+real: rule
+says: tides from the planet and from neighboring moons heat moons from inside, powering volcanoes and keeping oceans liquid
+
+@rule moon-hill-sphere
+real: rule
+says: a moon only stays inside its planet's sphere of pull (content/solar-systems.dnat)
+
+@rule moon-capture
+real: rule
+says: passing asteroids and comets can be captured as irregular moons
+
+@rule moon-life
+real: rule
+says: ocean moons and thick-air moons can hold life; a moon's local conditions use the same 10-condition world matrix as planets

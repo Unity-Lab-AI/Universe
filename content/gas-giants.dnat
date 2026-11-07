@@ -1,0 +1,224 @@
+# DNA-AND content · gas giants and ice giants
+# researched: Wikipedia "Gas giant"; Universe Today "Gas Giants" (NASA-based); Sudarsky et al. 2000
+#   "Albedo and Reflection Spectra of Extrasolar Giant Planets"
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md
+
+# ── Kinds ──
+
+@giant gas-giant
+name: Gas giant
+real: yes
+makeup: mostly hydrogen and helium, a few percent heavier elements
+example: Jupiter, Saturn
+air: hydrogen 90%, helium 10%, methane 0.3%, ammonia 0.03%  (like Jupiter)
+
+@giant ice-giant
+name: Ice giant
+real: yes
+makeup: mostly water, ammonia and methane "ices" under a hydrogen-helium air
+example: Uranus, Neptune
+air: hydrogen 80%, helium 19%, methane 1.5%  (methane makes it blue, like Neptune)
+
+@giant super-jupiter
+name: Super-Jupiter
+real: yes
+says: heavier than Jupiter; above a point, extra mass makes it shrink instead of grow
+
+@giant super-neptune
+name: Super-Neptune
+real: yes
+says: between Neptune and Saturn in mass
+
+@giant hot-jupiter
+name: Hot Jupiter
+real: yes
+says: a gas giant in a tight, fast orbit close to its star, hot and puffed up
+air: hydrogen 85%, helium 14%, water, carbon monoxide, sodium and potassium vapour  (scorching)
+
+@giant hot-neptune
+name: Hot Neptune
+real: yes
+says: an ice giant close to its star
+
+@giant cold-jupiter
+name: Cold Jupiter
+real: yes
+says: a gas giant far from its star, beyond about 1 au
+
+@giant super-puff
+name: Super-puff
+real: yes
+says: only a few Earths of mass, but wider than Neptune; as light as cotton candy
+
+@giant eccentric-jupiter
+name: Eccentric Jupiter
+real: yes
+says: a giant on a stretched orbit, swinging near and far
+
+# ── Cloud classes (Sudarsky, by temperature) ──
+
+@cloudclass sudarsky-1
+name: Ammonia-cloud giant
+real: yes
+says: cold giants far out, with ammonia clouds, like Jupiter
+
+@cloudclass sudarsky-2
+name: Water-cloud giant
+real: yes
+says: warmer, with clouds of water
+
+@cloudclass sudarsky-3
+name: Cloudless giant
+real: yes
+says: too warm for clouds, a clear blue color
+
+@cloudclass sudarsky-4
+name: Alkali-metal giant
+real: yes
+says: hot, with sodium and potassium in the air, dark
+
+@cloudclass sudarsky-5
+name: Silicate-cloud giant
+real: yes
+says: hottest, with clouds of rock and iron
+
+# ── Layers ──
+
+# from-r, to-r: where the layer lies, as shares of the planet's radius from its middle (Jupiter: metallic hydrogen from
+#   about 0.8 of the way out, a core of rock and metal in the inner 0.1 to 0.2, perhaps fuzzy); matter: what going in finds
+#   there (air: its gases; plasma: hydrogen crushed into protons in a sea of free electrons; ice: hot dense water,
+#   ammonia and methane; core: rock, iron and ice).
+@layer cloud-tops
+name: Cloud tops
+from-r: 0.99
+to-r: 1
+matter: air
+real: yes
+says: layers of ammonia and water clouds at the top
+
+@layer molecular-hydrogen
+name: Molecular hydrogen layer
+from-r: 0.8
+to-r: 0.99
+matter: air
+real: yes
+says: squeezed hydrogen gas, thickening into liquid with depth
+
+@layer metallic-hydrogen
+name: Metallic hydrogen layer
+from-r: 0.15
+to-r: 0.8
+matter: plasma
+real: yes
+says: hydrogen crushed so hard it conducts electricity like metal; makes up most of a gas giant and drives its huge magnetic field
+
+@layer ice-mantle
+name: Ice mantle
+from-r: 0.15
+to-r: 0.85
+matter: ice
+real: yes
+says: in ice giants, hot dense water, ammonia and methane under pressure
+
+@layer core
+name: Core
+from-r: 0
+to-r: 0.15
+matter: core
+real: yes
+says: a likely core of rock and metal at the center
+
+@layer helium-rain
+name: Helium rain
+real: yes
+says: on Saturn, helium falls as droplets through the metallic hydrogen, heating the planet
+
+# ── Features ──
+
+@feature belts-and-zones
+name: Belts and zones
+real: yes
+says: dark belts and light zones of cloud circling the planet, driven by fast winds and fast spin
+
+@feature giant-storm
+name: Giant storm
+real: yes
+says: a storm that can last centuries and be bigger than Earth
+example: Jupiter's Great Red Spot
+
+@feature rings
+name: Rings
+real: yes
+says: ice and rock circling the planet in thin bands
+example: Saturn's rings
+
+@feature moon-system
+name: Moon system
+real: yes
+says: giants gather many moons, from tiny rocks to worlds with their own air or hidden oceans
+
+@feature magnetosphere
+name: Giant magnetosphere
+real: yes
+says: a huge magnetic bubble; Jupiter's is among the largest structures in the Solar System
+
+@feature auroras
+name: Polar auroras
+real: yes
+says: bright auroras at both poles
+
+# ── Solar System examples ──
+
+@example jupiter
+name: Jupiter
+real: yes
+type: gas-giant
+note: the biggest planet, the Great Red Spot, dozens of moons
+
+@example saturn
+name: Saturn
+real: yes
+type: gas-giant
+note: the great ring system, helium rain, dozens of moons
+
+@example uranus
+name: Uranus
+real: yes
+type: ice-giant
+note: spins on its side
+
+@example neptune
+name: Neptune
+real: yes
+type: ice-giant
+note: the farthest planet from the Sun, with the fastest winds
+
+# ── Generator rules ──
+
+@rule giant-seed
+real: rule
+says: every giant is generated live from the world seed; nothing is pre-built
+
+@rule giant-zone
+real: rule
+says: giants form beyond the frost line; some wander inward to become hot Jupiters and hot Neptunes
+
+@rule giant-clouds
+real: rule
+says: a giant's temperature picks its cloud class, from ammonia clouds when cold to rock clouds when hottest
+
+@rule giant-layers
+real: rule
+says: gas giants get clouds, molecular hydrogen, metallic hydrogen and a core; ice giants get clouds, an ice mantle and a core
+
+@rule giant-weather
+real: rule
+says: fast spin makes belts, zones and long-lived giant storms
+
+@rule giant-moons-rings
+real: rule
+says: giants collect many moons and often rings; some moons can hold life
+
+@rule giant-resources
+real: rule
+says: civilizations skim giants for hydrogen, helium-3 and deuterium fuel

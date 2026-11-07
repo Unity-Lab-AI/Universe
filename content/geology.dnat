@@ -1,0 +1,190 @@
+# DNA-AND content · geology: earthquakes and faults, plate edges, erosion, soil and the rock cycle
+# researched: Wikipedia "Earthquake", "Moment magnitude scale", "Gutenberg–Richter law", "Fault (geology)",
+#   "Plate tectonics", "Rock cycle", "Erosion", "Denudation", "Soil formation";
+#   LibreTexts "How Fast Are the Continents Worn Down" (Southard); Litvin 1994 denudation rates;
+#   Wilkinson 2009 (AGU) continental erosion; Willenbring et al. 2014 (Earth Surface Dynamics); Wilner et al. 2024 glacial erosion
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · docs/TODO.md R6b
+
+# ── Plate edges ──
+
+@edge divergent
+name: Spreading edge
+real: yes
+says: two plates pull apart; magma rises to fill the gap and makes new crust (mid-ocean ridges, rift valleys)
+quakes: many small and shallow
+volcanoes: gentle, runny lava
+example: Mid-Atlantic Ridge, East African Rift
+
+@edge convergent
+name: Crashing edge
+real: yes
+says: two plates push together; one dives under the other into a trench (subduction), or both crumple into mountains
+quakes: the biggest on the planet, shallow to very deep
+volcanoes: explosive, ash-rich, in chains above the diving plate
+example: the Andes, Japan, the Himalayas (continent against continent)
+
+@edge transform
+name: Sliding edge
+real: yes
+says: two plates grind past each other sideways; crust is neither made nor destroyed
+quakes: strong and shallow
+volcanoes: few or none
+example: San Andreas Fault
+
+@edge hotspot
+name: Hot spot
+real: yes
+says: a plume of hot rock rising from deep in the mantle, away from plate edges; a plate moving over it leaves a chain of volcanoes
+example: Hawaii, Iceland, Yellowstone
+
+# ── Faults ──
+
+@fault normal
+name: Normal fault
+real: yes
+says: the crust stretches and one side drops down
+found-at: spreading edges
+
+@fault reverse
+name: Reverse (thrust) fault
+real: yes
+says: the crust is squeezed and one side is pushed up over the other
+found-at: crashing edges
+
+@fault strike-slip
+name: Strike-slip fault
+real: yes
+says: the two sides slide past each other sideways
+found-at: sliding edges
+
+# ── Earthquakes ──
+
+# moment magnitude: each step up releases about 32 times more energy; quake counts fall about tenfold per step (Gutenberg–Richter, b about 1)
+
+@quake great
+name: Great earthquake
+real: yes
+magnitude: 8..9.5
+per-year-earth: 1
+says: devastates a whole region; undersea ones send tsunamis across oceans
+largest-recorded: magnitude 9.5, Chile 1960
+
+@quake major
+name: Major earthquake
+real: yes
+magnitude: 7..7.9
+per-year-earth: 15
+says: serious damage over a large area
+
+@quake strong
+name: Strong earthquake
+real: yes
+magnitude: 6..6.9
+per-year-earth: 134
+says: damage in populated areas
+
+@quake moderate
+name: Moderate earthquake
+real: yes
+magnitude: 5..5.9
+per-year-earth: 1300
+says: felt widely, damage to weak buildings
+
+@quake minor
+name: Minor earthquake
+real: yes
+magnitude: 3..4.9
+per-year-earth: 130000
+says: felt, rarely harmful
+
+@hazard tsunami
+name: Tsunami
+real: yes
+says: a sea wave from an undersea quake, landslide or impact; it crosses oceans at jet speed and rises tall at the coast
+
+@hazard landslide
+name: Landslide
+real: yes
+says: a slope gives way after rain, quakes or erosion
+
+# ── Wearing down ──
+
+@erosion rain-and-rivers
+name: Rain and rivers
+real: yes
+rate-mm-per-year: 0.02..0.08
+says: the main way land wears down; rivers carry the pieces to the sea
+mountains: about ten times faster in high, steep, wet ranges, up to a few mm a year
+
+@erosion ice
+name: Glaciers
+real: yes
+rate-mm-per-year: 0.5
+says: moving ice grinds valleys into U shapes, about ten times faster than rivers
+
+@erosion wind
+name: Wind
+real: yes
+says: wind blasts sand and lifts dust in dry lands; dunes and dust storms
+
+@erosion waves
+name: Waves
+real: yes
+says: the sea eats coasts back into cliffs and beaches
+
+@erosion farming
+name: Farmed land
+real: yes
+rate-mm-per-year: 0.6
+says: ploughed fields wear away many times faster than wild land
+
+@balance uplift
+name: Uplift and wearing down
+real: yes
+says: active mountain ranges rise about 1 mm a year and wear down at about the same rate; when the push stops, a range wears flat in tens of millions of years
+
+# ── Soil ──
+
+@soil forming
+name: Soil forming
+real: yes
+says: rock breaks down by heat, cold, water and chemistry; roots, fungi, worms and microbes mix it with dead life into soil
+rate: a few centimetres per thousand years; faster where warm, wet and alive
+
+@soil layers
+name: Soil layers
+real: yes
+says: dead leaves on top, dark living topsoil, paler subsoil, then broken rock above the bedrock
+
+# ── The rock cycle ──
+
+@rock igneous
+name: Igneous rock
+real: yes
+says: made when magma or lava cools (granite, basalt)
+
+@rock sedimentary
+name: Sedimentary rock
+real: yes
+says: made when sand, mud, shells and dead life are buried and pressed into stone (sandstone, limestone, chalk, coal)
+
+@rock metamorphic
+name: Metamorphic rock
+real: yes
+says: rock changed by deep heat and pressure without melting (marble, slate)
+
+@rule rock-cycle
+real: rule
+says: rock is made, worn down, buried and pressed into new rock, cooked into changed rock, melted to magma and cooled again; plate edges carry it down and push it back up
+
+@rule quake-edges
+real: rule
+says: earthquakes happen along plate edges and faults; counts fall tenfold for each step of magnitude; crashing edges make the biggest; undersea quakes can make tsunamis
+
+@rule erosion-climate
+real: rule
+says: wetter, icier, steeper and higher ground wears down faster; plants hold soil, bare and farmed ground loses it
+
+@rule soil-life
+real: rule
+says: soil comes from worn rock and dead life; life speeds it up; without soil, land plants cannot spread

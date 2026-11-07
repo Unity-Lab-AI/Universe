@@ -1,0 +1,512 @@
+# DNA-AND content · life · animals (domain Eukaryotes, kingdom Animalia)
+# researched: Pearson "Animal diversity, body plans, phylogeny"; Wikibooks General Biology "Animal Evolution";
+#   Wikipedia "List of insect orders"; NCSU insect orders; MSU 2016 insect-order classification;
+#   standard zoology for mammal, bird, reptile, amphibian and fish groups
+# Animals have about 35 phyla. The main ones are here; orders below each class fill to 100 in play.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md · docs/wiki/tree-of-life.md
+
+# ── Body-plan traits ──
+
+@trait no-symmetry
+name: No symmetry
+real: yes
+example: sponges, placozoans
+
+@trait radial
+name: Radial symmetry
+real: yes
+says: a round body with parts arranged around a center
+example: jellyfish, corals
+
+@trait bilateral
+name: Bilateral symmetry
+real: yes
+says: a left and right side, a front and back, a head end
+
+@trait two-layers
+name: Two tissue layers
+real: yes
+example: jellyfish, comb jellies
+
+@trait three-layers
+name: Three tissue layers
+real: yes
+says: allows muscles and organs
+
+@trait solid-body
+name: No body cavity
+real: yes
+example: flatworms
+
+@trait false-cavity
+name: Partial body cavity
+real: yes
+example: roundworms, rotifers
+
+@trait true-cavity
+name: True body cavity
+real: yes
+example: mollusks, arthropods, echinoderms, chordates
+
+@trait segments
+name: Segmented body
+real: yes
+example: earthworms, insects, vertebrate spines
+
+@trait molting
+name: Molting
+real: yes
+says: sheds its outer skin to grow (the molting branch: roundworms, arthropods, water bears)
+
+@trait mouth-first
+name: Mouth-first development
+real: yes
+says: the first opening in the embryo becomes the mouth (protostomes)
+
+@trait anus-first
+name: Anus-first development
+real: yes
+says: the first opening becomes the anus (deuterostomes: echinoderms, chordates)
+
+# ── Phyla ──
+
+@phylum sponges
+name: Sponges (Porifera)
+real: yes
+kingdom: animals
+says: no tissues, no symmetry; filter water through their pores
+
+@phylum placozoans
+name: Placozoans
+real: yes
+kingdom: animals
+says: tiny flat crawling sheets of cells, the simplest animals
+
+@phylum comb-jellies
+name: Comb jellies (Ctenophora)
+real: yes
+kingdom: animals
+says: swim with rows of beating combs that shimmer
+
+@phylum cnidarians
+name: Cnidarians
+real: yes
+kingdom: animals
+says: jellyfish, corals, anemones; stinging cells; polyp and medusa forms
+
+@phylum flatworms
+name: Flatworms (Platyhelminthes)
+real: yes
+kingdom: animals
+says: flat, solid-bodied worms; many parasites
+
+@phylum rotifers
+name: Rotifers
+real: yes
+kingdom: animals
+says: microscopic animals with a spinning crown of hairs
+
+@phylum roundworms
+name: Roundworms (Nematoda)
+real: yes
+kingdom: animals
+says: tiny worms in soil, water and bodies everywhere
+
+@phylum segmented-worms
+name: Segmented worms (Annelida)
+real: yes
+kingdom: animals
+says: earthworms, leeches, bristle worms
+
+@phylum mollusks
+name: Mollusks
+real: yes
+kingdom: animals
+classes: snails and slugs, clams and oysters, octopuses and squid, chitons
+
+@phylum arthropods
+name: Arthropods
+real: yes
+kingdom: animals
+says: jointed legs and a hard outer skeleton; the largest phylum
+classes: insects, arachnids, crustaceans, myriapods
+
+@phylum water-bears
+name: Water bears (Tardigrada)
+real: yes
+kingdom: animals
+says: tiny eight-legged animals that survive boiling, freezing, drying and space
+
+@phylum velvet-worms
+name: Velvet worms (Onychophora)
+real: yes
+kingdom: animals
+says: soft walking worms that shoot glue at prey
+
+@phylum moss-animals
+name: Moss animals (Bryozoa)
+real: yes
+kingdom: animals
+says: tiny colonies that filter food with a ring of tentacles
+
+@phylum lamp-shells
+name: Lamp shells (Brachiopoda)
+real: yes
+kingdom: animals
+says: shelled filter feeders, ancient and once everywhere
+
+@phylum echinoderms
+name: Echinoderms
+real: yes
+kingdom: animals
+says: starfish, urchins, sea cucumbers; five-part bodies and water-powered tube feet
+
+@phylum acorn-worms
+name: Acorn worms (Hemichordata)
+real: yes
+kingdom: animals
+says: worm-like relatives of chordates
+
+@phylum chordates
+name: Chordates
+real: yes
+kingdom: animals
+says: a nerve cord down the back; includes all animals with backbones
+
+# ── Arthropod classes ──
+
+@class insects
+name: Insects
+real: yes
+phylum: arthropods
+says: six legs, three body parts; most kinds of animal on Earth are insects
+
+@class arachnids
+name: Arachnids
+real: yes
+phylum: arthropods
+says: eight legs: spiders, scorpions, mites, ticks
+
+@class crustaceans
+name: Crustaceans
+real: yes
+phylum: arthropods
+says: crabs, lobsters, shrimp, krill, woodlice
+
+@class myriapods
+name: Myriapods
+real: yes
+phylum: arthropods
+says: centipedes and millipedes
+
+# ── Insect orders (seeds) ──
+
+@order beetles
+name: Beetles (Coleoptera)
+real: yes
+class: insects
+says: the biggest order of all
+
+@order bees-wasps-ants
+name: Bees, wasps and ants (Hymenoptera)
+real: yes
+class: insects
+says: home of most hive and colony life
+
+@order butterflies-moths
+name: Butterflies and moths (Lepidoptera)
+real: yes
+class: insects
+
+@order flies
+name: Flies (Diptera)
+real: yes
+class: insects
+says: flies and mosquitoes; two wings
+
+@order true-bugs
+name: True bugs (Hemiptera)
+real: yes
+class: insects
+says: sucking mouthparts: cicadas, aphids, stink bugs
+
+@order grasshoppers
+name: Grasshoppers and crickets (Orthoptera)
+real: yes
+class: insects
+
+@order dragonflies
+name: Dragonflies and damselflies (Odonata)
+real: yes
+class: insects
+
+@order cockroaches-termites
+name: Cockroaches and termites (Blattodea)
+real: yes
+class: insects
+says: termites build huge colonies and mounds
+
+@order mantises
+name: Mantises (Mantodea)
+real: yes
+class: insects
+
+@order stick-insects
+name: Stick and leaf insects (Phasmida)
+real: yes
+class: insects
+
+@order earwigs
+name: Earwigs (Dermaptera)
+real: yes
+class: insects
+
+@order lice
+name: Lice
+real: yes
+class: insects
+
+@order fleas
+name: Fleas (Siphonaptera)
+real: yes
+class: insects
+
+@order mayflies
+name: Mayflies (Ephemeroptera)
+real: yes
+class: insects
+
+@order caddisflies
+name: Caddisflies (Trichoptera)
+real: yes
+class: insects
+
+# ── Fish classes ──
+
+@class hagfish
+name: Hagfish
+real: yes
+phylum: chordates
+
+@class lampreys
+name: Lampreys
+real: yes
+phylum: chordates
+says: jawless, sucker-mouthed
+
+@class cartilaginous-fish
+name: Cartilaginous fish
+real: yes
+phylum: chordates
+says: sharks, rays, skates, chimaeras; skeletons of cartilage
+
+@class ray-finned-fish
+name: Ray-finned fish
+real: yes
+phylum: chordates
+says: almost all fish alive today
+
+@class lobe-finned-fish
+name: Lobe-finned fish
+real: yes
+phylum: chordates
+says: coelacanths and lungfish; the line that walked onto land
+
+# ── Land vertebrate classes ──
+
+@class amphibians
+name: Amphibians
+real: yes
+phylum: chordates
+orders: frogs and toads, salamanders and newts, caecilians
+
+@class reptiles
+name: Reptiles
+real: yes
+phylum: chordates
+orders: lizards and snakes, turtles, crocodiles, tuatara
+
+@class birds
+name: Birds
+real: yes
+phylum: chordates
+says: feathered, egg-laying, the living dinosaurs
+
+@class mammals
+name: Mammals
+real: yes
+phylum: chordates
+says: hair and milk
+subclasses: egg-layers (monotremes), pouched (marsupials), placentals
+
+# ── Bird orders (seeds) ──
+
+@order perching-birds
+name: Perching birds (Passeriformes)
+real: yes
+class: birds
+says: more than half of all bird species
+
+@order birds-of-prey
+name: Hawks and eagles (Accipitriformes)
+real: yes
+class: birds
+
+@order falcons
+name: Falcons (Falconiformes)
+real: yes
+class: birds
+
+@order owls
+name: Owls (Strigiformes)
+real: yes
+class: birds
+
+@order parrots
+name: Parrots (Psittaciformes)
+real: yes
+class: birds
+says: among the smartest birds
+
+@family corvids
+name: Crows, ravens and jays (Corvidae)
+real: yes
+order: perching-birds
+says: among the smartest animals; tool users
+
+@order waterfowl
+name: Ducks, geese and swans (Anseriformes)
+real: yes
+class: birds
+
+@order fowl
+name: Chickens and pheasants (Galliformes)
+real: yes
+class: birds
+
+@order penguins
+name: Penguins (Sphenisciformes)
+real: yes
+class: birds
+
+@order flightless-ratites
+name: Ostriches, emus and kiwis
+real: yes
+class: birds
+
+@order hummingbirds-swifts
+name: Hummingbirds and swifts
+real: yes
+class: birds
+
+@order pigeons
+name: Pigeons and doves (Columbiformes)
+real: yes
+class: birds
+
+# ── Mammal orders (seeds) ──
+
+@order monotremes
+name: Egg-laying mammals (Monotremata)
+real: yes
+class: mammals
+example: platypus, echidna
+
+@order marsupials
+name: Pouched mammals (marsupials)
+real: yes
+class: mammals
+example: kangaroos, koalas, opossums
+
+@order primates
+name: Primates
+real: yes
+class: mammals
+says: lemurs, monkeys, apes, humans
+
+@order rodents
+name: Rodents (Rodentia)
+real: yes
+class: mammals
+says: the largest mammal order
+
+@order bats
+name: Bats (Chiroptera)
+real: yes
+class: mammals
+says: the only flying mammals
+
+@order carnivores
+name: Carnivores (Carnivora)
+real: yes
+class: mammals
+says: cats, dogs and wolves, bears, seals, weasels
+
+@order whales-hoofed
+name: Whales and even-toed hoofed mammals (Artiodactyla)
+real: yes
+class: mammals
+says: whales, dolphins, deer, cattle, pigs, hippos
+
+@order odd-toed
+name: Odd-toed hoofed mammals (Perissodactyla)
+real: yes
+class: mammals
+says: horses, rhinos, tapirs
+
+@order elephants
+name: Elephants (Proboscidea)
+real: yes
+class: mammals
+
+@order rabbits
+name: Rabbits and hares (Lagomorpha)
+real: yes
+class: mammals
+
+@order insectivores
+name: Shrews, moles and hedgehogs (Eulipotyphla)
+real: yes
+class: mammals
+
+@order sloths-anteaters
+name: Sloths and anteaters (Pilosa)
+real: yes
+class: mammals
+
+@order armadillos
+name: Armadillos (Cingulata)
+real: yes
+class: mammals
+
+@order sea-cows
+name: Manatees and dugongs (Sirenia)
+real: yes
+class: mammals
+
+@order pangolins
+name: Pangolins (Pholidota)
+real: yes
+class: mammals
+
+# ── Generator rules ──
+
+@rule animal-body-plan
+real: rule
+says: every animal's body comes from its genes: symmetry, layers, body cavity, segments, skeleton, limbs, eyes, skin
+
+@rule animal-tree
+real: rule
+says: new animals branch from real lines: phylum, then class, order, family, genus, species, each filling to 100 in play with invented ones
+
+@rule animal-convergence
+real: rule
+says: unrelated lines can evolve the same answer (wings, eyes, fins), because the same problems shape them
+
+@rule animal-intelligence
+real: rule
+says: any line can climb to intelligence: primates, wolves, crows, parrots, octopuses, whales, social insects (the grouping ladder)
+
+@rule animal-extinction
+real: rule
+says: lines die out; extinct groups like trilobites and dinosaurs stay greyed out on the tree forever

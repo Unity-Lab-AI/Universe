@@ -1,0 +1,2140 @@
+# DNA-AND content · elements (all 118)
+# researched: IUPAC periodic table (atomic numbers, symbols, names, groups); standard states at room temperature;
+#   natural vs lab-made from standard chemistry references; mass-number: the most common (or, for elements with no
+#   stable form, the longest-lived) isotope, so protons = number and neutrons = mass-number - number; melting and boiling points in kelvin at 1 atmosphere
+#   from standard reference tables (CRC Handbook values, rounded); "unknown" where never measured. The in-game uses come from the public Elements page.
+# colour: the atom's usual colour in chemistry drawings (the Jmol CPK colours, Mt and below; none past Mt).
+# covalent-a: its bonding size in angstroms (Cordero et al. 2008, He to Cm; none measured past Cm): two atoms closer than
+#   their two sizes together (with a fifth more room) are bonded. atomic-a: its own size, the calculated atomic radius in
+#   angstroms (Clementi, Raimondi and Reinhardt 1967: H to Ba, Hf to Rn); where none is given its bonding size stands in.
+# electronegativity: how hard it pulls on shared electrons (Pauling scale): two atoms that differ by about 1.7 or more do
+#   not share their bonding electrons, one gives one over and they hold as ions (salt); less, they share a pair, nearer the
+#   one that pulls harder.
+# look: how a lump of it looks (its real colour) and shiny: a metal's shine; glow-colour: the colour the gas glows lit by
+#   electricity (neon orange-red, argon violet, hydrogen pink). The families' colours on the periodic table are @family below.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.dnat
+
+@element h
+name: Hydrogen
+real: yes
+number: 1
+mass-number: 1
+symbol: H
+electronegativity: 2.20
+glow-colour: 0.9 0.4 0.7
+colour: 1 1 1
+covalent-a: 0.31
+atomic-a: 0.53
+period: 1
+group: Nonmetal
+state-at-room-temp: gas
+origin: natural
+in-game: Makes water, fuels stars, part of all life
+melt-k: 14
+boil-k: 20
+
+@element he
+name: Helium
+real: yes
+number: 2
+mass-number: 4
+symbol: He
+glow-colour: 1 0.75 0.55
+colour: 0.851 1 1
+covalent-a: 0.28
+atomic-a: 0.31
+period: 1
+group: Noble gas
+state-at-room-temp: gas
+origin: natural
+in-game: Made by stars; light gas for balloons and cooling
+melt-k: 1
+boil-k: 4
+
+@element li
+name: Lithium
+real: yes
+number: 3
+mass-number: 7
+symbol: Li
+electronegativity: 0.98
+colour: 0.8 0.502 1
+covalent-a: 1.28
+atomic-a: 1.67
+period: 2
+group: Alkali metal
+state-at-room-temp: solid
+origin: natural
+in-game: Batteries for tech
+melt-k: 454
+boil-k: 1615
+
+@element be
+name: Beryllium
+real: yes
+number: 4
+mass-number: 9
+symbol: Be
+electronegativity: 1.57
+colour: 0.761 1 0
+covalent-a: 0.96
+atomic-a: 1.12
+period: 2
+group: Alkaline earth
+state-at-room-temp: solid
+origin: natural
+in-game: Light, strong alloys for spacecraft
+melt-k: 1560
+boil-k: 2742
+
+@element b
+name: Boron
+real: yes
+number: 5
+mass-number: 11
+symbol: B
+electronegativity: 2.04
+look: 0.35 0.25 0.2
+colour: 1 0.71 0.71
+covalent-a: 0.84
+atomic-a: 0.87
+period: 2
+group: Metalloid
+state-at-room-temp: solid
+origin: natural
+in-game: Plant nutrient; strong glass
+melt-k: 2349
+boil-k: 4200
+
+@element c
+name: Carbon
+real: yes
+number: 6
+mass-number: 12
+symbol: C
+electronegativity: 2.55
+look: 0.12 0.12 0.13
+colour: 0.565 0.565 0.565
+covalent-a: 0.76
+atomic-a: 0.67
+period: 2
+group: Nonmetal
+state-at-room-temp: solid
+origin: natural
+in-game: The backbone of all life; coal, diamond
+melt-k: 3915
+boil-k: 3915
+
+@element n
+name: Nitrogen
+real: yes
+number: 7
+mass-number: 14
+symbol: N
+electronegativity: 3.04
+glow-colour: 0.85 0.45 0.95
+colour: 0.188 0.314 0.973
+covalent-a: 0.71
+atomic-a: 0.56
+period: 2
+group: Nonmetal
+state-at-room-temp: gas
+origin: natural
+in-game: Builds DNA and proteins; most of Earth's air
+melt-k: 63
+boil-k: 77
+
+@element o
+name: Oxygen
+real: yes
+number: 8
+mass-number: 16
+symbol: O
+electronegativity: 3.44
+glow-colour: 0.55 0.75 1
+colour: 1 0.051 0.051
+covalent-a: 0.66
+atomic-a: 0.48
+period: 2
+group: Nonmetal
+state-at-room-temp: gas
+origin: natural
+in-game: Breathing, water, fire
+melt-k: 54
+boil-k: 90
+
+@element f
+name: Fluorine
+real: yes
+number: 9
+mass-number: 19
+symbol: F
+electronegativity: 3.98
+glow-colour: 0.95 0.95 0.55
+colour: 0.565 0.878 0.314
+covalent-a: 0.57
+atomic-a: 0.42
+period: 2
+group: Halogen
+state-at-room-temp: gas
+origin: natural
+in-game: Strong teeth and bones; toxic gas in bulk
+melt-k: 54
+boil-k: 85
+
+@element ne
+name: Neon
+real: yes
+number: 10
+mass-number: 20
+symbol: Ne
+glow-colour: 1 0.35 0.1
+colour: 0.702 0.89 0.961
+covalent-a: 0.58
+atomic-a: 0.38
+period: 2
+group: Noble gas
+state-at-room-temp: gas
+origin: natural
+in-game: Glowing signs in cities
+melt-k: 25
+boil-k: 27
+
+@element na
+name: Sodium
+real: yes
+number: 11
+mass-number: 23
+symbol: Na
+electronegativity: 0.93
+colour: 0.671 0.361 0.949
+covalent-a: 1.66
+atomic-a: 1.90
+period: 3
+group: Alkali metal
+state-at-room-temp: solid
+origin: natural
+in-game: Salt in the seas; nerves need it
+melt-k: 371
+boil-k: 1156
+
+@element mg
+name: Magnesium
+real: yes
+number: 12
+mass-number: 24
+symbol: Mg
+electronegativity: 1.31
+colour: 0.541 1 0
+covalent-a: 1.41
+atomic-a: 1.45
+period: 3
+group: Alkaline earth
+state-at-room-temp: solid
+origin: natural
+in-game: Heart of chlorophyll — photosynthesis needs it
+melt-k: 923
+boil-k: 1363
+
+@element al
+name: Aluminium
+real: yes
+number: 13
+mass-number: 27
+symbol: Al
+electronegativity: 1.61
+colour: 0.749 0.651 0.651
+covalent-a: 1.21
+atomic-a: 1.18
+period: 3
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Light metal for aircraft and tech
+melt-k: 933
+boil-k: 2792
+
+@element si
+name: Silicon
+real: yes
+number: 14
+mass-number: 28
+symbol: Si
+electronegativity: 1.90
+look: 0.45 0.5 0.6
+shiny: yes
+colour: 0.941 0.784 0.627
+covalent-a: 1.11
+atomic-a: 1.11
+period: 3
+group: Metalloid
+state-at-room-temp: solid
+origin: natural
+in-game: Rock and sand; computer chips
+melt-k: 1687
+boil-k: 3538
+
+@element p
+name: Phosphorus
+real: yes
+number: 15
+mass-number: 31
+symbol: P
+electronegativity: 2.19
+look: 0.75 0.2 0.15
+colour: 1 0.502 0
+covalent-a: 1.07
+atomic-a: 0.98
+period: 3
+group: Nonmetal
+state-at-room-temp: solid
+origin: natural
+in-game: DNA backbone and cell energy
+melt-k: 317
+boil-k: 550
+
+@element s
+name: Sulfur
+real: yes
+number: 16
+mass-number: 32
+symbol: S
+electronegativity: 2.58
+look: 0.95 0.85 0.2
+colour: 1 1 0.188
+covalent-a: 1.05
+atomic-a: 0.88
+period: 3
+group: Nonmetal
+state-at-room-temp: solid
+origin: natural
+in-game: Proteins; volcanic gas; gunpowder
+melt-k: 388
+boil-k: 718
+
+@element cl
+name: Chlorine
+real: yes
+number: 17
+mass-number: 35
+symbol: Cl
+electronegativity: 3.16
+glow-colour: 0.7 0.95 0.3
+colour: 0.122 0.941 0.122
+covalent-a: 1.02
+atomic-a: 0.79
+period: 3
+group: Halogen
+state-at-room-temp: gas
+origin: natural
+in-game: Salt in the seas; poison gas in war
+melt-k: 172
+boil-k: 239
+
+@element ar
+name: Argon
+real: yes
+number: 18
+mass-number: 40
+symbol: Ar
+glow-colour: 0.65 0.4 1
+colour: 0.502 0.82 0.89
+covalent-a: 1.06
+atomic-a: 0.71
+period: 3
+group: Noble gas
+state-at-room-temp: gas
+origin: natural
+in-game: Inert gas in the air; welding
+melt-k: 84
+boil-k: 87
+
+@element k
+name: Potassium
+real: yes
+number: 19
+mass-number: 39
+symbol: K
+electronegativity: 0.82
+colour: 0.561 0.251 0.831
+covalent-a: 2.03
+atomic-a: 2.43
+period: 4
+group: Alkali metal
+state-at-room-temp: solid
+origin: natural
+in-game: Plant growth; nerves
+melt-k: 337
+boil-k: 1032
+
+@element ca
+name: Calcium
+real: yes
+number: 20
+mass-number: 40
+symbol: Ca
+electronegativity: 1.00
+colour: 0.239 1 0
+covalent-a: 1.76
+atomic-a: 1.94
+period: 4
+group: Alkaline earth
+state-at-room-temp: solid
+origin: natural
+in-game: Bones, shells, coral reefs, limestone
+melt-k: 1115
+boil-k: 1757
+
+@element sc
+name: Scandium
+real: yes
+number: 21
+mass-number: 45
+symbol: Sc
+electronegativity: 1.36
+colour: 0.902 0.902 0.902
+covalent-a: 1.70
+atomic-a: 1.84
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Light aerospace alloys
+melt-k: 1814
+boil-k: 3109
+
+@element ti
+name: Titanium
+real: yes
+number: 22
+mass-number: 48
+symbol: Ti
+electronegativity: 1.54
+look: 0.6 0.6 0.62
+shiny: yes
+colour: 0.749 0.761 0.78
+covalent-a: 1.60
+atomic-a: 1.76
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Strong, light metal for spacecraft
+melt-k: 1941
+boil-k: 3560
+
+@element v
+name: Vanadium
+real: yes
+number: 23
+mass-number: 51
+symbol: V
+electronegativity: 1.63
+colour: 0.651 0.651 0.671
+covalent-a: 1.53
+atomic-a: 1.71
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Hard steel
+melt-k: 2183
+boil-k: 3680
+
+@element cr
+name: Chromium
+real: yes
+number: 24
+mass-number: 52
+symbol: Cr
+electronegativity: 1.66
+look: 0.78 0.8 0.85
+shiny: yes
+colour: 0.541 0.6 0.78
+covalent-a: 1.39
+atomic-a: 1.66
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Stainless steel
+melt-k: 2180
+boil-k: 2944
+
+@element mn
+name: Manganese
+real: yes
+number: 25
+mass-number: 55
+symbol: Mn
+electronegativity: 1.55
+colour: 0.612 0.478 0.78
+covalent-a: 1.39
+atomic-a: 1.61
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Photosynthesis helper; steel
+melt-k: 1519
+boil-k: 2334
+
+@element fe
+name: Iron
+real: yes
+number: 26
+mass-number: 56
+symbol: Fe
+electronegativity: 1.83
+look: 0.55 0.55 0.57
+shiny: yes
+colour: 0.878 0.4 0.2
+covalent-a: 1.32
+atomic-a: 1.56
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Blood carries oxygen with it; the Iron Age; planet cores
+melt-k: 1811
+boil-k: 3134
+
+@element co
+name: Cobalt
+real: yes
+number: 27
+mass-number: 59
+symbol: Co
+electronegativity: 1.88
+look: 0.55 0.55 0.6
+shiny: yes
+colour: 0.941 0.565 0.627
+covalent-a: 1.26
+atomic-a: 1.52
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Vitamin B12; magnets and batteries
+melt-k: 1768
+boil-k: 3200
+
+@element ni
+name: Nickel
+real: yes
+number: 28
+mass-number: 58
+symbol: Ni
+electronegativity: 1.91
+look: 0.7 0.68 0.62
+shiny: yes
+colour: 0.314 0.816 0.314
+covalent-a: 1.24
+atomic-a: 1.49
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Planet cores; alloys
+melt-k: 1728
+boil-k: 3186
+
+@element cu
+name: Copper
+real: yes
+number: 29
+mass-number: 63
+symbol: Cu
+electronegativity: 1.90
+look: 0.85 0.45 0.3
+shiny: yes
+colour: 0.784 0.502 0.2
+covalent-a: 1.32
+atomic-a: 1.45
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: The Copper Age; wires for electricity
+melt-k: 1358
+boil-k: 2835
+
+@element zn
+name: Zinc
+real: yes
+number: 30
+mass-number: 64
+symbol: Zn
+electronegativity: 1.65
+look: 0.68 0.7 0.75
+shiny: yes
+colour: 0.49 0.502 0.69
+covalent-a: 1.22
+atomic-a: 1.42
+period: 4
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Enzymes; brass and batteries
+melt-k: 693
+boil-k: 1180
+
+@element ga
+name: Gallium
+real: yes
+number: 31
+mass-number: 69
+symbol: Ga
+electronegativity: 1.81
+colour: 0.761 0.561 0.561
+covalent-a: 1.22
+atomic-a: 1.36
+period: 4
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Electronics and solar panels
+melt-k: 303
+boil-k: 2477
+
+@element ge
+name: Germanium
+real: yes
+number: 32
+mass-number: 74
+symbol: Ge
+electronegativity: 2.01
+look: 0.6 0.6 0.62
+shiny: yes
+colour: 0.4 0.561 0.561
+covalent-a: 1.20
+atomic-a: 1.25
+period: 4
+group: Metalloid
+state-at-room-temp: solid
+origin: natural
+in-game: Early electronics
+melt-k: 1211
+boil-k: 3106
+
+@element as
+name: Arsenic
+real: yes
+number: 33
+mass-number: 75
+symbol: As
+electronegativity: 2.18
+look: 0.5 0.5 0.52
+shiny: yes
+colour: 0.741 0.502 0.89
+covalent-a: 1.19
+atomic-a: 1.14
+period: 4
+group: Metalloid
+state-at-room-temp: solid
+origin: natural
+in-game: Poison
+melt-k: 887
+boil-k: 887
+
+@element se
+name: Selenium
+real: yes
+number: 34
+mass-number: 80
+symbol: Se
+electronegativity: 2.55
+look: 0.45 0.45 0.47
+shiny: yes
+colour: 1 0.631 0
+covalent-a: 1.20
+atomic-a: 1.03
+period: 4
+group: Nonmetal
+state-at-room-temp: solid
+origin: natural
+in-game: Trace nutrient; solar cells
+melt-k: 494
+boil-k: 958
+
+@element br
+name: Bromine
+real: yes
+number: 35
+mass-number: 79
+symbol: Br
+electronegativity: 2.96
+look: 0.55 0.12 0.05
+colour: 0.651 0.161 0.161
+covalent-a: 1.20
+atomic-a: 0.94
+period: 4
+group: Halogen
+state-at-room-temp: liquid
+origin: natural
+in-game: Fire retardants; sea salt
+melt-k: 266
+boil-k: 332
+
+@element kr
+name: Krypton
+real: yes
+number: 36
+mass-number: 84
+symbol: Kr
+electronegativity: 3.00
+glow-colour: 0.85 0.9 1
+colour: 0.361 0.722 0.82
+covalent-a: 1.16
+atomic-a: 0.88
+period: 4
+group: Noble gas
+state-at-room-temp: gas
+origin: natural
+in-game: Lighting
+melt-k: 116
+boil-k: 120
+
+@element rb
+name: Rubidium
+real: yes
+number: 37
+mass-number: 85
+symbol: Rb
+electronegativity: 0.82
+colour: 0.439 0.18 0.69
+covalent-a: 2.20
+atomic-a: 2.65
+period: 5
+group: Alkali metal
+state-at-room-temp: solid
+origin: natural
+in-game: Atomic clocks
+melt-k: 312
+boil-k: 961
+
+@element sr
+name: Strontium
+real: yes
+number: 38
+mass-number: 88
+symbol: Sr
+electronegativity: 0.95
+colour: 0 1 0
+covalent-a: 1.95
+atomic-a: 2.19
+period: 5
+group: Alkaline earth
+state-at-room-temp: solid
+origin: natural
+in-game: Red fireworks
+melt-k: 1050
+boil-k: 1655
+
+@element y
+name: Yttrium
+real: yes
+number: 39
+mass-number: 89
+symbol: Y
+colour: 0.58 1 1
+covalent-a: 1.90
+atomic-a: 2.12
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Lasers and superconductors
+melt-k: 1799
+boil-k: 3609
+
+@element zr
+name: Zirconium
+real: yes
+number: 40
+mass-number: 90
+symbol: Zr
+colour: 0.58 0.878 0.878
+covalent-a: 1.75
+atomic-a: 2.06
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Nuclear reactor parts
+melt-k: 2128
+boil-k: 4682
+
+@element nb
+name: Niobium
+real: yes
+number: 41
+mass-number: 93
+symbol: Nb
+colour: 0.451 0.761 0.788
+covalent-a: 1.64
+atomic-a: 1.98
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Superconducting magnets
+melt-k: 2750
+boil-k: 5017
+
+@element mo
+name: Molybdenum
+real: yes
+number: 42
+mass-number: 98
+symbol: Mo
+colour: 0.329 0.71 0.71
+covalent-a: 1.54
+atomic-a: 1.90
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Nitrogen-fixing enzymes; hard steel
+melt-k: 2896
+boil-k: 4912
+
+@element tc
+name: Technetium
+real: yes
+number: 43
+mass-number: 98
+symbol: Tc
+colour: 0.231 0.62 0.62
+covalent-a: 1.47
+atomic-a: 1.83
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: lab-made (only tiny traces in nature)
+in-game: Radioactive; medical scans
+melt-k: 2430
+boil-k: 4538
+
+@element ru
+name: Ruthenium
+real: yes
+number: 44
+mass-number: 102
+symbol: Ru
+colour: 0.141 0.561 0.561
+covalent-a: 1.46
+atomic-a: 1.78
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Electronics
+melt-k: 2607
+boil-k: 4423
+
+@element rh
+name: Rhodium
+real: yes
+number: 45
+mass-number: 103
+symbol: Rh
+colour: 0.0392 0.49 0.549
+covalent-a: 1.42
+atomic-a: 1.73
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Engine catalysts
+melt-k: 2237
+boil-k: 3968
+
+@element pd
+name: Palladium
+real: yes
+number: 46
+mass-number: 106
+symbol: Pd
+colour: 0 0.412 0.522
+covalent-a: 1.39
+atomic-a: 1.69
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Catalysts
+melt-k: 1828
+boil-k: 3236
+
+@element ag
+name: Silver
+real: yes
+number: 47
+mass-number: 107
+symbol: Ag
+electronegativity: 1.93
+look: 0.9 0.9 0.92
+shiny: yes
+colour: 0.753 0.753 0.753
+covalent-a: 1.45
+atomic-a: 1.65
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Money; kills germs
+melt-k: 1235
+boil-k: 2435
+
+@element cd
+name: Cadmium
+real: yes
+number: 48
+mass-number: 114
+symbol: Cd
+colour: 1 0.851 0.561
+covalent-a: 1.44
+atomic-a: 1.61
+period: 5
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Batteries; toxic
+melt-k: 594
+boil-k: 1040
+
+@element in
+name: Indium
+real: yes
+number: 49
+mass-number: 115
+symbol: In
+colour: 0.651 0.459 0.451
+covalent-a: 1.42
+atomic-a: 1.56
+period: 5
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Touch screens
+melt-k: 430
+boil-k: 2345
+
+@element sn
+name: Tin
+real: yes
+number: 50
+mass-number: 120
+symbol: Sn
+electronegativity: 1.96
+colour: 0.4 0.502 0.502
+covalent-a: 1.39
+atomic-a: 1.45
+period: 5
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Bronze (with copper)
+melt-k: 505
+boil-k: 2875
+
+@element sb
+name: Antimony
+real: yes
+number: 51
+mass-number: 121
+symbol: Sb
+look: 0.68 0.68 0.7
+shiny: yes
+colour: 0.62 0.388 0.71
+covalent-a: 1.39
+atomic-a: 1.33
+period: 5
+group: Metalloid
+state-at-room-temp: solid
+origin: natural
+in-game: Alloys; toxic
+melt-k: 904
+boil-k: 1860
+
+@element te
+name: Tellurium
+real: yes
+number: 52
+mass-number: 130
+symbol: Te
+look: 0.62 0.62 0.64
+shiny: yes
+colour: 0.831 0.478 0
+covalent-a: 1.38
+atomic-a: 1.23
+period: 5
+group: Metalloid
+state-at-room-temp: solid
+origin: natural
+in-game: Solar panels
+melt-k: 723
+boil-k: 1261
+
+@element i
+name: Iodine
+real: yes
+number: 53
+mass-number: 127
+symbol: I
+electronegativity: 2.66
+look: 0.3 0.2 0.35
+shiny: yes
+colour: 0.58 0 0.58
+covalent-a: 1.39
+atomic-a: 1.15
+period: 5
+group: Halogen
+state-at-room-temp: solid
+origin: natural
+in-game: Needed for growth; medicine
+melt-k: 387
+boil-k: 457
+
+@element xe
+name: Xenon
+real: yes
+number: 54
+mass-number: 132
+symbol: Xe
+glow-colour: 0.45 0.6 1
+colour: 0.259 0.62 0.69
+covalent-a: 1.40
+atomic-a: 1.08
+period: 5
+group: Noble gas
+state-at-room-temp: gas
+origin: natural
+in-game: Ion engines for spacecraft
+melt-k: 161
+boil-k: 165
+
+@element cs
+name: Caesium
+real: yes
+number: 55
+mass-number: 133
+symbol: Cs
+look: 0.95 0.85 0.55
+shiny: yes
+colour: 0.341 0.0902 0.561
+covalent-a: 2.44
+atomic-a: 2.98
+period: 6
+group: Alkali metal
+state-at-room-temp: solid
+origin: natural
+in-game: Atomic clocks
+melt-k: 302
+boil-k: 944
+
+@element ba
+name: Barium
+real: yes
+number: 56
+mass-number: 138
+symbol: Ba
+electronegativity: 0.89
+colour: 0 0.788 0
+covalent-a: 2.15
+atomic-a: 2.53
+period: 6
+group: Alkaline earth
+state-at-room-temp: solid
+origin: natural
+in-game: Green fireworks; medical scans
+melt-k: 1000
+boil-k: 2170
+
+@element la
+name: Lanthanum
+real: yes
+number: 57
+mass-number: 139
+symbol: La
+colour: 0.439 0.831 1
+covalent-a: 2.07
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Camera lenses; batteries
+melt-k: 1193
+boil-k: 3737
+
+@element ce
+name: Cerium
+real: yes
+number: 58
+mass-number: 140
+symbol: Ce
+colour: 1 1 0.78
+covalent-a: 2.04
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Catalysts; polishing glass
+melt-k: 1068
+boil-k: 3716
+
+@element pr
+name: Praseodymium
+real: yes
+number: 59
+mass-number: 141
+symbol: Pr
+colour: 0.851 1 0.78
+covalent-a: 2.03
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Strong magnets
+melt-k: 1208
+boil-k: 3793
+
+@element nd
+name: Neodymium
+real: yes
+number: 60
+mass-number: 142
+symbol: Nd
+colour: 0.78 1 0.78
+covalent-a: 2.01
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Super-strong magnets for motors
+melt-k: 1297
+boil-k: 3347
+
+@element pm
+name: Promethium
+real: yes
+number: 61
+mass-number: 145
+symbol: Pm
+colour: 0.639 1 0.78
+covalent-a: 1.99
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: lab-made (only tiny traces in nature)
+in-game: Radioactive; nuclear batteries
+melt-k: 1315
+boil-k: 3273
+
+@element sm
+name: Samarium
+real: yes
+number: 62
+mass-number: 152
+symbol: Sm
+colour: 0.561 1 0.78
+covalent-a: 1.98
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Magnets
+melt-k: 1345
+boil-k: 2067
+
+@element eu
+name: Europium
+real: yes
+number: 63
+mass-number: 153
+symbol: Eu
+colour: 0.38 1 0.78
+covalent-a: 1.98
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Red glow in screens
+melt-k: 1099
+boil-k: 1802
+
+@element gd
+name: Gadolinium
+real: yes
+number: 64
+mass-number: 158
+symbol: Gd
+colour: 0.271 1 0.78
+covalent-a: 1.96
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Medical scans
+melt-k: 1585
+boil-k: 3546
+
+@element tb
+name: Terbium
+real: yes
+number: 65
+mass-number: 159
+symbol: Tb
+colour: 0.188 1 0.78
+covalent-a: 1.94
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Green glow in screens
+melt-k: 1629
+boil-k: 3503
+
+@element dy
+name: Dysprosium
+real: yes
+number: 66
+mass-number: 164
+symbol: Dy
+colour: 0.122 1 0.78
+covalent-a: 1.92
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Magnets that stand heat
+melt-k: 1680
+boil-k: 2840
+
+@element ho
+name: Holmium
+real: yes
+number: 67
+mass-number: 165
+symbol: Ho
+colour: 0 1 0.612
+covalent-a: 1.92
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Strongest magnetic fields
+melt-k: 1734
+boil-k: 2993
+
+@element er
+name: Erbium
+real: yes
+number: 68
+mass-number: 166
+symbol: Er
+colour: 0 0.902 0.459
+covalent-a: 1.89
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Fiber-optic signals
+melt-k: 1802
+boil-k: 3141
+
+@element tm
+name: Thulium
+real: yes
+number: 69
+mass-number: 169
+symbol: Tm
+colour: 0 0.831 0.322
+covalent-a: 1.90
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Lasers
+melt-k: 1818
+boil-k: 2223
+
+@element yb
+name: Ytterbium
+real: yes
+number: 70
+mass-number: 174
+symbol: Yb
+colour: 0 0.749 0.22
+covalent-a: 1.87
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Atomic clocks
+melt-k: 1097
+boil-k: 1469
+
+@element lu
+name: Lutetium
+real: yes
+number: 71
+mass-number: 175
+symbol: Lu
+colour: 0 0.671 0.141
+covalent-a: 1.87
+period: 6
+group: Lanthanide
+state-at-room-temp: solid
+origin: natural
+in-game: Medical treatments
+melt-k: 1925
+boil-k: 3675
+
+@element hf
+name: Hafnium
+real: yes
+number: 72
+mass-number: 180
+symbol: Hf
+colour: 0.302 0.761 1
+covalent-a: 1.75
+atomic-a: 2.08
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Reactor control rods
+melt-k: 2506
+boil-k: 4876
+
+@element ta
+name: Tantalum
+real: yes
+number: 73
+mass-number: 181
+symbol: Ta
+colour: 0.302 0.651 1
+covalent-a: 1.70
+atomic-a: 2.00
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Electronics
+melt-k: 3290
+boil-k: 5731
+
+@element w
+name: Tungsten
+real: yes
+number: 74
+mass-number: 184
+symbol: W
+colour: 0.129 0.58 0.839
+covalent-a: 1.62
+atomic-a: 1.93
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Hardest metal to melt; light bulbs, armor
+melt-k: 3695
+boil-k: 5828
+
+@element re
+name: Rhenium
+real: yes
+number: 75
+mass-number: 187
+symbol: Re
+colour: 0.149 0.49 0.671
+covalent-a: 1.51
+atomic-a: 1.88
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Jet and rocket engines
+melt-k: 3459
+boil-k: 5869
+
+@element os
+name: Osmium
+real: yes
+number: 76
+mass-number: 192
+symbol: Os
+look: 0.6 0.68 0.78
+shiny: yes
+colour: 0.149 0.4 0.588
+covalent-a: 1.44
+atomic-a: 1.85
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Densest element
+melt-k: 3306
+boil-k: 5285
+
+@element ir
+name: Iridium
+real: yes
+number: 77
+mass-number: 193
+symbol: Ir
+colour: 0.0902 0.329 0.529
+covalent-a: 1.41
+atomic-a: 1.80
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Left by asteroid strikes
+melt-k: 2719
+boil-k: 4701
+
+@element pt
+name: Platinum
+real: yes
+number: 78
+mass-number: 195
+symbol: Pt
+look: 0.85 0.85 0.83
+shiny: yes
+colour: 0.816 0.816 0.878
+covalent-a: 1.36
+atomic-a: 1.77
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Catalysts; wealth
+melt-k: 2041
+boil-k: 4098
+
+@element au
+name: Gold
+real: yes
+number: 79
+mass-number: 197
+symbol: Au
+electronegativity: 2.54
+look: 1 0.78 0.25
+shiny: yes
+colour: 1 0.82 0.137
+covalent-a: 1.36
+atomic-a: 1.74
+period: 6
+group: Transition
+state-at-room-temp: solid
+origin: natural
+in-game: Wealth and trade; electronics
+melt-k: 1337
+boil-k: 3129
+
+@element hg
+name: Mercury
+real: yes
+number: 80
+mass-number: 202
+symbol: Hg
+look: 0.82 0.82 0.85
+shiny: yes
+colour: 0.722 0.722 0.816
+covalent-a: 1.32
+atomic-a: 1.71
+period: 6
+group: Transition
+state-at-room-temp: liquid
+origin: natural
+in-game: Liquid metal; poison
+melt-k: 234
+boil-k: 630
+
+@element tl
+name: Thallium
+real: yes
+number: 81
+mass-number: 205
+symbol: Tl
+colour: 0.651 0.329 0.302
+covalent-a: 1.45
+atomic-a: 1.56
+period: 6
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Poison
+melt-k: 577
+boil-k: 1746
+
+@element pb
+name: Lead
+real: yes
+number: 82
+mass-number: 208
+symbol: Pb
+electronegativity: 2.33
+look: 0.45 0.46 0.52
+shiny: yes
+colour: 0.341 0.349 0.38
+covalent-a: 1.46
+atomic-a: 1.54
+period: 6
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Pipes and shielding; poison
+melt-k: 601
+boil-k: 2022
+
+@element bi
+name: Bismuth
+real: yes
+number: 83
+mass-number: 209
+symbol: Bi
+look: 0.8 0.6 0.85
+shiny: yes
+colour: 0.62 0.31 0.71
+covalent-a: 1.48
+atomic-a: 1.43
+period: 6
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Medicine; low-melting alloys
+melt-k: 544
+boil-k: 1837
+
+@element po
+name: Polonium
+real: yes
+number: 84
+mass-number: 209
+symbol: Po
+colour: 0.671 0.361 0
+covalent-a: 1.40
+atomic-a: 1.35
+period: 6
+group: Post-transition
+state-at-room-temp: solid
+origin: natural
+in-game: Highly radioactive
+melt-k: 527
+boil-k: 1235
+
+@element at
+name: Astatine
+real: yes
+number: 85
+mass-number: 210
+symbol: At
+colour: 0.459 0.31 0.271
+covalent-a: 1.50
+atomic-a: 1.27
+period: 6
+group: Halogen
+state-at-room-temp: solid
+origin: natural
+in-game: Rare and radioactive
+melt-k: 575
+boil-k: 610
+
+@element rn
+name: Radon
+real: yes
+number: 86
+mass-number: 222
+symbol: Rn
+glow-colour: 0.95 0.25 0.2
+colour: 0.259 0.51 0.588
+covalent-a: 1.50
+atomic-a: 1.20
+period: 6
+group: Noble gas
+state-at-room-temp: gas
+origin: natural
+in-game: Radioactive gas from rock; causes mutations
+melt-k: 202
+boil-k: 211
+
+@element fr
+name: Francium
+real: yes
+number: 87
+mass-number: 223
+symbol: Fr
+colour: 0.259 0 0.4
+covalent-a: 2.60
+period: 7
+group: Alkali metal
+state-at-room-temp: solid
+origin: natural
+in-game: Extremely rare and radioactive
+melt-k: 300
+boil-k: 950
+
+@element ra
+name: Radium
+real: yes
+number: 88
+mass-number: 226
+symbol: Ra
+look: 0.85 0.88 0.85
+shiny: yes
+colour: 0 0.49 0
+covalent-a: 2.21
+period: 7
+group: Alkaline earth
+state-at-room-temp: solid
+origin: natural
+in-game: Radioactive glow
+melt-k: 973
+boil-k: 2010
+
+@element ac
+name: Actinium
+real: yes
+number: 89
+mass-number: 227
+symbol: Ac
+colour: 0.439 0.671 0.98
+covalent-a: 2.15
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: natural
+in-game: Radioactive; medicine
+melt-k: 1323
+boil-k: 3471
+
+@element th
+name: Thorium
+real: yes
+number: 90
+mass-number: 232
+symbol: Th
+colour: 0 0.729 1
+covalent-a: 2.06
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: natural
+in-game: Nuclear fuel; heats planet interiors
+melt-k: 2023
+boil-k: 5061
+
+@element pa
+name: Protactinium
+real: yes
+number: 91
+mass-number: 231
+symbol: Pa
+colour: 0 0.631 1
+covalent-a: 2.00
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: natural
+in-game: Rare and radioactive
+melt-k: 1841
+boil-k: 4300
+
+@element u
+name: Uranium
+real: yes
+number: 92
+mass-number: 238
+symbol: U
+look: 0.45 0.47 0.45
+shiny: yes
+colour: 0 0.561 1
+covalent-a: 1.96
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: natural
+in-game: Nuclear power and bombs; heats planet interiors
+melt-k: 1405
+boil-k: 4404
+
+@element np
+name: Neptunium
+real: yes
+number: 93
+mass-number: 237
+symbol: Np
+colour: 0 0.502 1
+covalent-a: 1.90
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: natural
+in-game: Made in reactors
+unlock: once a civilization first creates it
+melt-k: 917
+boil-k: 4273
+
+@element pu
+name: Plutonium
+real: yes
+number: 94
+mass-number: 244
+symbol: Pu
+look: 0.5 0.45 0.42
+shiny: yes
+colour: 0 0.42 1
+covalent-a: 1.87
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: natural
+in-game: Nuclear bombs; space probe power
+unlock: once a civilization first creates it
+melt-k: 913
+boil-k: 3501
+
+@element am
+name: Americium
+real: yes
+number: 95
+mass-number: 243
+symbol: Am
+colour: 0.329 0.361 0.949
+covalent-a: 1.80
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Smoke detectors
+unlock: once a civilization first creates it
+melt-k: 1449
+boil-k: 2880
+
+@element cm
+name: Curium
+real: yes
+number: 96
+mass-number: 247
+symbol: Cm
+colour: 0.471 0.361 0.89
+covalent-a: 1.69
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Space probe power
+unlock: once a civilization first creates it
+melt-k: 1613
+boil-k: 3383
+
+@element bk
+name: Berkelium
+real: yes
+number: 97
+mass-number: 247
+symbol: Bk
+colour: 0.541 0.31 0.89
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Lab-made only
+unlock: once a civilization first creates it
+melt-k: 1259
+boil-k: 2900
+
+@element cf
+name: Californium
+real: yes
+number: 98
+mass-number: 251
+symbol: Cf
+colour: 0.631 0.212 0.831
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Starts nuclear reactors
+unlock: once a civilization first creates it
+melt-k: 1173
+boil-k: 1743
+
+@element es
+name: Einsteinium
+real: yes
+number: 99
+mass-number: 252
+symbol: Es
+colour: 0.702 0.122 0.831
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Lab-made only
+unlock: once a civilization first creates it
+melt-k: 1133
+boil-k: 1269
+
+@element fm
+name: Fermium
+real: yes
+number: 100
+mass-number: 257
+symbol: Fm
+colour: 0.702 0.122 0.729
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Lab-made only
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element md
+name: Mendelevium
+real: yes
+number: 101
+mass-number: 258
+symbol: Md
+colour: 0.702 0.051 0.651
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Lab-made only
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element no
+name: Nobelium
+real: yes
+number: 102
+mass-number: 259
+symbol: No
+colour: 0.741 0.051 0.529
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Lab-made only
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element lr
+name: Lawrencium
+real: yes
+number: 103
+mass-number: 262
+symbol: Lr
+colour: 0.78 0 0.4
+period: 7
+group: Actinide
+state-at-room-temp: solid
+origin: lab-made
+in-game: Lab-made only
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element rf
+name: Rutherfordium
+real: yes
+number: 104
+mass-number: 267
+symbol: Rf
+colour: 0.8 0 0.349
+period: 7
+group: Transition
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts seconds
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element db
+name: Dubnium
+real: yes
+number: 105
+mass-number: 268
+symbol: Db
+colour: 0.82 0 0.31
+period: 7
+group: Transition
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts seconds
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element sg
+name: Seaborgium
+real: yes
+number: 106
+mass-number: 269
+symbol: Sg
+colour: 0.851 0 0.271
+period: 7
+group: Transition
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts seconds
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element bh
+name: Bohrium
+real: yes
+number: 107
+mass-number: 270
+symbol: Bh
+colour: 0.878 0 0.22
+period: 7
+group: Transition
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts seconds
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element hs
+name: Hassium
+real: yes
+number: 108
+mass-number: 269
+symbol: Hs
+colour: 0.902 0 0.18
+period: 7
+group: Transition
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts seconds
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element mt
+name: Meitnerium
+real: yes
+number: 109
+mass-number: 278
+symbol: Mt
+colour: 0.922 0 0.149
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element ds
+name: Darmstadtium
+real: yes
+number: 110
+mass-number: 281
+symbol: Ds
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element rg
+name: Roentgenium
+real: yes
+number: 111
+mass-number: 282
+symbol: Rg
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element cn
+name: Copernicium
+real: yes
+number: 112
+mass-number: 285
+symbol: Cn
+period: 7
+group: Transition
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element nh
+name: Nihonium
+real: yes
+number: 113
+mass-number: 286
+symbol: Nh
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element fl
+name: Flerovium
+real: yes
+number: 114
+mass-number: 289
+symbol: Fl
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element mc
+name: Moscovium
+real: yes
+number: 115
+mass-number: 290
+symbol: Mc
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element lv
+name: Livermorium
+real: yes
+number: 116
+mass-number: 293
+symbol: Lv
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element ts
+name: Tennessine
+real: yes
+number: 117
+mass-number: 294
+symbol: Ts
+period: 7
+group: Predicted (never measured)
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Lab-made, lasts moments
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+@element og
+name: Oganesson
+real: yes
+number: 118
+mass-number: 294
+symbol: Og
+period: 7
+group: Noble gas
+state-at-room-temp: unknown
+origin: lab-made
+in-game: Heaviest known element
+unlock: once a civilization first creates it
+melt-k: unknown
+boil-k: unknown
+
+# ── Generator rules ──
+
+@rule element-protons
+real: rule
+says: an atom's proton count is its element number; neutrons give isotopes (content/physics.dnat)
+
+@rule element-paint
+real: rule
+says: any natural element can be painted into the world from the element tree; lab-made ones (93 and up) unlock once a civilization first creates them
+
+@rule element-chemistry
+real: rule
+says: elements combine by their chemistry into compounds, minerals, air and the molecules of life
+
+@rule element-abundance
+real: rule
+says: hydrogen and helium are by far the most common elements in stars and giants; rocky worlds are mostly oxygen, silicon, iron and magnesium
+
+@rule element-heavy
+real: rule
+says: heavy elements are made in stars and supernovas and spread by them; young galaxies have fewer of them
+
+# ── the periodic table's family colours ──
+
+@family alkali-metal
+name: Alkali metal
+colour: 0.85 0.3 0.25
+
+@family alkaline-earth
+name: Alkaline earth
+colour: 0.9 0.55 0.2
+
+@family transition
+name: Transition
+colour: 0.45 0.55 0.7
+
+@family post-transition
+name: Post-transition
+colour: 0.55 0.58 0.6
+
+@family metalloid
+name: Metalloid
+colour: 0.25 0.65 0.6
+
+@family nonmetal
+name: Nonmetal
+colour: 0.35 0.75 0.3
+
+@family halogen
+name: Halogen
+colour: 0.9 0.85 0.25
+
+@family noble-gas
+name: Noble gas
+colour: 0.6 0.4 0.85
+
+@family lanthanide
+name: Lanthanide
+colour: 0.9 0.5 0.65
+
+@family actinide
+name: Actinide
+colour: 0.8 0.3 0.7

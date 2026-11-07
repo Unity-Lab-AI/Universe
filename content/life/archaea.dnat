@@ -1,0 +1,88 @@
+# DNA-AND content · life · archaea (domain Archaea)
+# researched: Pearson biology study guides (archaea vs bacteria, extremophiles); standard microbiology
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md
+
+# ── What makes them different ──
+
+@trait no-peptidoglycan
+name: Different cell walls
+real: yes
+says: archaea walls lack the material bacterial walls are made of
+
+@trait ether-lipids
+name: Different cell skin
+real: yes
+says: their membranes are built differently, tough enough for boiling and acid
+
+@trait eukaryote-like
+name: Close cousins of complex cells
+real: yes
+says: their gene-reading machinery is more like that of plants and animals than that of bacteria
+
+# ── Extremophiles ──
+
+@extreme hyperthermophile
+name: Heat lover
+real: yes
+says: lives near boiling water and above
+example: Methanopyrus, growing at about 98 °C at deep-sea vents
+
+@extreme halophile
+name: Salt lover
+real: yes
+says: lives in water around ten times saltier than the sea
+
+@extreme acidophile
+name: Acid lover
+real: yes
+example: Sulfolobus, in acidic hot springs
+
+@extreme methanogen
+name: Methane maker
+real: yes
+says: makes methane from hydrogen and carbon dioxide, with no oxygen; lives in swamps, guts and sea mud
+
+@extreme psychrophile
+name: Cold lover
+real: yes
+says: lives in ice and freezing seas
+
+# ── Main groups (phyla) ──
+
+@phylum euryarchaeota
+name: Euryarchaeota
+real: yes
+domain: archaea
+says: methane makers and salt lovers
+
+@phylum crenarchaeota
+name: Crenarchaeota
+real: yes
+domain: archaea
+says: heat and acid lovers
+
+@phylum thaumarchaeota
+name: Thaumarchaeota
+real: yes
+domain: archaea
+says: ammonia eaters in oceans and soil
+
+@phylum asgard
+name: Asgard archaea
+real: yes
+domain: archaea
+says: the closest living relatives of complex cells
+
+# ── Generator rules ──
+
+@rule archaea-extremes
+real: rule
+says: archaea fill the worst places first (vents, acid, salt, ice), so they're often the first life on hard worlds
+
+@rule archaea-swallowed
+real: rule
+says: an archaean swallowing a bacterium is one route to complex cells (the "swallowed partners" stage)
+
+@rule archaea-methane
+real: rule
+says: methane makers warm young planets by filling the air with methane

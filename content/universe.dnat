@@ -1,0 +1,25 @@
+# DNA-AND content · the visible universe as a whole: how big, how many galaxies, how they gather
+# across-ly: the visible universe's width in light-years, as asked: 13.4 billion (the light-travel distance to the farthest
+#   galaxies seen, such as GN-z11; measured as it is today, after space has stretched while the light travelled, the
+#   visible universe is about 93 billion light-years across). The edge cannot be passed (for now).
+# galaxies: how many galaxies it holds, about 100 billion (estimates run from 100 billion to 2 trillion).
+# web-ly: how far apart the cosmic web's voids are (the voids are about 100 to 300 million light-years across). The web is the
+#   Voronoi foam of large-scale structure: space packed with voids, galaxies on the thin walls between two voids, more along
+#   the filaments where three meet, the most in clusters at the nodes where four meet (as galaxy surveys and the
+#   Millennium simulation show); web-wall-ly: how thick its walls and filaments are; web-contrast: how much denser the
+#   filaments are than the walls (clusters denser still).
+# region-ly: the regions galaxies are made in round you, a million light-years across; near-ly: how far round you galaxies are
+#   made in full; glow-points: how many faint points show the rest of the universe's galaxies along the web (each stands
+#   for tens of thousands; they are made in the background at start).
+# Spec: docs/CONTENT-FORMAT.md · content/galaxies.dnat
+
+@universe visible
+name: The visible universe
+across-ly: 13.4e9
+galaxies: 1e11
+web-ly: 3e8
+web-wall-ly: 1.2e7
+web-contrast: 6
+region-ly: 1e6
+near-ly: 8e6
+glow-points: 1500000

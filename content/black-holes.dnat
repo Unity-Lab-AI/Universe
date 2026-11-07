@@ -1,0 +1,242 @@
+# DNA-AND content · black holes and quasars
+# Real seeds for the black-hole and active-galaxy generators: kinds, parts,
+# active galaxy types, events, real examples and rules.
+# researched: NASA black hole field guide; Wikipedia "Outline of black holes";
+#   Antonucci 1993 (AGN unification review); arXiv 2403.17739 (unified model of AGN);
+#   Swinburne COSMOS "Active Galactic Nuclei"
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
+
+# ── Kinds of black hole ──
+
+@blackhole stellar
+name: Stellar-mass black hole
+real: yes
+mass-sol: 3..100
+made-by: the collapse of a very heavy star
+says: the most common kind, often found feeding on a companion star
+example: V404 Cygni
+
+@blackhole intermediate
+name: Intermediate-mass black hole
+real: yes
+mass-sol: 100..100000
+made-by: black holes merging, or a dense star cluster collapsing
+says: rare and hard to find; candidates are still debated
+example: the remnant of the merger GW190521, about 142 Sun masses
+
+@blackhole supermassive
+name: Supermassive black hole
+real: yes
+mass-sol: 1e6..1e10
+where: the center of most big galaxies
+example: Sagittarius A*, about 4 million Sun masses
+
+@blackhole ultramassive
+name: Ultramassive black hole
+real: yes
+mass-sol: 1e10..
+where: the centers of the biggest galaxies, often in galaxy clusters
+
+@blackhole primordial
+name: Primordial black hole
+real: hypothetical
+made-by: dense spots in the very early universe, just after the Big Bang
+says: never confirmed; could come in any size
+
+@blackhole spinning
+name: Spinning black hole
+real: yes
+says: a black hole that rotates, dragging space around with it; it has an ergosphere
+
+@blackhole binary
+name: Binary black hole
+real: yes
+says: two black holes orbiting each other, spiraling closer until they merge
+
+# ── Parts ──
+
+@part singularity
+name: Singularity
+real: yes
+says: the center, where all the mass is crushed
+
+@part event-horizon
+name: Event horizon
+real: yes
+says: the edge past which nothing, not even light, can escape; bigger mass, bigger horizon
+
+@part photon-sphere
+name: Photon sphere
+real: yes
+says: a shell where light can circle the black hole
+
+@part shadow
+name: Shadow
+real: yes
+says: the dark disk seen against glowing gas, as in the first photo of a black hole
+
+@part ergosphere
+name: Ergosphere
+real: yes
+says: the region around a spinning black hole where space itself is dragged around; energy can be taken from it
+
+@part accretion-disk
+name: Accretion disk
+real: yes
+says: a spinning disk of gas heated so hot it shines in X-rays
+
+@part corona
+name: Corona
+real: yes
+says: super-hot gas above the disk
+
+@part jets
+name: Jets
+real: yes
+says: beams of matter fired from the poles at nearly the speed of light, shaped by magnetic fields
+
+@part radio-lobes
+name: Radio lobes
+real: yes
+says: huge clouds where jets crash into the gas around a galaxy
+
+@part dusty-torus
+name: Dusty torus
+real: yes
+says: a thick ring of dust around an active galaxy's core that can hide the center from some angles
+
+# ── Active galaxy cores (a feeding supermassive black hole) ──
+
+@active quasar
+name: Quasar
+real: yes
+says: a feeding supermassive black hole so bright it outshines its whole galaxy; seen far across the universe
+
+@active blazar
+name: Blazar
+real: yes
+says: an active core with its jet pointed straight at the viewer; very bright and flickering
+kinds: bl-lac, flat-spectrum quasar
+
+@active bl-lac
+name: BL Lacertae object
+real: yes
+says: a blazar with almost no lines in its light
+
+@active seyfert-1
+name: Seyfert galaxy, type 1
+real: yes
+says: a spiral galaxy with a bright core; fast-moving gas is seen directly
+
+@active seyfert-2
+name: Seyfert galaxy, type 2
+real: yes
+says: like type 1, but the dusty torus hides the fast-moving gas
+example: NGC 1068 (Messier 77)
+
+@active radio-galaxy
+name: Radio galaxy
+real: yes
+says: usually an elliptical galaxy with huge radio lobes fed by jets
+example: Messier 87
+
+@active liner
+name: LINER
+real: yes
+says: a dim active core, the faint end of active galaxies
+
+@active radio-loud
+name: Radio-loud core
+real: yes
+says: an active core with strong jets and lobes
+
+@active radio-quiet
+name: Radio-quiet core
+real: yes
+says: an active core without strong jets
+
+# ── Events ──
+
+@event tidal-disruption
+name: Tidal disruption
+real: yes
+says: a star wanders too close and is torn apart, flaring brightly as it falls in
+
+@event spaghettification
+name: Spaghettification
+real: yes
+says: the stretching of anything falling toward a black hole
+
+@event merger
+name: Black hole merger
+real: yes
+says: two black holes collide and send out gravitational waves
+example: GW190521
+
+@event gravitational-waves
+name: Gravitational waves
+real: yes
+says: ripples in space from black holes and neutron stars colliding
+
+@event feeding-flare
+name: Feeding flare
+real: yes
+says: a quiet black hole lights up when gas falls in
+
+# ── Real examples ──
+
+@example sagittarius-a
+name: Sagittarius A*
+real: yes
+type: supermassive
+where: the center of the Milky Way
+note: about 4 million Sun masses, no detected jet
+
+@example m87
+name: M87*
+real: yes
+type: supermassive
+where: the center of Messier 87
+note: the first black hole ever photographed (2019), with a jet about 5,000 light-years long
+
+@example v404-cygni
+name: V404 Cygni
+real: yes
+type: stellar
+note: feeding on a Sun-like companion star
+
+@example ngc-1068
+name: NGC 1068
+real: yes
+type: seyfert-2
+note: where astronomers found the hidden fast-moving gas behind the dust
+
+# ── Generator rules ──
+
+@rule bh-seed
+real: rule
+says: every black hole is generated live from the world seed; nothing is pre-built
+
+@rule bh-mass-kind
+real: rule
+says: mass decides the kind: stellar from dead heavy stars, intermediate from mergers, supermassive at galaxy centers
+
+@rule bh-feeding
+real: rule
+says: a black hole with gas falling in grows a hot disk and may fire jets; a starved one stays dark
+
+@rule bh-view-angle
+real: rule
+says: one feeding core looks different from different angles: a blazar seen down the jet, a quasar or Seyfert 1 seen from above, a Seyfert 2 seen through the dust
+
+@rule bh-spin-energy
+real: rule
+says: energy can be drawn from a spinning black hole's ergosphere; advanced civilizations can tap it
+
+@rule bh-danger
+real: rule
+says: close in, tides tear apart stars, planets and ships; jets sterilize anything in their path
+
+@rule bh-hypothetical
+real: rule
+says: primordial black holes are hypothetical; the game may generate them, marked as such

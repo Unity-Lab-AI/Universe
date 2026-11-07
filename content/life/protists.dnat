@@ -1,0 +1,169 @@
+# DNA-AND content · life · protists (domain Eukaryotes, the single-celled and simple complex life)
+# researched: Lumen / OpenStax Biology "Groups of Protists" (supergroups Excavata, SAR, Archaeplastida,
+#   Amoebozoa, Opisthokonta); CUNY open biology text
+# Note: protists are a grab-bag, not one true branch; their grouping is still changing in science.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md
+
+# ── Supergroups ──
+
+@supergroup excavata
+name: Excavates
+real: yes
+says: single cells, many with a feeding groove and several whip tails
+members: euglenids, trypanosomes, diplomonads (Giardia), parabasalids
+
+@supergroup sar
+name: SAR (stramenopiles, alveolates, rhizarians)
+real: yes
+says: a huge group: diatoms, brown algae, dinoflagellates, ciliates, the malaria parasite, forams and radiolarians
+
+@supergroup archaeplastida
+name: Archaeplastids
+real: yes
+says: life with the first captured chloroplasts: red algae, green algae, and the land plants that grew from them
+
+@supergroup amoebozoa
+name: Amoebozoans
+real: yes
+says: amoebas and slime molds that crawl with blunt finger-like arms
+
+@supergroup opisthokonta
+name: Opisthokonts
+real: yes
+says: life with a single tail at the back: choanoflagellates, and the fungi and animals that grew from this line
+
+# ── Protist groups (seeds) ──
+
+@protist euglena
+name: Euglenids
+real: yes
+supergroup: excavata
+says: green swimmers that can both make food from light and eat
+
+@protist trypanosome
+name: Trypanosomes
+real: yes
+supergroup: excavata
+says: parasites carried by insects
+
+@protist diatom
+name: Diatoms
+real: yes
+supergroup: sar
+says: drifters in glass shells; make a large share of the oxygen in the seas
+
+@protist brown-algae
+name: Brown algae
+real: yes
+supergroup: sar
+says: kelp and big seaweeds
+
+@protist golden-algae
+name: Golden algae
+real: yes
+supergroup: sar
+
+@protist water-mold
+name: Water molds
+real: yes
+supergroup: sar
+says: fungus-like rotters of plants and fish
+
+@protist dinoflagellate
+name: Dinoflagellates
+real: yes
+supergroup: sar
+says: spinning swimmers; some glow, some cause poisonous red tides
+
+@protist ciliate
+name: Ciliates
+real: yes
+supergroup: sar
+says: covered in rows of beating hairs
+example: Paramecium
+
+@protist apicomplexan
+name: Apicomplexans
+real: yes
+supergroup: sar
+says: parasites that pierce cells
+example: the malaria parasite
+
+@protist foram
+name: Forams
+real: yes
+supergroup: sar
+says: tiny shells of chalk that build up into rock over ages
+
+@protist radiolarian
+name: Radiolarians
+real: yes
+supergroup: sar
+says: ornate glass skeletons with thin threadlike arms
+
+@protist red-algae
+name: Red algae
+real: yes
+supergroup: archaeplastida
+says: seaweeds that grow in deep water
+
+@protist green-algae
+name: Green algae
+real: yes
+supergroup: archaeplastida
+says: the ancestors of land plants
+
+@protist amoeba
+name: Amoebas
+real: yes
+supergroup: amoebozoa
+says: shape-shifting hunters that crawl and engulf food
+
+@protist slime-mold
+name: Slime molds
+real: yes
+supergroup: amoebozoa
+says: single cells that gather into a crawling body; can solve mazes without a brain
+
+@protist choanoflagellate
+name: Choanoflagellates
+real: yes
+supergroup: opisthokonta
+says: collared cells, the closest living relatives of animals
+
+# ── How they move ──
+
+@move flagella
+name: Whip tails (flagella)
+real: yes
+
+@move cilia
+name: Beating hairs (cilia)
+real: yes
+
+@move pseudopodia
+name: Crawling arms (pseudopodia)
+real: yes
+
+@move drifting
+name: Drifting
+real: yes
+says: floating with the current
+
+# ── Generator rules ──
+
+@rule protist-complex
+real: rule
+says: protists are the first complex cells, with a nucleus and parts inside; they appear after the swallowed-partners stage
+
+@rule protist-roots
+real: rule
+says: protist lines lead on: green algae to land plants, choanoflagellate-like cells to animals, opisthokont cells to fungi
+
+@rule protist-food
+real: rule
+says: drifting protists are the base of the sea's food chain; their blooms feed everything, and some blooms poison it
+
+@rule protist-rock
+real: rule
+says: chalk and glass shells of dead protists pile up into rock on the sea floor

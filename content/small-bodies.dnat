@@ -1,0 +1,250 @@
+# DNA-AND content · small bodies: asteroids, comets, dwarf planets, belts and clouds, meteors
+# researched: Cambridge "Asteroid compositional types and their distributions"; Tholen classification;
+#   Ohio State asteroid and trans-Neptunian lectures; Jewitt 2002 (comet nuclei); Encyclopedia.com
+#   "Vital Statistics of Asteroids and Comets"; Highline College comets and asteroids notes
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
+
+# ── Asteroids by makeup ──
+
+@asteroid c-type
+name: C-type asteroid
+real: yes
+says: very dark, carbon-rich and primitive, little changed since the system formed; the most common type
+linked-meteorite: carbonaceous chondrite
+
+@asteroid s-type
+name: S-type asteroid
+real: yes
+says: stony and silicate, brighter; more common close to the star
+linked-meteorite: ordinary chondrite, stony-iron
+
+@asteroid m-type
+name: M-type asteroid
+real: yes
+says: nickel and iron, probably the broken metal core of a shattered small world
+linked-meteorite: iron
+example: Psyche
+
+@asteroid e-type
+name: E-type asteroid
+real: yes
+says: very bright and reflective
+
+@asteroid p-type
+name: P-type asteroid
+real: yes
+says: very dark, reddish, comet-like, found far out
+
+@asteroid rubble-pile
+name: Rubble-pile asteroid
+real: yes
+says: a loose heap of rocks held together only by its own weak gravity
+
+@asteroid binary-asteroid
+name: Binary asteroid
+real: yes
+says: two asteroids orbiting each other, or an asteroid with its own tiny moon
+
+# ── Asteroids by orbit ──
+
+@asteroid main-belt
+name: Main-belt asteroid
+real: yes
+says: in the asteroid belt between the rocky planets and the giants
+
+@asteroid near-earth
+name: Near-planet asteroid
+real: yes
+says: an orbit that crosses close to a planet's; the ones that can hit
+
+@asteroid trojan
+name: Trojan asteroid
+real: yes
+says: sharing a planet's orbit, 60° ahead or behind it
+
+@asteroid centaur
+name: Centaur
+real: yes
+says: half asteroid, half comet, orbiting between the giant planets
+
+# ── Comets ──
+
+@comet short-period
+name: Short-period comet
+real: yes
+from: Kuiper belt and scattered disk
+says: returns every few years to a few hundred years
+
+@comet long-period
+name: Long-period comet
+real: yes
+from: Oort cloud
+says: falls in once in thousands of years or more, sometimes only once
+
+@comet sungrazer
+name: Star-grazing comet
+real: yes
+says: swoops so close to its star that it often breaks up or burns away
+
+@comet interstellar
+name: Interstellar comet
+real: yes
+says: a comet from another star passing through once
+
+@part comet-nucleus
+name: Nucleus
+real: yes
+says: a dark ball of ice and dust a few kilometers across
+
+@part comet-coma
+name: Coma
+real: yes
+says: a cloud of gas and dust that boils off as the comet nears its star, up to about 100,000 km wide
+
+@part comet-hydrogen-cloud
+name: Hydrogen cloud
+real: yes
+says: a huge thin cloud of hydrogen around the comet
+
+@part comet-ion-tail
+name: Ion tail
+real: yes
+says: a straight, thin, glowing tail of gas pushed directly away from the star by the star's wind
+
+@part comet-dust-tail
+name: Dust tail
+real: yes
+says: a wider, curved tail of dust pushed out by starlight, bending along the comet's path
+
+# ── Dwarf planets and far bodies ──
+
+@dwarf ceres
+name: Ceres
+real: yes
+where: the asteroid belt
+note: the first asteroid ever found (1801), now a dwarf planet
+
+@dwarf pluto
+name: Pluto
+real: yes
+where: the Kuiper belt
+note: a plutino, locked in a 3:2 beat with Neptune
+
+@dwarf eris
+name: Eris
+real: yes
+where: the scattered disk
+
+@dwarf haumea
+name: Haumea
+real: yes
+where: the Kuiper belt
+note: spins so fast it's stretched into an egg shape
+
+@dwarf makemake
+name: Makemake
+real: yes
+where: the Kuiper belt
+
+@far classical-kbo
+name: Classical Kuiper-belt object
+real: yes
+says: icy body on a calm, round orbit in the Kuiper belt
+
+@far plutino
+name: Plutino
+real: yes
+says: icy body locked in a 3:2 orbital beat with the outermost giant, like Pluto
+
+@far scattered-disk-object
+name: Scattered-disk object
+real: yes
+says: icy body thrown onto a long, tilted orbit by a giant planet
+
+@far detached-object
+name: Detached object
+real: yes
+says: icy body on a huge lonely orbit beyond everything else
+example: Sedna
+
+@far oort-cloud-comet
+name: Oort-cloud comet
+real: yes
+says: one of a vast number of icy bodies in the outer shell, tens of thousands of au out
+
+# ── Meteors and meteorites ──
+
+@meteor meteoroid
+name: Meteoroid
+real: yes
+says: a small rock or grain drifting in space
+
+@meteor meteor
+name: Meteor
+real: yes
+says: the streak of light when a meteoroid burns up in a planet's air
+
+@meteor fireball
+name: Fireball
+real: yes
+says: a very bright meteor, sometimes exploding in the sky
+
+@meteor meteor-shower
+name: Meteor shower
+real: yes
+says: many meteors at once when a planet crosses a comet's dust trail
+
+@meteor meteorite
+name: Meteorite
+real: yes
+says: a rock that survives the fall and reaches the ground
+
+@meteorite carbonaceous-chondrite
+name: Carbonaceous chondrite
+real: yes
+says: dark, carbon-rich and full of the chemistry of life; from C-type asteroids
+
+@meteorite ordinary-chondrite
+name: Ordinary chondrite
+real: yes
+says: the most common stony meteorite, with tiny melted beads inside
+
+@meteorite stony-iron
+name: Stony-iron meteorite
+real: yes
+says: a mix of rock and metal
+
+@meteorite iron
+name: Iron meteorite
+real: yes
+says: nickel-iron, from the core of a shattered small world
+
+# ── Generator rules ──
+
+@rule small-seed
+real: rule
+says: every asteroid, comet and dwarf planet is generated live from the world seed; nothing is pre-built
+
+@rule small-makeup-by-distance
+real: rule
+says: stony asteroids are more common close to the star, dark carbon-rich ones farther out, icy bodies beyond the frost line
+
+@rule small-comet-source
+real: rule
+says: short-period comets come from the Kuiper belt and scattered disk; long-period comets fall in from the Oort cloud
+
+@rule small-comet-tails
+real: rule
+says: comets grow a coma and two tails only near their star; the ion tail always points away from the star
+
+@rule small-impacts
+real: rule
+says: near-planet asteroids and falling comets can hit worlds; impact size and effect follow the 10 impact sizes on the space page
+
+@rule small-meteorites
+real: rule
+says: a meteorite's type follows the asteroid it came from; carbon-rich ones can deliver the chemistry of life
+
+@rule small-resources
+real: rule
+says: metal asteroids are mined for metals, icy bodies and comets for water and fuel, carbon-rich asteroids for life chemistry

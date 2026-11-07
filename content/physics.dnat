@@ -1,0 +1,390 @@
+# DNA-AND content · physics: forces, atoms, planet interiors, atmospheres
+# researched: OpenStax College Physics "The Four Basic Forces"; Manchester nuclear physics notes;
+#   geodynamo and mantle-convection reviews (arXiv 1304.2437, 1005.3523, 1910.14022);
+#   planetary atmosphere study guides (structure, escape, greenhouse); Wikipedia "Atmosphere"
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r03-engine-core.md · wiki/systems/r06-planet.md
+
+# ── The four forces of nature ──
+
+@force gravity
+name: Gravity
+real: yes
+strength: weakest of the four
+range: endless
+pulls-or-pushes: only pulls
+acts-on: everything with mass or energy
+carrier: graviton (hypothetical, never observed)
+does: holds planets, stars and galaxies together; makes orbits, tides and black holes; decides whether a world keeps its air
+
+@force electromagnetism
+name: Electromagnetism
+real: yes
+strength: second strongest
+range: endless
+pulls-or-pushes: both
+acts-on: anything with electric charge
+carrier: photon
+does: light, electricity, magnetism, lightning, and every chemical bond that holds molecules and life together
+
+@force strong-nuclear
+name: Strong nuclear force
+real: yes
+strength: the strongest
+range: tiny, inside an atom's nucleus
+carrier: gluon
+does: glues quarks into protons and neutrons, and holds the nucleus together; powers fusion in stars and fission in reactors and bombs
+
+@force weak-nuclear
+name: Weak nuclear force
+real: yes
+strength: weak, very short-ranged
+range: smaller than a proton
+carrier: W and Z particles
+does: radioactive decay, and turns one kind of particle into another; helps stars burn
+
+# ── The laws the matter is built by (numbers the game uses) ──
+# nuclear-force: the strong force between two nucleons (protons and neutrons): a hard core where they push apart, a pull
+#   just beyond it, nothing past a few fm (they sit about 1.8 fm apart: nuclear matter's density, 0.16 nucleons per fm3).
+# coulomb: the electric push between two protons, k = 1.44 MeV fm (e squared over 4 pi epsilon-0).
+# mass-formula: the semi-empirical (Bethe-Weizsacker) binding energy of a nucleus, MeV: volume (the strong force between
+#   neighbours), surface (fewer neighbours at the edge), coulomb (the protons' push), asymmetry (the Pauli principle,
+#   protons and neutrons in balance), pairing (pairs bind tighter). Textbook values.
+# beta-stability: the number of protons a nucleus of A nucleons is most stable with, Z = A / (2 + c A^(2/3)), c = 0.0155;
+#   fewer protons than that and a neutron turns into a proton (beta-minus decay, the weak force: an electron and an
+#   antineutrino out); more and a proton turns into a neutron (beta-plus or electron capture); past lead (Z above 82)
+#   the biggest nuclei throw out alpha particles (two protons, two neutrons) as the electric push outgrows the strong pull.
+@law nuclear-force
+name: The strong force between nucleons
+core-fm: 1.7
+spacing-fm: 1.8
+range-fm: 2.6
+
+@law coulomb
+name: The electric force between two protons
+k-mev-fm: 1.44
+
+@law mass-formula
+name: Semi-empirical mass formula
+volume-mev: 15.75
+surface-mev: 17.8
+coulomb-mev: 0.711
+asymmetry-mev: 23.7
+pairing-mev: 11.18
+
+@law beta-stability
+name: The valley of beta stability
+c: 0.0155
+alpha-above-z: 82
+
+# ── Particles and atoms ──
+
+@particle up-quark
+name: Up quark
+real: yes
+says: one of the two quarks that build protons and neutrons
+
+@particle down-quark
+name: Down quark
+real: yes
+says: the other quark in protons and neutrons
+
+@particle proton
+name: Proton
+real: yes
+says: two up quarks and one down; positive charge; the number of protons decides which element an atom is
+
+@particle neutron
+name: Neutron
+real: yes
+says: one up quark and two down; no charge; changes the atom's isotope
+
+@particle electron
+name: Electron
+real: yes
+says: negative charge, circling the nucleus; shared or swapped electrons make chemical bonds
+
+@particle neutrino
+name: Neutrino
+real: yes
+says: a nearly massless particle made by nuclear reactions, passing through almost everything
+
+@particle photon
+name: Photon
+real: yes
+says: a particle of light, the carrier of electromagnetism
+
+@particle gluon
+name: Gluon
+real: yes
+says: the carrier of the strong force
+
+@particle w-z
+name: W and Z particles
+real: yes
+says: the carriers of the weak force
+
+@particle graviton
+name: Graviton
+real: hypothetical
+says: the proposed carrier of gravity, never observed
+
+@atom nucleus
+name: Nucleus
+real: yes
+says: protons and neutrons packed at the atom's center, held by the strong force
+
+@atom electron-shells
+name: Electron shells
+real: yes
+says: the layers electrons sit in; the outer shell decides how an element reacts
+
+@atom isotope
+name: Isotope
+real: yes
+says: the same element with a different number of neutrons
+
+@atom radioactive-decay
+name: Radioactive decay
+real: yes
+says: an unstable nucleus breaks down over time, through the weak force or otherwise, giving off radiation
+
+@atom fusion
+name: Fusion
+real: yes
+says: light nuclei join into heavier ones and release energy; it powers stars
+
+@atom fission
+name: Fission
+real: yes
+says: heavy nuclei split and release energy; it powers reactors and atomic bombs
+
+@atom chemical-bond
+name: Chemical bond
+real: yes
+says: atoms joined by sharing or swapping electrons; the root of all chemistry and life
+
+# ── Inside a planet ──
+
+@interior inner-core
+name: Inner core
+real: yes
+says: solid metal at the very center (on Earth, iron and nickel)
+
+@interior outer-core
+name: Outer core
+real: yes
+says: liquid metal around the inner core; when it churns and the planet spins, it makes the magnetic field
+
+@interior mantle
+name: Mantle
+real: yes
+says: hot rock that flows very slowly, carrying heat up from the core
+
+@interior crust
+name: Crust
+real: yes
+says: the thin rocky skin we live on
+
+@interior lithosphere
+name: Lithosphere
+real: yes
+says: the stiff outer shell of crust and upper mantle, broken into plates on Earth
+
+@interior magma
+name: Magma
+real: yes
+says: melted rock under the surface; it becomes lava when it erupts
+
+@interior magma-ocean
+name: Magma ocean
+real: yes
+says: a whole planet surface of molten rock, common in young and very hot worlds
+
+# ── What moves inside a planet ──
+
+@process mantle-convection
+name: Mantle convection
+real: yes
+says: hot rock rises and cool rock sinks in slow loops, moving heat out of the planet
+
+@process plate-tectonics
+name: Plate tectonics
+real: yes
+says: the crust broken into moving plates that collide, split and slide, building mountains, trenches, volcanoes and quakes; Earth is the only known planet with it
+does: recycles the crust and helps keep the climate and the magnetic field going
+
+@process stagnant-lid
+name: Stagnant lid
+real: yes
+says: one unbroken rigid shell with no moving plates; heat escapes slowly through it (Mars, Venus)
+
+@process volcanism
+name: Volcanism
+real: yes
+says: magma reaching the surface through volcanoes, rifts and hot spots, releasing gases into the air
+
+@process geodynamo
+name: Geodynamo
+real: yes
+says: a churning liquid-metal core plus a spinning planet make a magnetic field; it can stop and restart over billions of years
+needs: an electrically conductive liquid core, and rotation
+
+@process magnetic-field
+name: Magnetic field
+real: yes
+says: the planet's field, from its dynamo; it can flip north and south over time
+has-one: Earth, Mercury, Jupiter, Saturn, Uranus, Neptune
+has-none: Venus, Mars
+
+@process magnetosphere
+name: Magnetosphere
+real: yes
+says: the bubble a magnetic field makes around a planet, turning away fast particles that are harmful to life
+
+@process aurora
+name: Aurora
+real: yes
+says: glowing lights near the poles where particles from the star hit the air
+
+# ── Atmospheres ──
+
+@atmosphere troposphere
+name: Troposphere
+real: yes
+says: the lowest layer, holding most of the air and all the weather; it gets colder as you go up
+
+@atmosphere stratosphere
+name: Stratosphere
+real: yes
+says: above the weather; on Earth it holds the ozone layer
+
+@atmosphere mesosphere
+name: Mesosphere
+real: yes
+says: the cold layer where meteors burn up
+
+@atmosphere thermosphere
+name: Thermosphere
+real: yes
+says: thin and very hot; auroras glow here
+
+@atmosphere exosphere
+name: Exosphere
+real: yes
+says: the outer edge, where gas thins out into space
+
+@atmosphere pressure
+name: Air pressure
+real: yes
+says: the weight of the air above; it falls off fast with height
+
+@atmosphere greenhouse
+name: Greenhouse effect
+real: yes
+says: gases like carbon dioxide and water vapor trap heat; Earth averages about 15 °C instead of about −18 °C
+
+@atmosphere runaway-greenhouse
+name: Runaway greenhouse
+real: yes
+says: heat traps more heat until the planet bakes; Venus, about 96% carbon dioxide, is around 460 °C at the surface
+
+@atmosphere thermal-escape
+name: Thermal escape
+real: yes
+says: hot, light gas moves fast enough to leave the planet for good
+
+@atmosphere hydrodynamic-escape
+name: Hydrodynamic escape
+real: yes
+says: strong starlight heats the upper air so much that whole streams of gas blow away, mostly hydrogen
+
+@atmosphere non-thermal-escape
+name: Non-thermal escape
+real: yes
+says: air lost through chemistry, particle hits and charge swaps instead of heat
+
+@atmosphere example-mars
+name: The air of Mars
+real: yes
+makeup: about 95% carbon dioxide, 2.7% nitrogen, 1.6% argon, 0.13% oxygen
+says: very thin
+
+@atmosphere example-giants
+name: The air of gas giants
+real: yes
+makeup: mostly hydrogen and helium
+says: deep, with no solid ground below
+
+# ── Simulation rules ──
+
+@rule physics-forces
+real: rule
+says: all four forces run the simulation: gravity for orbits, tides, air and collapse; electromagnetism for light, chemistry and magnetism; the strong force for fusion and fission; the weak force for radioactive decay
+
+@rule physics-elements
+real: rule
+says: an atom's protons decide its element (all 118); neutrons decide its isotope; unstable isotopes decay over time
+
+@rule physics-gravity-air
+real: rule
+says: a planet keeps its air if its gravity is strong and its air is cold; small, hot worlds lose it
+
+@rule physics-interior
+real: rule
+says: every rocky planet gets layers (core, mantle, crust); heat from inside drives convection, then plate tectonics or a stagnant lid, then volcanoes
+
+@rule physics-dynamo
+real: rule
+says: a liquid metal core plus spin makes a magnetic field; it can switch off and back on; the field shapes auroras and radiation at the surface
+
+@rule physics-tectonics
+real: rule
+says: moving plates build mountains, trenches, volcano chains and quakes, recycle the crust, and help keep the climate steady
+
+@rule physics-greenhouse
+real: rule
+says: greenhouse gases warm a planet; too much can run away into a Venus-like world
+
+@rule physics-tech
+real: rule
+says: civilizations climb the forces in order: fire and chemistry (electromagnetism), electricity and magnetism, then fission and fusion (the strong force), then mastery of gravity for space travel
+
+# ── the gases of airs, each molecule's atoms (so an air's make-up gives the atoms you meet going in) ──
+# number-density: molecules per cubic centimetre at the ground or cloud tops (Earth's air at sea level about 2.5e19, by
+# the ideal gas law at 1 bar and 15 C); used for every air at about one bar.
+@law star-plasma
+name: A star's surface (its photosphere): plasma
+makeup: hydrogen 91.2%, helium 8.7%, oxygen 0.05%, carbon 0.03%, neon 0.01%, nitrogen 0.007%, iron 0.003%
+per-cc: 1e17
+says: so hot (thousands of degrees) that the atoms have lost their electrons: bare nuclei and free electrons, about 0.2 micrometres apart (the Sun's photosphere: about 2e-7 grams a cubic centimetre)
+
+@law air-density
+name: Molecules in a cubic centimetre of air at about one bar
+number-density: 2.5e19
+
+@gas hydrogen
+atoms: H H
+@gas helium
+atoms: He
+@gas methane
+atoms: C H H H H
+@gas ammonia
+atoms: N H H H
+@gas nitrogen
+atoms: N N
+@gas oxygen
+atoms: O O
+@gas water
+atoms: H H O
+@gas argon
+atoms: Ar
+@gas carbon dioxide
+atoms: C O O
+@gas carbon monoxide
+atoms: C O
+@gas sodium
+atoms: Na
+@gas potassium
+atoms: K
+@gas silicon monoxide
+atoms: Si O

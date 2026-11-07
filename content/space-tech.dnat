@@ -1,0 +1,324 @@
+# DNA-AND content · space tech: megastructures, stations, ships, drives, colonies
+# researched: Wikipedia "Megastructure", "Dyson sphere"; NASA and Planetary Society propulsion
+#   overviews (ion, solar sail, nuclear thermal); Aerospace Corp "Emerging In-Space Propulsion";
+#   IEEE Spectrum on warp-drive physics; Kardashev scale (Kardashev 1964)
+# The 100 kinds of colony and the 100-step travel ladder are on the public space page.
+# Every built thing is generated live in the builder species' own image (LAW 14).
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r10-space.md · wiki/systems/r04b-generators.md
+
+# ── How big a civilization's power is (Kardashev scale) ──
+
+@scale type-1
+name: Planetary civilization (Type I)
+real: yes
+says: uses all the energy reaching its home planet
+
+@scale type-2
+name: Stellar civilization (Type II)
+real: yes
+says: uses all the energy of its star, with a Dyson swarm or sphere
+
+@scale type-3
+name: Galactic civilization (Type III)
+real: yes
+says: uses the energy of its whole galaxy
+
+# ── Megastructures ──
+
+@mega dyson-swarm
+name: Dyson swarm
+real: hypothetical
+says: a huge cloud of separate collectors and habitats orbiting a star, catching its light; the kind real scientists think is buildable
+
+@mega dyson-bubble
+name: Dyson bubble
+real: hypothetical
+says: collectors that float on the star's light instead of orbiting it
+
+@mega dyson-shell
+name: Dyson shell
+real: hypothetical
+says: one solid shell around the star; unstable without constant correction
+
+@mega matrioshka-brain
+name: Matrioshka brain
+real: hypothetical
+says: nested Dyson shells, each using the waste heat of the one inside, built to think instead of to live in
+
+@mega stellar-engine
+name: Stellar engine
+real: hypothetical
+says: a structure that moves a whole star, by pushing on its light from one side
+
+@mega star-ring
+name: Star ring
+real: hypothetical
+says: a vast spinning band around a star, its inner face a land to live on
+
+@mega topopolis
+name: Topopolis
+real: hypothetical
+says: an endless tube habitat wrapped around a star
+
+@mega space-elevator
+name: Space elevator
+real: hypothetical
+says: a cable from the ground to orbit, so cargo climbs to space instead of riding rockets
+
+@mega orbital-ring
+name: Orbital ring
+real: hypothetical
+says: a spinning ring around a planet, with cables hanging down to the ground
+
+@mega planet-shield
+name: Planet-wide shield
+real: hypothetical
+says: a giant magnetic or physical shield protecting a planet from its star or from weapons
+
+# ── Space habitats and stations ──
+
+@habitat station
+name: Orbital station
+real: yes
+says: a crewed outpost in orbit, from a small lab to a city
+
+@habitat stanford-torus
+name: Stanford torus
+real: hypothetical
+says: a spinning wheel about 1.7 km wide, with gravity from the spin
+
+@habitat bernal-sphere
+name: Bernal sphere
+real: hypothetical
+says: a spinning hollow ball up to about 16 km wide
+
+@habitat oneill-cylinder
+name: O'Neill cylinder
+real: hypothetical
+says: twin spinning cylinders with whole landscapes on their inner walls, made to feel like home gravity
+
+@habitat asteroid-habitat
+name: Hollowed asteroid
+real: hypothetical
+says: a habitat dug inside an asteroid and spun for gravity
+
+@habitat shipyard
+name: Shipyard
+real: yes
+says: a station where ships are built
+
+@habitat refinery
+name: Orbital refinery
+real: yes
+says: a station that turns mined rock and ice into metal and fuel
+
+# ── Ships by job ──
+
+@ship probe
+name: Probe
+real: yes
+says: an uncrewed explorer
+
+@ship lander
+name: Lander
+real: yes
+says: lands on a world's surface
+
+@ship shuttle
+name: Shuttle
+real: yes
+says: carries crew and cargo between the ground and orbit
+
+@ship freighter
+name: Freighter
+real: yes
+says: hauls cargo between worlds
+
+@ship miner
+name: Mining ship
+real: yes
+says: mines asteroids, comets and rings
+
+@ship tanker
+name: Fuel scoop tanker
+real: yes
+says: skims fuel from giant planets
+
+@ship colony-ship
+name: Colony ship
+real: yes
+says: carries settlers to found a new colony
+
+@ship generation-ship
+name: Generation ship
+real: hypothetical
+says: a ship so slow that its crew live and die aboard for generations before it arrives
+
+@ship seed-ship
+name: Seed ship
+real: hypothetical
+says: carries frozen life or genes instead of living crew
+
+@ship warship
+name: Warship
+real: yes
+says: built to fight
+
+@ship carrier
+name: Carrier
+real: yes
+says: carries smaller craft into battle
+
+@ship world-grinder
+name: World grinder
+real: game
+says: a huge moving machine, powered by atomics and a Dyson sphere, that eats whole worlds like a lawnmower crossing a lawn (Dark Harvest)
+
+# ── Drives ──
+
+@drive chemical
+name: Chemical rocket
+real: yes
+says: burns fuel and oxidizer; proven but needs huge amounts of fuel
+
+@drive ion
+name: Ion drive
+real: yes
+says: electricity pushes charged gas out very fast; tiny thrust, huge efficiency, months to build speed
+
+@drive solar-sail
+name: Light sail
+real: yes
+says: a huge thin sail pushed by starlight; weaker the farther from the star
+
+@drive magnetic-sail
+name: Magnetic sail
+real: hypothetical
+says: rides the star's wind with a magnetic field
+
+@drive nuclear-thermal
+name: Nuclear-thermal rocket
+real: yes
+says: a reactor heats the propellant; about twice as efficient as the best chemical rockets
+
+@drive nuclear-pulse
+name: Nuclear-pulse drive
+real: hypothetical
+says: rides a chain of small atomic blasts against a pusher plate
+
+@drive fusion
+name: Fusion drive
+real: hypothetical
+says: fusion exhaust, hundreds of times more efficient than chemical rockets
+
+@drive antimatter
+name: Antimatter drive
+real: hypothetical
+says: matter meeting antimatter; the most energy per kilogram of any fuel
+
+@drive laser-sail
+name: Laser-pushed sail
+real: hypothetical
+says: a sail pushed by giant lasers from home, to a good fraction of light speed
+
+@drive warp
+name: Warp drive
+real: hypothetical
+says: bends space around the ship instead of moving through it; allowed on paper but needs exotic matter
+
+@drive hyperdrive
+name: Hyperdrive
+real: game
+says: jumps through hyperspace between stars; in DNA-AND the step up from slower-than-light travel, growing into jump gates, wormhole networks and galaxy-to-galaxy jumps
+
+@drive wormhole
+name: Wormhole travel
+real: hypothetical
+says: a shortcut tunnel through space, held open with exotic matter
+
+# ── Generator rules ──
+
+@rule tech-seed
+real: rule
+says: every station, ship and megastructure is generated live; nothing is pre-built
+
+@rule tech-own-image
+real: rule
+says: built things follow the builder species' genes and body plan: an insect species builds insect ships, stations and cities
+
+@rule tech-ladder
+real: rule
+says: what a civilization can build follows its place on the 100-step travel ladder and its tech branches
+
+@rule tech-kardashev
+real: rule
+says: Dyson swarms and spheres mark a stellar (Type II) civilization; galactic megastructures mark Type III
+
+@rule tech-conditions
+real: rule
+says: colonies need the tech for every condition of their new world (the 10 × 10 world matrix)
+
+@rule tech-resources
+real: rule
+says: every build costs resources from the 100 space resources; megastructures can strip whole planets
+
+@rule tech-hypothetical
+real: rule
+says: real-but-unbuilt designs are allowed in the game; they unlock late and are marked hypothetical in content
+
+# ── Dyson builds: the steps of enclosing a star, each made of parts (sizes in AU from the star) ──
+# of: the megastructure it is a step of (its name from there); suffix: added to that name. star-bright: how much of the
+# star's light still gets out (1 all). outer-au: how far out it reaches.
+# part: one piece of it, any number of them:
+#   mirrors COUNT FROM-AU TO-AU            mirror satellites orbiting, catching light
+#   swarm COUNT RINGS BRIGHTNESS           collectors on tilted orbits round about 1 AU (dark panels that glint blue)
+#   bubble COUNT                           light sails held still by the star's own light: a thin even sphere
+#   shell RADIUS-AU LAND MODE [R G B GLOW] a solid shell (LAND yes: lived on inside; MODE 0 whole, 1 a ring band, 2 part
+#                                          built, 3 a one-sided cap; R G B GLOW: its hull's colour and glow)
+#   jet COUNT                              the light pushed out one way, as a long glowing plume (a stellar engine)
+@build mirrors
+name: Mirror satellites (the first step)
+part: mirrors 500 0.5 0.9
+
+@build dyson-swarm
+of: dyson-swarm
+part: swarm 30000 40 0.7
+star-bright: 0.8
+
+@build star-ring
+of: star-ring
+part: shell 1 yes 1
+
+@build dyson-bubble
+of: dyson-bubble
+part: bubble 24000
+star-bright: 0.7
+
+@build part-shell
+of: dyson-shell
+suffix: , part-built
+part: shell 1 yes 2
+
+@build dyson-shell
+of: dyson-shell
+part: shell 1 yes 0
+star-bright: 0
+
+@build matrioshka-brain
+of: matrioshka-brain
+part: shell 0.4 no 0 0.5 0.12 0.08 0.6
+part: shell 0.9 no 2 0.38 0.12 0.08 0.42
+part: shell 1.8 no 2 0.26 0.12 0.08 0.24
+star-bright: 0
+outer-au: 1.8
+
+@build stellar-engine
+of: stellar-engine
+part: shell 1 no 3 0.85 0.86 0.9 0.45
+part: jet 3000
+
+@build dimmed-swarm
+of: dyson-swarm
+suffix: , finished (the star is nearly hidden)
+part: swarm 70000 160 0.5
+star-bright: 0.2

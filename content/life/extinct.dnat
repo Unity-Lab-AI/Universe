@@ -1,0 +1,289 @@
+# DNA-AND content · life · extinct life
+# researched: LibreTexts Historical Geology "The Big Five"; US National Park Service "Mass Extinctions Through
+#   Geologic Time"; Open Geology "Mass extinctions"; Smithsonian and Discover Wildlife prehistoric-animal features;
+#   standard paleontology for dinosaur groups, sea reptiles, megafauna and extinct plants
+# Extinct life seeds what evolution can produce, and stays greyed out on the Tree of Life forever.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md · docs/wiki/stages-of-life.md
+
+# ── Mass extinctions (the Big Five, and after) ──
+
+@extinction end-ordovician
+name: End-Ordovician extinction
+real: yes
+when-mya: 445
+lost: about 85% of species, all in the seas (land wasn't settled yet)
+
+@extinction late-devonian
+name: Late Devonian extinction
+real: yes
+when-mya: 372..359
+lost: reefs and many fish, over a long stretch
+
+@extinction end-permian
+name: End-Permian extinction ("the Great Dying")
+real: yes
+when-mya: 252
+lost: about 90% of species, including the last trilobites
+
+@extinction end-triassic
+name: End-Triassic extinction
+real: yes
+when-mya: 201
+lost: about 75% of species; driven by global warming; cleared the way for dinosaurs
+
+@extinction end-cretaceous
+name: End-Cretaceous extinction
+real: yes
+when-mya: 66
+cause: an asteroid impact
+lost: all non-bird dinosaurs, ammonites, plesiosaurs and mosasaurs; mammals took over after
+
+@extinction human-era
+name: Human-era extinction
+real: yes
+says: a sixth mass extinction may be under way, driven by one thinking species
+
+# ── The first strange animals ──
+
+@extinct dickinsonia
+name: Dickinsonia
+real: yes
+when-mya: about 560
+says: a flat, frilly, rug-like early animal over a meter wide (Ediacaran life)
+
+@extinct ediacaran-life
+name: Ediacaran life
+real: yes
+says: soft quilted creatures from before the Cambrian, unlike anything alive now
+
+@extinct anomalocaris
+name: Anomalocaris
+real: yes
+says: a fast Cambrian sea hunter with grasping front arms and sharp eyes
+
+@extinct trilobites
+name: Trilobites
+real: yes
+says: armored sea arthropods that lived for nearly 300 million years, ended by the Great Dying
+
+@extinct sea-scorpions
+name: Sea scorpions (eurypterids)
+real: yes
+says: giant sea and river hunters; Jaekelopterus grew over 2.5 m long
+
+@extinct ammonites
+name: Ammonites
+real: yes
+says: coiled-shell relatives of squid, everywhere in the seas until the dinosaurs' end
+
+# ── Early fish and the walk onto land ──
+
+@extinct placoderms
+name: Placoderms
+real: yes
+says: armored fish with bony plates for jaws
+example: Dunkleosteus, an armored hunter up to about 10 m long
+
+@extinct tiktaalik
+name: Tiktaalik
+real: yes
+says: a fish with a neck and leg-like fins, halfway onto land
+
+@extinct giant-insects
+name: Giant insects
+real: yes
+says: oxygen-rich Carboniferous air let insects grow huge
+example: Meganeura, a dragonfly-like hunter with wings about 70 cm across
+
+@extinct arthropleura
+name: Arthropleura
+real: yes
+says: a millipede relative up to about 3 m long, a plant eater
+
+@extinct dimetrodon
+name: Dimetrodon
+real: yes
+says: a sail-backed hunter, closer to mammals than to dinosaurs
+
+# ── Dinosaurs ──
+
+@dinosaur theropods
+name: Theropods
+real: yes
+says: two-legged meat-eaters, and the line that became birds
+example: Tyrannosaurus, Velociraptor, Spinosaurus, Allosaurus
+
+@dinosaur sauropods
+name: Sauropods
+real: yes
+says: huge long-necked plant-eaters, the largest land animals ever
+example: Brachiosaurus, Diplodocus, Argentinosaurus
+
+@dinosaur ornithopods
+name: Ornithopods
+real: yes
+says: beaked plant-eaters, many duck-billed
+example: Iguanodon, Parasaurolophus
+
+@dinosaur ceratopsians
+name: Horned dinosaurs (ceratopsians)
+real: yes
+example: Triceratops
+
+@dinosaur stegosaurs
+name: Plated dinosaurs (stegosaurs)
+real: yes
+example: Stegosaurus
+
+@dinosaur ankylosaurs
+name: Armored dinosaurs (ankylosaurs)
+real: yes
+example: Ankylosaurus, with a club tail
+
+@dinosaur pachycephalosaurs
+name: Dome-headed dinosaurs
+real: yes
+example: Pachycephalosaurus
+
+@dinosaur feathered
+name: Feathered dinosaurs
+real: yes
+says: many dinosaurs had feathers long before flight
+example: Archaeopteryx, between dinosaur and bird
+
+@dinosaur birds-survive
+name: Birds
+real: yes
+says: the one dinosaur line that survived; every bird alive is a dinosaur
+
+# ── Other Mesozoic giants ──
+
+@extinct pterosaurs
+name: Pterosaurs
+real: yes
+says: flying reptiles, not dinosaurs; some as big as small planes
+example: Quetzalcoatlus, Pteranodon
+
+@extinct ichthyosaurs
+name: Ichthyosaurs
+real: yes
+says: dolphin-shaped sea reptiles
+
+@extinct plesiosaurs
+name: Plesiosaurs
+real: yes
+says: long-necked, four-flippered sea reptiles
+
+@extinct mosasaurs
+name: Mosasaurs
+real: yes
+says: giant sea lizards, top hunters of the last dinosaur seas
+
+# ── After the dinosaurs: the age of mammals ──
+
+@extinct megalodon
+name: Megalodon
+real: yes
+says: a giant shark, far bigger than any shark alive
+
+@extinct terror-birds
+name: Terror birds
+real: yes
+says: tall flightless hunting birds
+
+@extinct paraceratherium
+name: Paraceratherium
+real: yes
+says: a hornless rhino relative, one of the largest land mammals ever
+
+@extinct mammoth
+name: Woolly mammoth
+real: yes
+says: ice-age elephant covered in fur
+
+@extinct woolly-rhino
+name: Woolly rhinoceros
+real: yes
+
+@extinct saber-tooth
+name: Saber-toothed cats
+real: yes
+example: Smilodon
+
+@extinct ground-sloth
+name: Giant ground sloths
+real: yes
+says: sloths the size of elephants
+
+@extinct short-faced-bear
+name: Short-faced bear
+real: yes
+
+@extinct gigantopithecus
+name: Gigantopithecus
+real: yes
+says: the largest ape ever
+
+@extinct moa
+name: Moa
+real: yes
+says: giant flightless birds, hunted out by humans
+
+@extinct dodo
+name: Dodo
+real: yes
+says: a flightless pigeon, gone soon after humans arrived
+
+@extinct passenger-pigeon
+name: Passenger pigeon
+real: yes
+says: once in flocks of billions, hunted out
+
+@extinct thylacine
+name: Thylacine
+real: yes
+says: a striped pouched hunter, gone in the 20th century
+
+# ── Extinct plants ──
+
+@extinctplant scale-trees
+name: Scale trees (Lepidodendron)
+real: yes
+says: giant club-moss trees of the coal swamps; much of the world's coal is them
+
+@extinctplant archaeopteris
+name: Archaeopteris
+real: yes
+says: one of the first true trees
+
+@extinctplant seed-ferns
+name: Seed ferns
+real: yes
+says: fern-like plants that made seeds
+
+@extinctplant glossopteris
+name: Glossopteris
+real: yes
+says: a seed plant once across the southern supercontinent, ended by the Great Dying
+
+# ── Generator rules ──
+
+@rule extinct-seeds
+real: rule
+says: extinct real life is seed data: on Earth-like worlds, evolution can produce dinosaur-like, trilobite-like or mammoth-like life again, in new forms
+
+@rule extinct-forever
+real: rule
+says: once a line dies out it never returns as the same line; it stays greyed out on the Tree of Life
+
+@rule extinct-triggers
+real: rule
+says: mass extinctions follow real causes: impacts, supervolcanoes, warming, cooling, oxygen loss, and thinking species
+
+@rule extinct-recovery
+real: rule
+says: after a mass extinction, survivors spread fast into the emptied world and new groups rise
+
+@rule extinct-fossils
+real: rule
+says: extinct life leaves fossils; thinking species can dig them up and learn from them

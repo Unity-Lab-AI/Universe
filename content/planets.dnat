@@ -1,0 +1,191 @@
+# DNA-AND content · planets (rocky, watery and small worlds)
+# researched: Wikipedia "List of planet types"; The Planetary Society "The Different Kinds of Exoplanets";
+#   Britannica "super-Earth"; EarthSky (super-Earth vs mini-Neptune vs sub-Neptune)
+# Gas and ice giants: content/gas-giants.dnat. Physics of interiors and air: content/physics.dnat.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md
+
+# ── By size ──
+
+@planet sub-earth
+name: Sub-Earth
+real: yes
+says: much smaller and lighter than Earth
+example: Mercury, Mars
+
+@planet earth-size
+name: Earth-sized rocky planet
+real: yes
+says: rock and metal, about Earth's size
+example: Earth, Venus
+
+@planet super-earth
+name: Super-Earth
+real: yes
+mass-earth: 1..10
+says: rocky, bigger than Earth but well below Neptune; the most common kind found so far
+
+@planet mega-earth
+name: Mega-Earth
+real: yes
+says: a rocky planet far heavier than a super-Earth
+
+@planet mini-neptune
+name: Mini-Neptune (gas dwarf)
+real: yes
+mass-earth: up to about 10
+says: a small planet wrapped in a thick hydrogen-helium air; where super-Earths end and mini-Neptunes begin is unknown
+
+# ── By makeup ──
+
+@planet rocky
+name: Rocky planet
+real: yes
+says: a stone mantle over a metal core
+
+@planet iron
+name: Iron planet
+real: yes
+says: mostly metal core with little rock
+
+@planet carbon
+name: Carbon planet
+real: hypothetical
+says: rich in carbon instead of oxygen; diamond and graphite instead of ordinary rock
+
+@planet coreless
+name: Coreless planet
+real: hypothetical
+says: rock all the way through, with no metal core
+
+@planet helium
+name: Helium planet
+real: hypothetical
+says: a world whose air has lost its hydrogen, leaving helium
+
+@planet ocean
+name: Ocean planet
+real: yes
+says: liquid-water oceans hundreds of kilometers deep, with no dry land
+air: nitrogen 70%, oxygen 18%, water vapour 10%, argon 1%, carbon dioxide 1%  (thick, wet air)
+
+@planet hycean
+name: Hycean world
+real: hypothetical
+says: a mini-Neptune whose mass is mostly a warm water ocean under a hydrogen-helium air
+
+@planet desert
+name: Desert planet
+real: yes
+says: dry rock and sand, little or no surface water
+air: carbon dioxide 95%, nitrogen 2.8%, argon 2%, oxygen 0.2%  (thin, like Mars)
+
+@planet snowball
+name: Snowball planet
+real: yes
+says: a world whose oceans have frozen over, far from its star
+air: nitrogen 95%, methane 4%, carbon monoxide 1%  (cold, like Titan or Pluto)
+
+@planet ice-world
+name: Ice world
+real: yes
+says: ice from pole to pole, often with water below
+
+# ── By heat and orbit ──
+
+@planet lava
+name: Lava planet
+real: yes
+says: so close to its star that its surface is molten rock
+example: Kepler-10b, CoRoT-7b
+air: rock vapour: sodium, potassium, silicon monoxide, oxygen  (a thin haze of boiled rock)
+
+@planet chthonian
+name: Chthonian planet
+real: hypothetical
+says: the bare core left after a giant planet's gas was stripped away by its star
+
+@planet greenhouse-world
+name: Greenhouse world
+real: yes
+says: thick air trapping heat until the surface bakes
+example: Venus
+
+@planet temperate
+name: Temperate planet
+real: yes
+says: in the habitable zone, where liquid water can last
+example: Earth
+air: nitrogen 78%, oxygen 21%, argon 0.9%, carbon dioxide 0.04%, water vapour (varies)  (like Earth)
+
+@planet tidally-locked
+name: Tidally locked planet
+real: yes
+says: one side always faces its star; one side burns, one side freezes, with a twilight ring between
+air: nitrogen 80%, carbon dioxide 15%, oxygen 4%, argon 1%  (winds carry heat to the night side)
+
+@planet eccentric
+name: Eccentric-orbit planet
+real: yes
+says: a stretched orbit that swings close to its star and far away, making wild seasons
+
+@planet circumbinary
+name: Circumbinary planet
+real: yes
+says: orbits two stars at once
+
+@planet rogue
+name: Rogue planet
+real: yes
+says: no star at all, drifting through space, warmed only from inside
+
+# ── Earth-family examples ──
+
+@example mercury
+name: Mercury
+real: yes
+type: sub-earth
+note: smallest planet, closest to the Sun, almost no air, has a magnetic field
+
+@example venus
+name: Venus
+real: yes
+type: greenhouse-world
+note: about 96% carbon dioxide air, about 460 °C at the surface, no magnetic field
+
+@example earth
+name: Earth
+real: yes
+type: temperate
+note: plate tectonics, a magnetic field, oceans and life
+
+@example mars
+name: Mars
+real: yes
+type: sub-earth
+note: thin carbon dioxide air, polar ice caps, no global magnetic field
+
+# ── Generator rules ──
+
+@rule planet-seed
+real: rule
+says: every planet is generated live from the world seed; nothing is pre-built
+
+@rule planet-size-air
+real: rule
+says: bigger, colder planets keep more air; small hot ones lose it (content/physics.dnat)
+
+@rule planet-zone
+real: rule
+says: where a planet forms (inside or outside the frost line, in or out of the habitable zone) sets its makeup and temperature
+
+@rule planet-interior
+real: rule
+says: every rocky planet gets core, mantle and crust; heat decides tectonics or a stagnant lid, volcanoes, and a magnetic field
+
+@rule planet-conditions
+real: rule
+says: every planet is rated on the 10 world conditions (temperature, gravity, air pressure, air makeup, radiation, water, day length, surface, magnetic shield, local life)
+
+@rule planet-hypothetical
+real: rule
+says: hypothetical planet types can be generated but are rare, and they're marked as such

@@ -1,0 +1,118 @@
+# DNA-AND content · life · fungi (domain Eukaryotes, kingdom Fungi)
+# researched: OpenStax Biology 2e "24.2 Classifications of Fungi"; Pearson study guide on fungal diversity
+#   and life cycles; standard biology for lichens, root partners and decomposers
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md
+
+# ── Phyla ──
+
+@phylum chytrids
+name: Chytrids
+real: yes
+kingdom: fungi
+says: the only fungi that still swim with a tail; mostly in water; one kind is killing frogs worldwide
+
+@phylum zygomycetes
+name: Zygomycetes (Mucoromycota)
+real: yes
+kingdom: fungi
+example: bread mold
+says: fast molds on fruit and bread
+
+@phylum glomeromycetes
+name: Glomeromycetes
+real: yes
+kingdom: fungi
+says: root partners living inside most plants' roots, trading minerals for sugar
+
+@phylum ascomycetes
+name: Sac fungi (Ascomycota)
+real: yes
+kingdom: fungi
+says: the biggest group: yeasts, molds, morels and truffles
+
+@phylum basidiomycetes
+name: Club fungi (Basidiomycota)
+real: yes
+kingdom: fungi
+says: mushrooms with gills, puffballs, and the rusts and smuts that attack crops
+
+# ── Body parts ──
+
+@part hypha
+name: Hypha
+real: yes
+says: a thin thread, the basic body of a fungus
+
+@part mycelium
+name: Mycelium
+real: yes
+says: a hidden web of threads through soil, wood or flesh; one can spread for kilometers
+
+@part fruiting-body
+name: Fruiting body
+real: yes
+says: the mushroom or cup that pops up to release spores
+
+@part spores
+name: Spores
+real: yes
+says: tiny seeds of a fungus, carried by wind, water and animals
+
+@part gills
+name: Gills
+real: yes
+says: the thin plates under a mushroom cap where spores are made
+
+# ── Ways of living ──
+
+@life decomposer
+name: Decomposer
+real: yes
+says: rots dead plants and animals back into soil
+
+@life root-partner
+name: Root partner (mycorrhiza)
+real: yes
+says: wraps or enters plant roots, trading water and minerals for sugar; links plants into networks
+
+@life lichen
+name: Lichen
+real: yes
+says: a fungus and an alga living as one, able to grow on bare rock
+
+@life parasite
+name: Parasite
+real: yes
+says: feeds on living plants, insects or animals
+
+@life mind-control
+name: Body-snatching fungus
+real: yes
+says: takes over an insect's behavior before killing it
+
+@life yeast
+name: Yeast
+real: yes
+says: single-celled fungi that ferment sugar into alcohol and gas
+
+# ── Generator rules ──
+
+@rule fungi-recyclers
+real: rule
+says: fungi rot what dies and return it to the soil; without them dead matter piles up
+
+@rule fungi-networks
+real: rule
+says: root-partner fungi link plants underground, sharing food and warnings (the root-network step on the grouping ladder)
+
+@rule fungi-spread
+real: rule
+says: fungi spread by spores on wind and water, and by growing their mycelium through soil and wood
+
+@rule fungi-land
+real: rule
+says: root-partner fungi help the first plants move onto land
+
+@rule fungi-farming
+real: rule
+says: fungi can be farmed: by ants and termites, and by thinking species for food, drugs and fermenting

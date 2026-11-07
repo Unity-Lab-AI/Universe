@@ -1,0 +1,173 @@
+# DNA-AND content · life · intelligent creatures (any kingdom)
+# researched: Cambridge comparative-cognition work on corvids and cephalopods (Schnell, Amodio, Clayton);
+#   Phys.org 2020 review "Evolution of complex cognition in birds"; mirror-test literature (Gallup 1970,
+#   later studies of apes, dolphins, elephants, magpies, cleaner wrasse); CARTA "Dolphin and Elephant Minds";
+#   standard biology for social-insect collective behavior and slime-mold problem solving
+# Any line of life can climb to intelligence (the grouping ladder). These are the real minds that seed it.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r08-life-sim.md · wiki/systems/r09-civilization.md
+
+# ── Real thinking animals (seeds) ──
+
+@mind great-apes
+name: Great apes
+real: yes
+shows: tool use, culture, self-recognition, sign-language learning in captivity, politics and war
+
+@mind humans
+name: Humans
+real: yes
+shows: language, writing, technology, civilization; the only species known to reach space
+
+@mind corvids
+name: Crows and ravens
+real: yes
+shows: tool making, planning ahead, solving puzzles, recognizing faces; minds that evolved separately from apes'
+
+@mind parrots
+name: Parrots
+real: yes
+shows: speech, counting, problem solving
+
+@mind dolphins-whales
+name: Dolphins and whales
+real: yes
+shows: self-recognition, names (signature whistles), culture passed between groups, songs
+
+@mind elephants
+name: Elephants
+real: yes
+shows: self-recognition, mourning their dead, long memory, family culture
+
+@mind octopuses
+name: Octopuses
+real: yes
+shows: problem solving, escape, camouflage; a smart line with no social life and short lives
+
+@mind wolves-dogs
+name: Wolves and dogs
+real: yes
+shows: pack hunting strategy, reading faces and gestures
+
+@mind magpies
+name: Magpies
+real: yes
+shows: one of the few birds reported to pass the mirror test
+
+@mind cleaner-wrasse
+name: Cleaner wrasse
+real: yes
+shows: a small fish reported to pass the mirror test
+
+@mind social-insects
+name: Social insects
+real: yes
+shows: no single smart brain, but colonies that solve problems together: farming, building, war, voting on new nests
+
+@mind slime-mold
+name: Slime molds
+real: yes
+shows: with no brain at all, they solve mazes and find the shortest paths
+
+# ── Signs of a mind ──
+
+@sign tool-use
+name: Tool use
+real: yes
+
+@sign tool-making
+name: Tool making
+real: yes
+
+@sign self-recognition
+name: Self-recognition
+real: yes
+says: knowing yourself in a mirror; one test of a mind
+
+@sign planning
+name: Planning ahead
+real: yes
+
+@sign language
+name: Language
+real: yes
+
+@sign culture
+name: Culture
+real: yes
+says: ways of doing things taught, not born with
+
+@sign mourning
+name: Mourning
+real: yes
+
+@sign deception
+name: Deception
+real: yes
+
+@sign teaching
+name: Teaching
+real: yes
+
+@sign collective-mind
+name: Collective mind
+real: yes
+says: many small minds acting as one (hives, swarms)
+
+# ── What pushes a line toward intelligence ──
+
+@driver social-life
+name: Living in groups
+real: yes
+says: tracking friends, rivals and debts takes a bigger brain
+
+@driver hands
+name: Grasping limbs
+real: yes
+says: hands, trunks, beaks, tentacles that can handle tools
+
+@driver long-life
+name: Long life and long childhood
+real: yes
+says: more time to learn and to teach
+
+@driver varied-food
+name: Hard-to-get food
+real: yes
+says: nuts, shellfish, prey that must be outwitted
+
+@driver brain-size
+name: Big brain for its body
+real: yes
+says: brain size compared to body size is one rough sign, but not the only one
+
+@driver changing-world
+name: A changing world
+real: yes
+says: fast-changing climates reward clever, flexible animals
+
+@driver convergence
+name: Many roads to a mind
+real: yes
+says: crows, apes and octopuses reached cleverness separately; minds evolve again and again
+
+# ── Generator rules ──
+
+@rule mind-any-line
+real: rule
+says: any kingdom can reach intelligence if evolution builds the drivers: animals most often, but hive insects, fungal networks and even plants on other templates can climb the grouping ladder
+
+@rule mind-signs-ladder
+real: rule
+says: a species earns signs of a mind one by one (tool use, culture, language…); together they unlock the thinking steps (31+) on the grouping ladder
+
+@rule mind-own-image
+real: rule
+says: a thinking species' clothing, tools, cities and ships are generated from its own body plan (LAW 14)
+
+@rule mind-ai-layers
+real: rule
+says: thinking species get the species AI layer, and can later grow a galactic mind
+
+@rule mind-spark
+real: rule
+says: the Spark of Mind power pushes a species toward intelligence, but only works on one already close to it

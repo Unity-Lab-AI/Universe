@@ -1,0 +1,416 @@
+// DNA-AND · gen · live generators for the deep zoom: galaxy structures (clusters, nebulas), the core's
+// supermassive black hole, and full star systems. All built from the seed and the content files.
+using System;
+using System.Collections.Generic;
+using DnaAnd.Core;
+using DnaAnd.Render;
+
+namespace DnaAnd.Gen
+{
+    /// <summary>Distance units. One galaxy unit is 50,000 light-years (about a galaxy's radius).</summary>
+    internal static class Units
+    {
+        public const double LightYearsPerUnit = 50000.0;
+        public const double KmPerLightYear = 9.4607e12;
+        public const double KmPerAu = 1.496e8;
+        public const double AuPerLightYear = 63241.0;
+        public static double Km(double km) { return km / KmPerLightYear / LightYearsPerUnit; }
+        public static double Au(double au) { return Km(au * KmPerAu); }
+
+        public static string Describe(double units)
+        {
+            double ly = units * LightYearsPerUnit;
+            if (ly >= 1) return ly.ToString(ly >= 100 ? "N0" : "0.0") + " light-years";
+            double au = ly * AuPerLightYear;
+            if (au >= 0.01) return au.ToString(au >= 100 ? "N0" : "0.00") + " au";
+            return (au * KmPerAu).ToString("N0") + " km";
+        }
+    }
+
+    internal static class SpaceGen
+    {
+        // ── galaxy structures: globular clusters, open clusters, nebulas ──
+        public static StarVertex[] Structures(string galaxyType, ulong seed, List<StarKind> kinds, out int clusterCount, out int nebulaCount)
+        { return Structures(galaxyType, seed, kinds, out clusterCount, out nebulaCount, null); }
+
+        /// <summary>The same, and each cluster and nebula as one feature (galaxy units: x, y, z, radius, kind: 0 globular cluster,
+        /// 1 open cluster, 2 emission nebula, 3 reflection nebula), for picking.</summary>
+        /// <summary>What a nebula is made of, by its kind and its own mix u (0 to 1): each part's name, its element (for its gas),
+        /// its share, and the colour it shines or shows in. Emission: hydrogen glowing deep red (H-alpha), oxygen teal-green ([O III]),
+        /// sulfur and nitrogen deeper reds; planetary: oxygen green-blue strongest, hydrogen and nitrogen red rims; supernova
+        /// remnants: hydrogen with the star's own oxygen, sulfur, silicon and iron; dark clouds: molecular hydrogen, carbon monoxide,
+        /// water ice, ammonia, methanol and ethanol (alcohols), formaldehyde, hydrogen cyanide, and dust; reflection: dust scattering blue.</summary>
+        public sealed class Part { public string Name, El; public double Share; public float R, G, B; public Part(string n, string e, double s, float r, float g, float b) { Name = n; El = e; Share = s; R = r; G = g; B = b; } }
+        public static Part[] Composition(int kind, double u)
+        {
+            Part[] p;
+            switch (kind)
+            {
+                case 2: p = new[] { new Part("hydrogen (glowing red)", "H", 0.55 + 0.25 * (1 - u), 1f, 0.18f, 0.25f), new Part("oxygen (teal-green)", "O", 0.05 + 0.3 * u, 0.15f, 1f, 0.8f), new Part("sulfur (deep red)", "S", 0.02 + 0.06 * (1 - u), 0.75f, 0.08f, 0.1f), new Part("nitrogen (red)", "N", 0.03 + 0.07 * u, 1f, 0.3f, 0.3f), new Part("helium", "He", 0.09, 0.9f, 0.85f, 1f) }; break;
+                case 3: p = new[] { new Part("dust: silicate and carbon grains (scattering blue)", "Si", 0.6, 0.35f, 0.5f, 1f), new Part("hydrogen", "H", 0.3, 0.5f, 0.55f, 0.9f), new Part("helium", "He", 0.1, 0.6f, 0.65f, 1f) }; break;
+                case 4: p = new[] { new Part("oxygen (green-blue)", "O", 0.3 + 0.25 * u, 0.2f, 1f, 0.75f), new Part("hydrogen (red)", "H", 0.3, 1f, 0.2f, 0.3f), new Part("nitrogen (red rim)", "N", 0.08 + 0.15 * (1 - u), 1f, 0.35f, 0.3f), new Part("helium", "He", 0.12, 0.6f, 0.7f, 1f) }; break;
+                case 5: p = new[] { new Part("hydrogen (red)", "H", 0.35, 1f, 0.25f, 0.3f), new Part("oxygen (teal)", "O", 0.2 + 0.2 * u, 0.2f, 0.9f, 0.85f), new Part("sulfur (deep red)", "S", 0.1, 0.8f, 0.1f, 0.15f), new Part("silicon", "Si", 0.08, 0.7f, 0.6f, 0.5f), new Part("iron", "Fe", 0.05 + 0.1 * (1 - u), 0.9f, 0.5f, 0.3f), new Part("neon", "Ne", 0.05, 1f, 0.45f, 0.2f) }; break;
+                case 6: p = new[] { new Part("molecular hydrogen (H2)", "H", 0.7, 0.3f, 0.2f, 0.15f), new Part("carbon monoxide (CO)", "C", 0.08, 0.35f, 0.22f, 0.16f), new Part("water ice (H2O)", "O", 0.06, 0.4f, 0.4f, 0.45f), new Part("ammonia (NH3)", "N", 0.02, 0.35f, 0.3f, 0.25f),
+                    new Part("methanol (CH3OH, an alcohol)", "C", 0.015 + 0.02 * u, 0.4f, 0.28f, 0.2f), new Part("ethanol (C2H5OH, an alcohol)", "C", 0.002 + 0.008 * u, 0.4f, 0.3f, 0.2f), new Part("formaldehyde (H2CO)", "O", 0.006, 0.35f, 0.25f, 0.2f), new Part("hydrogen cyanide (HCN)", "N", 0.004, 0.3f, 0.25f, 0.2f), new Part("vinyl alcohol and propanol (alcohols)", "C", 0.001 + 0.002 * u, 0.4f, 0.3f, 0.2f), new Part("ethyl formate (the raspberry ester)", "C", 0.0005 + 0.001 * u, 0.4f, 0.3f, 0.22f), new Part("dust grains", "Si", 0.1, 0.25f, 0.16f, 0.1f) }; break;
+                default: p = new[] { new Part("hydrogen", "H", 0.9, 1f, 1f, 1f), new Part("helium", "He", 0.1, 1f, 1f, 1f) }; break;
+            }
+            double sum = 0; foreach (var q in p) sum += q.Share; foreach (var q in p) q.Share /= sum;
+            return p;
+        }
+        // a nebula's colour: its parts' colours by their shares
+        public static void Colour(int kind, double u, out float r, out float g, out float b)
+        {
+            r = g = b = 0; foreach (var q in Composition(kind, u)) { r += q.R * (float)q.Share; g += q.G * (float)q.Share; b += q.B * (float)q.Share; }
+            float m = Math.Max(0.01f, Math.Max(r, Math.Max(g, b))); r /= m; g /= m; b /= m;
+        }
+
+        public static StarVertex[] Structures(string galaxyType, ulong seed, List<StarKind> kinds, out int clusterCount, out int nebulaCount, List<double[]> features)
+        {
+            // every kind of body a galaxy holds, in its real numbers for its kind (sampled, so the sky stays light), each a feature
+            // (x, y, z, radius, kind): 0 globular cluster, 1 open cluster, 2 emission nebula, 3 reflection nebula, 4 planetary nebula,
+            // 5 supernova remnant, 6 dark nebula (a cold cloud of dust and molecules). Real counts for a galaxy like ours: about 150
+            // globular clusters, thousands of open clusters, nebulae and dark clouds, hundreds of planetary nebulae seen (thousands
+            // there), a few hundred supernova remnants; a giant elliptical thousands of globulars, few young things, but planetary
+            // nebulae and remnants from its old stars.
+            var rng = new Rng(seed ^ 0xC1u);
+            var list = new List<StarVertex>();
+            string t = galaxyType.ToLowerInvariant();
+            bool spiral = t.Contains("spiral");
+            bool irregular = t.Contains("irregular") || t.Contains("magellanic") || t.Contains("blue-compact") || t.Contains("green-pea") || t.Contains("jellyfish") || t.Contains("starburst") || t.Contains("ring") || t.Contains("interacting") || t.Contains("peculiar");
+            bool elliptical = t.Contains("elliptical") || t.Contains("spheroidal") || t == "cd" || t.Contains("lenticular");
+            bool giant = t.Contains("giant") || t == "cd";
+            bool dwarf = t.Contains("dwarf") || t.Contains("ultra-diffuse");
+            double young = t.Contains("starburst") || t.Contains("green-pea") ? 3 : spiral ? 1 : irregular ? 0.7 : t.Contains("lenticular") ? 0.05 : elliptical ? 0.01 : 0.2;   // how much it is still making stars
+            double size = giant ? 3 : dwarf ? 0.15 : 1;
+            // researched counts: the Milky Way about 150-180 globular clusters, a few tens of thousands of open clusters (about 10,000
+            // known), about 10,000-30,000 planetary nebulae (about 3,500 known), about 1,000 supernova remnants (about 300 known);
+            // a giant elliptical like M87 about 12,000-15,000 globular clusters
+            int globulars = (int)((giant ? 12000 : elliptical ? 600 : dwarf ? 8 : 160) * (0.8 + 0.4 * rng.NextDouble()));
+            int opens = (int)(3000 * young * size), emis = (int)(2000 * young * size), refl = (int)(500 * young * size), dark = (int)(3000 * young * size);
+            int planetary = (int)(3000 * size), remnants = (int)((300 + 700 * young) * size);
+            clusterCount = 0; nebulaCount = 0;
+            Func<Vec3> disc = () =>
+            {
+                // in the disc: on the arms for a spiral, anywhere for the rest
+                float rr = (float)Math.Pow(rng.NextDouble(), 0.7) * 0.85f + 0.1f;
+                float ang = spiral ? rng.Int(2) * (float)Math.PI + (float)Math.Log(rr / 0.05f + 1) * 3.2f + rng.Gaussian() * 0.25f : (float)(rng.NextDouble() * Math.PI * 2);
+                return new Vec3((float)Math.Cos(ang) * rr, rng.Gaussian() * (elliptical ? 0.3f : 0.01f), (float)Math.Sin(ang) * rr);
+            };
+            Func<Vec3> old = () => elliptical ? new Vec3(rng.Gaussian() * 0.35f, rng.Gaussian() * 0.3f, rng.Gaussian() * 0.35f) : disc();   // among the old stars
+            float ly = (float)(1 / Units.LightYearsPerUnit);
+            double mix = 0;                                                               // the next body's own mix (its make-up)
+            Action<Vec3, float, int> add = (c, r, kind) => { if (features != null) features.Add(new double[] { c.X, c.Y, c.Z, r, kind, mix }); };
+            for (int g = 0; g < globulars; g++)
+            {
+                // halo: tight balls of ancient stars
+                var c = new Vec3(rng.Gaussian() * 0.5f, rng.Gaussian() * 0.35f, rng.Gaussian() * 0.5f); float r = 60 * ly;
+                int pts = globulars > 3000 ? 6 : globulars > 300 ? 20 : 40;   // drawn lightly, so even thousands stay smooth
+                for (int i = 0; i < pts; i++) list.Add(Star(c + new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()) * (r * (float)Math.Abs(rng.Gaussian()) * 0.6f), 0f, 1f, 0.75f, 0.45f, rng.Range(0.05f, 0.2f)));
+                clusterCount++; add(c, r, 0);
+            }
+            for (int k = 0; k < opens; k++)
+            {
+                var c = disc(); float r = 15 * ly;
+                for (int i = 0; i < 6; i++) list.Add(Star(c + new Vec3(rng.Gaussian(), rng.Gaussian() * 0.4f, rng.Gaussian()) * r, 0f, 0.7f, 0.8f, 1f, rng.Range(0.1f, 0.35f)));
+                clusterCount++; add(c, r, 1);
+            }
+            for (int k = 0; k < emis + refl; k++)
+            {
+                // emission nebulae: hydrogen glowing red round hot young stars; reflection nebulae: dust lit blue
+                bool emission = k < emis; var c = disc(); float r = rng.Range(40, 300) * ly;
+                mix = rng.NextDouble(); float cr, cg, cb; Colour(emission ? 2 : 3, mix, out cr, out cg, out cb);   // its colours from what it is made of
+                for (int i = 0; i < 8; i++)
+                {
+                    // each part of it glows in its own part's colour (oxygen's teal toward its middle, hydrogen's red throughout)
+                    var parts = Composition(emission ? 2 : 3, mix); var pp = parts[(int)(rng.NextDouble() * parts.Length) % parts.Length];
+                    float wr = (cr + pp.R) * 0.5f, wg = (cg + pp.G) * 0.5f, wb = (cb + pp.B) * 0.5f;
+                    list.Add(Star(c + new Vec3(rng.Gaussian(), rng.Gaussian() * 0.5f, rng.Gaussian()) * r * (pp.El == "O" ? 0.6f : 1f), r * 2.5f, wr, wg, wb, 0.03f));
+                }
+                nebulaCount++; add(c, r * 1.5f, emission ? 2 : 3);
+            }
+            for (int k = 0; k < dark; k++)
+            {
+                // dark nebulae: cold clouds of dust and molecules, shown by the faint dusky glow at their edges (stars are born inside)
+                var c = disc(); float r = rng.Range(5, 60) * ly;
+                mix = rng.NextDouble(); float dr, dg, db; Colour(6, mix, out dr, out dg, out db);
+                for (int i = 0; i < 3; i++) list.Add(Star(c + new Vec3(rng.Gaussian(), rng.Gaussian() * 0.4f, rng.Gaussian()) * r, r * 1.8f, dr * 0.4f, dg * 0.4f, db * 0.4f, 0.02f));
+                nebulaCount++; add(c, r * 1.3f, 6);
+            }
+            for (int k = 0; k < planetary; k++)
+            {
+                // planetary nebulae: glowing shells a light-year or so across, puffed off by dying stars like the Sun (in every galaxy)
+                var c = old(); float r = rng.Range(0.3f, 1.5f) * ly;
+                mix = rng.NextDouble(); float pr, pg, pb; Colour(4, mix, out pr, out pg, out pb);
+                for (int i = 0; i < 4; i++) { var d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized; list.Add(Star(c + d * r, r * 0.8f, pr, pg, pb, 0.06f)); }
+                nebulaCount++; add(c, r * 1.2f, 4);
+            }
+            for (int k = 0; k < remnants; k++)
+            {
+                // supernova remnants: expanding shells tens of light-years across, from stars that exploded
+                var c = rng.NextDouble() < young / (young + 0.3) ? disc() : old(); float r = rng.Range(10, 80) * ly;
+                mix = rng.NextDouble(); float sr, sg, sb; Colour(5, mix, out sr, out sg, out sb);
+                for (int i = 0; i < 6; i++) { var d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized; list.Add(Star(c + d * r, r * 0.5f, sr, sg, sb, 0.03f)); }
+                nebulaCount++; add(c, r * 1.1f, 5);
+            }
+            return list.ToArray();
+        }
+
+        // ── the core's supermassive black hole ──
+        public sealed class BlackHole
+        {
+            public double MassSol, HorizonUnits; public bool Active;
+            public StarVertex[] Disk, Jets, Glow;
+        }
+
+        public static BlackHole CoreBlackHole(ContentLibrary content, ulong seed)
+        {
+            var rng = new Rng(seed ^ 0xB1ACu);
+            double lo = 1e6, hi = 1e10;
+            foreach (var e in content.OfKind("black-holes.dnat", "blackhole"))
+                if (e.Id == "supermassive") e.TryRange("mass-sol", out lo, out hi);
+            double mass = Math.Exp(Math.Log(lo) + rng.NextDouble() * (Math.Log(Math.Min(hi, 1e9)) - Math.Log(lo)));
+            double rs = Units.Km(2.95 * mass);                    // event horizon radius
+            var bh = new BlackHole { MassSol = mass, HorizonUnits = rs, Active = rng.NextDouble() < 0.5 };
+
+            var disk = new List<StarVertex>();
+            for (int i = 0; i < 9000; i++)
+            {
+                // accretion disk from just outside the photon sphere outward; hotter (whiter) toward the inside
+                double r = rs * (2.6 + Math.Pow(rng.NextDouble(), 1.6) * 30);
+                double a = rng.NextDouble() * Math.PI * 2;
+                float heat = (float)Math.Max(0, 1 - (r / rs - 2.6) / 30);
+                disk.Add(Star(new Vec3((float)(Math.Cos(a) * r), (float)(rng.Gaussian() * rs * 0.08), (float)(Math.Sin(a) * r)),
+                    (float)(rs * 0.5), 1f, 0.45f + heat * 0.5f, 0.15f + heat * 0.8f, 0.05f + heat * 0.12f));
+            }
+            for (int i = 0; i < 1200; i++)
+            {
+                // photon ring: light bent all the way around the hole
+                double a = rng.NextDouble() * Math.PI * 2, r = rs * 1.5;
+                disk.Add(Star(new Vec3((float)(Math.Cos(a) * r), (float)(Math.Sin(a) * r * 0.9), (float)(rng.Gaussian() * rs * 0.05)), (float)(rs * 0.2), 1f, 0.9f, 0.7f, 0.18f));
+            }
+            bh.Disk = disk.ToArray();
+
+            var jets = new List<StarVertex>();
+            if (bh.Active)
+                for (int i = 0; i < 5000; i++)
+                {
+                    // jets fired from the poles (content: jets, relativistic jet)
+                    double h = rs * (3 + Math.Pow(rng.NextDouble(), 2.2) * 3000) * (rng.NextDouble() < 0.5 ? 1 : -1);
+                    double w = Math.Abs(h) * 0.04 * Math.Abs(rng.Gaussian());
+                    double a = rng.NextDouble() * Math.PI * 2;
+                    jets.Add(Star(new Vec3((float)(Math.Cos(a) * w), (float)h, (float)(Math.Sin(a) * w)), (float)(Math.Abs(h) * 0.02 + rs * 0.3), 0.45f, 0.65f, 1f, 0.06f));
+                }
+            bh.Jets = jets.ToArray();
+
+            var glow = new List<StarVertex>();
+            for (int i = 0; i < 2500; i++)
+            {
+                // dense star crowd around the core, spread over the inner light-years
+                Vec3 d = new Vec3(rng.Gaussian(), rng.Gaussian() * 0.7f, rng.Gaussian()).Normalized;
+                double r = Units.Au(500) * Math.Pow(rng.NextDouble(), 2.5) * 4000;
+                glow.Add(Star(d * (float)r, 0, 1f, 0.8f, 0.55f, rng.Range(0.1f, 0.5f)));
+            }
+            bh.Glow = glow.ToArray();
+            return bh;
+        }
+
+        // ── a full star system ──
+        public sealed class Body
+        {
+            public string Kind; public double OrbitUnits, RadiusUnits, Period, Phase; public float R, G, B;
+            // its orbit's tilt to the system's plane and where it crosses it (radians): planets lie within a few degrees of one
+            // plane (ours: Mercury 7, Pluto 17; around other stars mostly 1 to 3 degrees between planets, some far out of line);
+            // close moons in their planet's plane, far captured ones at any tilt, even going round backwards
+            public double Incl, Node;
+            /// <summary>Where on its orbit it is at angle <paramref name="ang"/> from where it crosses the plane, from what it circles.</summary>
+            public void At(double ang, out double x, out double y, out double z)
+            {
+                double cu = Math.Cos(ang), su = Math.Sin(ang), cn = Math.Cos(Node), sn = Math.Sin(Node), ci = Math.Cos(Incl), si = Math.Sin(Incl);
+                x = OrbitUnits * (cn * cu - sn * su * ci); y = OrbitUnits * su * si; z = OrbitUnits * (sn * cu + cn * su * ci);
+            }
+            public int Parent = -1; // index of the planet a moon circles
+        }
+        private static double Frac(double v) { return v - Math.Floor(v); }
+        public sealed class StarSystem
+        {
+            public string StarName; public double StarRadius, Luminosity, FrostLineAu, HabitableAu, MassSol, TempK, RadiusSol;
+            public double BeltInAu, BeltOutAu, KuiperInAu, KuiperOutAu, OortInAu, OortOutAu;   // the asteroid belt (0 if none), Kuiper belt and Oort cloud
+            public float SR, SG, SB;
+            public readonly List<Body> Bodies = new List<Body>();
+            public StarVertex[] Static; // belts, Kuiper belt, Oort cloud, orbit lines
+            public int Planets;
+        }
+
+        public static StarSystem System(ContentLibrary content, StarKind kind, ulong seed, string layout = null)
+        {
+            var rng = new Rng(seed);
+            var sys = new StarSystem { StarName = kind.Name, SR = kind.R, SG = kind.G, SB = kind.B };
+            double massLo = 1, massHi = 1;
+            foreach (var e in content.OfKind("stars.dnat", "star"))
+                if (e.Id == kind.Id) e.TryRange("mass-sol", out massLo, out massHi);
+            double mass = Math.Max(0.08, massLo + rng.NextDouble() * (massHi - massLo));
+            sys.Luminosity = Math.Pow(mass, 3.5); sys.MassSol = mass;
+            // its real size, from content (giants and supergiants are far wider than their mass alone would make them)
+            double rLo = -1, rHi = -1;
+            foreach (var e in content.OfKind("stars.dnat", "star")) if (e.Id == kind.Id) e.TryRange("radius-sol", out rLo, out rHi);
+            double radiusSol = rLo > 0 ? rLo + rng.NextDouble() * (rHi - rLo) : Math.Pow(mass, 0.8);
+            sys.StarRadius = Units.Km(696000 * radiusSol);
+            // how bright it shines, from its size and surface temperature (the Sun: 1 radius, 5772 K), when both are known
+            double tLo = -1, tHi = -1;
+            foreach (var e in content.OfKind("stars.dnat", "star")) if (e.Id == kind.Id) e.TryRange("temp-k", out tLo, out tHi);
+            if (tLo > 0 && rLo > 0) { double tk = tLo + rng.NextDouble() * (tHi - tLo); sys.Luminosity = radiusSol * radiusSol * Math.Pow(tk / 5772, 4); }
+            sys.RadiusSol = radiusSol; sys.TempK = 5772 * Math.Pow(sys.Luminosity / (radiusSol * radiusSol), 0.25);   // its surface temperature, from its brightness and size
+            double frostSun = ZoneAu(content, "frost-line", 2.7), hzSun = ZoneAu(content, "habitable", 1.0);
+            double scale = Math.Sqrt(sys.Luminosity);
+            sys.FrostLineAu = frostSun * scale; sys.HabitableAu = hzSun * scale;
+
+            int count = 3 + rng.Int(8);
+            double a = 0.3 * scale * rng.Range(0.6f, 1.4f), step = rng.Range(1.45f, 1.9f);
+            if (layout == "compact") { count = 6 + rng.Int(3); a = 0.012 * rng.Range(0.8f, 1.2f); step = rng.Range(1.25f, 1.4f); } // packed close to a dim star (content: compact system)
+            if (layout == "hot-jupiter") count = 1 + rng.Int(3);                                                                  // few close neighbors (content: hot-Jupiter system)
+            bool hotJupiter = layout == "hot-jupiter" || (layout == null && rng.NextDouble() < 0.1);
+            double lastRocky = 0, firstGiant = 0, outer = 0;
+            for (int i = 0; i < count; i++, a *= step)
+            {
+                var b = new Body { OrbitUnits = Units.Au(a), Phase = rng.NextDouble() * Math.PI * 2, Period = Math.Sqrt(a * a * a / mass) };
+                bool giant = a > sys.FrostLineAu || (hotJupiter && i == 0);
+                if (giant)
+                {
+                    bool ice = a > sys.FrostLineAu * 3.5;
+                    b.Kind = (hotJupiter && i == 0) ? "Hot Jupiter" : ice ? "Ice giant" : "Gas giant";
+                    b.RadiusUnits = Units.Km(ice ? 25000 : 70000 * rng.Range(0.6f, 1.2f));
+                    if (ice) { b.R = 0.5f; b.G = 0.8f; b.B = 1f; } else { b.R = 0.95f; b.G = 0.75f; b.B = 0.5f; }
+                    if (firstGiant == 0) firstGiant = a;
+                }
+                else
+                {
+                    bool hot = a < 0.1 * scale, wet = Math.Abs(a - sys.HabitableAu) < sys.HabitableAu * 0.25;
+                    b.Kind = hot ? "Lava planet" : wet ? "Temperate world" : a > sys.HabitableAu ? "Ice world" : "Rocky planet";
+                    b.RadiusUnits = Units.Km(6371 * rng.Range(0.4f, 1.8f));
+                    if (hot) { b.R = 1f; b.G = 0.4f; b.B = 0.15f; } else if (wet) { b.R = 0.3f; b.G = 0.6f; b.B = 1f; }
+                    else if (a > sys.HabitableAu) { b.R = 0.9f; b.G = 0.95f; b.B = 1f; } else { b.R = 0.75f; b.G = 0.65f; b.B = 0.55f; }
+                    lastRocky = a;
+                }
+                sys.Bodies.Add(b); outer = a;
+                int planetIndex = sys.Bodies.Count - 1;
+                int moons = giant ? 2 + rng.Int(7) : rng.Int(3);
+                for (int m = 0; m < moons; m++)
+                    sys.Bodies.Add(new Body
+                    {
+                        Kind = "Moon", Parent = planetIndex, OrbitUnits = b.RadiusUnits * rng.Range(3f, 40f),
+                        RadiusUnits = b.RadiusUnits * rng.Range(0.03f, 0.12f), Period = rng.Range(0.002f, 0.08f), Phase = rng.NextDouble() * Math.PI * 2,
+                        R = 0.8f, G = 0.78f, B = 0.75f
+                    });
+            }
+            sys.Planets = count;
+            foreach (var b in sys.Bodies)
+            {
+                double u1 = Frac(Math.Sin(b.Phase * 91.7 + b.OrbitUnits * 1e-3) * 43758.5453), u2 = Frac(Math.Sin(b.Phase * 37.3 + 4.1) * 24634.6345), u3 = Frac(Math.Sin(b.Phase * 13.1 + 9.7) * 15731.743);
+                b.Node = u2 * Math.PI * 2;
+                if (b.Parent < 0)
+                    b.Incl = (u3 < 0.06 ? 8 + u1 * 25 : Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, u1))) * 1.5) * Math.PI / 180;   // most within a few degrees; a few far out of line
+                else
+                {
+                    double far = b.OrbitUnits / Math.Max(1e-30, sys.Bodies[b.Parent].RadiusUnits);
+                    b.Incl = far > 25 ? Math.Acos(1 - 2 * u1) : u1 * 2 * Math.PI / 180;    // close moons in the planet's plane; far ones captured, any tilt (past 90: backwards)
+                }
+            }
+
+            var stat = new List<StarVertex>();
+            // orbit lines
+            foreach (var b in sys.Bodies)
+                if (b.Parent < 0)
+                    for (int k = 0; k < 240; k++)
+                    {
+                        double t = k / 240.0 * Math.PI * 2;
+                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.22f)); }
+                    }
+            // asteroid belt in the gap between the rocky planets and the giants
+            if (firstGiant > 0 && lastRocky > 0)
+            {
+                Ring(stat, rng, Units.Au(lastRocky * 1.15), Units.Au(firstGiant * 0.85), 3000, 0.02, 0.7f, 0.6f, 0.5f, 0.5f);
+                sys.BeltInAu = lastRocky * 1.15; sys.BeltOutAu = firstGiant * 0.85;
+            }
+            // Kuiper belt beyond the last planet, and the Oort cloud far out
+            Ring(stat, rng, Units.Au(outer * 1.3), Units.Au(outer * 2.0), 4000, 0.05, 0.6f, 0.75f, 0.9f, 0.35f);
+            sys.KuiperInAu = outer * 1.3; sys.KuiperOutAu = outer * 2.0; sys.OortInAu = 2000 * scale; sys.OortOutAu = 50000 * scale;
+            for (int i = 0; i < 6000; i++)
+            {
+                Vec3 d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized;
+                double r = Units.Au(rng.Range(2000, 50000) * scale);
+                stat.Add(Star(d * (float)r, 0, 0.55f, 0.7f, 0.85f, 0.12f));
+            }
+            sys.Static = stat.ToArray();
+            return sys;
+        }
+
+        private static double ZoneAu(ContentLibrary content, string id, double fallback)
+        {
+            foreach (var e in content.OfKind("solar-systems.dnat", "zone"))
+                if (e.Id == id)
+                {
+                    string v = e.Get("solar-system-au", "").Replace("about", "").Trim();
+                    var tmp = new ContentEntry(); tmp.Props["v"] = v;
+                    double lo, hi; if (tmp.TryRange("v", out lo, out hi)) return (lo + hi) * 0.5;
+                }
+            return fallback;
+        }
+
+        private static void Ring(List<StarVertex> list, Rng rng, double inner, double outer, int n, double thick, float r, float g, float b, float a)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                double rad = inner + rng.NextDouble() * (outer - inner), t = rng.NextDouble() * Math.PI * 2;
+                list.Add(Star(new Vec3((float)(Math.Cos(t) * rad), (float)(rng.Gaussian() * rad * thick), (float)(Math.Sin(t) * rad)), 0, r, g, b, a));
+            }
+        }
+
+        /// <summary>
+        /// Builds this frame's star, planet and moon billboards. Calm motion: a body whose on-screen turn would be faster
+        /// than <paramref name="maxTurnPerSecond"/> is drawn as a soft orbit trail instead of a moving dot.
+        /// </summary>
+        public static int BodyVerts(StarSystem sys, double simYears, double yearsPerSecond, double maxTurnPerSecond, StarVertex[] outV, int trailPoints)
+        {
+            double fx, fy, fz;
+            return BodyVerts(sys, simYears, yearsPerSecond, maxTurnPerSecond, outV, -1, 1.0, out fx, out fy, out fz);
+        }
+
+        /// <summary>Star and bodies, worked out in double precision, written relative to the focus body
+        /// (-1 = the star) and multiplied by <paramref name="scale"/>, so a single planet can fill the screen
+        /// without shaking. The focus position (unscaled, star-centred) is given back for anything drawn with it.</summary>
+        public static int BodyVerts(StarSystem sys, double simYears, double yearsPerSecond, double maxTurnPerSecond, StarVertex[] outV,
+            int focus, double scale, out double fx, out double fy, out double fz)
+        {
+            int count = sys.Bodies.Count;
+            var px = new double[count]; var py = new double[count]; var pz = new double[count];
+            double seconds = yearsPerSecond > 0 ? simYears / yearsPerSecond : 0;
+            for (int i = 0; i < count; i++)
+            {
+                var b = sys.Bodies[i];
+                double period = Math.Max(1e-4, b.Period);
+                double turn = yearsPerSecond / period * Math.PI * 2;
+                // calm motion: a body that would turn faster than the limit is shown turning at the limit
+                double ang = turn <= maxTurnPerSecond || yearsPerSecond <= 0
+                    ? b.Phase + simYears / period * Math.PI * 2
+                    : b.Phase + seconds * maxTurnPerSecond;
+                double cx = b.Parent >= 0 ? px[b.Parent] : 0, cy = b.Parent >= 0 ? py[b.Parent] : 0, cz = b.Parent >= 0 ? pz[b.Parent] : 0, ox, oy, oz;
+                b.At(ang, out ox, out oy, out oz); px[i] = cx + ox; py[i] = cy + oy; pz[i] = cz + oz;
+            }
+            fx = focus >= 0 && focus < count ? px[focus] : 0; fy = focus >= 0 && focus < count ? py[focus] : 0; fz = focus >= 0 && focus < count ? pz[focus] : 0;
+            int n = 0;
+            outV[n++] = Star(new Vec3((float)(-fx * scale), (float)(-fy * scale), (float)(-fz * scale)), (float)(sys.StarRadius * scale), sys.SR, sys.SG, sys.SB, 1f);
+            for (int i = 0; i < count; i++)
+            {
+                var b = sys.Bodies[i];
+                outV[n++] = Star(new Vec3((float)((px[i] - fx) * scale), (float)((py[i] - fy) * scale), (float)((pz[i] - fz) * scale)), (float)(b.RadiusUnits * scale),
+                    b.R, b.G, b.B, b.Parent >= 0 ? 0.6f : 1f);
+            }
+            return n;
+        }
+
+        public static StarVertex Star(Vec3 p, float size, float r, float g, float b, float bright)
+        {
+            return new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = size, R = r * bright, G = g * bright, B = b * bright, A = 1 };
+        }
+    }
+}

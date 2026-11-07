@@ -1,0 +1,279 @@
+# DNA-AND content · cities, buildings and infrastructure
+# researched: urban morphology study guides (organic, grid, radial, linear, clustered, networked layouts);
+#   UCL thesis on planned and organic cities; settlement-pattern geography notes (dispersed, linear, nucleated);
+#   Gottmann's "megalopolis"
+# Cities are generated live, in the builder species' own image (LAW 14). The 100 grouping steps are on
+# the public Groups & Flocking page.
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r09-civilization.md · wiki/systems/r04b-generators.md
+
+# ── Settlement sizes ──
+
+@settlement camp
+name: Camp
+real: yes
+says: a temporary group of shelters
+
+@settlement hamlet
+name: Hamlet
+real: yes
+says: a handful of homes
+
+@settlement village
+name: Village
+real: yes
+says: homes and farms around a center
+
+@settlement town
+name: Town
+real: yes
+says: a market, workshops and a few hundred to thousands of people
+
+@settlement city
+name: City
+real: yes
+says: a dense center of trade, rule and belief
+
+@settlement metropolis
+name: Metropolis
+real: yes
+says: a huge city that leads a whole region
+
+@settlement megalopolis
+name: Megalopolis
+real: yes
+says: cities grown together into one endless urban chain
+
+@settlement ecumenopolis
+name: Planet-city
+real: hypothetical
+says: a whole world covered by one city
+
+@settlement arcology
+name: Arcology
+real: hypothetical
+says: a whole city inside one giant building
+
+# ── Layouts ──
+
+@layout organic
+name: Organic layout
+real: yes
+says: no plan; narrow winding streets that follow the land; old cities
+
+@layout grid
+name: Grid layout
+real: yes
+says: straight streets crossing at right angles; planned cities
+
+@layout radial
+name: Radial layout
+real: yes
+says: streets spreading like spokes from a central square
+
+@layout linear
+name: Linear layout
+real: yes
+says: a long town along one river, road or coast
+
+@layout clustered
+name: Clustered layout
+real: yes
+says: tight groups of buildings with open land between
+
+@layout networked
+name: Networked layout
+real: yes
+says: many centers joined by transport lines
+
+@layout walled
+name: Walled layout
+real: yes
+says: a ring of walls with the city packed inside
+
+@layout concentric
+name: Concentric rings
+real: yes
+says: rings of districts around an old core, newer rings outside
+
+# ── Districts ──
+
+@district center
+name: Center
+real: yes
+says: a plaza or square where people gather
+
+@district market
+name: Market
+real: yes
+
+@district temple
+name: Temple quarter
+real: yes
+
+@district palace
+name: Palace and rule
+real: yes
+
+@district homes
+name: Homes
+real: yes
+
+@district farms
+name: Farmland
+real: yes
+says: fields, pens and orchards around the town
+
+@district workshops
+name: Workshops and industry
+real: yes
+
+@district harbor
+name: Harbor
+real: yes
+where: coasts and rivers
+
+@district defenses
+name: Defenses
+real: yes
+says: walls, forts, towers and gates
+
+@district waste
+name: Waste and burial
+real: yes
+
+@district spaceport
+name: Spaceport
+real: yes
+says: from launch pads to star harbors
+
+# ── Infrastructure, in rough order of invention ──
+
+@infra paths
+name: Paths
+real: yes
+
+@infra wells
+name: Wells
+real: yes
+
+@infra roads
+name: Roads
+real: yes
+
+@infra walls
+name: City walls
+real: yes
+
+@infra aqueducts
+name: Aqueducts
+real: yes
+
+@infra sewers
+name: Sewers
+real: yes
+
+@infra canals
+name: Canals
+real: yes
+
+@infra railways
+name: Railways
+real: yes
+
+@infra power-grid
+name: Power grid
+real: yes
+
+@infra highways
+name: Highways
+real: yes
+
+@infra airports
+name: Airports
+real: yes
+
+@infra networks
+name: Communication networks
+real: yes
+
+@infra launch-sites
+name: Launch sites and spaceports
+real: yes
+
+# ── Building materials by age ──
+
+@material mud
+name: Mud and reeds
+real: yes
+era: first settlements
+
+@material wood
+name: Wood
+real: yes
+
+@material stone
+name: Stone
+real: yes
+
+@material brick
+name: Fired brick
+real: yes
+
+@material concrete
+name: Concrete
+real: yes
+era: classical, then again in the industrial age
+
+@material iron-steel
+name: Iron and steel
+real: yes
+era: industrial
+
+@material glass
+name: Glass walls
+real: yes
+era: modern
+
+@material composites
+name: Composites
+real: yes
+era: modern and later
+
+@material grown
+name: Grown structures
+real: hypothetical
+says: buildings grown from engineered life
+
+# ── Generator rules ──
+
+@rule city-seed
+real: rule
+says: every settlement, building and road is generated live; nothing is pre-built
+
+@rule city-own-image
+real: rule
+says: cities follow the builder species' body plan and genes: insect species build hive cities of segmented cells, burrowers build underground, fliers build tall towers and roosts, swimmers build reef and underwater cities, giants build huge, small species build dense
+
+@rule city-grows
+real: rule
+says: a settlement climbs the 100 grouping steps (camp, hamlet, village, town, city…), growing districts and infrastructure as it goes
+
+@rule city-age
+real: rule
+says: the civilization's age decides its materials and infrastructure, from mud and paths to composites and spaceports
+
+@rule city-terrain
+real: rule
+says: cities grow along rivers, coasts and trade routes; hills get defenses; layouts bend around the land
+
+@rule city-society
+real: rule
+says: the city's society shapes it: temples tower in theocracies, palaces in monarchies, factories in industrial economies (100 kinds of society)
+
+@rule city-conditions
+real: rule
+says: on hostile worlds cities need the tech for every world condition: domes, shielded roofs, floating platforms (the 10 × 10 world matrix)
+
+@rule city-fall
+real: rule
+says: collapsed civilizations leave ruins that decay and can be resettled

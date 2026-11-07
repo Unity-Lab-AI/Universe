@@ -1,0 +1,245 @@
+# DNA-AND content · solar systems
+# researched: exoplanet architecture reviews (resonant chains: TRAPPIST-1, TOI-178); NASA Solar System overviews
+# Real seeds for the solar-system generator: kinds of systems, real examples,
+# the zones a system is built from, and the rules.
+# Distances in au (1 au = the Earth–Sun distance). Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
+
+# ── Kinds of systems (real) ──
+
+@system sun-like
+name: Sun-like system
+real: yes
+star: g-type or k-type
+shape: small rocky planets close in, gas and ice giants further out, belts and an icy outer shell
+example: the Solar System
+
+@system compact
+name: Compact system
+real: yes
+star: m-type
+shape: many rocky planets packed tightly close to a dim star
+example: TRAPPIST-1
+
+@system hot-jupiter
+name: Hot-Jupiter system
+real: yes
+shape: a gas giant orbiting very close to its star, usually with few close neighbors
+example: 51 Pegasi
+
+@system crowded
+name: Crowded system
+real: yes
+shape: many planets of every size
+example: Kepler-90
+
+@system circumbinary
+name: Circumbinary system
+real: yes
+star: two stars close together
+shape: planets orbiting both stars at once
+example: Kepler-16
+
+@system wide-binary
+name: Wide binary system
+real: yes
+star: two stars far apart
+shape: each star with its own planets
+example: Alpha Centauri
+
+@system triple
+name: Triple-star system
+real: yes
+star: three stars
+shape: planets around one star, the others far off
+example: Alpha Centauri (with Proxima Centauri)
+
+@system red-dwarf
+name: Red-dwarf system
+real: yes
+star: m-type
+shape: planets close in, often locked with one face to the star
+example: Proxima Centauri
+
+@system giant-free
+name: Giant-free system
+real: yes
+shape: only small rocky planets
+
+@system young
+name: Young system
+real: yes
+shape: a star still wrapped in its dust and gas disk, planets still forming
+
+@system debris
+name: Debris-disk system
+real: yes
+shape: a grown star with a wide belt of dust and rock left over
+
+@system white-dwarf
+name: White-dwarf system
+real: yes
+star: white dwarf
+shape: the survivors of a dead Sun-like star, often with rubble falling in
+
+@system pulsar
+name: Pulsar system
+real: yes
+star: pulsar
+shape: planets circling a spinning dead star
+example: PSR B1257+12, home of the first planets ever found outside the Solar System
+
+@system lone-planet
+name: Starless planet
+real: yes
+shape: a rogue planet with no star, sometimes with moons
+
+# ── Real examples ──
+
+@example solar-system
+name: The Solar System
+real: yes
+star: the Sun
+planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune
+dwarf-planets: Ceres, Pluto, Eris, Haumea, Makemake
+belts: asteroid belt, Kuiper belt, Oort cloud
+
+@example trappist-1
+name: TRAPPIST-1
+real: yes
+star: m-type red dwarf
+planets: 7 rocky planets, several in the habitable zone
+
+@example proxima-centauri
+name: Proxima Centauri
+real: yes
+star: m-type red dwarf, the closest star to the Sun
+planets: at least one planet in the habitable zone
+
+@example 51-pegasi
+name: 51 Pegasi
+real: yes
+star: g-type
+planets: 51 Pegasi b, the first planet found around a Sun-like star, a hot Jupiter
+
+# ── Zones a system is built from ──
+
+@zone inner-rocky
+name: Inner rocky zone
+real: yes
+says: close to the star, too hot for ice; small rocky planets form here
+
+@zone habitable
+name: Habitable zone
+real: yes
+says: the band where liquid water can last on a planet's surface; its distance depends on how bright the star is
+solar-system-au: about 0.95..1.4
+
+@zone frost-line
+name: Frost line
+real: yes
+says: the distance where ice can form; beyond it, giant planets can grow
+solar-system-au: about 2.7
+
+@zone asteroid-belt
+name: Asteroid belt
+real: yes
+says: a ring of rocks between the rocky planets and the giants
+solar-system-au: about 2.2..3.2
+
+@zone giant
+name: Giant zone
+real: yes
+says: gas giants and ice giants, each with many moons and often rings
+
+@zone kuiper-belt
+name: Kuiper belt
+real: yes
+says: icy bodies and dwarf planets beyond the last giant
+solar-system-au: about 30..50
+
+@zone scattered-disk
+name: Scattered disk
+real: yes
+says: icy bodies thrown into long, tilted orbits beyond the Kuiper belt
+
+@zone oort-cloud
+name: Oort cloud
+real: yes
+says: a huge round shell of comets far out around the star, reaching out a light-year or more
+
+@zone trojans
+name: Trojan points
+real: yes
+says: spots ahead of and behind a planet in its orbit where rocks collect
+
+@zone rings
+name: Ring zone
+real: yes
+says: close to a giant planet, where moons can't hold together and rings form
+
+@system resonant-chain
+name: Resonant-chain system
+real: yes
+shape: planets whose orbits lock together in a steady beat, each lap timed to the next
+example: TRAPPIST-1, TOI-178
+
+@zone detached
+name: Detached objects
+real: yes
+says: icy bodies on huge lonely orbits beyond the Kuiper belt
+example: Sedna
+
+@zone heliosphere
+name: Heliosphere
+real: yes
+says: the bubble the star's wind blows around the whole system; its edge is where interstellar space begins
+
+@rule system-resonance
+real: rule
+says: young planets often drift into locked resonant chains; most chains later break apart
+
+@rule system-hill-sphere
+real: rule
+says: a moon can only stay with a planet inside that planet's sphere of pull; too far out and the star takes it
+
+# ── Generator rules ──
+
+@rule system-seed
+real: rule
+says: every system is generated live from the world seed; nothing is pre-built
+
+@rule system-star-first
+real: rule
+says: the star is picked first; its type sets where the habitable zone and frost line fall
+
+@rule system-zones
+real: rule
+says: rocky planets mostly form inside the frost line, giants outside it, belts sit in the gaps, and an Oort cloud surrounds it all
+
+@rule system-migration
+real: rule
+says: giant planets can wander inward after forming, making hot Jupiters and scattering smaller planets and comets
+
+@rule system-moons
+real: rule
+says: giants collect many moons; rocky planets have few or none; big impacts can make a large moon
+
+@rule system-comets-fall
+real: rule
+says: comets from the Oort cloud and Kuiper belt sometimes fall inward, and some hit planets
+
+@rule system-multiple-stars
+real: rule
+says: in two- and three-star systems, planets orbit one star or circle the whole group, never in between
+
+@rule system-life-zone
+real: rule
+says: life is most likely in the habitable zone, but ice-shell moons and other strange worlds can hold life too
+
+@rule system-age
+real: rule
+says: young systems still have dust disks and forming planets; old systems have settled orbits
+
+@rule system-name
+real: rule
+says: only our own system is the Solar System and only our own star is the Sun; generated ones get generated names

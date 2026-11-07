@@ -1,0 +1,182 @@
+# DNA-AND content · climate: the water cycle, weather, ocean currents and tides, ice ages, climate zones
+# researched: Wikipedia "Water cycle", "Atmospheric circulation" (Hadley, Ferrel and polar cells), "Tropical cyclone",
+#   "Ocean current", "Thermohaline circulation", "Upwelling", "Tide", "Milankovitch cycles", "Ice age", "Snowball Earth",
+#   "Köppen climate classification" (and Britannica, SKYbrary); "Faint young Sun paradox"
+# Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · docs/TODO.md R6b
+
+# ── The water cycle ──
+
+@water evaporation
+name: Evaporation
+real: yes
+says: the star's heat turns sea and lake water into vapour; warmer air holds more water (about 7% more for each degree)
+
+@water clouds
+name: Clouds and rain
+real: yes
+says: rising air cools, vapour turns to droplets and falls as rain, snow or hail
+
+@water rivers
+name: Rivers and lakes
+real: yes
+says: rain runs downhill into rivers and lakes and back to the sea, carrying worn rock and nutrients
+
+@water ground
+name: Ground water
+real: yes
+says: rain soaks into soil and rock and moves slowly underground, feeding springs and wells
+
+# ── How the air moves ──
+
+@circulation hadley
+name: Hadley cell
+real: yes
+latitude: 0..30
+says: hot air rises at the equator (heavy rain, rainforests) and sinks near 30 degrees (dry air, the great deserts)
+
+@circulation ferrel
+name: Ferrel cell
+real: yes
+latitude: 30..60
+says: the middle belt; westerly winds and storms, wet again near 60 degrees
+
+@circulation polar
+name: Polar cell
+real: yes
+latitude: 60..90
+says: cold air sinks at the poles; little rain or snow, cold deserts
+
+@weather trade-winds
+name: Trade winds
+real: yes
+says: steady winds blowing toward the equator, bent west by the planet's spin
+
+@weather monsoon
+name: Monsoon
+real: yes
+says: winds that reverse with the seasons, bringing a wet season and a dry season
+
+@weather tropical-cyclone
+name: Hurricane (tropical cyclone)
+real: yes
+needs: sea warmer than 26.5 °C, 5 to 20 degrees from the equator
+per-year-earth: 80
+says: a huge spinning storm with winds over 119 km/h, torrential rain and storm surge
+
+@weather drought
+name: Drought
+real: yes
+says: months or years with too little rain; crops fail and fires spread
+
+@weather blizzard
+name: Blizzard
+real: yes
+says: strong winds and heavy snow in the cold belts
+
+# ── Oceans ──
+
+@ocean surface-currents
+name: Surface currents
+real: yes
+says: winds drive great loops of current (gyres) that carry warm water toward the poles and cold water back (the Gulf Stream warms north-west Europe)
+
+@ocean conveyor
+name: The ocean conveyor
+real: yes
+says: cold, salty water sinks near the poles and creeps along the deep sea floor around the world, taking about a thousand years
+
+@ocean upwelling
+name: Upwelling
+real: yes
+says: where winds push surface water away from a coast or along the equator, cold deep water full of nutrients rises; these are the richest fishing seas
+
+@ocean tides
+name: Tides
+real: yes
+says: the pull of moons and the star raises the sea twice a day; strongest when they line up (spring tides)
+earth-open-sea-m: 0.5
+earth-largest-m: 16
+
+# ── Ice and long swings ──
+
+@cycle eccentricity
+name: Orbit shape
+real: yes
+period-years: 100000
+says: the orbit stretches and rounds again; the main beat of recent ice ages
+
+@cycle obliquity
+name: Tilt
+real: yes
+period-years: 41000
+says: the tilt rocks between about 22 and 24.5 degrees; more tilt means stronger seasons
+
+@cycle precession
+name: Wobble
+real: yes
+period-years: 23000
+says: the spin axis wobbles like a top, changing which season comes when the planet is nearest its star
+
+@ice glacial
+name: Ice age (glacial)
+real: yes
+says: ice sheets spread from the poles and mountains; on Earth the seas fell about 120 m at the last one
+earth-sea-level-drop-m: 120
+
+@ice snowball
+name: Snowball world
+real: yes
+says: ice reaches the equator and the whole world freezes over; volcanoes slowly fill the air with carbon dioxide until it thaws
+
+@star faint-young-star
+name: The faint young star
+real: yes
+says: a young Sun-like star shines about 30% dimmer; thick greenhouse air kept young worlds from freezing
+
+# ── Climate zones (Köppen) ──
+
+@zone tropical
+name: Tropical (A)
+real: yes
+says: every month 18 °C or warmer; rainforest, monsoon and savanna
+
+@zone arid
+name: Arid (B)
+real: yes
+says: too little rain for the heat; desert and steppe
+
+@zone temperate
+name: Temperate (C)
+real: yes
+says: coldest month between 0 and 18 °C, warmest above 10 °C; mild, with seasons
+
+@zone continental
+name: Continental (D)
+real: yes
+says: coldest month below 0 °C, warmest above 10 °C; hot summers, freezing winters, far from the sea
+
+@zone polar
+name: Polar (E)
+real: yes
+says: warmest month below 10 °C; tundra and ice cap
+
+@zone highland
+name: Highland
+real: yes
+says: high mountains, colder and wetter the higher you go (about 6.5 °C colder per kilometre)
+
+@rule climate-zones
+real: rule
+says: each place's climate comes from its warmth, its rain and how far it is from the sea; zones shift as continents move, the air changes and ice ages come and go
+
+@rule rain-belts
+real: rule
+says: rain falls in belts set by how the air turns over: wet at the equator, dry near 30 degrees, wet near 60, dry at the poles
+
+@rule ice-ages
+real: rule
+says: ice ages follow the orbit's slow swings (100,000, 41,000 and 23,000 years); seas fall as water is locked in ice
+
+@rule currents-heat
+real: rule
+says: ocean currents carry heat from the warm middle to the poles; coasts are milder than inland; upwelling feeds sea life

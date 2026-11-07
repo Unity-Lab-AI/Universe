@@ -1,0 +1,360 @@
+# DNA-AND content · the grand tour: one flight from the whole visible universe down to the quarks, for watching
+# Run it: Universe.exe --tour grand-tour (or DNA-AND.exe --tour grand-tour). Any key or click takes the controls back.
+# Edit the stops to make your own. Each @stop home
+do: pick
+target: home-galaxy
+caption: Home
+
+@stop open
+do: arc
+rate: -0.06
+until-km: 2e18
+turn: 2.5
+seconds: 6
+caption: We begin at home: our galaxy, a hundred billion stars turning in the dark
+
+@stop leave
+do: zoom
+rate: -0.3
+until-km: 5e21
+caption: Every point of light out here is a whole galaxy
+
+@stop web
+do: orbit
+turn: 3
+seconds: 7
+caption: The cosmic web: galaxies along filaments, round vast empty voids
+
+@stop choose-galaxy
+do: pick
+target: galaxy
+caption: A galaxy
+
+@stop to-galaxy
+do: zoom
+rate: 0.4
+until-km: 1.5e18
+caption: We fall toward one galaxy among a hundred billion
+
+@stop round-galaxy
+do: arc
+rate: 0.03
+until-km: 8e17
+turn: 3
+seconds: 5
+caption: A hundred billion stars round a giant black hole
+
+@stop into-galaxy
+do: zoom
+rate: 0.4
+until-km: 1e16
+caption: Into it: the glow breaks into stars, each with worlds of its own
+
+@stop bh
+do: pick
+target: black-hole
+caption: A black hole
+
+@stop to-bh
+do: zoom
+rate: 1.0
+until-km: 3e4
+caption: A star crushed to nothing: a black hole
+
+@stop round-bh
+do: arc
+rate: 0
+until-km: 0
+turn: 3
+seconds: 6
+caption: Its pull bends the light of the stars behind it; from inside its horizon nothing escapes
+
+@stop choose-star
+do: pick
+target: star
+caption: A star
+
+@stop into-system
+do: zoom
+rate: 0.5
+until-km: 3e11
+caption: One star among them
+
+@stop arrive-system
+do: arc
+rate: 0.3
+until-km: 3e9
+turn: 3
+seconds: 8
+caption: Circling in: the star, and the worlds born round it
+
+@stop round-system
+do: orbit
+turn: 3
+seconds: 5
+caption: Each world on its own tilted orbit
+
+@stop asteroid
+do: pick
+target: asteroid
+caption: An asteroid
+
+@stop to-asteroid
+do: zoom
+rate: 0.6
+until-km: 300
+caption: Out to its belt of rubble
+
+@stop round-asteroid
+do: arc
+rate: 0
+until-km: 0
+turn: 4
+seconds: 4
+caption: An asteroid: rock left over from when the worlds were made
+
+@stop comet
+do: pick
+target: comet
+caption: A comet
+
+@stop to-comet
+do: zoom
+rate: 0.9
+until-km: 1e4
+caption: Out to the Oort cloud, a light-year from the star
+
+@stop round-comet
+do: arc
+rate: 0
+until-km: 0
+turn: 4
+seconds: 4
+caption: A comet: ice and dust that has waited out here since the worlds were made
+
+@stop star-2
+do: pick
+target: star
+caption: Another star
+
+@stop to-star-2
+do: zoom
+rate: 0.55
+until-km: 3e11
+caption: Across light-years to another star
+
+@stop arrive-star-2
+do: arc
+rate: 0.3
+until-km: 3e9
+turn: 3
+seconds: 7
+caption: Circling in on its worlds
+
+@stop round-star-2
+do: orbit
+turn: 3
+seconds: 4
+caption: Another system, its worlds on their own orbits
+
+@stop choose-planet
+do: pick
+target: planet
+caption: A world
+
+@stop to-planet
+do: zoom
+rate: 0.4
+until-km: 2e4
+caption: Down to one of its worlds
+
+@stop round-planet
+do: arc
+rate: 0.03
+until-km: 1.5e4
+turn: 3
+seconds: 6
+caption: Seas, land, clouds and a thin shell of air
+
+@stop to-land
+do: zoom
+rate: 0.55
+until-km: 1.5
+caption: Down through the air to the land
+
+@stop over-hills
+do: glide
+rate: 0.5
+turn: 1.5
+seconds: 8
+caption: Hills raised by moving plates, valleys worn by water
+
+@stop to-head-height
+do: zoom
+rate: 0.3
+until-km: 0.002
+caption: Down to where a person stands
+
+@stop stand
+do: pick
+target: none
+caption: Standing
+
+@stop look-up
+do: look
+tilt: 55
+turn: 1.5
+seconds: 5
+caption: Look up
+
+@stop sky
+do: orbit
+turn: 3
+seconds: 5
+caption: Our star, the other worlds, the galaxy's stars beyond
+
+@stop look-down
+do: look
+tilt: -85
+turn: 1
+seconds: 5
+caption: And down: there is as much below us as above
+
+@stop to-grains
+do: zoom
+rate: 0.4
+until-km: 2e-6
+caption: The ground breaks into stones, then grains of sand
+
+@stop to-face
+do: zoom
+rate: 0.4
+until-km: 2e-9
+caption: Onto one grain, a crystal of one mineral
+
+@stop round-face
+do: orbit
+turn: 2.5
+seconds: 4
+caption: Its face: steps, cracks, clay plates, a film of water
+
+@stop to-crystal
+do: zoom
+rate: 0.4
+until-km: 6e-12
+caption: Down to its atoms
+
+@stop round-crystal
+do: orbit
+turn: 2.5
+seconds: 3
+caption: Atoms in a pattern repeated billions of times
+
+@stop choose-atom
+do: pick
+target: atom
+caption: One atom
+
+@stop to-atom
+do: zoom
+rate: 0.25
+until-km: 6e-13
+caption: An atom is not a ball
+
+@stop round-atom
+do: arc
+rate: 0.03
+until-km: 2.5e-13
+turn: 4
+seconds: 6
+caption: A tiny nucleus, its electrons round it on tilted paths
+
+@stop to-neighbour
+do: pick
+target: bonded-atom
+caption: Its neighbour
+
+@stop across-bond
+do: arc
+rate: 0.0
+until-km: 0
+turn: 4
+seconds: 5
+caption: Across the bond to its neighbour: atoms share their outer electrons
+
+@stop to-next-atom
+do: pick
+target: bonded-atom
+caption: The next atom
+
+@stop round-next-atom
+do: arc
+rate: 0.0
+until-km: 0
+turn: 4
+seconds: 5
+caption: Atom to atom through the crystal, each its own little system
+
+@stop choose-electron
+do: pick
+target: electron
+caption: One electron
+
+@stop follow-electron
+do: orbit
+turn: 2
+seconds: 4
+caption: An electron: a point, and a wave spread through its cloud
+
+@stop choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward: an atom is almost all empty space
+
+@stop round-nucleus
+do: arc
+rate: 0.03
+until-km: 1.2e-17
+turn: 2.5
+seconds: 5
+caption: Protons and neutrons, bound by the strong force
+
+@stop choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop to-proton
+do: zoom
+rate: 0.25
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop round-proton
+do: orbit
+turn: 2.5
+seconds: 5
+caption: Three quarks in a storm of gluons
+
+@stop choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop to-quark
+do: zoom
+rate: 0.25
+until-km: 6e-19
+caption: One quark
+
+@stop end
+do: orbit
+turn: 1.5
+seconds: 4
+caption: The smallest thing we know. The same universe at every scale

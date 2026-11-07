@@ -140,7 +140,8 @@ namespace Universe.Shell
         {
             SetPlasma(spot, "iron 100%"); _spaceKind = 13; _gasSpacing = 1e-15;
         }
-        private double _holeRs, _holeMass;
+        private double _holeRs, _holeMass, _fallTau, _fallRate = 1, _fallSpeed;   // the fall's own clock: your proper time since the horizon, how fast it is shown against real time, your speed inward
+        public void SetFallClock(double tau, double rate, double speedC) { _fallTau = tau; _fallRate = rate; _fallSpeed = speedC; }
         public double HoleRs { get { return _holeRs; } }
         /// <summary>Inside a black hole's horizon: the fall, pitch black (no light from anything here reaches anything else), down to
         /// the singularity at the middle, where the zoom finds quarks pressed closer than anything, as far as the laws we have go.</summary>
@@ -1979,6 +1980,8 @@ namespace Universe.Shell
                     L.Add("no light from here gets out: the speed to escape is " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.##E+0") + " times light's (at the horizon it was exactly light's; outside, less)");
                     L.Add("falling: " + ScaleHud.Words(r) + " from the middle; the horizon " + ScaleHud.Words(_holeRs * 2) + " across");
                     L.Add("your own time left to the middle: " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " (from the horizon: " + Secs(2.0 / 3 * Math.Pow(_holeRs * 1000, 1.5) / Math.Sqrt(2 * gm)) + ")");
+                    L.Add("your own time since the horizon: " + Secs(_fallTau) + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + " than it runs)" : " (shown as it runs)"));
+                    L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light by your own clock (the fall from rest far away: root(rs over r) of light's speed; light's own at the horizon)");
                     double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the stretch head to foot (the tide): " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.##E+0")) + " m/s2" + (tide > 100 ? ": torn apart" : tide > 1 ? ": felt" : ""));
                     L.Add("a picked quark, an atom: nothing to pick here; the middle is " + ScaleHud.Words(r) + " down");
                 }

@@ -376,7 +376,7 @@ namespace Universe.Shell
                 _hud.DrawCone(_meshes, w, h, ux * _viewRight.X + uy * _viewRight.Y + uz * _viewRight.Z, ux * _viewUp.X + uy * _viewUp.Y + uz * _viewUp.Z, ux * lk.X + uy * lk.Y + uz * lk.Z, th);
             }
         }
-        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap; private Extra _fallHole;   // the hole you are falling into: the camera itself travels down the axis toward its middle
+        private Vec3 _fallAxis = new Vec3(0, 0, 1); private UploadBuffer _fallBuf; private int _fallCap; private Extra _fallHole; private double _fallTau, _fallRate = 1; private bool _fallDeep;   // the fall's clock: proper time since the horizon, its rate against real time; deep: past a thousandth of a radius, the zoom carries on to the quarks   // the hole you are falling into: the camera itself travels down the axis toward its middle
         /// <summary>Inside the horizon, the fall's one reference: the gravity well itself, in the world. The sheet of space round the
         /// hole as a square grid (the rubber sheet), bent into Flamm's paraboloid outside the horizon (its depth 2 root(rs (r - rs)),
         /// the exact shape of a still slice of Schwarzschild space, flat far out, vertical at the horizon's throat) and, inside the
@@ -2724,6 +2724,18 @@ namespace Universe.Shell
                 if (_spaceScale > _spaceTop) _spaceScale = 0; else _spaceScale = Math.Max(MatterView.BottomKm, _spaceScale);
                 if (_matter.SpaceKind == 12 && _fallHole != null)
                 {
+                    // the fall itself, by the law: from rest far away, r^1.5 shrinks at a steady rate in your own time (dr/dtau = -c root(rs/r)),
+                    // so r(tau) = rs (1 - tau/tauEnd)^(2/3) from the horizon; the view follows r. Past a thousandth of a radius the time left
+                    // is a hundred-thousandth of the whole, and the zoom carries on at its own pace to the quarks' size (the wheel or the
+                    // tour); zooming out from there climbs back up
+                    double rsKm0 = _matter.HoleRs, tauEnd = 2.0 / 3 * rsKm0 / 299792.458;
+                    if (!_fallDeep && _spaceScale > 0)
+                    {
+                        _fallTau = Math.Min(tauEnd, _fallTau + dt * _fallRate);
+                        double rNow = rsKm0 * Math.Pow(Math.Max(0, 1 - _fallTau / tauEnd), 2.0 / 3);
+                        if (rNow < rsKm0 * 1e-3) _fallDeep = true; else _spaceScale = Math.Max(MatterView.BottomKm, rNow / 0.6);
+                    }
+                    { double rK = Math.Max(_spaceScale, MatterView.BottomKm) * 0.6; _matter.SetFallClock(_fallTau, _fallRate, Math.Sqrt(rsKm0 / Math.Max(1e-300, rK))); }
                     // the fall is travel as well as a zoom: from the horizon to the middle the camera itself goes down the axis it came in
                     // on, always at the view's own distance from the middle, the scale shrinking with it (both at once); climbing out it
                     // comes back up the same way, and leaves the dive just outside the horizon
@@ -2825,6 +2837,10 @@ namespace Universe.Shell
                         {
                             double rsKm = Physics.HorizonKm(exd.Mass);
                             _matter.SetHole(dspot, rsKm, exd.Mass); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1; _fallHole = exd;
+                            // the fall's clock: from the horizon to the middle takes two thirds of rs over c of your own time (26 seconds for a
+                            // four-million-sun hole, 70 microseconds for a stellar one, eleven minutes for a hundred-million-sun one); it is
+                            // shown over about thirty seconds, slowed or sped as that needs, and the card says by how much
+                            { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = tauEnd / 30.0; _fallDeep = false; }
                             { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }

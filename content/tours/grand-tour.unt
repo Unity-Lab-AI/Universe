@@ -2,7 +2,8 @@
 # Run it: Universe.exe --tour grand-tour (or Universe.exe --tour grand-tour). A click, the wheel or a key pauses it; T carries on, R starts again.
 # Edit the stops to make your own. Each stop: do (shot, zoom, orbit, look, arc, fly, glide, pick) and its numbers. A shot
 # frames what is picked by its own size: to-radii (how many of its sizes away) or to-km, sweep (degrees round it), rise
-# (degrees up or down), seconds, max-rate (tenfolds of scale a second at most: never streaming past);
+# (degrees up or down), seconds, max-rate (tenfolds of scale a second at most: never streaming past, and never leaving what
+# was in view where the shot began faster than that either, so it pulls away and shrinks smoothly);
 # through: yes flies on into the next stop without slowing or pausing; pan: degrees a second a zoom circles what it flies to
 # (turn: degrees a second for the circling stops). There are no pauses: each caption stays on while the flight goes on.
 # A caption of {sky} is written from what is really up from where you stand (its star only if it is in view, its moons, the

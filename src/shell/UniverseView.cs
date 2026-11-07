@@ -1189,6 +1189,7 @@ namespace Universe.Shell
         // the last galaxy's kind, so the next is another kind
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
         private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin, _shotTurnT = 2;
+        private double[] _shotP0; private double _shotR0;   // where the shot began (universe units) and the size of what was in view there: the departure is paced from it
         private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
         {
@@ -1338,6 +1339,7 @@ namespace Universe.Shell
                             double decades = Math.Abs(Math.Log10(_shotD1 / _shotD0));
                             _shotLen = Math.Max(st.Seconds, decades / Math.Max(0.05, st.MaxRate) + 2);
                             _shotT = 0; _shotLook0 = new[] { _fx, _fy, _fz };
+                            _shotP0 = new[] { _ax + _ox, _ay + _oy, _az + _oz }; _shotR0 = Math.Max(Units.Km(ViewDistanceKm()), Units.Km(1e-6));
                             // a turn takes as long as it needs at no more than about 20 degrees a second (eased in and out), and the shot
                             // is long enough to hold it: a pick far behind you is turned to calmly, never whipped round to
                             double turnDeg = Math.Acos(Math.Max(-1, Math.Min(1, -(_fx * tdx + _fy * tdy + _fz * tdz) / tl * -1))) * 180 / Math.PI;
@@ -1345,9 +1347,27 @@ namespace Universe.Shell
                         }
                         if (!WebNotMade) _shotT += dt;                                          // (held while the web's light is made)
                         double u = Math.Min(1, _shotT / _shotLen), e = u * u * (3 - 2 * u);
-                        double D = Math.Exp(Math.Log(_shotD0) + (Math.Log(_shotD1) - Math.Log(_shotD0)) * e);
-                        double az = st.Sweep * _shotDir * Math.PI / 180 * e, el = _shotEl0 + (_shotEl1 - _shotEl0) * e, ca = Math.Cos(az), sa = Math.Sin(az), ce2 = Math.Cos(el), se2 = Math.Sin(el);
-                        double vx = ce2 * (ca * _shotE1[0] + sa * _shotE2[0]) + se2 * _shotUp[0], vy = ce2 * (ca * _shotE1[1] + sa * _shotE2[1]) + se2 * _shotUp[1], vz = ce2 * (ca * _shotE1[2] + sa * _shotE2[2]) + se2 * _shotUp[2];
+                        // where the shot has the camera at a point e of its glide: the way from the subject and the distance
+                        Func<double, double[]> frame = ee =>
+                        {
+                            double Dd = Math.Exp(Math.Log(_shotD0) + (Math.Log(_shotD1) - Math.Log(_shotD0)) * ee);
+                            double az2 = st.Sweep * _shotDir * Math.PI / 180 * ee, el2 = _shotEl0 + (_shotEl1 - _shotEl0) * ee, ca2 = Math.Cos(az2), sa2 = Math.Sin(az2), ce3 = Math.Cos(el2), se3 = Math.Sin(el2);
+                            return new[] { ce3 * (ca2 * _shotE1[0] + sa2 * _shotE2[0]) + se3 * _shotUp[0], ce3 * (ca2 * _shotE1[1] + sa2 * _shotE2[1]) + se3 * _shotUp[1], ce3 * (ca2 * _shotE1[2] + sa2 * _shotE2[2]) + se3 * _shotUp[2], Dd };
+                        };
+                        Func<double[], double> fromStart = f => { double px = _ax + _ox + tdx + f[0] * f[3] - _shotP0[0], py = _ay + _oy + tdy + f[1] * f[3] - _shotP0[1], pz = _az + _oz + tdz + f[2] * f[3] - _shotP0[2]; return Math.Sqrt(px * px + py * py + pz * pz); };
+                        // the departure paced from what was in view where the shot began: the camera is never farther from there than
+                        // its pace allows (max-rate tenfolds a second, from that size), so an asteroid you were beside pulls away and
+                        // shrinks smoothly instead of being left in one frame on the way to a comet across the system; once the
+                        // shot's own glide is within that, it goes on as written, and it is not over until the camera has arrived
+                        double allow = _shotP0 != null ? _shotR0 * Math.Pow(10, Math.Max(0.05, st.MaxRate) * _shotT) : double.MaxValue, eUse = e;
+                        var fr0 = frame(e);
+                        if (_shotP0 != null && fromStart(fr0) > allow)
+                        {
+                            double lo = 0, hi = e;
+                            for (int it = 0; it < 28; it++) { double mid = (lo + hi) * 0.5; if (fromStart(frame(mid)) > allow) hi = mid; else lo = mid; }
+                            eUse = lo; fr0 = frame(eUse);
+                        }
+                        double vx = fr0[0], vy = fr0[1], vz = fr0[2], D = fr0[3];
                         // the camera to where the shot has it now (the subject where it is now: worlds move on their orbits)
                         _ox += tdx + vx * D; _oy += tdy + vy * D; _oz += tdz + vz * D;
                         // the look glides from where it was to the subject over the shot's first part (eased both ends), never a snap
@@ -1359,7 +1379,7 @@ namespace Universe.Shell
                             SetLook(ax + (bx - ax) * lb, ay + (by - ay) * lb, az0 + (bz - az0) * lb);
                         }
                         else SetLook(-vx, -vy, -vz);
-                        if (u >= 1) { done = true; _shotT = -1; }
+                        if (u >= 1 && eUse >= e - 1e-9) { done = true; _shotT = -1; }     // (arrived: the glide done, and the departure's pace no longer holding it back)
                     }
                     break;
                 case "orbit":

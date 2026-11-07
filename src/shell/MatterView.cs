@@ -1732,7 +1732,7 @@ namespace Universe.Shell
                         Add(glow, ax0 + rr * Math.Sin(th) * Math.Cos(ph), cy + rr * Math.Cos(th), az0 + rr * Math.Sin(th) * Math.Sin(ph), s * 0.004, b * 0.6f, b * 0.75f, b, s);
                     }
                 }
-                // the nucleus: always its real protons (red) and neutrons (grey) packed in a ball, growing as you come in; while
+                // the nucleus: its real protons and neutrons, each its three quarks in its gluon glow, packed by the forces, growing as you come in; while
                 // it is too small to see, a small spark marks where it is
                 if (nr / s < 0.004) Add(glow, ax0, cy, az0, s * 0.0014, 1f, 0.95f, 0.9f, s);   // a sharp point of light until its protons and neutrons can be seen
                 var nuc = NucleonsOf(focus); int A = nuc.Length;                                   // every one of its protons and neutrons, where the forces put them
@@ -1741,24 +1741,24 @@ namespace Universe.Shell
                 {
                     bool proton = nuc[k][3] > 0;
                     double nx = ax0 + nuc[k][0] * 1e-18, ny = cy + nuc[k][1] * 1e-18, nz = az0 + nuc[k][2] * 1e-18;
-                    // every proton and neutron, close in, shows its three quarks; from afar it is a ball (red a proton, grey a neutron)
-                    double nball = 1 - Fade(s, Nucleon * 8, Nucleon * 3);
-                    if (s < Nucleon * 8)
+                    // every proton and neutron is its three quarks in the glow of the gluons that hold them, at every size: from afar
+                    // each a small clump of three colour charges in its gluon glow (a proton's warm, a neutron's cool, so they tell
+                    // apart), close in the three quarks, the flux tubes of gluon field between them and the sea's virtual pairs. The
+                    // quarks are points as far as measured, moving in about 0.84 fm (slowed to be watched: a quark crosses its nucleon
+                    // in about half a minute). One drawing at every size, never a solid ball handed over to quarks part way in
+                    bool close = s < Nucleon * 8; float gf = (float)Math.Max(0.35, Fade(s, Nucleon * 30, Nucleon * 3));
+                    Add(glow, nx, ny, nz, Nucleon, (proton ? 0.32f : 0.14f) * gf, (proton ? 0.12f : 0.16f) * gf, (proton ? 0.08f : 0.26f) * gf, s);   // the gluon field's glow, the nucleon's size, tinted by its kind
+                    string q = proton ? "uud" : "udd"; float[][] colour = { new[] { 1f, 0.2f, 0.2f }, new[] { 0.2f, 1f, 0.2f }, new[] { 0.3f, 0.4f, 1f } };   // their three colour charges
+                    double[][] qp = new double[3][];
+                    for (int qi = 0; qi < 3; qi++)
                     {
-                        // the one at the middle, from inside: its three quarks (a proton two up and one down, a neutron one up
-                        // and two down), points as far as measured, moving in about 0.84 fm, in the glow of the gluons that hold them
-                        float gf = (float)Math.Max(0.15, Fade(s, Nucleon * 8, Nucleon * 3));
-                        if (nball > 0.03) Add(solid, nx, ny, nz, Nucleon / 0.75 * nball, proton ? 0.9f : 0.6f, proton ? 0.22f : 0.65f, proton ? 0.2f : 0.75f, s);
-                        Add(glow, nx, ny, nz, Nucleon, 0.1f * gf, 0.05f * gf, 0.02f * gf, s);   // the gluon field's faint glow (never an orb hiding its quarks)
-                        string q = proton ? "uud" : "udd"; float[][] colour = { new[] { 1f, 0.2f, 0.2f }, new[] { 0.2f, 1f, 0.2f }, new[] { 0.3f, 0.4f, 1f } };   // their three colour charges
+                        double a1 = time * (0.07 + qi * 0.02) + qi * 2.1 + k * 0.77, a2 = time * (0.05 + qi * 0.016) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.05 + qi + k));
+                        qp[qi] = new[] { nx + qr * Math.Sin(a2) * Math.Cos(a1), ny + qr * Math.Cos(a2), nz + qr * Math.Sin(a2) * Math.Sin(a1) };
+                    }
+                    if (close)
+                    {
                         // the strong field between them: flux tubes of gluon field joining the three quarks (it does not spread out
                         // like the electric field, it pulls into strings), and quark-antiquark pairs of the sea popping in and out
-                        double[][] qp = new double[3][];
-                        for (int qi = 0; qi < 3; qi++)
-                        {
-                            double a1 = time * (0.07 + qi * 0.02) + qi * 2.1 + k * 0.77, a2 = time * (0.05 + qi * 0.016) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.05 + qi + k));   // (slowed to be watched: a quark crosses its nucleon in about half a minute)
-                            qp[qi] = new[] { nx + qr * Math.Sin(a2) * Math.Cos(a1), ny + qr * Math.Cos(a2), nz + qr * Math.Sin(a2) * Math.Sin(a1) };
-                        }
                         double ycx = (qp[0][0] + qp[1][0] + qp[2][0]) / 3, ycy = (qp[0][1] + qp[1][1] + qp[2][1]) / 3, ycz = (qp[0][2] + qp[1][2] + qp[2][2]) / 3;
                         for (int qi = 0; qi < 3; qi++)
                             for (int t2 = 1; t2 < 10; t2++)
@@ -1773,25 +1773,22 @@ namespace Universe.Shell
                             double ox = (Hash(k, sp, qt + 1, _seed) - 0.5) * Nucleon * 1.4, oy = (Hash(k, sp, qt + 2, _seed) - 0.5) * Nucleon * 1.4, oz = (Hash(k, sp, qt + 3, _seed) - 0.5) * Nucleon * 1.4, sep = Nucleon * 0.12;
                             Add(glow, nx + ox + sep, ny + oy, nz + oz, s * 0.002, 0.7f * gf, 0.7f * gf, 0.9f * gf, s); Add(glow, nx + ox - sep, ny + oy, nz + oz, s * 0.002, 0.9f * gf, 0.6f * gf, 0.6f * gf, s);
                         }
-                        for (int qi = 0; qi < 3; qi++)
-                        {
-                            double a1 = time * (0.07 + qi * 0.02) + qi * 2.1 + k * 0.77, a2 = time * (0.05 + qi * 0.016) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.05 + qi + k));   // (slowed to be watched: a quark crosses its nucleon in about half a minute)
-                            double qx = nx + qr * Math.Sin(a2) * Math.Cos(a1), qy = ny + qr * Math.Cos(a2), qz = nz + qr * Math.Sin(a2) * Math.Sin(a1);
-                            // the quark you picked moves on: the view keeps going to where it is now (as with an electron), and
-                            // once it is all but there it rides with it exactly, so the zoom in goes on into it without end
-                            if (_picked != null && _picked.Kind == 4 && _picked.Key == k + 1 && _picked.I == qi)
-                            {
-                                _tfx = qx; _tfy = qy + _yOff; _tfz = qz; _picked.X = qx; _picked.Y = qy + _yOff; _picked.Z = qz;
-                                double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
-                            }
-                            // a point as far as anyone has measured: its glow fills the view and stays, however far in you go
-                            Add(glow, qx, qy, qz, Math.Min(s * 4, Math.Max(s * 0.003, Nucleon * 0.05)), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);   // (never wider than a few screens: a glow hundreds of screens wide was dropped on some frames and kept on others, a strobe)
-                            int nb = _bodies.Count; AddBody(4, qi, q[qi] == 'u' ? 1 : 0, qx, qy, qz, Nucleon * 0.3, s); if (_bodies.Count > nb) { _bodies[nb].Sym = q[qi] == 'u' ? "up" : "down"; _bodies[nb].Key = k + 1; }
-                        }
-                        continue;
                     }
-                    Add(solid, nx, ny, nz, Nucleon / 0.75, proton ? 0.9f : 0.6f, proton ? 0.22f : 0.65f, proton ? 0.2f : 0.75f, s);
-                    { int nb = _bodies.Count; AddBody(5, k, proton ? 1 : 0, nx, ny, nz, Nucleon, s); if (_bodies.Count > nb) _bodies[nb].Sym = proton ? "proton" : "neutron"; }
+                    for (int qi = 0; qi < 3; qi++)
+                    {
+                        double qx = qp[qi][0], qy = qp[qi][1], qz = qp[qi][2];
+                        // the quark you picked moves on: the view keeps going to where it is now (as with an electron), and
+                        // once it is all but there it rides with it exactly, so the zoom in goes on into it without end
+                        if (_picked != null && _picked.Kind == 4 && _picked.Key == k + 1 && _picked.I == qi)
+                        {
+                            _tfx = qx; _tfy = qy + _yOff; _tfz = qz; _picked.X = qx; _picked.Y = qy + _yOff; _picked.Z = qz;
+                            double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
+                        }
+                        // a point as far as anyone has measured: its glow fills the view and stays, however far in you go
+                        Add(glow, qx, qy, qz, Math.Min(s * 4, Math.Max(s * 0.003, Nucleon * 0.05)), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);   // (never wider than a few screens: a glow hundreds of screens wide was dropped on some frames and kept on others, a strobe)
+                        if (close) { int nb = _bodies.Count; AddBody(4, qi, q[qi] == 'u' ? 1 : 0, qx, qy, qz, Nucleon * 0.3, s); if (_bodies.Count > nb) { _bodies[nb].Sym = q[qi] == 'u' ? "up" : "down"; _bodies[nb].Key = k + 1; } }
+                    }
+                    if (s > Nucleon * 0.6) { int nb = _bodies.Count; AddBody(5, k, proton ? 1 : 0, nx, ny, nz, Nucleon, s); if (_bodies.Count > nb) _bodies[nb].Sym = proton ? "proton" : "neutron"; }   // the nucleon itself, picked as one, down to where its quarks are picked instead
                 }
             }
         }

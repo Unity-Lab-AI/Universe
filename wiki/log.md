@@ -35,3 +35,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the climb out of the hole looking up): DNA-AND DESIGN 614.
 - 2026-11-07 (the remnant from the blast, every small body on its orbit, the tuner watching the processor): DNA-AND DESIGN 615-617.
 - 2026-11-07 (the "never a ball" asides gone): DNA-AND DESIGN 618.
+- 2026-11-07 (every nucleon its three quarks at every size, the nucleus arcs short): DNA-AND DESIGN 619.

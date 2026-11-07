@@ -483,8 +483,8 @@ caption: Inward: an atom is almost all empty space
 do: arc
 rate: 0
 until-km: 0
-turn: 15
-seconds: 18
+turn: 24
+seconds: 7
 caption: Its nucleus: protons and neutrons bound by the strong force
 
 @stop choose-proton
@@ -502,8 +502,8 @@ caption: Into a single proton
 do: arc
 rate: 0
 until-km: 0
-turn: 12
-seconds: 12
+turn: 20
+seconds: 6
 caption: Three quarks in a storm of gluons
 
 @stop choose-quark

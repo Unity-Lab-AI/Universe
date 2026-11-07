@@ -104,6 +104,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The "never a ball" asides gone from the code, the card, the tour and the docs:** (built: DNA-AND DESIGN 618; waits on the test) "get rid of the constant no ball shit you wrote everywhere into my project"
 
+- [~] **Every proton and neutron its three quarks in its gluon glow at every size, no balls; the nucleus arcs short:** (built: DNA-AND DESIGN 619; waits on the test) "i took images of the issues and the protons and nutrons change from balls to quesrks with like no zooming at all is that right? do we need the balls can we jsut propely do them the nucleaus protons and nurtons as quarks better so that is not a instant jump to qwerks and the nucles pan around of an atom takes too long and it pans around liike two differnt times for like 30s in total which is way to long to look at a atom nucleus that is just red and white balls"
+
 ---
 
 ## Pending

@@ -138,7 +138,7 @@ namespace Universe.Shell
             _gasSpacing = 1e-5 / Math.Pow(perCc, 1 / 3.0);
         }
         public bool InSpace { get { return _space; } }
-        public int SpaceKind { get { return _spaceKind; } }
+        public int SpaceKind { get { return _space ? _spaceKind : 0; } }   // (none at all on a body's ground: a hole's kind had outlived the fall, and the well's grid, its black and its clock had followed you onto every rock after)
         /// <summary>A neutron star's crust: iron nuclei packed in a lattice (about a hundred million grams a cubic centimetre: the nuclei
         /// a hundredth of an atom's width apart), electrons racing between them; the same drawing as a star's plasma, at that spacing.</summary>
         public void SetNeutronCrust(ulong spot)
@@ -543,7 +543,7 @@ namespace Universe.Shell
         { _bornSec = double.NaN;
             string id = sea ? "sea" : ice ? "ice" : planetKind;
             if (!_mixes.ContainsKey(id)) id = "desert";
-            _space = false; _mixId = id; _mix = _mixes.ContainsKey(id) ? _mixes[id] : null; _seed = spot;
+            _space = false; _spaceKind = 0; _mixId = id; _mix = _mixes.ContainsKey(id) ? _mixes[id] : null; _seed = spot;
             _fx = _fz = _tfx = _tfz = _fy = _tfy = 0; _picked = null;
             double gk; Grain = _grainKm.TryGetValue(id, out gk) ? gk : 3e-7; _noGrains = Grain <= 0; if (_noGrains) Grain = 3e-7;   // the sea has no grains
         }

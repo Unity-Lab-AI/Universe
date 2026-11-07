@@ -2008,11 +2008,18 @@ namespace Universe.Shell
                             // there for the rest of the fall, the walls closing in round the view and meeting at it; a slow wheel, so
                             // the grid turns past; the fall itself about a minute
                             double tf = Math.Max(0, Math.Min(1, _fallShare));
-                            double cyc = _tourT, thAim = cyc < 6 ? 0.2 : Math.PI - 0.08;   // (0: up, the mouth; pi: down, the point)
-                            if (_tourT <= dt * 1.5) _fallTh = 0.2;                                      // (up from the first frame)
-                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 0.6));                   // (then down the funnel over some seconds, and held)
-                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * 0.12;
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
+                            double cyc = _tourT, thAim = cyc < 6 ? 0.2 : Math.PI - 0.08;   // (0: up, the mouth; pi: down, the point)
+                            if (_fallTh < 0)
+                            {
+                                // from the way you were looking as you came in (at the hole: down its axis), the turn's speed brought up from
+                                // rest over its first second and a half: the look swings up to the mouth, never snaps to it
+                                var l0 = Look; _fallTh = Math.Acos(Math.Max(-1, Math.Min(1, -(l0.X * ax.X + l0.Y * ax.Y + l0.Z * ax.Z))));
+                                _fallPh0 = Math.Atan2(l0.X * e2.X + l0.Y * e2.Y + l0.Z * e2.Z, l0.X * e1.X + l0.Y * e1.Y + l0.Z * e1.Z); _fallTurnT = 0;
+                            }
+                            _fallTurnT += dt; double fr = Math.Min(1, _fallTurnT / 1.5);
+                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * (cyc < 6 ? 1.1 : 0.6) * fr));   // (up to the mouth in the first seconds, then down the funnel, and held)
+                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _fallPh0 + _tourT * 0.12;
                             var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
                             var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;
                         }
@@ -2194,7 +2201,7 @@ namespace Universe.Shell
                         if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
                         if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5))
                         {
-                            done = true; _pickFailed = !got && st.Target != "none"; if (got) _tourVisited++; if (got) _tourVisited++; if (got) _tourVisited++; if (got) _tourVisited++; if (got) _tourVisited++;
+                            done = true; _pickFailed = !got && st.Target != "none"; if (got) _tourVisited++;
                             ZoomLog("TOUR pick " + st.Target + (got ? ": " + _tName + " (kind " + _tKind + ")" : " FAILED after " + _tourT.ToString("0.0") + " s: " + _extras.Count + " bodies round you, " + _localCount + " stars, system " + (_system != null ? "open" : "none") + ", galaxy " + _near + "; its stops are skipped"));
                         }
                     }
@@ -2691,10 +2698,20 @@ namespace Universe.Shell
                     tdx = tdx / l * (1 - lev) + wx * lev; tdy = tdy / l * (1 - lev) + wy * lev; tdz = tdz / l * (1 - lev) + wz * lev;
                     l = Math.Sqrt(tdx * tdx + tdy * tdy + tdz * tdz);
                 }
-                if (l > 0)
+                if (l > 0 && _tour != null)
                 {
-                    EaseLook(tdx, tdy, tdz, 1 - Math.Exp(-dt * (_tour != null ? 0.6 : 5)));   // (on the tour, a slow eased turn, as a camera operator would)
+                    // on the tour, a slow eased turn, as a camera operator would: eased in as well as out (the turn's speed itself
+                    // brought up from rest over its first second and a half whenever a new pick lies off the view, so the last thing
+                    // never flies out of view in a snap) and never over about twenty degrees a second, so a pick behind you is
+                    // turned to calmly, never whipped round to
+                    var lk = Look; double ang = Math.Acos(Math.Max(-1, Math.Min(1, (lk.X * tdx + lk.Y * tdy + lk.Z * tdz) / l)));
+                    if (ang < 0.05) _faceT = 0; else _faceT += dt;
+                    double fr = Math.Min(1, _faceT / 1.5); fr = fr * fr * (3 - 2 * fr);
+                    double rate = 0.6 * (fr + (1 - fr) * Math.Min(1, 0.05 / Math.Max(1e-6, ang)));   // (a small offset is kept closed at full rate; a big one starts slow)
+                    double k = 1 - Math.Exp(-dt * rate); if (ang > 1e-6) k = Math.Min(k, 20 * Math.PI / 180 * dt / ang);
+                    EaseLook(tdx, tdy, tdz, k);
                 }
+                else if (l > 0) EaseLook(tdx, tdy, tdz, 1 - Math.Exp(-dt * 5));
             }
             if (AutoNebula)
             {
@@ -2933,7 +2950,7 @@ namespace Universe.Shell
                             // four-million-solar-mass hole, 70 microseconds for a stellar one, eleven minutes for a hundred-million-solar-mass one); it is
                             // shown over about thirty seconds, slowed or sped as that needs, and the card says by how much
                             { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = Math.Max(1, tauEnd / 50.0); _fallShare = 0; _fallScale0 = _spaceScale; }   // (the stretch on the hole's own clock, from the horizon to a thousandth of it, shown in about eight seconds whatever the hole: a big hole's seven hundred seconds took a minute; never slower than real)
-                            { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
+                            { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fallTh = -1; }   // the axis you came in on: the well's grid is drawn down it; the look is left as it was (at the hole: down the axis), never snapped round (the hole had flown out of view in a snap)
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }
                         if (exd.Pl != null && (exd.Pl.Id.Contains("neutron") || exd.Pl.Id.Contains("pulsar") || exd.Pl.Id.Contains("magnetar")))
@@ -4211,7 +4228,7 @@ namespace Universe.Shell
             r = 1f; g = (float)(0.45 + 0.55 * Math.Min(1, t * 2.2)); b = (float)(0.15 + 0.85 * Math.Min(1, t * 1.6));
         }
         // ── the tour's reach: the places it went to against every galaxy, star, world and moon there is ──
-        private int _tourVisited; private double _bodiesPerStar = -1; private double _fallTh = Math.PI;   // the tour's look down the fall, eased
+        private int _tourVisited; private double _bodiesPerStar = -1; private double _fallTh = Math.PI, _fallPh0, _fallTurnT, _faceT;   // the tour's look down the fall, eased (set from the look as you come in); its facing turn's time since it began
         private double BodiesPerStar()
         {
             if (_bodiesPerStar >= 0) return _bodiesPerStar; if (_kinds == null || _kinds.Count == 0) return _bodiesPerStar = 10;

@@ -66,25 +66,22 @@ namespace Universe.Shell
             float barLen = (float)(km / kmPerPixel);
             var list = new List<StarVertex>();
             float x0 = 30 * px, y0 = h - 40 * px;
-            // the bar with its two end ticks
-            Quad(list, x0, y0, barLen, 2 * px, 0.92f, 0.95f, 1f);
-            Quad(list, x0, y0 - 6 * px, 2 * px, 8 * px, 0.92f, 0.95f, 1f);
-            Quad(list, x0 + barLen - 2 * px, y0 - 6 * px, 2 * px, 8 * px, 0.92f, 0.95f, 1f);
-            // its length, in the game's letters, above the bar
+            // the bar with its two end ticks, and its length above it, all rimmed dark first, then drawn over the rim
             string label = Words(km).ToUpperInvariant();
-            float cx = x0, cy = y0 - 18 * px, cell = 1.6f * px;
-            foreach (char ch in label)
-            {
-                if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, 0.92f, 0.95f, 1f);
-                cx += 6 * cell;
-            }
+            float cell = 1.6f * px, rim = px;
+            Rim(list, x0, y0, barLen, 2 * px, rim); Rim(list, x0, y0 - 6 * px, 2 * px, 8 * px, rim); Rim(list, x0 + barLen - 2 * px, y0 - 6 * px, 2 * px, 8 * px, rim);
+            { float cx = x0, cy = y0 - 18 * px; foreach (char ch in label) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Rim(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, cell * 0.5f); cx += 6 * cell; } }
+            Quad(list, x0, y0, barLen, 2 * px, TextR, TextG, TextB, 0.001f);
+            Quad(list, x0, y0 - 6 * px, 2 * px, 8 * px, TextR, TextG, TextB, 0.001f);
+            Quad(list, x0 + barLen - 2 * px, y0 - 6 * px, 2 * px, 8 * px, TextR, TextG, TextB, 0.001f);
+            { float cx = x0, cy = y0 - 18 * px; foreach (char ch in label) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, TextR, TextG, TextB, 0.001f); cx += 6 * cell; } }
             int n = list.Count;
             if (_v.Length < n) _v = new StarVertex[n + 600];
             list.CopyTo(_v);
             if (_buf == null || _buf.Bytes < (long)n * Marshal.SizeOf(typeof(StarVertex))) { if (_buf != null) _buf.Dispose(); _buf = new UploadBuffer(_device, (long)(n + 600) * Marshal.SizeOf(typeof(StarVertex))); }
             _buf.Write(_v, n);
             // screen pixels straight to the picture: x right, y down, nothing in front of it
-            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 0; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;
+            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 1; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;   // (a depth per quad: the rims behind, the letters in front)
             var c2 = new float[BillboardPipeline.ConstantCount];
             c2[0] = m.M11; c2[1] = m.M12; c2[2] = m.M13; c2[3] = m.M14; c2[4] = m.M21; c2[5] = m.M22; c2[6] = m.M23; c2[7] = m.M24;
             c2[8] = m.M31; c2[9] = m.M32; c2[10] = m.M33; c2[11] = m.M34; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44;
@@ -296,12 +293,12 @@ namespace Universe.Shell
             if (x0 + cw > w - 4) x0 = (float)(x - 70 * px - cw);                         // no room to its right: on its left
             x0 = Math.Max(4, Math.Min(x0, w - cw - 4));
             var list = new List<StarVertex>();
-            for (int i = 0; i < lines.Count; i++)
+            for (int pass = 0; pass < 2; pass++) for (int i = 0; i < lines.Count; i++)   // (first every letter's rim, then every letter over the rims)
             {
-                float cx = x0 + pad, cy = y0 + pad + i * lh, r = (i == 0 ? 0.55f : 0.85f) * _fade, g = (i == 0 ? 0.95f : 0.88f) * _fade, b = 1f * _fade;
+                float cx = x0 + pad, cy = y0 + pad + i * lh, r = (i == 0 ? TitleR : TextR) * _fade, g = (i == 0 ? TitleG : TextG) * _fade, b = (i == 0 ? TitleB : TextB) * _fade;
                 foreach (char c0 in lines[i].ToUpperInvariant())
                 {
-                    if (c0 != ' ') foreach (var c in IconFont.Cells(c0)) Quad(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, r, g, b);
+                    if (c0 != ' ') foreach (var c in IconFont.Cells(c0)) { if (pass == 0) Rim(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, cell * 0.5f); else Quad(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, r, g, b, 0.001f); }
                     cx += adv;
                 }
             }
@@ -309,13 +306,19 @@ namespace Universe.Shell
             if (_cardV.Length < cnt) _cardV = new StarVertex[cnt + 1200];
             list.CopyTo(_cardV);
             var cardBuf = Slot(_cardV, cnt);
-            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 0; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;
+            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 1; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;   // (a depth per quad: the rims behind, the letters in front)
             var c2 = new float[BillboardPipeline.ConstantCount];
             c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44;
             c2[18] = 1; c2[22] = 1;
             pipes.Solid.Draw(cardBuf, cnt, c2, 0, 0, w, h);
         }
 
+        // the text's colours: a warm ivory for the body and a gold for a card's title (never white: white text had been lost on a
+        // white surface, a grain field, a star's face), and under every letter a dark rim half a cell wide, so the letters read on
+        // a black sky and a white surface alike. The rim is drawn first, a little behind (the depth test is strict: nearer is
+        // greater), and the letters over it
+        public const float TextR = 0.95f, TextG = 0.88f, TextB = 0.70f, TitleR = 1f, TitleG = 0.80f, TitleB = 0.42f, RimR = 0.03f, RimG = 0.03f, RimB = 0.04f;
+        private static void Rim(List<StarVertex> l, float x, float y, float sw, float sh, float rim) { Quad(l, x - rim, y - rim, sw + 2 * rim, sh + 2 * rim, RimR, RimG, RimB); }
         private static void Quad(List<StarVertex> l, float x, float y, float sw, float sh, float r, float g, float b, float z = 0)
         {
             var a = new StarVertex { X = x, Y = y, Z = z, Size = 1, R = r, G = g, B = b, A = 1 };   // (z: a little nearer than 0 for what sits on a plate: the depth test is strict, and at one depth the plate wins)

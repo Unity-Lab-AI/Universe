@@ -88,7 +88,7 @@ Universe is built to be taken. It is **MIT licensed**: use it, change it, sell w
 | **A game** | Your worlds, grown from your templates, in your own style: the generators and the camera are yours to keep |
 | **A simulation** | Real orbits, real physics numbers, a universe that is the same every run from one seed |
 | **A film or a screensaver** | Write a tour in plain text and film it in the program |
-| **A classroom** | Fly from the cosmic web to a quark, with a card on everything you click |
+| **A classroom** | Fly from the cosmic web to a quark, with a card on everything you click (its letters rimmed dark, so they read on a black sky and a white surface alike) |
 | **A piece of it** | The waveform engine, the galaxy maker, the star systems, the ground, the matter: each is its own folder of plain C#, with no packages to drag along |
 
 Rename it, swap the icon, change the content, and `release.cmd` makes your installer. [Build your own universe](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours") shows the templates; the [Technical guide](docs/HOW-TO-BUILD.md "Build, ship and change the code") shows the code.

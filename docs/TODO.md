@@ -84,6 +84,10 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The fall's look the right way round: up through the mouth, then down to the point:** (built: DNA-AND DESIGN 605; waits on the test) "i didnt see the walls of the spike cone fuuneel thing.. i only saw an opening at the top i was falling into"
 
+- [~] **The tour's pans eased in as well as out, no snap away from the last thing:** (built: DNA-AND DESIGN 606; waits on the test) "and the pan waway from objects the tour visits are too abrubts making it look jerky and laggy just instantly changing the view completely" / "ie the black hole just instantly flew out of view like disapperend in a snap" / "other objects do this too"
+- [~] **The well's grid gone once you are out of the hole, no space kind outside space:** (built: DNA-AND DESIGN 607; waits on the test) "and im out of the black hole now and ime seeing the grid all over the universe" / "i took snaps"
+- [~] **The text a warm ivory and gold with a dark rim under every letter, readable on black and white alike:** (built: DNA-AND DESIGN 608; waits on the test) "and we need a differnt color text that not gody as in the none light scale the white text on white and black environment make it impossible to read the text, but we need something that sint clashy but works for bioth black and white screen when in eveironments of the the universe"
+
 ---
 
 ## Pending

@@ -605,7 +605,7 @@ namespace DnaAnd.Shell
         private readonly List<StarVertex> _localList = new List<StarVertex>();   // in the near galaxy's own frame
         private readonly List<int> _localKind = new List<int>(); private readonly List<long> _localId = new List<long>();
         private UploadBuffer _localBuf; private StarVertex[] _localDrawn = new StarVertex[0]; private int _localCount;
-        private long _localKey = long.MinValue;
+        private long _localKey = long.MinValue; private long _localCX, _localCY, _localCZ;
 
         // the galaxy's density of real stars at a point of its own frame (stars per galaxy unit cubed)
         private double Density(double lx, double ly, double lz)
@@ -625,6 +625,11 @@ namespace DnaAnd.Shell
             long cx = (long)Math.Floor(lx / LocalCell), cy = (long)Math.Floor(ly / LocalCell), cz = (long)Math.Floor(lz / LocalCell);
             long key = (cx * 73856093L) ^ (cy * 19349663L) ^ (cz * 83492791L);
             if (key == _localKey) return;
+            // flying through faster than a cube or two a frame (zooming out of the galaxy, crossing it): its real stars are not made
+            // (they would be gone before they were seen, and making them every frame stalls it); the galaxy's own stars show it
+            bool fast = _localKey != long.MinValue && (Math.Abs(cx - _localCX) > 2 || Math.Abs(cy - _localCY) > 2 || Math.Abs(cz - _localCZ) > 2);
+            _localCX = cx; _localCY = cy; _localCZ = cz;
+            if (fast) { _localKey = long.MinValue + 1; _localCount = 0; _localCells.Clear(); return; }
             _localKey = key;
             _localList.Clear(); _localKind.Clear(); _localId.Clear();
             var keep = new Dictionary<long, StarVertex[]>();
@@ -1158,6 +1163,7 @@ namespace DnaAnd.Shell
                         // the galaxy you begin in (the nearest), to open on
                         int bi = -1; double bd = double.MaxValue;
                         for (int i = 0; i < _galaxies.Count; i++) { var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = dx * dx + dy * dy + dz * dz; if (d < bd) { bd = d; bi = i; } }
+                        if (_near >= 0 && _near < _galaxies.Count) bi = _near;                // (the one you are in, whatever else is made round it)
                         if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; }
                     }
                     break;

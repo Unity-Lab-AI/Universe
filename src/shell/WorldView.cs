@@ -32,7 +32,9 @@ namespace DnaAnd.Shell
 
         // the camera: an anchor (a galaxy's centre, or the star of the system you are in, in universe units) plus how far the camera
         // is from it. Distances near the camera stay exact because they are worked out from the small offset, not the huge anchor.
-        private double _ax, _ay, _az, _ox, _oy, _oz, _yaw = Math.PI + 0.4, _pitch = -0.35;
+        private double _ax, _ay, _az, _ox, _oy, _oz;
+        // the camera's way: the direction it looks and its own up, never angles (angles lock at straight up and down: gimbal lock)
+        private double _fx = -0.8652, _fy = -0.3429, _fz = -0.3658; private Vec3 _camUp = new Vec3(0, 1, 0);
         private double _cx { get { return _ax + _ox; } }
         private double _cy { get { return _ay + _oy; } }
         private double _cz { get { return _az + _oz; } }
@@ -308,8 +310,8 @@ namespace DnaAnd.Shell
         // ── every other kind of body, made round you from content/bodies.dnat, drawn and clickable: a supermassive black hole at
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
-        private sealed class Place { public string Id, Name, Where, Entry, Says; public double PerLy3, SizeKm, FeedShare, JetShare; public int Shown; public float R, G, B; }
-        private sealed class Extra { public double X, Y, Z, R, Mass; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; }   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare; public int Shown; public float R, G, B; }
+        private sealed class Extra { public double X, Y, Z, R, Mass; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; }   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -352,13 +354,83 @@ namespace DnaAnd.Shell
                 if (ex.Feeding == 2) DrawPoints(_bhJets, _bhJetsN, tilt * scale * Mat4.Translation((float)dx, (float)dy, (float)dz) * vp, right, up, sc, 0.0012f, w, h, time, 0.02f, 1f, 2f);
             }
         }
+        // -- asteroids and comets close in: a lumpy cratered rock lit from its star's side, made once (radius about 1) and drawn for
+        // each, turned to its star and spinning on that line (so its lit side stays lit); a comet's dark nucleus in its coma, with
+        // its ion tail straight away from the star and its wider curved dust tail --
+        private UploadBuffer _rockBuf, _cometBuf; private int _rockN, _cometN;
+        private bool ShapeShown(Extra ex, int h)
+        {
+            double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            double reach = ex.Shape == "comet" ? 2000 : 1;                                  // (a comet's coma shows from much farther)
+            return ex.R * reach / Math.Max(1e-30, d) * h > 3;
+        }
+        private static void RockPoints(List<StarVertex> l, Rng rng, int n, float r0, float g0, float b0, double albedo)
+        {
+            var bumps = new double[12][]; for (int q = 0; q < 12; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); bumps[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), (rng.NextDouble() - 0.5) * 0.5, 1 + rng.NextDouble() * 2.5 }; }
+            var craters = new double[30][]; for (int q = 0; q < 30; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); craters[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), Math.Cos(0.08 + rng.NextDouble() * 0.3) }; }
+            for (int k = 0; k < n; k++)
+            {
+                double u = (k + 0.5) / n * 2 - 1, a = k * 2.399963229728653, rr = Math.Sqrt(1 - u * u), x = rr * Math.Cos(a), y = u, z = rr * Math.Sin(a);
+                double rad = 1; foreach (var bq in bumps) rad += bq[3] * Math.Pow(Math.Max(0, x * bq[0] + y * bq[1] + z * bq[2]), bq[4]);
+                double shade = 1;
+                foreach (var cq in craters) { double c = x * cq[0] + y * cq[1] + z * cq[2]; if (c > cq[3]) { double t = (c - cq[3]) / (1 - cq[3]); rad -= 0.05 * (1 - t); shade *= 0.75 + 0.25 * t; } else if (c > cq[3] - 0.02) shade *= 1.15; }
+                double sx = x * 1.5, sy = y * 0.85, sz = z;                                   // (elongated, as small bodies are)
+                double lit = Math.Max(0, x * 0.9 + 0.1) * shade * albedo + 0.015;              // its star is along +x
+                l.Add(new StarVertex { X = (float)(sx * rad), Y = (float)(sy * rad), Z = (float)(sz * rad), Size = 0.045f, R = (float)(r0 * lit), G = (float)(g0 * lit), B = (float)(b0 * lit), A = 1 });
+            }
+        }
+        private void MakeSmallBodies()
+        {
+            var rock = new List<StarVertex>(); RockPoints(rock, new Rng(0x5A57E1UL), 30000, 0.75f, 0.68f, 0.6f, 1.0);
+            _rockN = rock.Count; _rockBuf = new UploadBuffer(_gpu.Device, (long)_rockN * Stride); _rockBuf.Write(rock.ToArray(), _rockN);
+            var cm = new List<StarVertex>(); var rng = new Rng(0xC0CE7UL); RockPoints(cm, rng, 20000, 0.5f, 0.48f, 0.46f, 0.35);   // a comet's nucleus: among the darkest things known
+            for (int k = 0; k < 9000; k++)
+            {
+                // the coma: gas and dust round the nucleus, densest close in, out to about 2000 times its size
+                double rr = Math.Exp(Math.Log(1.5) + rng.NextDouble() * Math.Log(2000 / 1.5)), u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, s2 = Math.Sqrt(1 - u * u);
+                float br = (float)(0.5 * Math.Pow(1.5 / rr, 0.35));
+                cm.Add(new StarVertex { X = (float)(rr * s2 * Math.Cos(a) + rr * 0.3), Y = (float)(rr * u), Z = (float)(rr * s2 * Math.Sin(a)), Size = (float)(rr * 0.35), R = 0.55f * br, G = 0.75f * br, B = 0.8f * br, A = 1 });
+            }
+            for (int k = 0; k < 9000; k++)
+            {
+                // the ion tail: straight away from the star (along -x), thin, blue; the dust tail: wider, curved, yellow-white
+                bool ion = (k & 1) == 0; double t = Math.Pow(rng.NextDouble(), 0.7) * 60000, w = (ion ? 0.02 : 0.08) * t + 200, a = rng.NextDouble() * Math.PI * 2, q = rng.Gaussian() * 0.4;
+                float br = (float)((ion ? 0.35 : 0.3) * Math.Exp(-t / 30000));
+                double bend = ion ? 0 : t * t / 60000 * 0.25;
+                cm.Add(new StarVertex { X = (float)(-t), Y = (float)(Math.Cos(a) * w * q), Z = (float)(Math.Sin(a) * w * q + bend), Size = (float)(w * 0.8), R = (ion ? 0.35f : 0.9f) * br, G = (ion ? 0.55f : 0.85f) * br, B = (ion ? 1f : 0.7f) * br, A = 1 });
+            }
+            _cometN = cm.Count; _cometBuf = new UploadBuffer(_gpu.Device, (long)_cometN * Stride); _cometBuf.Write(cm.ToArray(), _cometN);
+        }
+        private void DrawSmallBodies(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
+        {
+            foreach (var ex in _extras)
+            {
+                if (ex.Shape.Length == 0 || !ShapeShown(ex, h)) continue;
+                if (_rockBuf == null) MakeSmallBodies();
+                double bx = ex.X - _ax, by = ex.Y - _ay, bz = ex.Z - _az, dx = bx - _ox, dy = by - _oy, dz = bz - _oz, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
+                // its frame: +x toward its star (the anchor of the system you are in), spinning about that line
+                var xs = bl > 0 ? new Vec3((float)(-bx / bl), (float)(-by / bl), (float)(-bz / bl)) : new Vec3(1, 0, 0);
+                var ys = Vec3.Cross(xs, Math.Abs(xs.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var zs = Vec3.Cross(xs, ys).Normalized;
+                double spin = time * 0.15 + ex.Turn; float c = (float)Math.Cos(spin), sn = (float)Math.Sin(spin);
+                var y2 = new Vec3(ys.X * c + zs.X * sn, ys.Y * c + zs.Y * sn, ys.Z * c + zs.Z * sn); var z2 = Vec3.Cross(xs, y2);
+                if (ex.Shape == "comet") { y2 = ys; z2 = zs; }                                  // (its tails do not spin)
+                float sc = (float)ex.R;
+                var m = Mat4.Identity;
+                m.M11 = xs.X * sc; m.M12 = xs.Y * sc; m.M13 = xs.Z * sc;
+                m.M21 = y2.X * sc; m.M22 = y2.Y * sc; m.M23 = y2.Z * sc;
+                m.M31 = z2.X * sc; m.M32 = z2.Y * sc; m.M33 = z2.Z * sc;
+                m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
+                if (ex.Shape == "comet") DrawPoints(_cometBuf, _cometN, m * vp, right, up, sc, 0.0012f, w, h, time, 0.05f, 1f, 2f);
+                else DrawPoints(_rockBuf, _rockN, m * vp, right, up, sc, 0.0012f, w, h, time, 0.05f, 1f, 2f);
+            }
+        }
         private UploadBuffer _extraBuf; private StarVertex[] _extraV = new StarVertex[0]; private readonly float[] _lens = new float[4], _web = new float[5];
         private void LoadPlaces()
         {
             _places = new List<Place>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             foreach (var e in _content.OfKind("bodies.dnat", "place"))
             {
-                double v; var pl = new Place { Id = e.Id, Name = e.Name, Where = e.Get("where", ""), Entry = e.Get("entry", ""), Says = e.Get("says", "") };
+                double v; var pl = new Place { Id = e.Id, Name = e.Name, Where = e.Get("where", ""), Entry = e.Get("entry", ""), Says = e.Get("says", ""), Shape = e.Get("shape", "") };
                 if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; if (double.TryParse(e.Get("size-km", "1000"), fs, ci, out v)) pl.SizeKm = v;
                 int n; if (int.TryParse(e.Get("shown", "0"), out n)) pl.Shown = n;
                 var c = e.Get("colour", "1 1 1").Split(' '); float r = 1, g = 1, b = 1; if (c.Length == 3) { float.TryParse(c[0], fs, ci, out r); float.TryParse(c[1], fs, ci, out g); float.TryParse(c[2], fs, ci, out b); }
@@ -367,7 +439,7 @@ namespace DnaAnd.Shell
         }
         private Extra MakeExtra(Place pl, double x, double y, double z)
         {
-            var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm), Name = pl.Name, Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>() };
+            var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>() };
             ex.Lines.Add(pl.Name); if (pl.Says.Length > 0) ex.Lines.Add(pl.Says);
             var en = pl.Entry.Split(' ');
             if (en.Length == 2) foreach (var e in _content.Entries) if (e.Kind == en[0] && e.Id == en[1])
@@ -438,9 +510,9 @@ namespace DnaAnd.Shell
                         for (int q = 0; q < n && q < 8; q++) _extras.Add(MakeExtra(pl, (i + rng.NextDouble()) * cell, (j + rng.NextDouble()) * cell, (k + rng.NextDouble()) * cell));
                     }
                 }
-                else if (_system != null && (pl.Where == "belt" || pl.Where == "kuiper" || pl.Where == "oort"))
+                else if (_system != null && (pl.Where == "belt" || pl.Where == "kuiper" || pl.Where == "oort" || pl.Where == "inner"))
                 {
-                    double a0 = pl.Where == "belt" ? _system.BeltInAu : pl.Where == "kuiper" ? _system.KuiperInAu : _system.OortInAu, a1 = pl.Where == "belt" ? _system.BeltOutAu : pl.Where == "kuiper" ? _system.KuiperOutAu : _system.OortOutAu;
+                    double a0 = pl.Where == "belt" ? _system.BeltInAu : pl.Where == "kuiper" ? _system.KuiperInAu : pl.Where == "inner" ? 0.8 : _system.OortInAu, a1 = pl.Where == "belt" ? _system.BeltOutAu : pl.Where == "kuiper" ? _system.KuiperOutAu : pl.Where == "inner" ? 3.0 : _system.OortOutAu;
                     if (a1 <= 0) continue;
                     var rng = new Rng(_seed ^ (ulong)pl.Id.GetHashCode() ^ (ulong)_system.StarName.GetHashCode());
                     for (int q = 0; q < pl.Shown; q++)
@@ -456,10 +528,25 @@ namespace DnaAnd.Shell
         private void LookAt(double x, double y, double z)
         {
             double dx = x - _cx, dy = y - _cy, dz = z - _cz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-            _yaw = Math.Atan2(dz, dx); _pitch = Math.Asin(dy / l);
+            if (l > 0) SetLook(dx, dy, dz);
+        }
+        private void SetLook(double x, double y, double z)
+        {
+            double l = Math.Sqrt(x * x + y * y + z * z); if (l <= 0 || double.IsNaN(l)) return;
+            _fx = x / l; _fy = y / l; _fz = z / l;
+        }
+        private void SetLook(Vec3 f) { SetLook(f.X, f.Y, f.Z); }
+        // turns the view a share k of the way to a direction, round the shortest way (never through angles)
+        private void EaseLook(double wx, double wy, double wz, double k)
+        {
+            double wl = Math.Sqrt(wx * wx + wy * wy + wz * wz); if (wl <= 0) return; wx /= wl; wy /= wl; wz /= wl;
+            var f = Look; double d = Math.Max(-1, Math.Min(1, f.X * wx + f.Y * wy + f.Z * wz)), a = Math.Acos(d);
+            if (a < 1e-7) { SetLook(wx, wy, wz); return; }
+            var axis = Vec3.Cross(f, new Vec3((float)wx, (float)wy, (float)wz)); if (axis.Length < 1e-6f) axis = _camUp;
+            SetLook(Turn(f, axis.Normalized, a * k));
         }
 
-        private Vec3 Look { get { return new Vec3((float)(Math.Cos(_yaw) * Math.Cos(_pitch)), (float)Math.Sin(_pitch), (float)(Math.Sin(_yaw) * Math.Cos(_pitch))); } }
+        private Vec3 Look { get { return new Vec3((float)_fx, (float)_fy, (float)_fz); } }
 
         // a galaxy's own frame placed in the universe: its size, tilt and turn (as the universe always placed them)
         private static void ToUniverse(Galaxy g, double x, double y, double z, out double ux, out double uy, out double uz)
@@ -873,7 +960,7 @@ namespace DnaAnd.Shell
 
         // ── a tour: a flight of stops read from content/tours/<name>.dnat, flown with the real controls (the wheel's zoom at one
         // steady rate, the drag's circling and looking, the same picks a click makes) so it shows the one world as it is ──
-        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds; }
+        private sealed class TourStop { public string Name, Do, Target, Caption; public double Rate, UntilKm, Turn, Tilt, Seconds; public bool Through; }   // Through: flown on through without slowing or stopping (into the next zoom)
         private List<TourStop> _tour; private int _tourAt; private double _tourClock, _tourStall, _tourLastD, _tourT, _tourRate;
         /// <summary>Starts the tour of that name (content/tours/name.dnat); false if there is none.</summary>
         public bool StartTour(string name)
@@ -882,7 +969,7 @@ namespace DnaAnd.Shell
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
             foreach (var e in _content.OfKind("tours/" + name + ".dnat", "stop"))
                 list.Add(new TourStop { Name = e.Id, Do = e.Get("do", "orbit"), Target = e.Get("target", "none"), Caption = e.Get("caption", ""), Rate = num(e.Get("rate", "0.3"), 0.3),
-                    UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10) });
+                    UntilKm = num(e.Get("until-km", "0"), 0), Turn = num(e.Get("turn", "6"), 6), Tilt = num(e.Get("tilt", "0"), 0), Seconds = num(e.Get("seconds", "10"), 10), Through = e.Get("through", "no") == "yes" });
             if (list.Count == 0) return false;
             _tour = list; _tourAt = 0; _tourT = 0; _tourRate = 0; _tourClock = 0;
             if (TimeStep == 0) SetTime(1);                                              // time runs on the tour (the planets turn, the electrons move)
@@ -930,7 +1017,7 @@ namespace DnaAnd.Shell
                         // one steady rate in scale (each tenfold the same time), eased in and out
                         double d = ViewDistanceKm(), want = st.UntilKm, sign = st.Rate >= 0 ? 1 : -1;
                         double left = Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, want)));
-                        double target = Math.Abs(st.Rate) * Math.Min(1, left / 0.6) * TourPace;    // easing out over the last few tenths of a tenfold; never faster than the world is made
+                        double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Min(1, left / 0.6)) * TourPace;    // easing out over the last few tenths of a tenfold; never faster than the world is made
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OffTarget() < 0.07 ? sign * notches : 0;                     // never moving one way while looking another
@@ -963,13 +1050,16 @@ namespace DnaAnd.Shell
                 case "arc":
                     {
                         // the cinematic move: a slow dolly in (or out) while circling the subject, both eased in and out, turned smoothly
-                        double ease = Math.Min(1, _tourT / 3) * Math.Min(1, Math.Max(0, st.Seconds - _tourT) / 3); ease = ease * ease * (3 - 2 * ease);
+                        // with a distance to reach it circles on till it is there (easing out over the last few tenths of a tenfold),
+                        // else for its seconds
                         double sign = st.Rate >= 0 ? 1 : -1, d = ViewDistanceKm();
                         bool there = st.UntilKm > 0 && ((sign > 0 && d <= st.UntilKm) || (sign < 0 && d >= st.UntilKm));
+                        double left = st.UntilKm > 0 && Math.Abs(st.Rate) > 0 ? Math.Abs(Math.Log10(Math.Max(1e-40, d) / st.UntilKm)) / 0.6 : Math.Max(0, st.Seconds - _tourT) / 3;
+                        double ease = Math.Min(1, _tourT / 3) * Math.Min(1, Math.Max(0.15, left)); ease = ease * ease * (3 - 2 * ease);
                         if (!there && OffTarget() < 0.07) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
-                        if (Math.Abs(_pitch) > 0.9) _pitch += (Math.Sign(_pitch) * 0.9 - _pitch) * (1 - Math.Exp(-dt * 0.8));
-                        TourTurn(st.Turn * Math.PI / 180 * dt * ease, 0);
-                        if (_tourT >= st.Seconds) done = true;
+                        { double lp = LocalPitch(); if (Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
+                        TourTurn(st.Turn * Math.PI / 180 * dt * Math.Max(ease, 0.4), 0);
+                        if (st.UntilKm > 0 && Math.Abs(st.Rate) > 0 ? (there && _tourT >= st.Seconds) || _tourT > 240 : _tourT >= st.Seconds) done = true;
                     }
                     break;
                 case "fly":
@@ -977,9 +1067,20 @@ namespace DnaAnd.Shell
                         // a steady flight forward, past what is ahead (a star, a world): the same share of the distance to the
                         // nearest thing each second, eased in and out, never a sudden speed-up; turning slowly as it goes
                         double ease = Math.Min(1, _tourT / 2) * Math.Min(1, Math.Max(0, st.Seconds - _tourT) / 2);
-                        double sp = Math.Max(NearestDistance(), _farScale) * st.Rate * dt * ease; var f = Look;
-                        _ox += f.X * sp; _oy += f.Y * sp; _oz += f.Z * sp;
-                        _yaw += st.Turn * Math.PI / 180 * dt * ease;
+                        var f = Look;
+                        if (_matterScale > 0)
+                        {
+                            // in the matter: on through it, the way you face, at the height you are (among the crystal's atoms, past
+                            // them, rate heights a second), as W A S D fly you
+                            double msp = _matterScale * 0.6 * st.Rate * dt * ease;
+                            double x0, y0, z0; CamFromPlanet(out x0, out y0, out z0); double r0 = Math.Sqrt(x0 * x0 + y0 * y0 + z0 * z0);
+                            var upL = new Vec3((float)(x0 / r0), (float)(y0 / r0), (float)(z0 / r0));
+                            var east = Vec3.Cross(Math.Abs(upL.Y) < 0.99f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0), upL).Normalized; var north = Vec3.Cross(upL, east).Normalized;
+                            double fe = Vec3.Dot(f, east), fn = Vec3.Dot(f, north), fl = Math.Sqrt(fe * fe + fn * fn); if (fl < 1e-6) { fe = 1; fn = 0; fl = 1; }
+                            _matter.Unpick(); _matter.Move(fe / fl * msp, fn / fl * msp);
+                        }
+                        else { double sp = Math.Max(NearestDistance(), _farScale) * st.Rate * dt * ease; _ox += f.X * sp; _oy += f.Y * sp; _oz += f.Z * sp; }
+                        SetLook(Turn(Look, LevelUp(), st.Turn * Math.PI / 180 * dt * ease));
                         if (_tourT >= st.Seconds) done = true;
                     }
                     break;
@@ -1018,13 +1119,13 @@ namespace DnaAnd.Shell
             // the story is read, never rushed: a stop goes on only once its words have had time to be read (a moment to look, then a
             // quarter of a second a word); a zoom that has arrived holds still till then
             if (done && WebNotMade) { done = false; input.Wheel = 0; }               // (never on past the web before it shows)
-            if (done && st.Do != "pick" && _tourT < 1.5 + st.Caption.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length * 0.25)
+            if (done && st.Do != "pick" && !st.Through && _tourT < 1.5 + st.Caption.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length * 0.25)
             {
                 // arrived and waiting for the words to be read: never frozen, it looks around, a slow eased turn with a gentle rise
                 // and fall, as a person would on reaching somewhere new
                 done = false; input.Wheel = 0; _tourLook = Math.Min(1, _tourLook + dt / 2);
                 double e = _tourLook * _tourLook * (3 - 2 * _tourLook);
-                if (_matterScale <= 0 && _spaceScale <= 0) TourTurn(1.5 * Math.PI / 180 * dt * e, Math.Sin(_tourClock * 0.35) * 0.6 * Math.PI / 180 * dt * e);   // (deep in the matter it holds steady)
+                if (_matterScale <= 0 && _spaceScale <= 0 && !(_ground != null && AboveGround() < Units.Km(MatterView.OverlayKm))) TourTurn(1.5 * Math.PI / 180 * dt * e, Math.Sin(_tourClock * 0.35) * 0.6 * Math.PI / 180 * dt * e);   // (among the grains and deep in the matter it holds steady: the view there is held on what you dive into)
             }
             else _tourLook = 0;
             if (done) { _tourAt++; _tourT = 0; }
@@ -1116,7 +1217,7 @@ namespace DnaAnd.Shell
                         if (opts.Count > 0) { int pick = opts[rng.Below(opts.Count)]; _tKind = 2; _tIndex = pick; _tName = _system.Bodies[pick].Kind; }
                     }
                     break;
-                default: _matter.PickNearest(what); break;                                     // atom, electron, nucleus, proton, quark
+                default: _matter.PickNearest(what); break;                                     // a grain, a spot on its face, an atom, electron, nucleus, proton, quark
             }
         }
         /// <summary>True when a planet's ground is being drawn (what the GPU use tunes, so far).</summary>
@@ -1153,7 +1254,7 @@ namespace DnaAnd.Shell
             }
             else { var g = _galaxies[0]; tx = g.X - _ax; ty = g.Y - _ay; tz = g.Z - _az; }
             double dx = tx - _ox, dy = ty - _oy, dz = tz - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-            if (l > 0) { _yaw = Math.Atan2(dz, dx); _pitch = Math.Asin(dy / l); }
+            if (l > 0) SetLook(dx, dy, dz);
         }
 
         // where the clicked thing is now, from the camera (universe units), and how big it is; false if it is gone
@@ -1381,6 +1482,7 @@ namespace DnaAnd.Shell
                     { }   // a grain over the ground: picked, its card shown; the ground itself carries you on down to it (never a second layer of grains)   // a grain over the ground: on into the matter, the same picture, flying to it
                     else Pick(MouseRay(input.MouseX, input.MouseY, w, h), input.MouseX, input.MouseY);
                 } }
+            LevelCamera(dt);
             // the camera turns smoothly to face what you picked
             double tdx, tdy, tdz, trad;
             bool amongGrains = _ground != null && _matterScale <= 0 && AboveGround() < Units.Km(MatterView.OverlayKm);
@@ -1394,8 +1496,7 @@ namespace DnaAnd.Shell
                 if (hl < 1e-6) { hx = -uz; hy = 0; hz = ux; hl = Math.Sqrt(hx * hx + hz * hz); if (hl < 1e-6) { hx = 1; hl = 1; } }
                 double dn = Math.Sin(88 * Math.PI / 180), fl = Math.Cos(88 * Math.PI / 180);
                 double wx = hx / hl * fl - ux * dn, wy = hy / hl * fl - uy * dn, wz = hz / hl * fl - uz * dn;
-                double wantYaw = Math.Atan2(wz, wx), wantPitch = Math.Asin(Math.Max(-1, Math.Min(1, wy))), k = 1 - Math.Exp(-dt * 4);
-                _yaw += Math.IEEERemainder(wantYaw - _yaw, 2 * Math.PI) * k; _pitch += (wantPitch - _pitch) * k;
+                EaseLook(wx, wy, wz, 1 - Math.Exp(-dt * 4));
             }
             else if (_tKind >= 0 && _matterScale <= 0 && _spaceScale <= 0 && !(_pressed && _dragged) && !TourLooking && TargetFromCamera(out tdx, out tdy, out tdz, out trad))   // (in the matter or the gas, an earlier pick out in the world does not turn you)
             {
@@ -1417,9 +1518,7 @@ namespace DnaAnd.Shell
                 }
                 if (l > 0)
                 {
-                    double wantYaw = Math.Atan2(tdz, tdx), wantPitch = Math.Asin(Math.Max(-1, Math.Min(1, tdy / l)));
-                    double dyaw = Math.IEEERemainder(wantYaw - _yaw, 2 * Math.PI), k = 1 - Math.Exp(-dt * (_tour != null ? 0.6 : 5));   // (on the tour, a slow eased turn, as a camera operator would)
-                    _yaw += dyaw * k; _pitch += (wantPitch - _pitch) * k;
+                    EaseLook(tdx, tdy, tdz, 1 - Math.Exp(-dt * (_tour != null ? 0.6 : 5)));   // (on the tour, a slow eased turn, as a camera operator would)
                 }
             }
             if (AutoNebula)
@@ -1484,7 +1583,7 @@ namespace DnaAnd.Shell
                         _ox += on.X * ol + odx; _oy += on.Y * ol + ody; _oz += on.Z * ol + odz;
                         f = new Vec3(-on.X, -on.Y, -on.Z);
                     }
-                    if (Math.Abs(f.Y) < 0.9995f) { _yaw = Math.Atan2(f.Z, f.X); _pitch = Math.Asin(Math.Max(-1, Math.Min(1, f.Y))); }
+                    SetLook(f);
                 }
             }
             Jumped("dragging");
@@ -1726,7 +1825,7 @@ namespace DnaAnd.Shell
         // slow turn would jump a little every few frames: a judder that makes people sick); round the pick as a drag circles it
         private void TourTurn(double yawRad, double pitchRad)
         {
-            var lk = Look; var upv = ViewUp(); var rt = Vec3.Cross(lk, upv).Normalized;
+            var lk = Look; var upv = LevelUp(); var rt = Vec3.Cross(lk, ViewUp()).Normalized;
             for (int pass = 0; pass < 2; pass++)
             {
                 double ang = pass == 0 ? yawRad : pitchRad; if (Math.Abs(ang) < 1e-12) continue;
@@ -1743,7 +1842,7 @@ namespace DnaAnd.Shell
                     _ox += on.X * ol + odx; _oy += on.Y * ol + ody; _oz += on.Z * ol + odz;
                     f = new Vec3(-on.X, -on.Y, -on.Z);
                 }
-                if (Math.Abs(f.Y) < 0.9995f) { _yaw = Math.Atan2(f.Z, f.X); _pitch = Math.Asin(Math.Max(-1, Math.Min(1, f.Y))); }
+                SetLook(f);
             }
         }
         // how far (radians) the view is from facing what is picked; 0 with nothing picked
@@ -1766,13 +1865,36 @@ namespace DnaAnd.Shell
         // view's own pitch
         private double LocalPitch()
         {
-            if (_ground == null) return _pitch;
-            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); if (r <= 0) return _pitch;
+            if (_ground == null) return Math.Asin(Math.Max(-1, Math.Min(1, _fy)));
+            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); if (r <= 0) return Math.Asin(Math.Max(-1, Math.Min(1, _fy)));
             var lk = Look; return Math.Asin(Math.Max(-1, Math.Min(1, (lk.X * x + lk.Y * y + lk.Z * z) / r)));
         }
         // turns the view up or down toward a pitch above the horizon (on a world, its own horizon), eased by k
         private void TourPitchToward(double want, double k) { TourTurn(0, (want - LocalPitch()) * k); }
+        // the camera's own up, kept from frame to frame and square to the way it looks: looking straight up or down it simply
+        // holds, never flipping (no gimbal lock)
         private Vec3 ViewUp()
+        {
+            var f = Look; var u = _camUp; float d = Vec3.Dot(u, f);
+            var p = new Vec3(u.X - f.X * d, u.Y - f.Y * d, u.Z - f.Z * d);
+            if (p.Length < 1e-4f) { var a = Math.Abs(f.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0); float e = Vec3.Dot(a, f); p = new Vec3(a.X - f.X * e, a.Y - f.Y * e, a.Z - f.Z * e); }
+            return p.Normalized;
+        }
+        // each frame the camera's up eases toward level (the universe's up; near a world, its own up), except while looking
+        // nearly along it, where it holds as it is
+        private void LevelCamera(double dt)
+        {
+            var f = Look; var want = LevelUp(); float d = Vec3.Dot(want, f);
+            var p = new Vec3(want.X - f.X * d, want.Y - f.Y * d, want.Z - f.Z * d); float pl = p.Length;
+            var u = ViewUp();
+            if (pl > 1e-4f)
+            {
+                double w = Math.Max(0, Math.Min(1, (pl - 0.05) / 0.25)) * (1 - Math.Exp(-dt * 10)); p = new Vec3(p.X / pl, p.Y / pl, p.Z / pl);
+                u = new Vec3(u.X + (p.X - u.X) * (float)w, u.Y + (p.Y - u.Y) * (float)w, u.Z + (p.Z - u.Z) * (float)w);
+            }
+            _camUp = u; _camUp = ViewUp();
+        }
+        private Vec3 LevelUp()
         {
             var wu = new Vec3(0, 1, 0);
             if (_ground == null) return wu;
@@ -1780,7 +1902,6 @@ namespace DnaAnd.Shell
             double alt = r - _ground.Radius, k = Math.Max(0, Math.Min(1, 1 - alt / (_ground.Radius * 0.1)));
             var lu = new Vec3((float)(x / r), (float)(y / r), (float)(z / r));
             var u = new Vec3(wu.X * (float)(1 - k) + lu.X * (float)k, wu.Y * (float)(1 - k) + lu.Y * (float)k, wu.Z * (float)(1 - k) + lu.Z * (float)k);
-            var lk = Look; if (Math.Abs(Vec3.Dot(u.Normalized, lk)) > 0.995f) return Math.Abs(lk.Y) < 0.9f ? wu : new Vec3(1, 0, 0);
             return u.Normalized;
         }
 
@@ -2011,6 +2132,7 @@ namespace DnaAnd.Shell
             }
             UpdateExtras();
             DrawBlackHoles(vp, right, up, w, h, time);                               // the feeding ones' discs and jets
+            DrawSmallBodies(vp, right, up, w, h, time);                              // asteroids and comets close in: their own bodies
             {
                 // the black hole that bends the most light on screen: its Einstein ring, sqrt(2 Rs / distance) radians (light from far
                 // behind it), set for every point drawn
@@ -2028,7 +2150,8 @@ namespace DnaAnd.Shell
             if (_extras.Count > 0)
             {
                 if (_extraV.Length < _extras.Count) _extraV = new StarVertex[_extras.Count + 256];
-                for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex.Hole) { _extraV[q] = new StarVertex { X = (float)((ex.X - _ax) - _ox), Y = (float)((ex.Y - _ay) - _oy), Z = (float)((ex.Z - _az) - _oz), Size = (float)(ex.R * 3), R = ex.Cr * 0.7f, G = ex.Cg * 0.7f, B = ex.Cb * 0.7f, A = 1 }; continue; }   // its glowing disc and photon ring; the middle stays dark (bent light)
+                for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex.Shape.Length > 0 && ShapeShown(ex, h)) { _extraV[q] = new StarVertex(); continue; }   // (drawn as its own body: no point of light over it)
+                    if (ex.Hole) { _extraV[q] = new StarVertex { X = (float)((ex.X - _ax) - _ox), Y = (float)((ex.Y - _ay) - _oy), Z = (float)((ex.Z - _az) - _oz), Size = (float)(ex.R * 3), R = ex.Cr * 0.7f, G = ex.Cg * 0.7f, B = ex.Cb * 0.7f, A = 1 }; continue; }   // its glowing disc and photon ring; the middle stays dark (bent light)
                     _extraV[q] = new StarVertex { X = (float)((ex.X - _ax) - _ox), Y = (float)((ex.Y - _ay) - _oy), Z = (float)((ex.Z - _az) - _oz), Size = (float)ex.R, R = ex.Cr, G = ex.Cg, B = ex.Cb, A = 1 }; }
                 if (_extraBuf == null || _extraBuf.Bytes < (long)_extras.Count * Stride) { if (_extraBuf != null) _extraBuf.Dispose(); _extraBuf = new UploadBuffer(_gpu.Device, (long)(_extras.Count + 256) * Stride); }
                 _extraBuf.Write(_extraV, _extras.Count);
@@ -2091,7 +2214,7 @@ namespace DnaAnd.Shell
                     DrawPoints(_coronaBuf, _starCorona.Length, m * vp, right, up, 1f, 0f, w, h, time);
                 }
             }
-            if (_ground != null && !(_matterScale > 0 && _matterScale < 2e-8))   // (below a tenth of a millimetre the grain itself fills all round you: the planet's ground mesh is not drawn)
+            if (_ground != null && _matterScale <= 0)   // (in the matter the grain's own face fills the view: the planet's ground mesh is not drawn behind it, one picture only)
             {
                 // the planet's real ground, in km around its centre, with the same view turn; near and far follow the height
                 _gpu.ClearDepth();
@@ -2139,7 +2262,7 @@ namespace DnaAnd.Shell
                 _gpu.ClearDepth();
                 _matter.Light[0] = 0.4f; _matter.Light[1] = 0.7f; _matter.Light[2] = 0.6f;
                 var slk = Look; _matter.SetEye(slk.X, slk.Y, slk.Z);                     // in the gas too: your eye goes round the point you dive into
-                Mat4 sv = Mat4.LookAt(new Vec3(0, 0, 0), slk, Math.Abs(slk.Y) > 0.98f ? new Vec3(0, 0, 1) : new Vec3(0, 1, 0));
+                Mat4 sv = Mat4.LookAt(new Vec3(0, 0, 0), slk, ViewUp());                // (the camera's own up: never flipping)
                 _matter.Draw(sv, _spaceScale, w, h, _matterClock, _meshes, false);
                 _gpu.ClearDepth();
                 double qx, qy, qr; if (_matter.PickedOnScreen(out qx, out qy, out qr)) _hud.DrawRing(_meshes, qx, qy, Math.Min(qr, h * 0.45), w, h);
@@ -2299,12 +2422,19 @@ namespace DnaAnd.Shell
             var upL = upR;                                                              // (the grains themselves lie along the land's slope)
             var east = Vec3.Cross(Math.Abs(upL.Y) < 0.99f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0), upL).Normalized; var north = Vec3.Cross(upL, east).Normalized;
             var lk = new Vec3(Vec3.Dot(look, east), Vec3.Dot(look, upL), Vec3.Dot(look, north));
-            if (lk.Y > -0.15f) lk = new Vec3(lk.X, -0.15f, lk.Z);                     // never from below the surface
+            // in the matter you look down onto the grain's face (it fills the whole view, never its edge and the dark past it); over
+            // the ground, never from below it
+            float lowest = _matterScale > 0 ? -0.7f : -0.15f;
+            if (lk.Y > lowest) { float hl = (float)Math.Sqrt(lk.X * lk.X + lk.Z * lk.Z); float keep = (float)Math.Sqrt(1 - lowest * lowest) / Math.Max(1e-6f, hl); lk = hl > 1e-6f ? new Vec3(lk.X * keep, lowest, lk.Z * keep) : new Vec3(0, -1, 0); }
             var sd = new Vec3((float)_ground.StarDir[0], (float)_ground.StarDir[1], (float)_ground.StarDir[2]);
             _matter.Light[0] = Vec3.Dot(sd, east); _matter.Light[1] = Vec3.Dot(sd, upL); _matter.Light[2] = Vec3.Dot(sd, north);
             var lkn = lk.Normalized;
             if (_matterScale > 0) _matter.SetEye(lkn.X, lkn.Y, lkn.Z); else _matter.SetEye(0, -1, 0);   // in the matter your eye goes round the point you dive into
-            return Mat4.LookAt(new Vec3(0, 0, 0), lkn, Math.Abs(lkn.Y) > 0.98f ? new Vec3(0, 0, 1) : new Vec3(0, 1, 0));
+            // the camera's own up, carried into the ground's frame (never switched when looking straight down: no flip, no judder)
+            var cu = ViewUp(); var upF = new Vec3(Vec3.Dot(cu, east), Vec3.Dot(cu, upL), Vec3.Dot(cu, north));
+            float ud = Vec3.Dot(upF, lkn); upF = new Vec3(upF.X - lkn.X * ud, upF.Y - lkn.Y * ud, upF.Z - lkn.Z * ud);
+            if (upF.Length < 1e-3f) upF = Math.Abs(lkn.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(0, 0, 1);
+            return Mat4.LookAt(new Vec3(0, 0, 0), lkn, upF.Normalized);
         }
 
         private List<string> Card()

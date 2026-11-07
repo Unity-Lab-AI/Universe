@@ -279,7 +279,7 @@ namespace DnaAnd.Shell
                     double rr = ar * (sh + 1) / shells; bool valence = sh == shells - 1; int ne = e.Shells[sh];
                     for (int k = 0; k < ne; k++)
                     {
-                        double tilt = Hash(key + sh, k, 33, _seed) * Math.PI, turn = Hash(key + sh, k, 34, _seed) * Math.PI * 2, ang = time * (2.2 / (sh + 1)) + k * Math.PI * 2 / ne;
+                        double tilt = Hash(key + sh, k, 33, _seed) * Math.PI, turn = Hash(key + sh, k, 34, _seed) * Math.PI * 2, ang = time * (0.5 / (sh + 1)) + k * Math.PI * 2 / ne;
                         double ox = Math.Cos(ang) * rr, oz = Math.Sin(ang) * rr, oy = oz * Math.Sin(tilt); oz *= Math.Cos(tilt);
                         Add(glow, x + ox * Math.Cos(turn) - oz * Math.Sin(turn), y + oy, z + ox * Math.Sin(turn) + oz * Math.Cos(turn), dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
                     }
@@ -1332,14 +1332,14 @@ namespace DnaAnd.Shell
                         // and two down), points as far as measured, moving in about 0.84 fm, in the glow of the gluons that hold them
                         float gf = (float)Math.Max(0.15, Fade(s, Nucleon * 8, Nucleon * 3));
                         if (nball > 0.03) Add(solid, nx, ny, nz, Nucleon / 0.75 * nball, proton ? 0.9f : 0.6f, proton ? 0.22f : 0.65f, proton ? 0.2f : 0.75f, s);
-                        Add(glow, nx, ny, nz, Nucleon, 0.25f * gf, 0.12f * gf, 0.05f * gf, s);
+                        Add(glow, nx, ny, nz, Nucleon, 0.1f * gf, 0.05f * gf, 0.02f * gf, s);   // the gluon field's faint glow (never an orb hiding its quarks)
                         string q = proton ? "uud" : "udd"; float[][] colour = { new[] { 1f, 0.2f, 0.2f }, new[] { 0.2f, 1f, 0.2f }, new[] { 0.3f, 0.4f, 1f } };   // their three colour charges
                         // the strong field between them: flux tubes of gluon field joining the three quarks (it does not spread out
                         // like the electric field, it pulls into strings), and quark-antiquark pairs of the sea popping in and out
                         double[][] qp = new double[3][];
                         for (int qi = 0; qi < 3; qi++)
                         {
-                            double a1 = time * (1.3 + qi * 0.4) + qi * 2.1 + k * 0.77, a2 = time * (0.9 + qi * 0.3) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.7 + qi + k));
+                            double a1 = time * (0.25 + qi * 0.08) + qi * 2.1 + k * 0.77, a2 = time * (0.18 + qi * 0.06) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.15 + qi + k));   // (slowed to be watched)
                             qp[qi] = new[] { nx + qr * Math.Sin(a2) * Math.Cos(a1), ny + qr * Math.Cos(a2), nz + qr * Math.Sin(a2) * Math.Sin(a1) };
                         }
                         double ycx = (qp[0][0] + qp[1][0] + qp[2][0]) / 3, ycy = (qp[0][1] + qp[1][1] + qp[2][1]) / 3, ycz = (qp[0][2] + qp[1][2] + qp[2][2]) / 3;
@@ -1358,10 +1358,12 @@ namespace DnaAnd.Shell
                         }
                         for (int qi = 0; qi < 3; qi++)
                         {
-                            double a1 = time * (1.3 + qi * 0.4) + qi * 2.1 + k * 0.77, a2 = time * (0.9 + qi * 0.3) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.7 + qi + k));
+                            double a1 = time * (0.25 + qi * 0.08) + qi * 2.1 + k * 0.77, a2 = time * (0.18 + qi * 0.06) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.15 + qi + k));   // (slowed to be watched)
                             double qx = nx + qr * Math.Sin(a2) * Math.Cos(a1), qy = ny + qr * Math.Cos(a2), qz = nz + qr * Math.Sin(a2) * Math.Sin(a1);
-                            Add(glow, qx, qy, qz, s * 0.003, colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);
-                            int nb = _bodies.Count; AddBody(4, qi, q[qi] == 'u' ? 1 : 0, qx, qy, qz, Nucleon * 0.15, s); if (_bodies.Count > nb) _bodies[nb].Sym = q[qi] == 'u' ? "up" : "down";
+                            Add(glow, qx, qy, qz, Math.Max(s * 0.003, Nucleon * 0.05), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);
+                            int nb = _bodies.Count; AddBody(4, qi, q[qi] == 'u' ? 1 : 0, qx, qy, qz, Nucleon * 0.3, s); if (_bodies.Count > nb) { _bodies[nb].Sym = q[qi] == 'u' ? "up" : "down"; _bodies[nb].Key = k + 1; }
+                            // the quark you picked moves on: the view keeps going to where it is now (as with an electron)
+                            if (_picked != null && _picked.Kind == 4 && _picked.Key == k + 1 && _picked.I == qi) { _tfx = qx; _tfy = qy + _yOff; _tfz = qz; _picked.X = qx; _picked.Y = qy + _yOff; _picked.Z = qz; }
                         }
                         continue;
                     }
@@ -1398,7 +1400,7 @@ namespace DnaAnd.Shell
                 int ne = e.Shells[sh];                                          // every one of its electrons
                 for (int k = 0; k < ne; k++)
                 {
-                    double tilt = Hash(key + sh, k, 33, _seed) * Math.PI, turn = Hash(key + sh, k, 34, _seed) * Math.PI * 2, ang = time * (2.2 / (sh + 1)) + k * Math.PI * 2 / ne;
+                    double tilt = Hash(key + sh, k, 33, _seed) * Math.PI, turn = Hash(key + sh, k, 34, _seed) * Math.PI * 2, ang = time * (0.5 / (sh + 1)) + k * Math.PI * 2 / ne;
                     double ct = Math.Cos(turn), st = Math.Sin(turn), ci = Math.Cos(tilt), si = Math.Sin(tilt);
                     // its path: a ring of faint points
                     for (int q = 0; q < 28; q++)
@@ -1441,7 +1443,7 @@ namespace DnaAnd.Shell
             double k = 1 - Math.Exp(-dt * Glide);
             // an electron moves on its path faster than the view could glide after it: once you are almost at it the view rides with
             // it, so zooming in goes to it, never past
-            if (_picked != null && _picked.Kind == 3) { double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(_scale * 3, 2)) k = 1; }
+            if (_picked != null && (_picked.Kind == 3 || _picked.Kind == 4)) { double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(_scale * 3, 2)) k = 1; }
             _fx += (_tfx - _fx) * k; _fz += (_tfz - _fz) * k; _fy += (_tfy - _fy) * k;
             var solid = new List<StarVertex>(20000); var glow = new List<StarVertex>(2000); var mesh = pipes != null ? new List<StarVertex>(60000) : null;
             _bodies.Clear();
@@ -1569,7 +1571,7 @@ namespace DnaAnd.Shell
 
         /// <summary>Where the picked grain or atom is on screen (pixels) and how big, for its ring; false if nothing is picked.</summary>
         /// <summary>Picks the nearest of a kind of thing to the point you dive into, as a click on it would (atom, electron,
-        /// nucleus, proton, quark): for the tour.</summary>
+        /// nucleus, proton, quark, a grain, a spot on a grain's face): for the tour.</summary>
         /// <summary>How quickly the point you dive into glides to what is picked (a share a second): slow on the tour, a film's glide.</summary>
         public double Glide = 4; private double _lastLeftX = double.NaN, _lastLeftZ = double.NaN;
         public void PickNearest(string what)
@@ -1590,7 +1592,7 @@ namespace DnaAnd.Shell
                 if (_picked != null) { _lastLeftX = _picked.X; _lastLeftZ = _picked.Z; }
                 _picked = nb; _tfx = nb.X; _tfz = nb.Z; _tfy = nb.Y; PickCount++; return;
             }
-            int kind = what == "atom" ? 1 : what == "electron" ? 3 : what == "nucleus" ? 7 : what == "proton" ? 5 : what == "quark" ? 4 : -1; if (kind < 0) return;
+            int kind = what == "grain" ? 0 : what == "spot" ? 2 : what == "atom" ? 1 : what == "electron" ? 3 : what == "nucleus" ? 7 : what == "proton" ? 5 : what == "quark" ? 4 : -1; if (kind < 0) return;
             Body best = null; double bd = double.MaxValue;
             foreach (var b in _bodies)
             {

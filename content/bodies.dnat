@@ -1,11 +1,14 @@
 # DNA-AND content · where the universe's other bodies are, and how many (made round you, all clickable)
 # where: galaxy-heart (one at the middle of every galaxy), galaxy (among a galaxy's stars), between-galaxies (in the space
-#   between them), belt (a star's asteroid belt), kuiper (its Kuiper belt), oort (its Oort cloud).
+#   between them), belt (a star's asteroid belt), kuiper (its Kuiper belt), oort (its Oort cloud), inner (falling through
+#   its inner system, near its worlds).
 # per-cubic-ly: how many in a cubic light-year (among a galaxy's stars near the Sun there are about 0.004 stars a cubic
 #   light-year; of every thousand stars about one ended as a black hole and one as a neutron star; there may be several free-
 #   floating, rogue, planets for every star; between galaxies, intracluster stars are about a ten-thousandth as common as in
 #   a galaxy); in a belt or cloud: shown, how many are made round you at a time.
 # entry: the content entry it is (its card); size-km: how big it is drawn (a black hole: its glowing disc); colour.
+# shape: what it is drawn as close in: rock (a lumpy body lit by its star, cratered), comet (a dark nucleus in its coma of
+#   gas and dust, its tail pushed straight away from the star); without one, a point of light.
 # Spec: docs/CONTENT-FORMAT.md · content/black-holes.dnat · content/small-bodies.dnat · content/stars.dnat
 
 @place supermassive-black-hole
@@ -77,6 +80,7 @@ entry: asteroid main-belt
 size-km: 30
 colour: 0.6 0.55 0.5
 says: rock and metal left over from the making of the planets
+shape: rock
 
 @place kuiper-object
 name: An icy body of the Kuiper belt
@@ -86,6 +90,7 @@ entry: asteroid centaur
 size-km: 100
 colour: 0.75 0.7 0.7
 says: ice and rock beyond the planets, where the comets of short period come from
+shape: rock
 
 @place oort-comet
 name: A comet of the Oort cloud
@@ -95,3 +100,14 @@ entry: comet long-period
 size-km: 10
 colour: 0.8 0.88 1
 says: an icy nucleus far out in the star's huge spherical cloud; a nudge sends it falling in as a long-period comet
+shape: rock
+
+@place inner-comet
+name: A comet near its star
+where: inner
+shown: 3
+entry: comet short-period
+size-km: 5
+colour: 0.85 0.92 1
+shape: comet
+says: a nucleus of ice and dust warmed by its star: gas and dust boil off into its coma and are pushed out into its tail

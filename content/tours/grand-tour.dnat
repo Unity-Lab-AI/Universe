@@ -1,6 +1,9 @@
 # DNA-AND content · the grand tour: one flight from the whole visible universe down to the quarks, for watching
 # Run it: Universe.exe --tour grand-tour (or DNA-AND.exe --tour grand-tour). Any key or click takes the controls back.
-# Edit the stops to make your own. Each @stop home
+# Edit the stops to make your own. Each stop: do (zoom, orbit, look, arc, fly, glide, pick) and its numbers;
+# through: yes flies on into the next stop without slowing or pausing.
+
+@stop home
 do: pick
 target: home-galaxy
 caption: Home
@@ -102,7 +105,7 @@ caption: An asteroid
 @stop to-asteroid
 do: zoom
 rate: 0.6
-until-km: 300
+until-km: 120
 caption: Out to its belt of rubble
 
 @stop round-asteroid
@@ -120,9 +123,17 @@ caption: A comet
 
 @stop to-comet
 do: zoom
-rate: 0.9
-until-km: 1e4
-caption: Out to the Oort cloud, a light-year from the star
+rate: 0.6
+until-km: 3e5
+caption: A comet falling past its star
+
+@stop near-comet
+do: arc
+rate: 0.3
+until-km: 60
+turn: 3
+seconds: 8
+caption: Into its coma: gas and dust boiling off, pushed away into its tails
 
 @stop round-comet
 do: arc
@@ -222,33 +233,56 @@ caption: And down: there is as much below us as above
 
 @stop to-grains
 do: zoom
-rate: 0.4
+rate: 0.25
 until-km: 2e-6
+through: yes
 caption: The ground breaks into stones, then grains of sand
+
+@stop choose-grain
+do: pick
+target: grain
+caption: One grain of sand
 
 @stop to-face
 do: zoom
-rate: 0.4
+rate: 0.25
 until-km: 2e-9
+through: yes
 caption: Onto one grain, a crystal of one mineral
 
-@stop round-face
-do: orbit
-turn: 2.5
-seconds: 4
-caption: Its face: steps, cracks, clay plates, a film of water
+@stop choose-spot
+do: pick
+target: spot
+caption: A spot on its face
 
 @stop to-crystal
 do: zoom
-rate: 0.4
+rate: 0.25
 until-km: 6e-12
-caption: Down to its atoms
+caption: Down to its atoms, in a pattern repeated billions of times
 
 @stop round-crystal
-do: orbit
-turn: 2.5
-seconds: 3
-caption: Atoms in a pattern repeated billions of times
+do: arc
+rate: 0
+until-km: 0
+turn: 5
+seconds: 6
+caption: Flying round the atoms of the crystal, its lattice repeated billions of times
+
+@stop into-lattice
+do: arc
+rate: 0.2
+until-km: 1.5e-12
+turn: 3
+seconds: 5
+caption: Down among them
+
+@stop through-lattice
+do: fly
+rate: 0.6
+turn: 4
+seconds: 10
+caption: Through the lattice: row on row of atoms, each bonded to its neighbours
 
 @stop choose-atom
 do: pick
@@ -301,9 +335,11 @@ target: electron
 caption: One electron
 
 @stop follow-electron
-do: orbit
-turn: 2
-seconds: 4
+do: arc
+rate: 0
+until-km: 0
+turn: 5
+seconds: 6
 caption: An electron: a point, and a wave spread through its cloud
 
 @stop choose-nucleus
@@ -312,18 +348,20 @@ target: nucleus
 caption: The nucleus
 
 @stop to-nucleus
-do: zoom
-rate: 0.45
+do: arc
+rate: 0.3
 until-km: 3e-17
-caption: Inward: an atom is almost all empty space
+turn: 4
+seconds: 6
+caption: Inward, circling: an atom is almost all empty space
 
 @stop round-nucleus
 do: arc
-rate: 0.03
-until-km: 1.2e-17
-turn: 2.5
+rate: 0
+until-km: 0
+turn: 5
 seconds: 5
-caption: Protons and neutrons, bound by the strong force
+caption: Its nucleus: protons and neutrons bound by the strong force
 
 @stop choose-proton
 do: pick
@@ -331,15 +369,19 @@ target: proton
 caption: A proton
 
 @stop to-proton
-do: zoom
-rate: 0.25
+do: arc
+rate: 0.2
 until-km: 2.5e-18
-caption: Into a single proton
+turn: 4
+seconds: 6
+caption: Into a single proton, circling
 
 @stop round-proton
-do: orbit
-turn: 2.5
-seconds: 5
+do: arc
+rate: 0
+until-km: 0
+turn: 5
+seconds: 6
 caption: Three quarks in a storm of gluons
 
 @stop choose-quark
@@ -348,9 +390,11 @@ target: quark
 caption: A quark
 
 @stop to-quark
-do: zoom
-rate: 0.25
+do: arc
+rate: 0.2
 until-km: 6e-19
+turn: 3
+seconds: 5
 caption: One quark
 
 @stop end

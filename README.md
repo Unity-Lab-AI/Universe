@@ -30,7 +30,7 @@ It is one camera the whole way, from the edge of the visible universe to a quark
 
 ## Black holes, comets and the bodies between
 
-Black holes sit among a galaxy's stars, and a giant one at every galaxy's heart. Each is feeding or quiet: a feeding one glows with its accretion disc, white-hot at the inner edge and cooling to red further out, and some fire jets from their poles at nearly the speed of light; a quiet one is only its shadow and the starlight it bends. Asteroids fill a star's belts, comets drift in its far Oort cloud, neutron stars and rogue planets wander among the stars, and every one of them can be clicked for its card: its mass, its size, its pull and escape speed where you are.
+Black holes sit among a galaxy's stars, and a giant one at every galaxy's heart. Each is feeding or quiet: a feeding one glows with its accretion disc, white-hot at the inner edge and cooling to red further out, and some fire jets from their poles at nearly the speed of light; a quiet one is only its shadow and the starlight it bends. Asteroids fill a star's belts, lumpy cratered rocks lit from their star's side when you come close; a few comets fall past their star, a dark nucleus in its glowing coma with its ion tail straight away from the star and its curved dust tail; more icy bodies drift in its far Oort cloud; neutron stars and rogue planets wander among the stars, and every one of them can be clicked for its card: its mass, its size, its pull and escape speed where you are.
 
 ## A dead universe that's still alive
 
@@ -55,7 +55,7 @@ The landing page opens first. Type a seed (or press **Random**, or leave it blan
 - **B (among atoms):** glide across the bond to the next atom, through the outer electrons the two share.
 - **F12:** a screenshot (PNG). **F9:** start or stop recording a clip (MP4 video). Both go in the `captures` folder.
 - **View menu:** drag speed, show FPS (frames a second, top right), invert either drag direction, GPU use.
-- **The grand tour (T, or Take the tour on the landing page):** a five-minute film that shows the scale of things, from the whole visible universe down to the quarks: the cosmic web, a galaxy, a black hole, two star systems with an asteroid and a comet, a world and a glide over its land, the sky from the ground, its stones and grains, a crystal, an atom, an electron, the nucleus, a proton and its quarks. Its captions tell the story and name what is in view. Any key or click takes the controls back. The tour is a plain text list of stops (`content/tours/grand-tour.dnat`), so you can write your own.
+- **The grand tour (T, or Take the tour on the landing page):** a five-minute film that shows the scale of things, from the whole visible universe down to the quarks: the cosmic web, a galaxy, a black hole, two star systems with an asteroid and a comet, a world and a glide over its land, the sky from the ground, its stones and grains, one grain and a spot on its face, a flight through a crystal's lattice of atoms, an atom and its neighbours, an electron, the nucleus, a proton and its quarks, circling each as it goes, picking something new at every scale, and never stopping on the way down from the ground to the atoms. Its captions tell the story and name what is in view. Any key or click takes the controls back. The tour is a plain text list of stops (`content/tours/grand-tour.dnat`), so you can write your own.
 
 ## Want to build your own?
 

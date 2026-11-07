@@ -172,16 +172,20 @@ namespace Universe.Shell
         {
             if (s > Nucleon * 8) return;
             float[][] colour = { new[] { 1f, 0.3f, 0.3f }, new[] { 0.3f, 1f, 0.35f }, new[] { 0.4f, 0.5f, 1f } };
+            // the singularity: quarks beyond counting crammed into no space, one seething mass of colour charge a third of the view
+            // wide at every size on down, never dots to be counted (twelve hundred separate glows had stood for it, each one countable):
+            // thousands of tiny overlapping glows, densest at the middle, drawn afresh at every scale so the mass is the same however
+            // far in you go, and a white heart where the density runs away
             double R = s * 0.32;
-            for (int i = 0; i < 1200; i++)
+            for (int i = 0; i < 6000; i++)
             {
-                double u = Hash(i, 1, 3, _seed), v = Hash(i, 2, 3, _seed) * 2 - 1, a = Hash(i, 3, 3, _seed) * Math.PI * 2 + time * (0.02 + 0.01 * (i % 7)), r = R * Math.Pow(u, 1 / 3.0), sq = Math.Sqrt(Math.Max(0, 1 - v * v));
+                double u = Hash(i, 1, 3, _seed), v = Hash(i, 2, 3, _seed) * 2 - 1, a = Hash(i, 3, 3, _seed) * Math.PI * 2 + time * (0.02 + 0.01 * (i % 7)), r = R * Math.Pow(u, 0.5), sq = Math.Sqrt(Math.Max(0, 1 - v * v));
                 double x = r * sq * Math.Cos(a), y = r * v, z = r * sq * Math.Sin(a);
-                var c = colour[i % 3]; float f = (float)(0.55 + 0.45 * Math.Sin(time * 0.6 + i));
-                Add(glow, x, y, z, Math.Max(s * 0.004, Nucleon * 0.02), c[0] * f, c[1] * f, c[2] * f, s);
+                var c = colour[i % 3]; float f = (float)(0.35 + 0.25 * Math.Sin(time * 0.6 + i)) * (float)(0.5 + 0.5 * (1 - u));
+                Add(glow, x, y, z, s * 0.012, c[0] * f, c[1] * f, c[2] * f, s);
                 if (i < 240) { int nb = _bodies.Count; AddBody(4, i, i % 2, x, y, z, Math.Max(s * 0.01, Nucleon * 0.05), s); if (_bodies.Count > nb) { _bodies[nb].Sym = i % 2 == 1 ? "up" : "down"; _bodies[nb].Key = 1; } }
             }
-            Add(glow, 0, 0, 0, s * 0.06, 1f, 1f, 1f, s);
+            Add(glow, 0, 0, 0, s * 0.10, 1f, 0.98f, 0.95f, s); Add(glow, 0, 0, 0, s * 0.2, 0.6f, 0.55f, 0.6f, s);
         }
         private static string WayWords(double km) { double ly = km / 9.4607e12; return ly >= 1e9 ? (ly / 1e9).ToString("0.#") + " billion light-years" : ly >= 1e6 ? (ly / 1e6).ToString("0.#") + " million light-years" : ly >= 1 ? ly.ToString(ly >= 100 ? "N0" : "0.#") + " light-years" : ScaleHud.Words(km); }
         private static string Secs(double t)
@@ -1758,7 +1762,7 @@ namespace Universe.Shell
                     // quarks are points as far as measured, moving in about 0.84 fm (slowed to be watched: a quark crosses its nucleon
                     // in about half a minute). One drawing at every size, never a solid ball handed over to quarks part way in
                     bool close = s < Nucleon * 8; double nearF = Fade(s, Nucleon * 30, Nucleon * 3); float gf = (float)Math.Max(0.5, nearF);
-                    double tight = 0.4 + 0.6 * nearF;   // from afar the three sit tight at the middle in one clump (they could be counted across the nucleus); close in they spread through the nucleon as they do
+                    double tight = 0.4;   // the three sit tight at the nucleon's middle in one clump at every size, never pulled apart into three to count (the gluon glow and the sea fill the nucleon round them)
                     Add(glow, nx, ny, nz, Nucleon, (proton ? 0.32f : 0.14f) * gf, (proton ? 0.12f : 0.16f) * gf, (proton ? 0.08f : 0.26f) * gf, s);   // the gluon field's glow, the nucleon's size, tinted by its kind
                     string q = proton ? "uud" : "udd"; float[][] colour = { new[] { 1f, 0.2f, 0.2f }, new[] { 0.2f, 1f, 0.2f }, new[] { 0.3f, 0.4f, 1f } };   // their three colour charges
                     double[][] qp = new double[3][];

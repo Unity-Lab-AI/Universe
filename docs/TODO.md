@@ -114,6 +114,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The quarks tight in one clump from afar, spreading only close in:** (built: DNA-AND DESIGN 623; waits on the test) "and it need to have the qwurks alot tighter currently i think i can count them"
 
+- [~] **The singularity one uncountable mass of quarks, the nucleon's three never pulled apart:** (built: DNA-AND DESIGN 624; waits on the test) "but they dont pull apart they ar trillionX^e1000000000000 quarks" / "cramed into zero space"
+
 ---
 
 ## Pending

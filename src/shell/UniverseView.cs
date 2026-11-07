@@ -1374,6 +1374,13 @@ namespace Universe.Shell
                             double hx = cx - ux * ce, hy = cy - uy * ce, hz = cz - uz * ce, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz);
                             if (hl < 1e-6) { hx = Math.Abs(ux) < 0.9 ? 1 : 0; hy = 0; hz = Math.Abs(ux) < 0.9 ? 0 : 1; double d0 = hx * ux + hz * uz; hx -= ux * d0; hy -= uy * d0; hz -= uz * d0; hl = Math.Sqrt(hx * hx + hy * hy + hz * hz); }
                             _shotE1 = new[] { hx / hl, hy / hl, hz / hl }; _shotUp = new[] { ux, uy, uz };
+                            if (_tKind == 6 && _system != null && _tIndex >= 0 && _tIndex < _extras.Count && !_extras[_tIndex].Hole)
+                            {
+                                // a small body lit by its star: the shot comes round to its lit side (the sweep's middle facing the star), never
+                                // a dark rock against the stars with its name on the card
+                                double sx = _ax - _tx, sy = _ay - _ty, sz = _az - _tz, se = sx * ux + sy * uy + sz * uz; sx -= ux * se; sy -= uy * se; sz -= uz * se; double sl = Math.Sqrt(sx * sx + sy * sy + sz * sz);
+                                if (sl > 1e-9) { var e1 = Turn(new Vec3((float)(sx / sl), (float)(sy / sl), (float)(sz / sl)), new Vec3((float)ux, (float)uy, (float)uz), -st.Sweep * _shotDir * Math.PI / 180 * 0.5); _shotE1 = new[] { (double)e1.X, e1.Y, e1.Z }; }
+                            }
                             _shotE2 = new[] { uy * _shotE1[2] - uz * _shotE1[1], uz * _shotE1[0] - ux * _shotE1[2], ux * _shotE1[1] - uy * _shotE1[0] };
                             _shotD0 = tl; _shotEl0 = Math.Asin(Math.Max(-1, Math.Min(1, ce)));
                             _shotD1 = st.ToKm > 0 ? Units.Km(st.ToKm) : st.ToRadii > 0 && trad > 0 ? trad * st.ToRadii : tl;
@@ -1544,12 +1551,17 @@ namespace Universe.Shell
                         // one of the bodies round you (content/bodies.unt): the nearest black hole, asteroid of the belt, or comet of
                         // the Oort cloud
                         int bi = -1; double bd = double.MaxValue;
+                        // a black hole: this galaxy's own heart (or one within a few galaxy-widths), a feeding one before a quiet one; never a
+                        // feeding heart ten million light-years off outscoring the quiet one you are at (the shot would leave the galaxy
+                        // with the caption saying it was going down to its heart)
+                        double holeReach = what == "black-hole" && _near >= 0 && _near < _galaxies.Count ? _galaxies[_near].Scale * 4 : double.MaxValue;
                         for (int q = 0; q < _extras.Count; q++)
                         {
                             var ex = _extras[q]; string nm = ex.Name.ToLowerInvariant();
                             bool fits = what == "black-hole" ? ex.Hole : what == "asteroid" ? ex.Shape == "rock" : ex.Shape == "comet" || nm.Contains("comet");   // (an asteroid: any rocky body here, of a belt, the Kuiper belt or the Oort cloud, as the system has)
                             if (!fits) continue;
                             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = dx * dx + dy * dy + dz * dz;
+                            if (what == "black-hole" && d > holeReach * holeReach) continue;
                             if (what == "black-hole" && ex.Feeding > 0) d *= 1e-6;
                             if (what == "asteroid" && nm.Contains("asteroid")) d *= 1e-4;          // (the belt's own, before a far icy body)             // (a feeding one, its disc glowing, before a quiet one)
                             if (d < bd) { bd = d; bi = q; }

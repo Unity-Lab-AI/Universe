@@ -150,7 +150,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **Right click** | Let go |
 | **Drag** | Circle what you picked, or look around |
 | **Space · , · .** | Pause time · slower · faster (it starts at a minute a second) |
-| **H** | The scale bar and info cards, on or off |
+| **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
 | **F12 · F9** | A screenshot · start or stop a clip |

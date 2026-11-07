@@ -1711,6 +1711,7 @@ namespace Universe.Shell
                 double reachU = Units.Km(1000); kind = 7; idx = 0; tx = _ax + _ox + dir.X * reachU; ty = _ay + _oy + dir.Y * reachU; tz = _az + _oz + dir.Z * reachU; trad = 0; name = "a point in its " + layHere.Name.ToLowerInvariant();
             }
             _tKind = kind; _tIndex = idx; _tx = tx; _ty = ty; _tz = tz; _tRadius = trad; _tName = name; if (kind == 5) _tGal = pickGal;
+            if (kind >= 0 && !_hud.Visible) { _hud.Visible = true; MenuChanged = true; }   // (a click that picks something shows its card: cards hidden with H come back for it)
         }
 
         public bool Update(Input input, double dt, int w, int h)
@@ -1731,9 +1732,9 @@ namespace Universe.Shell
             if (_pressed && input.LeftDown && Math.Abs(input.MouseX - _pressX) + Math.Abs(input.MouseY - _pressY) > 6) _dragged = true;   // dragging circles round the pick (or looks around if nothing is picked)
             if (_pressed && !input.LeftDown) { _pressed = false; if (!_dragged)
                 {
-                    if (_matterScale > 0 || _spaceScale > 0) _matter.Pick(input.MouseX, input.MouseY);    // in the matter or the gas: what is there
+                    if (_matterScale > 0 || _spaceScale > 0) { if (_matter.Pick(input.MouseX, input.MouseY) && !_hud.Visible) { _hud.Visible = true; MenuChanged = true; } }   // in the matter or the gas: what is there (its card shown, even if hidden with H)
                     else if (_ground != null && AboveGround() < Units.Km(MatterView.OverlayKm) && _matter.Pick(input.MouseX, input.MouseY))
-                    { }   // a grain over the ground: picked, its card shown; the ground itself carries you on down to it (never a second layer of grains)   // a grain over the ground: on into the matter, the same picture, flying to it
+                    { if (!_hud.Visible) { _hud.Visible = true; MenuChanged = true; } }   // a grain over the ground: picked, its card shown; the ground itself carries you on down to it (never a second layer of grains)   // a grain over the ground: on into the matter, the same picture, flying to it
                     else Pick(MouseRay(input.MouseX, input.MouseY, w, h), input.MouseX, input.MouseY);
                 } }
             LevelCamera(dt);

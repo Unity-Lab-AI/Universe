@@ -51,7 +51,7 @@ Both go in the `captures` folder. On the landing page, tick **Film the tour** to
 
 | Control | What it does |
 |---|---|
-| **H** | Show or hide the scale bar and the info cards |
+| **H** | Show or hide the scale bar and the info cards (a click that picks something brings them back) |
 | **Info cards** | Whatever you pick gets a card: what it is and its facts (a star's heat and worlds, a world's orbit and year, the ground's height) |
 | **View menu** | Drag speed, invert either drag direction, FPS, render scale (lower is faster, higher is sharper) and GPU use |
 | **Start page** | Back to the landing page |

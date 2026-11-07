@@ -66,6 +66,12 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The cone fixed in the view and travelled down: the walls beside you closing in as you fall, a pin point below:** (built: DNA-AND DESIGN 596; waits on the test) "where is the funnel walls that should be besid me as i fall closing in and getting tighter as i fall" / "and should be a pin point below me,, and it look like u are still view thing the singularity on zoom in instead of correctly look out to the sky hurizons"
 
+- [~] **Millions of light-years from the horizon to the singularity, by the hole's mass, a law of the content, counted on the card:** (built: DNA-AND DESIGN 597; waits on the test) "and like i said ther are millions of light years to the center of a black hole" / "from event to singularity" / "well not the smae based on mass"
+
+- [~] **The tour's fall at a pace that does not take forever: the clock's stretch eight seconds, a tenfold and a half a second to the point:** (built: DNA-AND DESIGN 598; waits on the test) "so make sure the tore propley falls at speeds needed to not take forever"
+
+- [~] **The tour looking round the funnel as it falls: the mouth, the walls, the point, in a cycle:** (built: DNA-AND DESIGN 599; waits on the test) "and looks arounfd at the funnel to get its scope and shape and porints of refrence" / "as we fall in"
+
 ---
 
 ## Pending

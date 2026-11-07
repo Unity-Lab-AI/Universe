@@ -112,6 +112,18 @@ says: a spinning mass drags space round with it; round a spinning black hole not
 #   its sound speed: it doubles in size in about its sound-crossing time (a star of one solar mass in about an hour), which is
 #   about swell-over-freefall times its free-fall time root(R^3 / GM); a galaxy's stars fly off on their tangents at the
 #   speed they circled at (rim-speed-km-s in @law cosmos), those of a round galaxy every way.
+# hole-inside: the way in from the event horizon to the singularity, by the hole's mass: inside there is near-infinite space and
+#   no space at once, and the way down the funnel is millions of light-years (way-in-ly for a hole of way-in-mass-sol solar
+#   masses, scaling with the mass to the power way-in-power: 1 means in proportion), run in forty tenfolds of the fall's own
+#   measure. The fall's card counts the way in against it.
+@law hole-inside
+name: Inside a black hole: the way in
+real: hypothetical
+way-in-ly: 3000000
+way-in-mass-sol: 10
+way-in-power: 1
+says: from the event horizon to the singularity is millions of light-years for a stellar black hole and more for a heavier one, by its mass; space inside stretches without end and closes to nothing
+
 @law gravity-off
 name: Gravity switched off
 real: yes

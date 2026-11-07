@@ -20,3 +20,6 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the patterning found; the way into a hole not its size): DNA-AND DESIGN 593, 594.
 - 2026-11-07 (the funnel's walls there to be seen): DNA-AND DESIGN 595.
 - 2026-11-07 (the cone travelled down, the walls closing in): DNA-AND DESIGN 596.
+- 2026-11-07 (millions of light-years from the horizon to the singularity, a law): DNA-AND DESIGN 597.
+- 2026-11-07 (the way in by mass; the fall's pace): DNA-AND DESIGN 597, 598.
+- 2026-11-07 (the tour looking round the funnel): DNA-AND DESIGN 599.

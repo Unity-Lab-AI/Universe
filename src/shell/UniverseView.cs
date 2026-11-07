@@ -98,7 +98,7 @@ namespace Universe.Shell
                 var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float; double v;
                 if (double.TryParse(e.Get("across-ly", "1.34e10"), fs, ci, out v)) _uRadius = v * 0.5 / Units.LightYearsPerUnit;
                 foreach (var law in _content.OfKind("physics.unt", "law")) if (law.Id == "cosmos") { if (double.TryParse(law.Get("dark-matter-share", "0"), fs, ci, out v)) _darkMatter = Math.Max(0, Math.Min(0.99, v)); if (double.TryParse(law.Get("rim-speed-km-s", "220"), fs, ci, out v)) _rimSpeed = v; if (double.TryParse(law.Get("dark-energy-share", "0"), fs, ci, out v)) _darkEnergy = v; if (double.TryParse(law.Get("hubble-km-s-mpc", "70"), fs, ci, out v)) _hubble = v; }
-                foreach (var law in _content.OfKind("physics.unt", "law")) { if (law.Id == "frame-dragging") { double lo, hi; if (law.TryRange("spin-range", out lo, out hi)) { _spinLo = lo; _spinHi = hi; } } if (law.Id == "gravity-off" && double.TryParse(law.Get("swell-over-freefall", "2"), fs, ci, out v)) _swellOverFreefall = v; }
+                foreach (var law in _content.OfKind("physics.unt", "law")) { if (law.Id == "frame-dragging") { double lo, hi; if (law.TryRange("spin-range", out lo, out hi)) { _spinLo = lo; _spinHi = hi; } } if (law.Id == "gravity-off" && double.TryParse(law.Get("swell-over-freefall", "2"), fs, ci, out v)) _swellOverFreefall = v; if (law.Id == "hole-inside") { if (double.TryParse(law.Get("way-in-ly", "3e6"), fs, ci, out v)) _wayInLy = v; if (double.TryParse(law.Get("way-in-mass-sol", "10"), fs, ci, out v)) _wayInMass = Math.Max(1e-6, v); if (double.TryParse(law.Get("way-in-power", "1"), fs, ci, out v)) _wayInPower = v; } }
                 if (double.TryParse(e.Get("galaxies", "1e11"), fs, ci, out v)) _uGalaxies = v;
                 if (double.TryParse(e.Get("web-ly", "2e8"), fs, ci, out v)) _webUnits = v / Units.LightYearsPerUnit;
                 if (double.TryParse(e.Get("web-contrast", "6"), fs, ci, out v)) _webContrast = v;
@@ -141,7 +141,7 @@ namespace Universe.Shell
         private double _statsLeft = double.MaxValue, _statsBottom;   // the frame counter and stats card's left edge and bottom on screen, so no other card lands on it
         private double _uRadius = 134000, _uGalaxies = 1e11, _webUnits = 4000, _webContrast = 6, _regionUnits = 20, _nearUnits = 400; private int _glowPoints = 300000;
         private double _darkMatter, _rimSpeed = 220, _darkEnergy, _hubble = 70;
-        private double _spinLo = 0.1, _spinHi = 0.998, _swellOverFreefall = 2;   // every hole's spin, a share of the most (content/physics.unt @law frame-dragging); a star's swelling with gravity off (@law gravity-off)
+        private double _spinLo = 0.1, _spinHi = 0.998, _swellOverFreefall = 2, _wayInLy = 3e6, _wayInMass = 10, _wayInPower = 1;   // the way in from a hole's horizon to its singularity, by its mass (content/physics.unt @law hole-inside)   // every hole's spin, a share of the most (content/physics.unt @law frame-dragging); a star's swelling with gravity off (@law gravity-off)
         private readonly HashSet<long> _regions = new HashSet<long>(); private long _lastRegionCell = long.MinValue;
         private UploadBuffer _glowBuf; private int _glowCount; private StarVertex[] _glowAll, _glowShown = new StarVertex[0]; private long _glowCameAt; private double _glowAtT = -10, _glowAtX = double.NaN, _glowAtY, _glowAtZ;
         private void AddGalaxy(int t, ulong gseed, double x, double y, double z, float tilt, float turn, float scale)
@@ -408,7 +408,7 @@ namespace Universe.Shell
             // and the point is a pin point below you the whole way, nearer and nearer, until the walls meet at it. Looking down you
             // see the whole run to the point; looking up, the whole run back to the opening
             const double PerTenfold = 2.0;
-            double T = 40;                                                                              // tenfolds from the horizon to the end: the same immense run for every hole
+            double T = MatterView.FallTenfolds;                                                         // tenfolds from the horizon to the end: the same immense run for every hole
             double tCam = Math.Min(T - 0.01, -Math.Log10(Math.Max(1e-300, rhoCam)));                   // your own depth in tenfolds below the horizon
             Func<double, double> radiusAt = t => 1.5 * Math.Max(0, T - t) / T;                          // the cone's radius at a depth, in views: a view and a half at the mouth, nothing at the point; at your own depth tighter the deeper you are
             double Smouth = radiusAt(0);                                                                 // the mouth's radius in views: the sheet outside the horizon is drawn at that scale (one horizon radius = Smouth)
@@ -1986,12 +1986,17 @@ namespace Universe.Shell
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
                         {
-                            // the fall, on the tour: in looking back up at the horizon's ring, the view turning over as you go, down the
-                            // well's wall, to face the point only near the end; slowly round, so the grid wheels past; and swaying up,
-                            // down and to the sides all the way, so the spike's shape shows from off its axis (the walls passing, the
-                            // mouth behind, the line it closes to ahead)
-                            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / 25));
-                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, Math.PI * Math.Min(1, tf * 1.15) + 0.4 * Math.Sin(_tourT * 0.45))), ph = _tourT * 0.25 + 0.3 * Math.Sin(_tourT * 0.7);
+                            // the fall, on the tour: looking round the funnel as you go, for its scope, its shape and its points of
+                            // reference, in a cycle of twelve seconds: back up at the mouth (the opening you came in by, farther behind
+                            // each time), then round at the walls beside you (a full turn, so they pass on every side, closer each
+                            // time), then down at the point below (nearer each time); and near the end the point alone, as the walls
+                            // meet at it. Eased from one to the next, and the whole slowly wheeling, so the grid turns past
+                            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / MatterView.FallTenfolds));
+                            double cyc = _tourT % 12, thAim = cyc < 3 ? Math.PI - 0.3 : cyc < 8 ? Math.PI / 2 : 0.18;
+                            thAim = thAim * (1 - tf * tf) + 0.1 * tf * tf;                            // (the last stretch: the point alone)
+                            if (_tourT <= dt * 1.5) _fallTh = Math.PI - 0.3;
+                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 1.2));
+                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * (cyc >= 3 && cyc < 8 ? 0.9 : 0.25) + 0.15 * Math.Sin(_tourT * 0.7);
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
                             var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
                             var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;
@@ -1999,7 +2004,8 @@ namespace Universe.Shell
                         else if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
-                        if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
+                        if (_spaceScale > 0 && _matter.SpaceKind == 12 && -Math.Log10(Math.Max(1e-300, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs))) >= MatterView.FallTenfolds) { done = true; _tourRate = 0; input.Wheel = 0; }   // the fall's point reached: the whole run, at the pace set
+                        else if ((sign > 0 && d <= want * 1.02) || (sign < 0 && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
                     }
                     break;
                 case "shot":
@@ -2895,11 +2901,11 @@ namespace Universe.Shell
                         if (exd.Hole && exd.Mass > 0)
                         {
                             double rsKm = Physics.HorizonKm(exd.Mass);
-                            _matter.SetHole(dspot, rsKm, exd.Mass, exd.Spin); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1; _fallHole = exd;
+                            _matter.SetHole(dspot, rsKm, exd.Mass, exd.Spin, _wayInLy * Math.Pow(Math.Max(1e-6, exd.Mass) / _wayInMass, _wayInPower) * 9.4607e12); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1; _fallHole = exd;
                             // the fall's clock: from the horizon to the middle takes two thirds of rs over c of your own time (26 seconds for a
                             // four-million-solar-mass hole, 70 microseconds for a stellar one, eleven minutes for a hundred-million-solar-mass one); it is
                             // shown over about thirty seconds, slowed or sped as that needs, and the card says by how much
-                            { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = tauEnd / 30.0; _fallDeep = false; }
+                            { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = Math.Max(1, tauEnd / 8.0); _fallDeep = false; }   // (the stretch on the hole's own clock, from the horizon to a thousandth of it, shown in about eight seconds whatever the hole: a big hole's seven hundred seconds took a minute; never slower than real)
                             { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
                             ZoomLog("DIVE through the horizon of " + exd.Name + " (" + ScaleHud.Words(rsKm * 2) + " across)"); return true;
                         }
@@ -4178,7 +4184,7 @@ namespace Universe.Shell
             r = 1f; g = (float)(0.45 + 0.55 * Math.Min(1, t * 2.2)); b = (float)(0.15 + 0.85 * Math.Min(1, t * 1.6));
         }
         // ── the tour's reach: the places it went to against every galaxy, star, world and moon there is ──
-        private int _tourVisited; private double _bodiesPerStar = -1;
+        private int _tourVisited; private double _bodiesPerStar = -1; private double _fallTh = Math.PI;   // the tour's look down the fall, eased
         private double BodiesPerStar()
         {
             if (_bodiesPerStar >= 0) return _bodiesPerStar; if (_kinds == null || _kinds.Count == 0) return _bodiesPerStar = 10;

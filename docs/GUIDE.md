@@ -262,6 +262,7 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 | `@law tidal-lock` | How close to a star a world turns once each orbit, one face always toward it (`lock-au-sol`: half an AU for a star of one solar mass, growing with the cube root of the star's mass) |
 | `@law air-density` | How many molecules are in each cubic centimetre of air at about one bar, so you meet the right number going into an air |
 | `@law frame-dragging` | Every black hole's spin (`spin-range`, a share of the most a hole can have): its horizon pulled in, its ergosphere, how fast space is swept round at its horizon, how far in its disc reaches, and the twist of the fall's funnel |
+| `@law hole-inside` | The way in from a black hole's horizon to its singularity, by its mass (`way-in-ly` for a hole of `way-in-mass-sol`, scaling with the mass to `way-in-power`); the fall's card counts the way in against it |
 | `@law gravity-off` | What the Time menu's Gravity switch does: every body straight on at its speed, every star blown apart at about its sound speed (`swell-over-freefall` times its free-fall time to double), a galaxy's stars flung off at the rim speed |
 | `@gas ...` | The atoms in each molecule of each gas, so an air's make-up gives the atoms you find in it |
 | `@law star-plasma` | What a star's surface is made of, and how dense it is |

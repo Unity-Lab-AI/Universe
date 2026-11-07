@@ -150,13 +150,16 @@ namespace Universe.Shell
         public double HoleRs { get { return _holeRs; } }
         /// <summary>Inside a black hole's horizon: the fall, pitch black (no light from anything here reaches anything else), down to
         /// the singularity at the middle, where the zoom finds quarks pressed closer than anything, as far as the laws we have go.</summary>
-        public void SetHole(ulong spot, double rsKm, double massSol) { SetHole(spot, rsKm, massSol, 0); }
+        public void SetHole(ulong spot, double rsKm, double massSol) { SetHole(spot, rsKm, massSol, 0, 3e6 * 9.4607e12); }
+        /// <summary>The fall's own measure: tenfolds from the horizon to the singularity, the same for every hole.</summary>
+        public const double FallTenfolds = 40;
+        private double _wayInKm = 3e6 * 9.4607e12;   // the way in from the horizon to the singularity (content/physics.unt @law hole-inside)
         private double _holeSpin;
         /// <summary>The hole's spin, a share of the most it could have: frame dragging twists the fall's funnel (content/physics.unt @law frame-dragging).</summary>
         public double HoleSpin { get { return _holeSpin; } }
-        public void SetHole(ulong spot, double rsKm, double massSol, double spin)
+        public void SetHole(ulong spot, double rsKm, double massSol, double spin, double wayInKm)
         {
-            SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _holeSpin = spin; _gasSpacing = 1e-40;
+            SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _holeSpin = spin; _wayInKm = wayInKm; _gasSpacing = 1e-40;
         }
         // the singularity: its whole mass in a point with no size at all, as far as the laws we have can say; drawn, once the zoom
         // is down at the quarks' size, as quarks pressed into a ball a third of the view wide at every size on down (a point: however
@@ -2107,7 +2110,7 @@ namespace Universe.Shell
                     L.Add(ScaleHud.Words(r) + " from the middle (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
                     L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
                     L.Add("a far watcher never sees you cross the horizon; your own clock runs on to the middle");
-                    { double way = _holeRs * (_holeRs / Math.Max(1e-300, r) - 1); L.Add("the way in so far: " + WayWords(way) + " (not the hole's size: space inside stretches without end, and closes to nothing)"); }
+                    { double share = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, r / _holeRs)) / FallTenfolds)); L.Add("the way in: " + WayWords(_wayInKm * share) + " of " + WayWords(_wayInKm) + " from the horizon to the singularity, by its mass (space inside stretches without end, and closes to nothing)"); }
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
                     if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round; the spokes twist");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }

@@ -126,8 +126,8 @@ caption: Down to the horizon itself: the disc all round, the sky bent into a rin
 
 @stop fall
 do: zoom
-rate: 0.7
-until-km: 1e-19
+rate: 1.5
+until-km: 1e-40
 through: yes
 caption: In through the horizon, looking back at it: the well itself round you, space's sheet bent into a funnel and, inside the throat, a cone, every line running down to the point; the way out needs more than light's speed; the view turns over as you fall, to face the point near the end
 

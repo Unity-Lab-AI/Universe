@@ -179,7 +179,7 @@ namespace DnaAnd.Shell
             }
             // how near the point is to a wall (equal distance to its two nearest voids), a filament (three), a node (four)
             double w = _wallUnits, wall = Math.Exp(-Math.Pow((d2 - d1) / w, 2)), fil = Math.Exp(-Math.Pow((d3 - d1) / (w * 1.4), 2)), node = Math.Exp(-Math.Pow((d4 - d1) / (w * 2), 2));
-            return (0.005 + wall * 0.6 + fil * _webContrast + node * _webContrast * 8) / _webMean;   // voids nearly empty; walls thin; most on filaments and in clusters (its mean over space one)
+            return (0.15 + wall * 0.6 + fil * _webContrast + node * _webContrast * 8) / _webMean;   // voids thin (about a fifth of the mean, as the surveys find: never empty, so no half of the sky is ever bare); walls; most on filaments and in clusters (its mean over space one)
         }
         private double MeanPerUnit3 { get { return _uGalaxies / (4.0 / 3.0 * Math.PI * _uRadius * _uRadius * _uRadius); } }
         // the galaxies of every region within reach of you that has none yet (each region's own from its place); at most a few a frame
@@ -268,7 +268,7 @@ namespace DnaAnd.Shell
                     {
                         // points through the whole sphere, each kept as often as the web is crowded there: the walls, filaments and
                         // clusters show, the voids stay dark; made on a thread of its own so nothing waits
-                        int want = _glowPoints; double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.005 + 0.6 + _webContrast + _webContrast * 8) / _webMean; ulong sd = _seed;
+                        int want = _glowPoints; double R = _uRadius, gcx = _cx, gcy = _cy, gcz = _cz, gr = reachU; _glowCX = gcx; _glowCY = gcy; _glowCZ = gcz; double top = (0.15 + 0.6 + _webContrast + _webContrast * 8) / _webMean; ulong sd = _seed;
                         _glowMaker = new System.Threading.Thread(() =>
                         {
                             var rng = new Rng(sd ^ 0x6107UL); var list = new List<StarVertex>(want); long tries = 0;

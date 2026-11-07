@@ -15,7 +15,7 @@ rate: -0.06
 until-km: 2e18
 turn: 16
 seconds: 8
-caption: We begin inside a galaxy, a hundred billion stars turning in the dark
+caption: We begin beside a galaxy, a hundred billion stars turning in the dark
 
 @stop leave
 do: zoom

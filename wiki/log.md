@@ -18,3 +18,5 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the well an inward spike, from the creator's shots): DNA-AND DESIGN 591.
 - 2026-11-07 (looking round the well as you fall): DNA-AND DESIGN 592.
 - 2026-11-07 (the patterning found; the way into a hole not its size): DNA-AND DESIGN 593, 594.
+- 2026-11-07 (the funnel's walls there to be seen): DNA-AND DESIGN 595.
+- 2026-11-07 (the cone travelled down, the walls closing in): DNA-AND DESIGN 596.

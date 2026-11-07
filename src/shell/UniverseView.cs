@@ -402,14 +402,15 @@ namespace Universe.Shell
             // the well inside the horizon is the dilation itself, not the hole's size: the funnel is drawn in the fall's own measure,
             // each tenfold of the radius two views of length, forty tenfolds from the horizon to the point for every hole (the way
             // in is not the hole's size: inside there is near-infinite space and no space at once), so it is far longer than the space the hole takes
-            // up, and it is complete at every depth: an inward spike. The mouth (the horizon's ring, the big opening) is above you,
-            // the wall less than half a view out round you, and the cone squeezes straight down, linear, to the point ahead, where
-            // it ends in no space at all: so far ahead and so thin that it closes to a single line long before the tip. Looking down
-            // you see the whole run to the point; looking up, the whole run back to the opening
+            // up, and it is complete at every depth: an inward spike, fixed in your view, that you travel down. The mouth (the
+            // horizon's ring, the big opening) is a view and a half wide; the cone squeezes straight down from it, linear, to the
+            // point eighty views below, where it ends in no space at all. As you fall the walls beside you close in and get tighter,
+            // and the point is a pin point below you the whole way, nearer and nearer, until the walls meet at it. Looking down you
+            // see the whole run to the point; looking up, the whole run back to the opening
             const double PerTenfold = 2.0;
             double T = 40;                                                                              // tenfolds from the horizon to the end: the same immense run for every hole
             double tCam = Math.Min(T - 0.01, -Math.Log10(Math.Max(1e-300, rhoCam)));                   // your own depth in tenfolds below the horizon
-            Func<double, double> radiusAt = t => 0.4 * Math.Max(0, T - t) / (T - tCam);                 // the cone's radius at a depth, in views: four tenths of a view at yours, nothing at the point: a spike
+            Func<double, double> radiusAt = t => 1.5 * Math.Max(0, T - t) / T;                          // the cone's radius at a depth, in views: a view and a half at the mouth, nothing at the point; at your own depth tighter the deeper you are
             double Smouth = radiusAt(0);                                                                 // the mouth's radius in views: the sheet outside the horizon is drawn at that scale (one horizon radius = Smouth)
             double spin = _matter.HoleSpin; Func<double, double> tw = t => spin * (0.35 * t + time * 0.12);   // frame dragging: the hole's spin twists the spokes more the deeper they go, and sweeps the whole cone round
             Func<double, double> along = rho => rho >= 1 ? -tCam * PerTenfold - 2 * Math.Sqrt(rho - 1) * Smouth : (-Math.Log10(Math.Max(1e-300, rho)) - tCam) * PerTenfold;   // how far ahead of you (down) a ring of that radius lies; negative: above
@@ -434,23 +435,29 @@ namespace Universe.Shell
                     put(c0, c1, br, 0.35f, 0.9f, 0.6f); put(c1, c0, br, 0.35f, 0.9f, 0.6f);
                 }
             }
-            // inside: the whole cone, a ring every sixth of a tenfold from the mouth to the point, each with points by its size so it
-            // is a line at any width (a wide ring of a few dozen points was a scatter of dots), never dim far off, and spokes the
-            // whole way down between them, every one ending at the point
+            // inside: the whole cone, a ring every sixth of a tenfold from the mouth to the point and spokes the whole way down
+            // between them, every one ending at the point. Every line carries a point about every fiftieth of a view of its own
+            // length, as the sheet's lines do, so it reads as a line right beside you (a ring of a few dozen points, a spoke of a
+            // point every eighth of a view, was a scatter of single pixels at arm's length: the walls were not there to be seen,
+            // only the mouth's ring and the sheet)
+            const double Along = 0.02;                                                      // a point every fiftieth of a view along a line
             int kEnd = (int)Math.Ceiling(T * 6);
             for (int k = 0; k <= kEnd; k++)
             {
                 double t = Math.Min(T, k / 6.0), rho = Math.Pow(10, -t), rw = radiusAt(t); if (rw <= 0) break; if (rw > 200) continue;   // (a ring wider than two hundred views is beyond the picture)
                 float br = (float)(0.55 * Math.Max(0.45, 1 - Math.Abs(t - tCam) * 0.15));
-                int n = (int)Math.Max(64, Math.Min(1600, rw * 2 * Math.PI * 6));
+                int n = (int)Math.Max(96, Math.Min(1500, rw * 2 * Math.PI / Along));
                 for (int q = 0; q < n; q++) { double a = q * Math.PI * 2 / n + tw(t); put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
             }
-            for (int sp = 0; sp < 36; sp++)
             {
-                double a = sp * Math.PI * 2 / 36;
-                for (int q = 0; q <= 600; q++) { double t = T * q / 600.0, rho = Math.Pow(10, -t), a2 = a + tw(t); if (radiusAt(t) > 200) continue; put(Math.Cos(a2) * rho, Math.Sin(a2) * rho, 0.32f, 0.35f, 0.9f, 0.6f); }
+                int qn = (int)Math.Min(6000, Math.Max(600, T * PerTenfold / Along));
+                for (int sp = 0; sp < 36; sp++)
+                {
+                    double a = sp * Math.PI * 2 / 36;
+                    for (int q = 0; q <= qn; q++) { double t = T * q / (double)qn, rho = Math.Pow(10, -t), a2 = a + tw(t); if (radiusAt(t) > 200) continue; put(Math.Cos(a2) * rho, Math.Sin(a2) * rho, 0.45f, 0.35f, 0.9f, 0.6f); }
+                }
             }
-            { int n = (int)Math.Max(240, Math.Min(2400, Smouth * 2 * Math.PI * 6)); if (Smouth <= 200) for (int q = 0; q < n; q++) { double a = q * Math.PI * 2 / n; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); } }   // the mouth: the horizon's ring, bright
+            { int n = (int)Math.Max(480, Math.Min(3000, Smouth * 2 * Math.PI / Along)); if (Smouth <= 200) for (int q = 0; q < n; q++) { double a = q * Math.PI * 2 / n; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); } }   // the mouth: the horizon's ring, bright
             { var p = ax * (float)((T - tCam) * PerTenfold); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.04f, R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all squeezes down to, at the cone's end
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);

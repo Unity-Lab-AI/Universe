@@ -425,7 +425,7 @@ namespace Universe.Shell
             double tCam = Math.Min(T - 0.01, -Math.Log10(Math.Max(1e-300, rhoCam)));                   // your own depth in tenfolds below the horizon
             Func<double, double> radiusAt = t => 1.5 * Math.Max(0, T - t) / T;                          // the cone's radius at a depth, in views: a view and a half at the mouth, nothing at the point; at your own depth tighter the deeper you are
             double Smouth = radiusAt(0);                                                                 // the mouth's radius in views: the sheet outside the horizon is drawn at that scale (one horizon radius = Smouth)
-            double spin = _matter.HoleSpin; Func<double, double> tw = t => spin * (0.35 * t + time * 0.12);   // frame dragging: the hole's spin twists the spokes more the deeper they go, and sweeps the whole cone round
+            Func<double, double> tw = t => 0;                                                            // a gravity well is rings and straight spokes: no twist, no turning (the drag's twist read as a trippy effect, not a well)
             Func<double, double> along = rho => rho >= 1 ? -tCam * PerTenfold - 2 * Math.Sqrt(rho - 1) * Smouth : (-Math.Log10(Math.Max(1e-300, rho)) - tCam) * PerTenfold;   // how far ahead of you (down) a ring of that radius lies; negative: above
             Func<double, double> width = rho => rho >= 1 ? rho * Smouth : radiusAt(-Math.Log10(Math.Max(1e-300, rho)));   // its radius in views
             var pts = new List<StarVertex>();
@@ -435,10 +435,9 @@ namespace Universe.Shell
                 var p = e1 * (float)(u * wv) + e2 * (float)(v * wv) + ax * (float)along(rho);
                 pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0, R = cr * br, G = cg * br, B = cb * br, A = 1 });   // (no size of its own: a point of the line, the same few pixels at any distance)
             };
-            // the sheet outside the horizon: its square grid every half radius out to eight, bent into Flamm's bowl down to the throat
-            // (only while you are near the mouth: deep down it is far above you, at the mouth's own scale, and its quads tens of
-            // views wide crossed the view as a warped sheet with no cone to be seen)
-            for (int li = -16; li <= 16 && tCam < 1.5; li++)
+            // the sheet outside the horizon: its square grid every half radius out to eight, bent into Flamm's bowl down to the throat,
+            // at the mouth's own scale (a view and a half), always: the opening you look back up at from any depth
+            for (int li = -16; li <= 16; li++)
             {
                 double c0 = li * 0.5; bool axisLine = li == 0;
                 for (int q = 0; q <= 640; q++)
@@ -1999,16 +1998,15 @@ namespace Universe.Shell
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
                         {
-                            // the fall, on the tour: one look round the funnel as you go, for its scope, its shape and its points of
-                            // reference: back up at the mouth for the first seconds (the opening you came in by), then one full turn
-                            // round at the walls beside you (so they pass on every side), then down at the point below for the rest of
-                            // the fall, the walls closing in round the view and meeting at it. Eased from one to the next, and the
-                            // whole slowly wheeling, so the grid turns past; the fall itself about a minute
+                            // the fall, on the tour: looking up at the sky through the mouth as you enter (from the first frame, no easing
+                            // into it), held for the first seconds, then turned down along the funnel to its absolute point, and held
+                            // there for the rest of the fall, the walls closing in round the view and meeting at it; a slow wheel, so
+                            // the grid turns past; the fall itself about a minute
                             double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / MatterView.FallTenfolds));
-                            double cyc = _tourT, thAim = cyc < 7 ? Math.PI - 0.3 : cyc < 20 ? Math.PI / 2 : 0.12;
-                            if (_tourT <= dt * 1.5) _fallTh = Math.PI - 0.3;
-                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 1.2));
-                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * (cyc >= 7 && cyc < 20 ? 0.55 : 0.15) + 0.12 * Math.Sin(_tourT * 0.7);
+                            double cyc = _tourT, thAim = cyc < 6 ? Math.PI - 0.2 : 0.08;
+                            if (_tourT <= dt * 1.5) _fallTh = Math.PI - 0.2;                            // (up from the first frame)
+                            _fallTh += (thAim - _fallTh) * (1 - Math.Exp(-dt * 0.6));                   // (then down the funnel over some seconds, and held)
+                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, _fallTh)), ph = _tourT * 0.12;
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
                             var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
                             var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;

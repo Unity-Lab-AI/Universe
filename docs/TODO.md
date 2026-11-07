@@ -74,6 +74,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The tour's hole a feeding one, the whole disc flyby; every hole's photon ring:** (built: DNA-AND DESIGN 600; waits on the test) "something broke black hole isnt there" / "i took screen shot" / "its suppose to be going to one thats feeding" / "the whole acrestion disk fly by"
 
+- [~] **The well rings and straight spokes, no spiral; the sheet at the mouth from every depth; the tour looking up as it enters, then down the funnel to its point:** (built: DNA-AND DESIGN 601; waits on the test) "the funnel just looks like a trippy effect not a real grvity well and why the fuck and where did u decide to make it spiralled i told u to look up garvity well funnelks wtf ids so fuvcking ard to recreate exactly what it is and is disappaard at zoom in when it shall not, and ur llook around was fucked and too late to pan up at sky after already entering should be llooking up as u enter then look down along the funnel to is absoulte pooint, do u not undersastnd what it liooks like too be in a ubside down spike cone?"
+
 ---
 
 ## Pending

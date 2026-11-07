@@ -2112,7 +2112,7 @@ namespace Universe.Shell
                     L.Add("a far watcher never sees you cross the horizon; your own clock runs on to the middle");
                     { double share = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, r / _holeRs)) / FallTenfolds)); L.Add("the way in: " + WayWords(_wayInKm * share) + " of " + WayWords(_wayInKm) + " from the horizon to the singularity, by its mass (space inside stretches without end, and closes to nothing)"); }
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
-                    if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round; the spokes twist");
+                    if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }
                 }
                 else

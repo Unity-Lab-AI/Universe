@@ -110,7 +110,6 @@ caption: An asteroid
 
 @stop to-asteroid
 do: zoom
-pan: 6
 rate: 0.6
 until-km: 120
 caption: Out to its belt of rubble
@@ -130,7 +129,6 @@ caption: A comet
 
 @stop to-comet
 do: zoom
-pan: 6
 rate: 0.6
 until-km: 3e5
 caption: A comet falling past its star
@@ -184,7 +182,6 @@ caption: A world
 
 @stop to-planet
 do: zoom
-pan: 6
 rate: 0.4
 until-km: 2e4
 caption: Down to one of its worlds
@@ -199,7 +196,6 @@ caption: Seas, land, clouds and a thin shell of air
 
 @stop to-land
 do: zoom
-pan: 6
 rate: 0.55
 until-km: 1.5
 caption: Down through the air to the land
@@ -213,7 +209,6 @@ caption: Hills raised by moving plates, valleys worn by water
 
 @stop to-head-height
 do: zoom
-pan: 6
 rate: 0.3
 until-km: 0.002
 caption: Down to where a person stands
@@ -245,7 +240,6 @@ caption: And down: there is as much below us as above
 
 @stop to-grains
 do: zoom
-pan: 6
 rate: 0.25
 until-km: 2e-6
 through: yes
@@ -258,7 +252,6 @@ caption: One grain of sand
 
 @stop to-face
 do: zoom
-pan: 6
 rate: 0.25
 until-km: 2e-9
 through: yes
@@ -271,7 +264,6 @@ caption: A spot on its face
 
 @stop to-crystal
 do: zoom
-pan: 6
 rate: 0.25
 until-km: 6e-12
 caption: Down to its atoms, in a pattern repeated billions of times
@@ -306,7 +298,6 @@ caption: One atom
 
 @stop to-atom
 do: zoom
-pan: 6
 rate: 0.25
 until-km: 6e-13
 caption: An atom is not a ball

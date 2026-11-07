@@ -1136,7 +1136,7 @@ namespace DnaAnd.Shell
             // held back while what is ahead is still being made (the web's light, the ground): never still, so it never looks frozen;
             // it keeps circling what it shows, and the caption says what it is waiting for
             _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _ground.Backlog > 80);
-            if (_tourWaiting && _matterScale <= 0) TourTurn(10 * Math.PI / 180 * dt, 0);
+            if (WebNotMade) TourTurn(10 * Math.PI / 180 * dt, 0);                   // (out among the galaxies only: by a world it never circles while it waits)
             if (done) { _tourAt++; _tourT = 0; }
         }
         // what a stop picks, as a click would

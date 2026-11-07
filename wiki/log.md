@@ -36,3 +36,5 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the remnant from the blast, every small body on its orbit, the tuner watching the processor): DNA-AND DESIGN 615-617.
 - 2026-11-07 (the "never a ball" asides gone): DNA-AND DESIGN 618.
 - 2026-11-07 (every nucleon its three quarks at every size, the nucleus arcs short): DNA-AND DESIGN 619.
+- 2026-11-07 (every atom its electron shells at the lattice level): DNA-AND DESIGN 620.
+- 2026-11-07 (the fall's card measured down the funnel): DNA-AND DESIGN 621.

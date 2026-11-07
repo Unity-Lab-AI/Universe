@@ -106,6 +106,10 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Every proton and neutron its three quarks in its gluon glow at every size, no balls; the nucleus arcs short:** (built: DNA-AND DESIGN 619; waits on the test) "i took images of the issues and the protons and nutrons change from balls to quesrks with like no zooming at all is that right? do we need the balls can we jsut propely do them the nucleaus protons and nurtons as quarks better so that is not a instant jump to qwerks and the nucles pan around of an atom takes too long and it pans around liike two differnt times for like 30s in total which is way to long to look at a atom nucleus that is just red and white balls"
 
+- [~] **Every atom its electron shells at the lattice level, the electrons' paths from seven spacings:** (built: DNA-AND DESIGN 620; waits on the test) "like i dont like the old school balls for atoms i would like it to propely be electron fields at higher levels as the zoom scale isnt much difference we can just propigate them a bit smaller and more consisous and accuracy to what the atoms actually look like so no ball atoms but atctual elctron fields at scale where balls appear the ball is suppose to represent the outer edges of the non valance rings of electons so they are totaly displayable as the elctron fields we have just at a little higher scale to see them a ligttle sooner berfoe the classic understanding of balls representing whole electrons"
+
+- [~] **The fall's card measured from the horizon down the funnel, the singularity millions of light-years down by mass:** (built: DNA-AND DESIGN 621; waits on the test) "and when entering a black hole it says like 11 AU not the proper millions of light years to the center singularity" / "based on mass" / "no the singualrity is not the way in the event horizon is and the singularity is millions of light years down the funnel so it needs to be accurate to the  non pysics we dont understand of infanite space in a black hoole"
+
 ---
 
 ## Pending

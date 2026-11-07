@@ -1428,14 +1428,25 @@ namespace Universe.Shell
 
         private static double Fade(double s, double from, double to) { return Math.Max(0, Math.Min(1, Math.Log(from / s) / Math.Log(from / to))); }
 
-        // the lattice's level: an atom as its electron cloud, a soft glow of its element's colour at its real size (the cloud of where
-        // its electrons may be, densest at the middle), its nucleus a spark at the middle. Bright enough to read on a
-        // capture (at a third of this brightness the level had read as black between the grain's face and the atoms' level)
+        // the lattice's level: an atom as its electron fields, each subshell a soft field at its own distance (Slater's, the same
+        // distances the atom's level puts its electrons at), the inner ones small and dense, the valence shell outermost, faint and
+        // in gold, so from the lattice down the atom reads as its shells, the same electron fields as close in, only smaller and
+        // sooner; its nucleus a spark at the middle. (One soft glow at the atom's size had stood for it, and read as a ball.)
         private void LatticeCloud(List<StarVertex> glow, Element e, double x, double y, double z, double s, float w)
         {
             if (e == null || w <= 0.02f) return; double ar = AtomRadius(e);
-            Add(glow, x, y, z, ar * 1.1, (0.45f + 0.55f * e.R) * w * 0.75f, (0.45f + 0.55f * e.G) * w * 0.75f, (0.45f + 0.55f * e.B) * w * 0.75f, s);
-            Add(glow, x, y, z, ar * 0.45, (0.45f + 0.55f * e.R) * w * 0.35f, (0.45f + 0.55f * e.G) * w * 0.35f, (0.45f + 0.55f * e.B) * w * 0.35f, s);
+            var els = ElectronsOf(e); int shells = e.Shells.Length, last = -1, count = 0; double rr = 0; bool val = false;
+            for (int k = 0; k <= els.Length; k++)
+            {
+                if (k < els.Length && els[k].Sub == last) { count++; continue; }
+                if (last >= 0 && count > 0)
+                {
+                    double rad = Math.Max(rr * ar, s * 0.004); float dens = (float)Math.Min(1, count / (rr * rr * 18 + 0.5));   // (its electrons over the shell's area: the 1s pair densest, the valence shell thinnest)
+                    float bq = w * (0.25f + 0.75f * dens) * 0.55f;
+                    Add(glow, x, y, z, rad * 1.15, (val ? 0.95f : 0.5f) * bq, (val ? 0.8f : 0.6f) * bq, (val ? 0.35f : 0.9f) * bq, s);
+                }
+                if (k < els.Length) { last = els[k].Sub; count = 1; rr = els[k].R; val = els[k].N == shells; }
+            }
             Add(glow, x, y, z, Math.Max(NucleusRadius(e), s * 0.002), 1f * w, 0.95f * w, 0.9f * w, s);
         }
 
@@ -1637,14 +1648,14 @@ namespace Universe.Shell
                 var drawnAt = new List<CAtom>(); double bondReach = Math.Min(1.2 * s, AtomSpacing * 22);
                 double depth = s < AtomSpacing * 14 ? AtomSpacing * 9 : AtomSpacing * 3;     // close in, deep: solid every way you look
                 // one picture at a level, never two at once, and neither the picture from before the quantum theory: the lattice's
-                // level (down to about a nanometre, four spacings) is every atom as its electron cloud at its real size, its nucleus a
+                // level (down to about a nanometre, four spacings) is every atom as its electron shells at its real size, its nucleus a
                 // spark at the middle, the bonds the shared electrons between neighbours; the atom's level below it is each atom's
                 // nucleus and its electrons on their paths and in their orbitals
                 // the levels hand over by degrees, never in one frame: the lattice's clouds (every atom its soft cloud) fade out and
-                // the atoms' own systems fade in between five spacings and three; the atom you are at hands over to its inside view
+                // the atoms' own systems fade in between seven spacings and four; the atom you are at hands over to its inside view
                 // between eight widths and four, its cloud fading as its electrons' shells and orbitals come up (it had been one
                 // switch at four spacings and another at four radii: black, then orbs in a frame, then the orbitals in a frame)
-                double cw = Fade(s, AtomSpacing * 5, AtomSpacing * 3); bool lattice = cw < 0.98;
+                double cw = Fade(s, AtomSpacing * 7, AtomSpacing * 4); bool lattice = cw < 0.98;   // (the electrons on their paths come in a little sooner, from seven spacings)
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
                 {
                     var at = at0; double dSince; Element dPar; { var dE = Daughter(at0.E, AtomKey(at0.X, at0.Y, at0.Z), out dSince, out dPar); if (dE != at0.E) at = new CAtom { E = dE, X = at0.X, Y = at0.Y, Z = at0.Z }; }   // (as it is now: decayed, if its moment has come)
@@ -1701,7 +1712,7 @@ namespace Universe.Shell
                             else
                             {
                                 if (ar < px * 0.5) continue;
-                                double cw2 = Fade(s, AtomSpacing * 5, AtomSpacing * 3); float lw2 = (float)((1 - cw2) * (1 - fw));
+                                double cw2 = Fade(s, AtomSpacing * 7, AtomSpacing * 4); float lw2 = (float)((1 - cw2) * (1 - fw));
                                 if (ar > px * 2) LatticeCloud(glow, el, sx, sy - ar - _yOff, sz, s, sh * lw2);   // (above the atoms' level each as its cloud, as a crystal's; the hand-overs by degrees, the same)
                                 if (cw2 > 0.02) { float fa = sh * f * (float)cw2 * (1 - fw); if (NearLook(sx, sy - ar - _yOff, sz, s)) Cloud(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, fa); else AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, fa); }
                             }
@@ -2128,7 +2139,7 @@ namespace Universe.Shell
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
             // is for later)
-            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths)" : "level: the lattice (each atom its electron cloud, the bonds their shared electrons)"); }   // (one picture at a level, named)
+            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths)" : "level: the lattice (each atom its electron shells, the bonds their shared electrons)"); }   // (one picture at a level, named)
             if (!_space && Greyness > 0 && L.Count > 0) L.Add(Greyness >= 1 ? "no colour this small: below light's wavelength, in greys as an electron microscope sees; the atoms' and electrons' colours are marks, not light" : "colour is going: the view is nearing light's wavelength");
             return L;
         }
@@ -2145,10 +2156,14 @@ namespace Universe.Shell
                 if (!at)
                 {
                     L.Add("inside the event horizon: no light out");
-                    L.Add(ScaleHud.Words(r) + " from the middle (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
+                    // the way is measured from the event horizon down the funnel: the singularity is millions of light-years down it, by
+                    // the hole's mass (content/physics.unt @law hole-inside), not a horizon's width away (the card had given the
+                    // distance to the middle in the outside's measure, eleven AU, against a way in of millions of light-years)
+                    double share = Math.Max(0, Math.Min(1, _fallShare));
+                    L.Add(WayWords(_wayInKm * share) + " down the funnel from the horizon, " + WayWords(_wayInKm * (1 - share)) + " to the singularity, by its mass (the horizon " + ScaleHud.Words(_holeRs * 2) + " across); escape speed " + Math.Sqrt(_holeRs / Math.Max(1e-300, r)).ToString(_holeRs / r < 100 ? "0.#" : "0.#E+0") + " times light's");
                     L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
                     L.Add("a far watcher never sees you cross the horizon; your own clock runs on to the middle");
-                    { double share = Math.Max(0, Math.Min(1, _fallShare)); L.Add("the way in: " + WayWords(_wayInKm * share) + " of " + WayWords(_wayInKm) + " from the horizon to the singularity, by its mass (space inside stretches without end, and closes to nothing)"); }
+                    L.Add("the way in " + WayWords(_wayInKm) + " from the horizon to the singularity, by its mass: space inside stretches without end, and closes to nothing");
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
                     if (_holeSpin > 0) L.Add("spin " + _holeSpin.ToString("0.00") + " of the most: frame dragging sweeps you round");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }

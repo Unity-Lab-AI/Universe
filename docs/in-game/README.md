@@ -23,7 +23,7 @@
 | Control | What it does |
 |---|---|
 | **Space** | Pause time, or carry on |
-| **,** and **.** | Slower and faster, from real time to ten years a second |
+| **,** and **.** | Slower and faster, from real time to ten years a second (it starts at a minute a second) |
 | **Time menu** | The same speeds, and **Always day** to keep every world in daylight |
 
 Every world turns on its own day, so you can sit on the ground and watch its star rise and set.

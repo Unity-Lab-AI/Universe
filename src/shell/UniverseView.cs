@@ -51,7 +51,7 @@ namespace DnaAnd.Shell
         // ── time: how fast it runs (years a second of yours), from paused to ten years a second; an hour a second at first ──
         public static readonly double[] TimeSpeeds = { 0, 1 / 31557600.0, 60 / 31557600.0, 3600 / 31557600.0, 86400 / 31557600.0, 7 * 86400 / 31557600.0, 30.44 * 86400 / 31557600.0, 1 / 20.0, 1, 10 };
         public static readonly string[] TimeNames = { "paused", "real time", "a minute a second", "an hour a second", "a day a second", "a week a second", "a month a second", "a year in 20 seconds", "a year a second", "ten years a second" };
-        public int TimeStep = 3; private int _timeBeforePause = 3;
+        public int TimeStep = 2; private int _timeBeforePause = 2;   // (starts at a minute a second: a day of 10 to 40 hours passes in 10 to 40 minutes, the worlds and their stars moving calmly)
         /// <summary>Pauses, or carries on at the speed it had.</summary>
         public void TogglePause() { if (TimeStep == 0) TimeStep = _timeBeforePause; else { _timeBeforePause = TimeStep; TimeStep = 0; } MenuChanged = true; }
         public void SetTime(int step) { TimeStep = Math.Max(0, Math.Min(TimeSpeeds.Length - 1, step)); if (TimeStep > 0) _timeBeforePause = TimeStep; MenuChanged = true; }

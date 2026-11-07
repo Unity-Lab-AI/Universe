@@ -121,7 +121,7 @@ The landing page opens first. Type a seed (or press **Random**, or leave it blan
 | **Left click** | Pick a galaxy, star, world, spot on the ground, grain or atom. The wheel flies you straight there |
 | **Right click** | Let go of what you picked |
 | **Drag** | With something picked, circle round it. With nothing picked, look around |
-| **Space** / **,** / **.** | Pause time, slower, faster (real time up to ten years a second) |
+| **Space** / **,** / **.** | Pause time, slower, faster (real time up to ten years a second; it starts at a minute a second) |
 | **H** | Show or hide the scale bar and info cards |
 | **B** | Among atoms: glide across the bond to the next atom |
 | **T** | The grand tour. A click, the wheel or a key pauses it; **T** carries on, **R** starts again |

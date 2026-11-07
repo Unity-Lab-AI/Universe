@@ -71,6 +71,8 @@ Every warning is an error (`/warnaserror+`), so a build that finishes is clean.
 | `--shots S` | Saves a PNG of the game every S seconds |
 | `--native` | Opens at your screen's full resolution |
 
+The program keeps a short log of its zoom and of the tour's stops and picks at `%TEMP%\universe_zoom.log` (at most 4 MB, then started afresh): what each stop began at, what each pick found or why it found nothing.
+
 Screenshots (**F12**) and clips (**F9**) go in `captures` beside the program.
 
 ---

@@ -1183,7 +1183,7 @@ namespace Universe.Shell
             switch (k) { case 0x20: return "Space"; case 0x0D: return "Enter"; case 0x1B: return "Esc"; case 0x08: return "Backspace"; case 0x09: return "Tab"; case 0x25: case 0x26: case 0x27: case 0x28: return "an arrow key"; case 0xBC: return "the , key"; case 0xBE: return "the . key"; }
             return "a key";
         }
-        private double _tourH0, _tourLookFrom; private bool _tourWaiting;
+        private double _tourH0, _tourLookFrom; private bool _tourWaiting, _pickFailed;   // (a pick that found nothing: the stops that depend on it are skipped, never shown with the wrong thing in view)
         // the director's choices for the shot under way, made afresh for each shot of each viewing (so no two tours are the same):
         // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
         // the last galaxy's kind, so the next is another kind
@@ -1205,7 +1205,7 @@ namespace Universe.Shell
             get
             {
                 double want = Math.Max(0.5, Math.Min(1, Window.Fps / 40.0));
-                if (_ground != null && _matterScale <= 0 && _ground.Backlog > 80) want *= Math.Max(0.6, 80.0 / _ground.Backlog);
+                if (_ground != null && _matterScale <= 0 && _ground.Backlog > 80 && AboveGround() > Units.Km(MatterView.OverlayKm)) want *= Math.Max(0.6, 80.0 / _ground.Backlog);   // (below a centimetre the grains cover the ground: nothing is waited for, on down to the hand-over)
                 if (WebNotMade) want = 0.05;                                            // out among the web before its light is made: wait for it
                 if (_matterScale > 0 || _spaceScale > 0) want = 1;                     // in the matter nothing is waited for (the ground's building behind you never slows it)
                 _tourPace += (want - _tourPace) * 0.05; return _tourPace;
@@ -1297,6 +1297,7 @@ namespace Universe.Shell
             }
             if (_tourAt >= _tour.Count) { PauseTour(null); return; }   // (the end: it says so, and offers it again)
             var st = _tour[_tourAt]; _tourT += dt; bool done = false;
+            if (_pickFailed && st.Do != "pick") { ZoomLog("TOUR stop " + st.Name + " skipped: its pick found nothing"); _tourAt++; _tourT = 0; NewShot(); return; }   // (never a shot of the wrong thing with the caption of the right one)
             input.MouseX = w / 2; input.MouseY = h / 2;                                    // the controls act at the middle of the view
             switch (st.Do)
             {
@@ -1470,7 +1471,11 @@ namespace Universe.Shell
                         // while it looks (what it wants still being made round you, or none there at all) it never sits still: it looks
                         // round slowly, eased in, and goes on after a few seconds at most
                         if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
-                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5)) done = true;   // (a system with none of them: on at once)
+                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5))
+                        {
+                            done = true; _pickFailed = !got && st.Target != "none";
+                            ZoomLog("TOUR pick " + st.Target + (got ? ": " + _tName + " (kind " + _tKind + ")" : " FAILED after " + _tourT.ToString("0.0") + " s: " + _extras.Count + " bodies round you, " + _localCount + " stars, system " + (_system != null ? "open" : "none") + ", galaxy " + _near + "; its stops are skipped"));
+                        }
                     }
                     break;
                 default: done = true; break;
@@ -1480,10 +1485,10 @@ namespace Universe.Shell
             if (done && WebNotMade) { done = false; input.Wheel = 0; }               // (never on past the web before it shows)
             // held back while what is ahead is still being made (the web's light, the ground): never still, so it never looks frozen;
             // it keeps circling what it shows, and the caption says what it is waiting for
-            _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _matterScale <= 0 && _ground.Backlog > 80);   // (in the matter the ground is not being made: its old count means nothing)
+            _tourWaiting = WebNotMade || (st.Do == "zoom" && _ground != null && _matterScale <= 0 && _ground.Backlog > 80 && AboveGround() > Units.Km(MatterView.OverlayKm));   // (in the matter the ground is not being made: its old count means nothing)
             _waitSpin += ((WebNotMade ? 1 : 0) - _waitSpin) * (1 - Math.Exp(-dt * 0.8));   // (eased in and out, never a sudden start or stop)
             if (_waitSpin > 0.002) TourTurn(6 * _waitSpin * Math.PI / 180 * dt, 0);                   // (out among the galaxies only: by a world it never circles while it waits)
-            if (done) { _tourAt++; _tourT = 0; NewShot(); }
+            if (done) { _tourAt++; _tourT = 0; NewShot(); if (_tourAt < _tour.Count) ZoomLog("TOUR stop " + _tour[_tourAt].Name + " (" + _tour[_tourAt].Do + ") begins at " + Units.Describe(Units.Km(ViewDistanceKm())) + " pick " + _tKind + ":" + _tIndex + " " + _tName + (_matterScale > 0 ? " matter " + _matter.Card()[0] + " pick-off " + _matter.PickOff.ToString("0.00") : "")); }
         }
         // what a stop picks, as a click would
         private void TourPick(string what, TourStop st = null)
@@ -2964,7 +2969,7 @@ namespace Universe.Shell
             try
             {
                 string f = System.IO.Path.Combine(System.IO.Path.GetTempPath(), PreviewText.AppName.ToLowerInvariant().Replace("-", "") + "_zoom.log");   // (the program's own name: universe_zoom.log)
-                if (System.IO.File.Exists(f) && new System.IO.FileInfo(f).Length > 200000) System.IO.File.Delete(f);
+                if (System.IO.File.Exists(f) && new System.IO.FileInfo(f).Length > 4000000) System.IO.File.Delete(f);   // (a whole tour fits: it is the record of what the tour did)
                 System.IO.File.AppendAllText(f, DateTime.Now.ToString("HH:mm:ss.f") + "  " + what + "  |  " + Title.Replace(PreviewText.AppName + " · ", "").Split(new[] { " · wheel:" }, StringSplitOptions.None)[0] + Environment.NewLine);
             }
             catch { }

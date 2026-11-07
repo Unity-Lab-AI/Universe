@@ -404,7 +404,7 @@ namespace Universe.Shell
             x = x1; y = v * cb - z1 * sb; z = v * sb + z1 * cb;
         }
         // how far round its path an electron is at a time (inner and more tightly held electrons faster; slowed to be watched)
-        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.05 * el.W + k * 2.399963229728653; }   // (slowed to be watched: a ninth of the first speed)
+        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.3 * Math.Sqrt(el.W) + k * 2.399963229728653; }   // (slowed to be watched: the outer shell a turn in about twenty seconds, the innermost in about seven; at a twentieth of that the outer ones looked frozen)
         private static double ElectronDrift(double time) { return time * 0.025; }   // how far the paths have turned on (radians): a slow precession, a whole turn in about four minutes
 
         private static int[] Shells(int z)

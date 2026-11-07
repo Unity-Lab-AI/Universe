@@ -331,7 +331,7 @@ caption: Across the universe, straight to one far away
 
 | `do:` | What the camera does |
 |---|---|
-| `pick` | Chooses what to look at: `start-galaxy`; `far-galaxy` (with `far-ly: 1e9..5e9`, a true crossing: a galaxy that far ahead, made from its own region before you set off, one whose heart is feeding when there is one); `black-hole` (a feeding one before a quiet one); `star`; `planet` (never a world that is all sea); `land` (a spot of dry land under you, to come down on); `asteroid`, `comet`, `quark` and more, or `none` |
+| `pick` | Chooses what to look at: `start-galaxy`; `far-galaxy` (with `far-ly: 1e9..5e9`, a true crossing: a galaxy that far ahead, made from its own region before you set off, one whose heart is feeding when there is one); `black-hole` (a feeding one before a quiet one); `star`; `planet` (never a world that is all sea); `land` (a spot of dry land under you, to come down on); `asteroid`, `comet`, `quark` and more, or `none`. A pick looks for a few seconds; if it finds nothing (a system with no belt, say) every stop up to the next pick is skipped, so a caption never tells of what is not in view |
 | `shot` | A framed film shot round what is picked: `to-radii` or `to-km` (how far), `sweep` (degrees round), `rise` (degrees up), `max-rate` (how fast the scale may change, tenfolds a second: on the way in to the subject, and on the way out from whatever was in view where the shot began, so an asteroid you were beside pulls away smoothly on the way to a comet, never left in a frame) |
 | `zoom` | A straight push in or pull out, `until-km` |
 | `orbit`, `look`, `arc`, `fly`, `glide` | Circle, look round, dolly while circling, fly forward, skim over the land |

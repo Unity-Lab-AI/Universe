@@ -23,7 +23,7 @@
 
     Seed ............ type one, press Random, or leave it blank for a new one
     Begin ........... fly it yourself
-    Take the tour ... a five-minute film of the whole journey
+    Take the tour ... a film of the whole journey
     Film the tour ... tick it to save the tour as an MP4 clip
     Clips ........... play what you've filmed, or Open folder to find them
 

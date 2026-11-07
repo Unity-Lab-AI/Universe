@@ -1,4 +1,4 @@
-> **One camera, one universe.** A visible universe 13.4 billion light-years across, about 100 billion galaxies, down to the quarks inside a grain of sand, without a single loading screen.
+> **One camera, one universe.** A visible universe 13.4 billion light-years across, about 100 billion galaxies, down to the quarks inside a grain of sand, with no loading screens along the way.
 
 ## 🌌 What it is
 

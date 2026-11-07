@@ -1,6 +1,6 @@
 # Universe
 
-> **One camera. One universe. A visible universe 13.4 billion light-years across, about 100 billion galaxies, down to the quarks inside the protons of the atoms of a grain of sand, without a single loading screen.**
+> **One camera. One universe. A visible universe 13.4 billion light-years across, about 100 billion galaxies, down to the quarks inside the protons of the atoms of a grain of sand, with no loading screens along the way.**
 
 **⬇️ [Download for Windows](https://git.unityailab.com/GFourteen/Universe/releases)** · **🛠️ [Build your own universe](docs/GUIDE.md)** · **⚙️ [Technical guide](docs/HOW-TO-BUILD.md)** · **👥 [Credits](CREDITS.md)**
 
@@ -10,7 +10,7 @@
 
 | | |
 |---|---|
-| 🚀 **A universe to fly through** | Install it, press **T**, and watch a five-minute film from the cosmic web down to a quark. Then take the controls and go anywhere. |
+| 🚀 **A universe to fly through** | Install it, press **T**, and watch a film from the cosmic web down to a quark. Then take the controls and go anywhere. |
 | 🧰 **A toolkit to build universes** | Every galaxy, star, world and grain is grown from **templates** in plain text files. Add a kind of world, a kind of star, a new galaxy, and use it for your own **game or simulation**. |
 
 ---
@@ -78,7 +78,7 @@ It's one camera the whole way, about **42 factors of ten**, with nothing swapped
 
 | | |
 |---|---|
-| 🪐 **Gravity** | Orbits follow Kepler's law. Every card gives a body's pull and escape speed where you are. A black hole's horizon is 2GM/c², and it bends starlight into a ring |
+| 🪐 **Gravity** | Orbits follow Kepler's law. The card of anything with a known mass gives its pull and escape speed where you are. A black hole's horizon is 2GM/c², and it bends starlight into a ring |
 | ⚡ **Electromagnetism** | Electrons fill their real shells and orbitals, bonds are shared electrons, stars glow the colour of their temperature, and protons push apart in the nucleus |
 | 🔴 **Strong nuclear force** | Packs protons and neutrons into every nucleus and glues quarks into every proton and neutron |
 | 🟣 **Weak nuclear force** | Decides which nuclei are stable, and how the rest would decay |
@@ -131,7 +131,7 @@ The **Time** menu has **Always day**, the **View** menu has drag speed, FPS, ren
 
 ## 🎬 The grand tour
 
-A five-minute film of the scale of things: the cosmic web, a galaxy, a black hole, star systems with an asteroid and a comet, a world and a glide over its land, the sky from the ground, its stones and grains, a crystal's lattice of atoms, an electron, the nucleus, a proton and its quarks, and all the way back out to the web.
+A film of the scale of things: the cosmic web, a galaxy, a black hole, star systems with an asteroid and a comet, a world and a glide over its land, the sky from the ground, its stones and grains, a crystal's lattice of atoms, an electron, the nucleus, a proton and its quarks, and all the way back out to the web.
 
 - 🎞️ **Every viewing is shot afresh.** Each shot picks its own way round, speed and crane.
 - ⏸️ **Pause any time.** A note says why it paused; **T** carries on, **R** starts again.

@@ -2826,7 +2826,15 @@ namespace Universe.Shell
                 var st = _system.Static;
                 float stFade = (float)Math.Max(0, Math.Min(1, (SystemRange - DistToSysStar()) / (SystemRange * 0.75)));   // orbits and belts fade in with the planets
                 for (int i = 0; i < st.Length; i++) { var v = st[i]; v.X = (float)(st[i].X - _ox); v.Y = (float)(st[i].Y - _oy); v.Z = (float)(st[i].Z - _oz); v.R *= stFade; v.G *= stFade; v.B *= stFade; _staticShifted[i] = v; }
-                if (st.Length > 0) { _sysStatic.Write(_staticShifted, st.Length); DrawPoints(_sysStatic, st.Length, vp, right, up, 0f, 0.002f, w, h, time); }
+                // the belt's points dimmed by how many share its patch of screen (as a galaxy's stars are): from afar three thousand
+                // dots in a thin ring added up to a solid white annulus, a machined pattern round the star; a belt is a haze
+                double belt = 1;
+                if (_system.BeltOutAu > 0)
+                {
+                    double dsys = Math.Max(1e-30, DistToSysStar()), pxPer = h / (2 * Math.Tan(0.45)) / dsys, ro = Units.Au(_system.BeltOutAu) * pxPer, ri = Units.Au(_system.BeltInAu) * pxPer, dotPx = Math.Max(1.5, 0.0012 * h);
+                    belt = Math.Max(0.08, Math.Min(1, Math.PI * (ro * ro - ri * ri) / (3000 * dotPx * dotPx) * 0.5));
+                }
+                if (st.Length > 0) { _sysStatic.Write(_staticShifted, st.Length); DrawPoints(_sysStatic, st.Length, vp, right, up, 0f, 0.0012f, w, h, time, 0f, (float)belt); }
                 for (int i = 0; i < _bodyCount; i++) { _bodyVerts[i].X = (float)(_bodyVerts[i].X - _ox); _bodyVerts[i].Y = (float)(_bodyVerts[i].Y - _oy); _bodyVerts[i].Z = (float)(_bodyVerts[i].Z - _oz); }
                 // the planet whose real ground is showing is not drawn as a glow too (it showed through its own see-through sea and clouds as a frosted ghost)
                 // the system's planets and moons fade in as you close in on its star (from 2,000 AU to 500 AU), never all at once

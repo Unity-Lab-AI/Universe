@@ -92,13 +92,13 @@ namespace Universe.Shell
         /// <summary>A ring of small marks round a point on screen (the thing you picked), in pixels.</summary>
         public void DrawRing(MeshPipes pipes, double x, double y, double radius, int w, int h)
         {
-            var list = new List<StarVertex>(); float px = Math.Max(1, h / 540f), s2 = 2.2f * px;
-            int n = 32;
+            // a thin, faint, unbroken circle (its dashes read as a ring of bodies round a star)
+            var list = new List<StarVertex>(); float px = Math.Max(1, h / 540f), s2 = Math.Max(1f, 0.9f * px);
+            int n = Math.Max(48, Math.Min(400, (int)(radius * 0.9)));
             for (int i = 0; i < n; i++)
             {
-                if (i % 4 == 3) continue;                                            // a ring broken into dashes
                 double a = i * Math.PI * 2 / n;
-                Quad(list, (float)(x + Math.Cos(a) * radius) - s2 / 2, (float)(y + Math.Sin(a) * radius) - s2 / 2, s2, s2, 0.55f, 0.95f, 1f);
+                Quad(list, (float)(x + Math.Cos(a) * radius) - s2 / 2, (float)(y + Math.Sin(a) * radius) - s2 / 2, s2, s2, 0.3f, 0.5f, 0.55f);
             }
             int cnt = list.Count;
             if (_ringV.Length < cnt) _ringV = new StarVertex[cnt + 64];

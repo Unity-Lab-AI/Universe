@@ -388,22 +388,22 @@ namespace Universe.Gen
                     for (int k = 0; k < 240; k++)
                     {
                         double t = k / 240.0 * Math.PI * 2;
-                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.22f)); }
+                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.12f)); }   // (faint: a guide to the orbit, never a drawn ring of bodies)
                     }
             // asteroid belt in the gap between the rocky planets and the giants
             if (firstGiant > 0 && lastRocky > 0)
             {
-                Ring(stat, rng, Units.Au(lastRocky * 1.15), Units.Au(firstGiant * 0.85), 3000, 0.02, 0.7f, 0.6f, 0.5f, 0.5f);
+                Ring(stat, rng, Units.Au(lastRocky * 1.15), Units.Au(firstGiant * 0.85), 3000, 0.02, 0.7f, 0.6f, 0.5f, 0.16f);   // (faint: a real belt is rubble spread thin across a huge ring, a haze from afar, never a white annulus)
                 sys.BeltInAu = lastRocky * 1.15; sys.BeltOutAu = firstGiant * 0.85;
             }
             // Kuiper belt beyond the last planet, and the Oort cloud far out
-            Ring(stat, rng, Units.Au(outer * 1.3), Units.Au(outer * 2.0), 4000, 0.05, 0.6f, 0.75f, 0.9f, 0.35f);
+            Ring(stat, rng, Units.Au(outer * 1.3), Units.Au(outer * 2.0), 4000, 0.05, 0.6f, 0.75f, 0.9f, 0.12f);
             sys.KuiperInAu = outer * 1.3; sys.KuiperOutAu = outer * 2.0; sys.OortInAu = 2000 * scale; sys.OortOutAu = 50000 * scale;
             for (int i = 0; i < 6000; i++)
             {
                 Vec3 d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized;
                 double r = Units.Au(rng.Range(2000, 50000) * scale);
-                stat.Add(Star(d * (float)r, 0, 0.55f, 0.7f, 0.85f, 0.12f));
+                stat.Add(Star(d * (float)r, 0, 0.55f, 0.7f, 0.85f, 0.06f));
             }
             sys.Static = stat.ToArray();
             return sys;

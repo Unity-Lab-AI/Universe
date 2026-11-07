@@ -230,8 +230,24 @@ namespace Universe
                 {
                     // back to the start page: the program opens afresh on it (a new universe, the tour, the clips) and this one closes
                     if (rec != null) { rec.Dispose(); rec = null; }
-                    try { System.Diagnostics.Process.Start(System.Reflection.Assembly.GetEntryAssembly().Location); } catch (Exception ex) { WriteLog("start page error · " + ex.Message); }
-                    endReason = "back to the start page"; window.Close();
+                    // in this same window: this universe is let go, the start page shown again, and the universe it asks for made
+                    if (world != null) { world.Dispose(); world = null; }
+                    showElements = false; recForTour = false; recordTour = null; wantTour = false;
+                    ulong? chosen2; var landed2 = Universe.Platform.Launcher.Run(window.Handle, () => DocViewer.Show(window.Handle, PreviewText.Docs(), 0), () => watchdog.Beat(), out chosen2);
+                    if (landed2 == Universe.Platform.Launcher.Choice.Quit) { endReason = "closed from the start page"; window.Close(); }
+                    else
+                    {
+                        Seed = chosen2.HasValue ? chosen2.Value : (ulong)DateTime.UtcNow.Ticks ^ BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0);
+                        WriteLog("universe seed " + Seed + (chosen2.HasValue ? " (chosen on the start page)" : " (new, from the start page)"));
+                        try { if (firstHud == null) firstHud = new Universe.Shell.ScaleHud(gpu.Device); gpu.BeginFrame(0.005f, 0.006f, 0.012f); firstHud.DrawLoading(meshes, gpu.Width, gpu.Height, 0, new[] { "Making the universe", "the first galaxies, from the seed" }); gpu.EndFrame(); } catch { }
+                        world = new UniverseView(gpu, pipeline, meshes, content, Seed);
+                        if (landed2 == Universe.Platform.Launcher.Choice.Tour)
+                        {
+                            world.StartTour("grand-tour");
+                            if (Universe.Platform.Launcher.RecordTour) { try { System.IO.Directory.CreateDirectory(Universe.Platform.Launcher.Captures); } catch { } recordTour = System.IO.Path.Combine(Universe.Platform.Launcher.Captures, "tour " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4"); }
+                        }
+                        menuDirty = true;
+                    }
                 }
                 else if (cmd == Window.CmdAskNow) askNow = true;
                 else if (cmd == Window.CmdLegend) window.Tell(style != null ? style.Legend() : microbes != null ? microbes.Legend() : elements != null ? elements.Legend() : planet != null ? planet.Legend() : viewer.Legend(), Universe.Shell.PreviewText.AppName + " · Legend");

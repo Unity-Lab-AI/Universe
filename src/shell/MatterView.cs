@@ -292,7 +292,7 @@ namespace Universe.Shell
             if (fdx * fdx + fdy * fdy + fdz * fdz < Math.Pow(AtomSpacing * 0.6, 2)) Orbitals(glow, e, x, y, z, s, time, key, f);   // (only the atom you are at: the clouds of every atom in view at once read as static)
             // its electrons, each going round on its own path tilted its own way in three dimensions (never all in one plane),
             // the inner shells faster, the valence shell (the one it bonds with) in gold
-            double ar = AtomRadius(e), dot = s * 0.0035; int shells = e.Shells.Length;
+            double ar = AtomRadius(e), dot = s * 0.006; int shells = e.Shells.Length;
             // (only the atoms near where you look: never every electron of every atom in view, millions of them)
             if (ar / s > 0.004 && fdx * fdx + fdy * fdy + fdz * fdz < Math.Pow(Math.Max(AtomSpacing * 6, s * 1.2), 2))
                 {
@@ -300,7 +300,17 @@ namespace Universe.Shell
                     for (int k = 0; k < els.Length; k++)
                     {
                         var el = els[k]; bool valence = el.N == shells; double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz, ElectronDrift(time));
-                        Add(glow, x + ox * ar, y + oy * ar, z + oz * ar, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
+                        double exx = x + ox * ar, eyy = y + oy * ar, ezz = z + oz * ar;
+                        // the electron you ride beside (picked): the view goes to where it is now and rides with it, and it shows as a
+                        // glowing body a share of the view, whichever way its atom is drawn
+                        bool riding = _picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.J == k;
+                        if (riding)
+                        {
+                            _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz; _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz;
+                            double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
+                        }
+                        Add(glow, exx, eyy, ezz, riding ? Math.Max(dot, s * 0.07) : dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
+                        { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; } }   // every atom's electrons can be picked, however its atom is drawn
                     }
                 }
             // its nucleus: a clear sharp point of light in its element's own colour, so the crystal's pattern reads at a glance
@@ -1427,6 +1437,10 @@ namespace Universe.Shell
                     if (ar < px * 0.5) continue;                                                 // (too small to show yet: the face's dots stand for it)
                     long akey = (long)(at.X / 1e-14) ^ (long)(at.Z / 1e-14) * 31;   // each atom at its own size, its colour coming in   // ball and stick: the balls small, so the bonds show
                     if ((at.X - _fx) * (at.X - _fx) + (at.Z - _fz) * (at.Z - _fz) < bondReach * bondReach) drawnAt.Add(new CAtom { E = at.E, X = at.X, Y = ay, Z = at.Z });
+                    // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom a
+                    // ball of its element's colour at its bonded size, with the bonds between them: the ball-and-stick model, never a
+                    // dark field of nuclei too small to see
+                    if (ar / s < 0.3 && ar > px * 2) Add(solid, at.X, ay, at.Z, ar * 0.45, (0.45f + 0.55f * at.E.R) * sh, (0.45f + 0.55f * at.E.G) * sh, (0.45f + 0.55f * at.E.B) * sh, s);
                     // one drawing of each atom at every size (its nucleus and its electrons, each shown once big enough to see):
                     // the ones near where you look with their electrons' paths too
                     if (s < AtomSpacing * 4 && NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
@@ -1577,7 +1591,7 @@ namespace Universe.Shell
             }
             key = (long)Math.Round(x / 1e-16) * 73856093L ^ (long)Math.Round(y / 1e-16) * 19349663L ^ (long)Math.Round(z / 1e-16) * 83492791L;   // from where the atom is: the same atom, the same electrons, however it is drawn
             double ar = AtomRadius(e); int shells = e.Shells.Length;
-            double dot = s * 0.0035;                                                     // electrons: points, shown as a clear dot a few pixels wide
+            double dot = s * 0.006;                                                     // electrons: points, shown as a clear dot a few pixels wide
             {
                 // every one of its electrons, in its own subshell and orbital (this element's own make-up), each on its path in its
                 // orbital's shape, at its subshell's distance, at its own speed; the valence (outermost) shell in gold

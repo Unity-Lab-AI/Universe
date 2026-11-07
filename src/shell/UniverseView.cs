@@ -1711,13 +1711,16 @@ namespace Universe.Shell
             double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? (_underSea ? GrainField.For("ocean") ?? _ground.GrainMix(y / r) : _ground.GrainMix(y / r)) : null;   // (under the sea: the bed's own grains)
             return Math.Max(gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9, _ground.ReadyStep < 1e30 ? _ground.ReadyStep * 1.6 : 0);   // (and never later than the drawn pieces' own cell: their flat faces are the floor until then)
         }
+        private double _agX = double.NaN, _agY, _agZ, _agCell, _agVal; private object _agGround;
         private double AboveGround()
         {
             if (_ground == null) return double.MaxValue;
             _surfaceCell = Math.Max(1e-11, _lastAbove / Units.Km(1) / 30);                   // (from the height last asked: a thirtieth of it)
             double x, y, z; CamFromPlanet(out x, out y, out z);
+            if (x == _agX && y == _agY && z == _agZ && _surfaceCell == _agCell && _agGround == _ground) return _agVal;   // (asked dozens of times a frame, and low down each answer is the ground worked out at a fine cell: once for a place)
             double r = Math.Sqrt(x * x + y * y + z * z); if (r <= 0) return 0;
-            return _lastAbove = Math.Max(1e-9, (r - _ground.Radius - (_ground.Solid ? Surface(x / r, y / r, z / r, r - _ground.Radius) : -_ground.Radius * (1 - CoreShare)))) * Units.Km(1);   // a giant: down through its clouds and layers to its core
+            _lastAbove = Math.Max(1e-9, (r - _ground.Radius - (_ground.Solid ? Surface(x / r, y / r, z / r, r - _ground.Radius) : -_ground.Radius * (1 - CoreShare)))) * Units.Km(1);   // a giant: down through its clouds and layers to its core
+            _agX = x; _agY = y; _agZ = z; _agCell = _surfaceCell; _agGround = _ground; _agVal = _lastAbove; return _lastAbove;
         }
 
         // the system's planets, moons and star placed around the star (anchor), and the nearest surface to the camera
@@ -1801,7 +1804,7 @@ namespace Universe.Shell
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
         private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin, _shotTurnT = 2, _shotSweep;   // (_shotSweep: how far round the shot sweeps, radians, signed: the stop's sweep, or round to a small body's lit side)
         private double[] _shotP0; private double _shotR0;   // where the shot began (universe units) and the size of what was in view there: the departure is paced from it
-        private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
+        private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1, _shotELast;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
         {
             _shotDir = _shotRng.NextDouble() < 0.5 ? -1 : 1; _shotMul = 0.75 + 0.5 * _shotRng.NextDouble(); _shotCrane = (_shotRng.NextDouble() * 2 - 1) * 1.5;
@@ -2000,7 +2003,10 @@ namespace Universe.Shell
                             // the departure is paced from what was in view where the shot began: the nearest thing drawn (the asteroid or comet
                             // you were beside, a world's ground, a star), never the distance to the new subject (its pick is made before the
                             // shot starts, so that was an AU wide while the asteroid filled the view, and the asteroid was gone in a frame)
-                            _shotP0 = new[] { _ax + _ox, _ay + _oy, _az + _oz }; _shotR0 = Math.Max(Math.Min(Units.Km(ViewDistanceKm()), NearestDrawn()), Units.Km(1e-6));
+                            // (the start kept in the subject's own frame: a world moves on its orbit as the shot runs, and a start fixed in space drifted
+                            // out of the pace's allowance, so the camera snapped back to it on the frames the glide crossed the allowance; and the pace
+                            // from what is in view, never from a thing drawn a few hundred km off that the view never held)
+                            _shotP0 = new[] { -tdx, -tdy, -tdz }; _shotR0 = Math.Max(Math.Min(Units.Km(ViewDistanceKm()), Math.Max(NearestDrawn(), Units.Km(ViewDistanceKm()) * 0.05)), Units.Km(1e-6)); _shotELast = 0;
                             // a turn takes as long as it needs at no more than about 20 degrees a second (eased in and out), and the shot
                             // is long enough to hold it: a pick far behind you is turned to calmly, never whipped round to
                             double turnDeg = Math.Acos(Math.Max(-1, Math.Min(1, -(_fx * tdx + _fy * tdy + _fz * tdz) / tl * -1))) * 180 / Math.PI;
@@ -2015,7 +2021,7 @@ namespace Universe.Shell
                             double az2 = _shotSweep * ee, el2 = _shotEl0 + (_shotEl1 - _shotEl0) * ee, ca2 = Math.Cos(az2), sa2 = Math.Sin(az2), ce3 = Math.Cos(el2), se3 = Math.Sin(el2);
                             return new[] { ce3 * (ca2 * _shotE1[0] + sa2 * _shotE2[0]) + se3 * _shotUp[0], ce3 * (ca2 * _shotE1[1] + sa2 * _shotE2[1]) + se3 * _shotUp[1], ce3 * (ca2 * _shotE1[2] + sa2 * _shotE2[2]) + se3 * _shotUp[2], Dd };
                         };
-                        Func<double[], double> fromStart = f => { double px = _ax + _ox + tdx + f[0] * f[3] - _shotP0[0], py = _ay + _oy + tdy + f[1] * f[3] - _shotP0[1], pz = _az + _oz + tdz + f[2] * f[3] - _shotP0[2]; return Math.Sqrt(px * px + py * py + pz * pz); };
+                        Func<double[], double> fromStart = f => { double px = f[0] * f[3] - _shotP0[0], py = f[1] * f[3] - _shotP0[1], pz = f[2] * f[3] - _shotP0[2]; return Math.Sqrt(px * px + py * py + pz * pz); };   // (from the start, in the subject's frame: zero at the start itself, growing along the glide)
                         // the departure paced from what was in view where the shot began: the camera is never farther from there than
                         // its pace allows (max-rate tenfolds a second, from that size), so an asteroid you were beside pulls away and
                         // shrinks smoothly instead of being left in one frame on the way to a comet across the system; once the
@@ -2026,8 +2032,9 @@ namespace Universe.Shell
                         {
                             double lo = 0, hi = e;
                             for (int it = 0; it < 28; it++) { double mid = (lo + hi) * 0.5; if (fromStart(frame(mid)) > allow) hi = mid; else lo = mid; }
-                            eUse = lo; fr0 = frame(eUse);
+                            eUse = Math.Max(lo, _shotELast); fr0 = frame(eUse);                  // (never back along the glide: a shot only goes forward)
                         }
+                        _shotELast = eUse;
                         double vx = fr0[0], vy = fr0[1], vz = fr0[2], D = fr0[3];
                         // the camera to where the shot has it now (the subject where it is now: worlds move on their orbits)
                         _ox += tdx + vx * D; _oy += tdy + vy * D; _oz += tdz + vz * D;
@@ -3588,6 +3595,7 @@ namespace Universe.Shell
                 }
             }
             _matterCardDrawn = false;
+            _hud.CardTop = _tour != null ? (float)(h * 0.1 + 4) : 4; _hud.CardBottom = _tour != null ? (float)(h * 0.9 - 4) : 0;   // (every card between the tour's bars: a tall one is cut short, never pushed up under the top bar)
             double overAlt = _ground != null && _matterScale <= 0 ? AboveGround() / Units.Km(1) : 1e30;
             if (overAlt < MatterView.OverlayKm)
             {
@@ -3650,7 +3658,7 @@ namespace Universe.Shell
                     var lines = new List<string> { TourCaption };
                     var now = _matterScale > 0 || _spaceScale > 0 ? _matter.Card() : (_tKind >= 0 ? Card() : null);
                     if (now != null && now.Count > 0) lines.Add("now: " + now[0] + (now.Count > 1 ? ", " + now[1] : ""));
-                    _hud.DrawCard(_meshes, lines, w * 0.3, h * 0.9, w, h, cap);   // to the right of the scale
+                    _hud.CardTop = 4; _hud.CardBottom = 0; _hud.DrawCard(_meshes, lines, w * 0.3, h * 0.9, w, h, cap);   // to the right of the scale (the caption alone sits in the lower bar)
                 }
                 _gpu.ClearDepth();                                                     // the cards and the frames a second on top of the bars
                 // what is in view and in focus, written as you go, just below the top bar

@@ -212,7 +212,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
-| **F12 · F9** | A screenshot · start or stop a clip |
+| **F12 · F9** | A screenshot · start or stop a clip (View > Clip size: auto, full, half or quarter of the screen) |
 
 The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 

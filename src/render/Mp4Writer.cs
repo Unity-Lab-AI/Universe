@@ -61,7 +61,8 @@ namespace Universe.Render
         /// other frame of the game's sixty, at a bit rate a clip needs (about 6 megabits a second at 1080p: a minute is about 45 MB, not 90).</summary>
         public Mp4Writer(string path, int w, int h)
         {
-            Path = path; Down = w > 1920 ? 2 : 1; _w = (w / Down) & ~1; _h = (h / Down) & ~1;
+            int want = Universe.Platform.Settings.Get("clip-down", 0);                      // View > Clip size: 0 auto (full up to 1920 wide, half above), 1 full, 2 half, 4 quarter
+            Path = path; Down = want > 0 ? want : (w > 1920 ? 2 : 1); _w = Math.Max(2, (w / Down) & ~1); _h = Math.Max(2, (h / Down) & ~1);
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
             CoInitializeEx(IntPtr.Zero, 0);                                             // (already started on this thread: fine)
             Check(MFStartup(0x00020070, 0), "MFStartup"); _started = true;

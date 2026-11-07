@@ -1021,12 +1021,30 @@ namespace Universe.Shell
             if (_patchGrain != gi || _patchCache.Count > 600000) { _patchCache.Clear(); _patchGrain = gi; }
             if (Floor)
             {
-                // a level floor of the face's own colour under its rings, far out all round, at the bed the grain lies on (never at
-                // its top, which buried the grains round it to their middles): never a hole or the dark past its edge
-                float fr = m.R * FocusShade * 0.85f, fg = m.G * FocusShade * 0.85f, fb = m.B * FocusShade * 0.85f, n0 = PackNormal(0, 1, 0);
-                double fy = (Math.Max(gy - rad * 0.9, -_yOff - 6 * s) + _yOff - _fy) / s + _ey, big = 400;   // (deep in, just under the face: a backdrop past the rings, never black)
-                Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = m.Lustre };
-                _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, big));
+                double big = 400, y0 = 0, sxp = 0, szp = 0;
+                bool near = s < rad * 0.05 && GrainTop(gi, gj, gx, gy, gz, rad, _fx, _fz, rad * 0.004, out y0);
+                if (near)
+                {
+                    // close in (within a twentieth of the grain): a sheet in the face's own plane here, a hair under it, far out all
+                    // round, in the face's colour and shading; a quad of the face not made yet, or thrown out as a spike, shows the
+                    // sheet, never a black hole with the stars through it
+                    double d = Math.Max(2.4 * s, rad * 0.008), ya, yb;
+                    if (GrainTop(gi, gj, gx, gy, gz, rad, _fx + d, _fz, rad * 0.004, out ya) && GrainTop(gi, gj, gx, gy, gz, rad, _fx - d, _fz, rad * 0.004, out yb)) sxp = (ya - yb) / (2 * d);
+                    if (GrainTop(gi, gj, gx, gy, gz, rad, _fx, _fz + d, rad * 0.004, out ya) && GrainTop(gi, gj, gx, gy, gz, rad, _fx, _fz - d, rad * 0.004, out yb)) szp = (ya - yb) / (2 * d);
+                    double sink0 = Structured(m) ? AtomSpacing * 3 * Fade(s, AtomSpacing * 40, AtomSpacing * 22) : 0, under = Math.Max(AtomSpacing * 0.4, s * 0.004);
+                    float n1 = PackNormal(-sxp, 1, -szp), fr1 = m.R * FocusShade, fg1 = m.G * FocusShade, fb1 = m.B * FocusShade;
+                    Func<double, double, StarVertex> sv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)((y0 + sxp * x * s + szp * z * s - sink0 - under + _yOff - _fy) / s + _ey), Z = (float)(z + _ez), Size = n1, R = fr1, G = fg1, B = fb1, A = m.Lustre };
+                    _patchMesh.Add(sv(-big, -big)); _patchMesh.Add(sv(big, -big)); _patchMesh.Add(sv(big, big)); _patchMesh.Add(sv(-big, -big)); _patchMesh.Add(sv(big, big)); _patchMesh.Add(sv(-big, big));
+                }
+                else
+                {
+                    // farther out: a level floor of the face's own colour under its rings, far out all round, at the bed the grain lies
+                    // on (never at its top, which buried the grains round it to their middles): never a hole or the dark past its edge
+                    float fr = m.R * FocusShade * 0.85f, fg = m.G * FocusShade * 0.85f, fb = m.B * FocusShade * 0.85f, n0 = PackNormal(0, 1, 0);
+                    double fy = (Math.Max(gy - rad * 0.9, -_yOff - 6 * s) + _yOff - _fy) / s + _ey;   // (deep in, just under the face: a backdrop past the rings, never black)
+                    Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = m.Lustre };
+                    _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, big));
+                }
             }
             // the grain's face as rings of detail round you: the finest grid under you, then rings each four times coarser out
             // to the whole grain, each on a grid fixed on the grain (never on the camera, so nothing slides as you zoom and
@@ -1063,7 +1081,7 @@ namespace Universe.Shell
                 for (int b = 0; b <= N; b++)
                 {
                     long key = ((long)L * 1000003L + (ia0 + a)) * 2000003L + (ib0 + b); double[] c;   // each point fixed on the grain: worked out once
-                    if (!_patchCache.TryGetValue(key, out c) && !InView(atA(a) / s + _ex, _ey, atB(b) / s + _ez, step / s * 2)) { hy[a, b] = 0; ok[a, b] = false; continue; }   // (out of view: not worked out)
+                    if (!_patchCache.TryGetValue(key, out c) && !InView(atA(a) / s + _ex, _ey, atB(b) / s + _ez, step / s * 2 + 1.5)) { hy[a, b] = 0; ok[a, b] = false; continue; }   // (out of view, with a view and a half to spare for the face's own height: not worked out)
                     if (c == null)
                     {
                         if (_patchBudget-- <= 0) { hy[a, b] = 0; ok[a, b] = false; continue; }      // not worked out yet: next frame
@@ -1072,6 +1090,15 @@ namespace Universe.Shell
                         c = new[] { y, o ? 1 : 0, sr, sg, sb2 }; _patchCache[key] = c;
                     }
                     hy[a, b] = c[0]; ok[a, b] = c[1] > 0; st[a, b, 0] = (float)c[2]; st[a, b, 1] = (float)c[3]; st[a, b, 2] = (float)c[4];
+                }
+            for (int a = 1; a < N; a++)
+                for (int b = 1; b < N; b++)
+                {
+                    // a point standing off its worked-out neighbours by far more than a terrace's step is a spike (a pillar or a pit
+                    // on the face): thrown out, and the sheet under the face shows there instead
+                    if (!ok[a, b]) continue; double sum = 0; int cnt = 0;
+                    if (ok[a - 1, b]) { sum += hy[a - 1, b]; cnt++; } if (ok[a + 1, b]) { sum += hy[a + 1, b]; cnt++; } if (ok[a, b - 1]) { sum += hy[a, b - 1]; cnt++; } if (ok[a, b + 1]) { sum += hy[a, b + 1]; cnt++; }
+                    if (cnt >= 2 && Math.Abs(hy[a, b] - sum / cnt) > step * 2.5 + AtomSpacing * 2) ok[a, b] = false;
                 }
             if (frac > 0)
             {
@@ -1265,7 +1292,7 @@ namespace Universe.Shell
         }
 
         // the bonds between the atoms drawn, as sticks of small beads, grey, from one atom to the other
-        private void Bonds(List<StarVertex> glow, List<CAtom> atoms, double s, double time, float f)
+        private void Bonds(List<StarVertex> glow, List<StarVertex> mesh, List<CAtom> atoms, double s, double time, float f, bool sticks)
         {
             if (f <= 0.02 || atoms.Count < 2) return;
             double cell = 3.2e-13; var grid = new Dictionary<long, List<int>>();
@@ -1284,7 +1311,8 @@ namespace Universe.Shell
                         double ex = b.X - a.X, ey = b.Y - a.Y, ez = b.Z - a.Z, d = Math.Sqrt(ex * ex + ey * ey + ez * ez), lim = (Cov(a.E) + Cov(b.E)) * 1.2;
                         if (d < 1e-16 || d > lim) continue;
                         bonds++;
-                        SharedPair(glow, a, b, s, time, bonds, f);
+                        if (sticks && mesh != null) Stick(mesh, a.X, a.Y, a.Z, b.X, b.Y, b.Z, AtomSpacing * 0.07, 0.62f, 0.62f, 0.66f, s);   // the lattice's level: a grey stick, the ball-and-stick picture
+                        else SharedPair(glow, a, b, s, time, bonds, f);
                     }
                 }
             }
@@ -1395,7 +1423,7 @@ namespace Universe.Shell
             if (!_space && !_noGrains)
             {
                 long fgi, fgj; double fgx, fgy, fgz, frad, top; FocusGrain(out fgi, out fgj, out fgx, out fgy, out fgz, out frad);
-                if (GrainTop(fgi, fgj, fgx, fgy, fgz, frad, _fx, _fz, Math.Max(s / 40, AtomSpacing), out top)) _yOff = -top;   // you stay the same height above it
+                if (GrainTop(fgi, fgj, fgx, fgy, fgz, frad, _fx, _fz, Math.Max(Math.Max(s / 40, AtomSpacing), s < frad * 1.5 ? frad * 0.004 : 0), out top)) _yOff = -top;   // you stay the same height above it (on the face: above the coarse shape the face is drawn from, its finer detail only shading; measured against the fine shape the camera sat a few views under the drawn face at nanometres, looking up through it)
             }
             if (_space && s < _gasSpacing * 10 && s > AtomSpacing * 2)
             {
@@ -1440,7 +1468,7 @@ namespace Universe.Shell
             }
             if (overlay) return;                                                         // over the ground: the ground itself is its grains; nothing is laid over it (only the grains to click)
             if (!_noGrains && !_space && mesh != null && s < FocusRad * 1.5 && (s > AtomSpacing * 12 || !Structured(FocusMineral))) GrainPatch(mesh, s);   // (once its crystal's atoms are in, they are the face: no sheet among them)
-            if (!_noGrains && !_space && s < FocusRad * 1.5 && s > AtomSpacing * 4)
+            if (!_noGrains && !_space && s < FocusRad * 1.5 && s > AtomSpacing * 1.5)
             {
                 // the grain's face can be picked anywhere, at the size you are looking at: a grid of spots round you (each its card:
                 // the mineral, its make-up, its terraces close in, how high you are above it), sitting on the face's real height
@@ -1499,6 +1527,10 @@ namespace Universe.Shell
                 double px = 2.0 * s / Math.Max(1, _viewH); float f = 1;
                 var drawnAt = new List<CAtom>(); double bondReach = Math.Min(1.2 * s, AtomSpacing * 22);
                 double depth = s < AtomSpacing * 14 ? AtomSpacing * 9 : AtomSpacing * 3;     // close in, deep: solid every way you look
+                // one picture at a level, never two at once: the lattice's level (down to about a nanometre, four spacings) is the
+                // ball-and-stick picture, every atom a ball at its bonded size and the bonds sticks, nothing of the electrons; the
+                // atom's level below it has no balls: each atom its nucleus and its electrons on their paths (an atom is not a ball)
+                bool lattice = s >= AtomSpacing * 4;
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
                 {
                     var at = at0; double ar = AtomRadius(at.E), ay = at.Y - ar - _yOff;                     // on the grain's real surface
@@ -1513,14 +1545,14 @@ namespace Universe.Shell
                     // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom a
                     // ball of its element's colour at its bonded size, with the bonds between them: the ball-and-stick model, never a
                     // dark field of nuclei too small to see
-                    if (ar / s < 0.3 && ar > px * 2) Add(solid, at.X, ay, at.Z, ar * 0.45, (0.45f + 0.55f * at.E.R) * sh, (0.45f + 0.55f * at.E.G) * sh, (0.45f + 0.55f * at.E.B) * sh, s);
-                    // one drawing of each atom at every size (its nucleus and its electrons, each shown once big enough to see):
+                    if (lattice) { if (ar > px * 2) Add(solid, at.X, ay, at.Z, ar * 0.45, (0.45f + 0.55f * at.E.R) * sh, (0.45f + 0.55f * at.E.G) * sh, (0.45f + 0.55f * at.E.B) * sh, s); }
+                    // the atom's level: one drawing of each atom (its nucleus and its electrons, each shown once big enough to see),
                     // the ones near where you look with their electrons' paths too
-                    if (s < AtomSpacing * 4 && NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
+                    else if (NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
                     else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
                     { int nb = _bodies.Count; AddBody(1, 0, 0, at.X, ay, at.Z, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = at.E.Symbol; }   // every layer's atoms
                 }
-                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, s < AtomSpacing * 3 ? 0.4f : 1f);   // (bonds once they span a few pixels; dimmer among the electrons close in)
+                if (AtomSpacing > px * 3) Bonds(glow, mesh, drawnAt, s, time, lattice ? 1f : 0.4f, lattice);   // (bonds once they span a few pixels: sticks at the lattice's level, the shared pairs themselves at the atom's, dimmer among the electrons)
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
@@ -1962,6 +1994,7 @@ namespace Universe.Shell
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
             // is for later)
+            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths; no ball)" : "level: the lattice (balls at their bonded size, sticks for the bonds)"); }   // (one picture at a level, named)
             if (!_space && Greyness > 0 && L.Count > 0) L.Add(Greyness >= 1 ? "no colour this small: below light's wavelength, in greys as an electron microscope sees; the atoms' and electrons' colours are marks, not light" : "colour is going: the view is nearing light's wavelength");
             return L;
         }

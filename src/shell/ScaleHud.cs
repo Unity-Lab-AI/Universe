@@ -16,6 +16,8 @@ namespace Universe.Shell
         public bool Visible = true;
         /// <summary>How long a card's line may run before it wraps (the corner cards keep short lines; a full screen of words, longer).</summary>
         public int WrapAt = 38;
+        /// <summary>The top a card may reach and the bottom (pixels; bottom 0: the screen's), set each frame: on the tour, between its bars.</summary>
+        public float CardTop = 4, CardBottom = 0;
 
         public ScaleHud(IntPtr device) { _device = device; }
 
@@ -281,9 +283,14 @@ namespace Universe.Shell
             }
             lines = wrapped;
             float px = Math.Max(1, h / 540f), cell = 1.1f * px, adv = 6 * cell, lh = 10 * cell, pad = 6 * px;
+            // never above the top it is allowed (the tour's bar) nor below the bottom: a card too tall for the room is cut short
+            // with a mark, its first lines always shown (a tall card had been pushed up under the bar, its first lines hidden)
+            float top = Math.Max(4, CardTop), bottom = CardBottom > 0 ? Math.Min(h - 4, CardBottom) : h - 4;
+            int fit = Math.Max(2, (int)Math.Floor((bottom - top - pad * 2 + 3 * cell) / lh));
+            if (lines.Count > fit) { var cut = new List<string>(); for (int i = 0; i < fit - 1; i++) cut.Add(lines[i]); cut.Add("..."); lines = cut; }
             int longest = 0; foreach (var l in lines) longest = Math.Max(longest, l.Length);
             float cw = longest * adv + pad * 2, ch = lines.Count * lh + pad * 2 - 3 * cell;
-            float x0 = (float)x, y0 = (float)Math.Min(Math.Max(4, y), h - ch - 4);
+            float x0 = (float)x, y0 = Math.Max(top, Math.Min((float)y, bottom - ch));
             if (x0 + cw > w - 4) x0 = (float)(x - 70 * px - cw);                         // no room to its right: on its left
             x0 = Math.Max(4, Math.Min(x0, w - cw - 4));
             var list = new List<StarVertex>();

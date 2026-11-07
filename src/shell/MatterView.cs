@@ -873,6 +873,13 @@ namespace DnaAnd.Shell
             _patchKey = gi; _patchGX = gx; _patchGY = gy; _patchGZ = gz; _patchRad = rad;
             var m = GrainMineral(gi, gj); if (m == null) return;
             if (_patchGrain != gi || _patchCache.Count > 600000) { _patchCache.Clear(); _patchGrain = gi; }
+            {
+                // a level floor of the face's own colour under its rings, far out all round: never a hole or the dark past its edge
+                float fr = m.R * FocusShade * 0.85f, fg = m.G * FocusShade * 0.85f, fb = m.B * FocusShade * 0.85f, n0 = PackNormal(0, 1, 0);
+                double fy = (-AtomSpacing * 2 + _yOff - _fy) / s + _ey, big = 400;
+                Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = m.Lustre };
+                _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, big));
+            }
             // the grain's face as rings of detail round you: the finest grid under you, then rings each four times coarser out
             // to the whole grain, each on a grid fixed on the grain (never on the camera, so nothing slides as you zoom and
             // move), each point worked out once; the finest eases between its two sizes so nothing pops
@@ -1671,6 +1678,9 @@ namespace DnaAnd.Shell
         /// nucleus, proton, quark, a grain, a spot on a grain's face): for the tour.</summary>
         /// <summary>How quickly the point you dive into glides to what is picked (a share a second): slow on the tour, a film's glide.</summary>
         public double Glide = 4; private double _lastLeftX = double.NaN, _lastLeftZ = double.NaN;
+        /// <summary>How far the point you dive into still is from what is picked, in shares of the view's size (0 with nothing
+        /// picked): the tour flies in only once it is there, so it never flies past what it shows.</summary>
+        public double PickOff { get { if (_picked == null) return 0; double dx = _tfx - _fx, dy = _tfy - _fy, dz = _tfz - _fz; return Math.Sqrt(dx * dx + dy * dy + dz * dz) / Math.Max(1e-40, _scale); } }
         public void PickNearest(string what)
         {
             if (what == "bonded-atom")

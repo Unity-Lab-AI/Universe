@@ -378,8 +378,49 @@ rate: 0.35
 until-km: 6e-19
 caption: One quark
 
-@stop end
+@stop at-quark
 do: orbit
 turn: 8
-seconds: 7
-caption: The smallest thing we know. The same universe at every scale
+seconds: 6
+caption: The smallest thing we know
+
+@stop let-go
+do: pick
+target: none
+caption: And back out
+
+@stop out-of-atom
+do: zoom
+rate: -0.7
+until-km: 1e-9
+caption: Back out through the atom, the crystal, the grain
+
+@stop out-of-ground
+do: zoom
+rate: -0.7
+until-km: 3e4
+caption: Up from the ground, out of the air, away from the world
+
+@stop out-of-system
+do: zoom
+rate: -0.7
+until-km: 1e14
+caption: Out past its star's worlds, its star a point among the galaxy's stars
+
+@stop out-of-galaxy
+do: zoom
+rate: -0.6
+until-km: 3e18
+caption: Out of the galaxy, its hundred billion stars one spiral of light
+
+@stop to-web
+do: zoom
+rate: -0.45
+until-km: 5e21
+caption: Out to the cosmic web, galaxies by the million
+
+@stop end
+do: orbit
+turn: 4
+seconds: 12
+caption: The same universe at every scale, from the cosmic web to a quark

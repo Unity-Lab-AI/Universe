@@ -1044,7 +1044,7 @@ namespace DnaAnd.Shell
                         double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Min(1, left / 0.6)) * TourPace;    // easing out over the last few tenths of a tenfold; never faster than the world is made
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
-                        input.Wheel = OffTarget() < 0.07 ? sign * notches : 0;                     // never moving one way while looking another
+                        input.Wheel = OffTarget() < 0.07 && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35) ? sign * notches : 0;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (st.Pan != 0 && _tKind >= 0) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
@@ -1117,7 +1117,7 @@ namespace DnaAnd.Shell
                         bool there = st.UntilKm > 0 && ((sign > 0 && d <= st.UntilKm) || (sign < 0 && d >= st.UntilKm));
                         double left = st.UntilKm > 0 && Math.Abs(st.Rate) > 0 ? Math.Abs(Math.Log10(Math.Max(1e-40, d) / st.UntilKm)) / 0.6 : Math.Max(0, st.Seconds - _tourT) / 3;
                         double ease = Math.Min(1, _tourT / 3) * Math.Min(1, Math.Max(0.15, left)); ease = ease * ease * (3 - 2 * ease);
-                        if (!there && OffTarget() < 0.07) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
+                        if (!there && OffTarget() < 0.07 && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35)) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
                         { double lp = LocalPitch(); if (Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
                         TourTurn(st.Turn * _shotDir * _shotMul * Math.PI / 180 * dt * Math.Max(ease, 0.4), (_ground == null && _matterScale <= 0 ? _shotCrane : 0) * Math.PI / 180 * dt * ease);
                         if (_tourT >= st.Seconds && (there || st.UntilKm <= 0 || Math.Abs(st.Rate) <= 0 || _tourT >= st.Seconds * 2)) done = true;   // (circling on to its distance for at most twice its seconds: never held there; the next stop carries on)
@@ -1548,7 +1548,7 @@ namespace DnaAnd.Shell
         {
             Mark();
             if (_tour != null) TourStep(input, dt, w, h);
-            _matter.Glide = _tour != null ? 0.45 : 4;                                     // on the tour the matter glides as a film camera would                                  // a tour gives the controls what each stop asks
+            _matter.Glide = _tour != null ? 1.2 : 4;                                     // on the tour the matter glides as a film camera would                                  // a tour gives the controls what each stop asks
             // a click (pressed and let go without dragging) picks what is under the mouse
             if (input.LeftClicked) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }
             if (_pressed && input.LeftDown && Math.Abs(input.MouseX - _pressX) + Math.Abs(input.MouseY - _pressY) > 6) _dragged = true;   // dragging circles round the pick (or looks around if nothing is picked)

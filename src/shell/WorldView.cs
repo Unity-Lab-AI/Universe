@@ -359,7 +359,7 @@ namespace DnaAnd.Shell
         // -- asteroids and comets close in: a lumpy cratered rock lit from its star's side, made once (radius about 1) and drawn for
         // each, turned to its star and spinning on that line (so its lit side stays lit); a comet's dark nucleus in its coma, with
         // its ion tail straight away from the star and its wider curved dust tail --
-        private UploadBuffer _rockBuf, _cometBuf, _nucBuf, _roundBuf; private int _rockN, _cometN, _nucN, _roundN;
+        private UploadBuffer _cometBuf; private int _cometN;
         private bool ShapeShown(Extra ex, int h)
         {
             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
@@ -381,15 +381,60 @@ namespace DnaAnd.Shell
                 l.Add(new StarVertex { X = (float)(sx * rad), Y = (float)(sy * rad), Z = (float)(sz * rad), Size = 0.045f, R = (float)(r0 * lit), G = (float)(g0 * lit), B = (float)(b0 * lit), A = 1 });
             }
         }
+        // a solid body: a sphere of triangles (an icosahedron cut four times), pushed in and out by broad lumps and pitted by craters,
+        // drawn as lit stone with flat facets (never points of light); its star along +x
+        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN;
+        private static List<StarVertex> SolidRock(Rng rng, double lump, float r0, float g0, float b0)
+        {
+            var bumps = new double[14][]; for (int q = 0; q < 14; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); bumps[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), (rng.NextDouble() - 0.5) * 0.55 * lump, 1 + rng.NextDouble() * 3 }; }
+            var craters = new double[40][]; for (int q = 0; q < 40; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); craters[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), Math.Cos(0.05 + rng.NextDouble() * 0.28), rng.NextDouble() }; }
+            Func<double[], double[]> place = v =>
+            {
+                double x = v[0], y = v[1], z = v[2], rad = 1, shade = 1;
+                foreach (var bq in bumps) rad += bq[3] * Math.Pow(Math.Max(0, x * bq[0] + y * bq[1] + z * bq[2]), bq[4]);
+                foreach (var cq in craters)
+                {
+                    double c = x * cq[0] + y * cq[1] + z * cq[2]; if (c < cq[3] - 0.03) continue;
+                    double t = (c - cq[3]) / (1 - cq[3]);
+                    if (t > 0) { rad -= 0.06 * (1 - cq[3]) * 12 * Math.Sqrt(Math.Max(0, 1 - (1 - t) * (1 - t))) * 0.25; shade *= 0.8 + 0.2 * t; } else rad += 0.008;   // a bowl, and its raised rim
+                }
+                double grit = 0.94 + 0.12 * (Math.Abs(Math.Sin(x * 91.7 + y * 37.3 + z * 63.1) * 4375.5) % 1);
+                return new[] { x * (1 + 0.5 * lump) * rad, y * (1 - 0.15 * lump) * rad, z * rad, shade * grit };
+            };
+            // an icosahedron, each face cut in four, four times over, each corner put out to the sphere
+            double t0 = (1 + Math.Sqrt(5)) / 2; var vs = new List<double[]>();
+            double[][] iv = { new[] { -1, t0, 0 }, new[] { 1, t0, 0 }, new[] { -1, -t0, 0 }, new[] { 1, -t0, 0 }, new[] { 0, -1, t0 }, new[] { 0, 1, t0 }, new[] { 0, -1, -t0 }, new[] { 0, 1, -t0 }, new[] { t0, 0, -1 }, new[] { t0, 0, 1 }, new[] { -t0, 0, -1 }, new[] { -t0, 0, 1 } };
+            int[] f = { 0,11,5, 0,5,1, 0,1,7, 0,7,10, 0,10,11, 1,5,9, 5,11,4, 11,10,2, 10,7,6, 7,1,8, 3,9,4, 3,4,2, 3,2,6, 3,6,8, 3,8,9, 4,9,5, 2,4,11, 6,2,10, 8,6,7, 9,8,1 };
+            Func<double[], double[]> unit = v => { double l = Math.Sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]); return new[] { v[0] / l, v[1] / l, v[2] / l }; };
+            var tris = new List<double[][]>(); for (int i = 0; i < f.Length; i += 3) tris.Add(new[] { unit(iv[f[i]]), unit(iv[f[i + 1]]), unit(iv[f[i + 2]]) });
+            for (int lv = 0; lv < 4; lv++)
+            {
+                var nt = new List<double[][]>();
+                foreach (var tr in tris)
+                {
+                    Func<double[], double[], double[]> mid = (a, b) => unit(new[] { (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 });
+                    double[] ab = mid(tr[0], tr[1]), bc = mid(tr[1], tr[2]), ca = mid(tr[2], tr[0]);
+                    nt.Add(new[] { tr[0], ab, ca }); nt.Add(new[] { ab, tr[1], bc }); nt.Add(new[] { ca, bc, tr[2] }); nt.Add(new[] { ab, bc, ca });
+                }
+                tris = nt;
+            }
+            var l2 = new List<StarVertex>(tris.Count * 3);
+            foreach (var tr in tris)
+                foreach (var c in tr)
+                {
+                    var p = place(c); float sh = (float)p[3];
+                    l2.Add(new StarVertex { X = (float)p[0], Y = (float)p[1], Z = (float)p[2], Size = 0, R = r0 * sh, G = g0 * sh, B = b0 * sh, A = 1 });
+                }
+            return l2;
+        }
         private void MakeSmallBodies()
         {
-            var rock = new List<StarVertex>(); RockPoints(rock, new Rng(0x5A57E1UL), 30000, 0.75f, 0.68f, 0.6f, 1.0);
-            _rockN = rock.Count; _rockBuf = new UploadBuffer(_gpu.Device, (long)_rockN * Stride); _rockBuf.Write(rock.ToArray(), _rockN);
-            // a body big enough (a few hundred km across) for its own gravity to pull it round: a cratered globe
-            var round = new List<StarVertex>(); RockPoints(round, new Rng(0x60BE5UL), 40000, 0.75f, 0.7f, 0.66f, 1.0, 0.08);
-            _roundN = round.Count; _roundBuf = new UploadBuffer(_gpu.Device, (long)_roundN * Stride); _roundBuf.Write(round.ToArray(), _roundN);
-            var cm = new List<StarVertex>(); var rng = new Rng(0xC0CE7UL); RockPoints(cm, rng, 20000, 0.5f, 0.48f, 0.46f, 0.35);   // a comet's nucleus: among the darkest things known
-            _nucN = cm.Count; _nucBuf = new UploadBuffer(_gpu.Device, (long)_nucN * Stride); _nucBuf.Write(cm.ToArray(), _nucN); cm.Clear();
+            {
+                var a = SolidRock(new Rng(0x5A57E1UL), 1, 0.52f, 0.47f, 0.42f); _rockSolidN = a.Count; _rockSolid = new UploadBuffer(_gpu.Device, (long)a.Count * Stride); _rockSolid.Write(a.ToArray(), a.Count);
+                var b = SolidRock(new Rng(0x60BE5UL), 0.08, 0.55f, 0.52f, 0.5f); _roundSolidN = b.Count; _roundSolid = new UploadBuffer(_gpu.Device, (long)b.Count * Stride); _roundSolid.Write(b.ToArray(), b.Count);
+                var c = SolidRock(new Rng(0xC0CE7UL), 0.9, 0.16f, 0.15f, 0.14f); _nucSolidN = c.Count; _nucSolid = new UploadBuffer(_gpu.Device, (long)c.Count * Stride); _nucSolid.Write(c.ToArray(), c.Count);   // a comet's nucleus: among the darkest things known
+            }
+            var cm = new List<StarVertex>(); var rng = new Rng(0xC0CE7UL);   // (the coma and the tails round the solid nucleus)
             for (int k = 0; k < 9000; k++)
             {
                 // the coma: gas and dust round the nucleus, densest close in, out to about 2000 times its size
@@ -412,7 +457,7 @@ namespace DnaAnd.Shell
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 || !ShapeShown(ex, h)) continue;
-                if (_rockBuf == null) MakeSmallBodies();
+                if (_rockSolid == null) MakeSmallBodies();
                 double bx = ex.X - _ax, by = ex.Y - _ay, bz = ex.Z - _az, dx = bx - _ox, dy = by - _oy, dz = bz - _oz, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
                 // its frame: +x toward its star (the anchor of the system you are in), spinning about that line
                 var xs = bl > 0 ? new Vec3((float)(-bx / bl), (float)(-by / bl), (float)(-bz / bl)) : new Vec3(1, 0, 0);
@@ -426,9 +471,19 @@ namespace DnaAnd.Shell
                 m.M21 = y2.X * sc; m.M22 = y2.Y * sc; m.M23 = y2.Z * sc;
                 m.M31 = z2.X * sc; m.M32 = z2.Y * sc; m.M33 = z2.Z * sc;
                 m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
-                if (ex.Shape == "comet") DrawPoints(_nucBuf, _nucN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
+                // the body itself, solid stone lit from its star (its camera's place in its own frame, for which faces show)
+                {
+                    var mvp = m * vp; var mc = new float[BillboardPipeline.ConstantCount];
+                    mc[0] = mvp.M11; mc[1] = mvp.M12; mc[2] = mvp.M13; mc[3] = mvp.M14; mc[4] = mvp.M21; mc[5] = mvp.M22; mc[6] = mvp.M23; mc[7] = mvp.M24;
+                    mc[8] = mvp.M31; mc[9] = mvp.M32; mc[10] = mvp.M33; mc[11] = mvp.M34; mc[12] = mvp.M41; mc[13] = mvp.M42; mc[14] = mvp.M43; mc[15] = mvp.M44;
+                    mc[16] = 1; mc[17] = 0; mc[18] = 0;                                           // its star along its own +x
+                    double ix = -dx, iy = -dy, iz = -dz;                                           // the camera from the body, into its frame
+                    mc[20] = (float)((ix * xs.X + iy * xs.Y + iz * xs.Z) / sc); mc[21] = (float)((ix * y2.X + iy * y2.Y + iz * y2.Z) / sc); mc[22] = (float)((ix * z2.X + iy * z2.Y + iz * z2.Z) / sc);
+                    bool comet = ex.Shape == "comet", round = !comet && ex.R / Units.Km(1) > 200;
+                    _gpu.ClearDepth();
+                    _meshes.Solid.Draw(comet ? _nucSolid : round ? _roundSolid : _rockSolid, comet ? _nucSolidN : round ? _roundSolidN : _rockSolidN, mc, 0, 0, w, h);
+                }
                 if (ex.Shape == "comet") DrawPoints(_cometBuf, _cometN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 0f);   // (its own units: the placing scales them; the coma and tails soft glows)
-                else DrawPoints(Units.Km(1) > 0 && ex.R / Units.Km(1) > 200 ? _roundBuf : _rockBuf, ex.R / Units.Km(1) > 200 ? _roundN : _rockN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, 1f, 2f);
             }
         }
         private UploadBuffer _extraBuf; private StarVertex[] _extraV = new StarVertex[0]; private readonly float[] _lens = new float[4], _web = new float[5];

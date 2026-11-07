@@ -22,10 +22,10 @@ namespace DnaAnd.Core
             lock (_lock)
             {
                 if (_workers != null) return;
-                var w = new Thread[Math.Max(1, Environment.ProcessorCount)];
+                var w = new Thread[Math.Max(1, Environment.ProcessorCount - 2)];   // (two cores left to the game's own frame and the card's driver: the background work never starves the frame)
                 for (int i = 0; i < w.Length; i++)
                 {
-                    w[i] = new Thread(Work) { IsBackground = true, Name = "DNA-AND worker " + (i + 1) };   // background: they never hold the game open
+                    w[i] = new Thread(Work) { IsBackground = true, Name = "DNA-AND worker " + (i + 1), Priority = ThreadPriority.BelowNormal };   // background: they never hold the game open
                     w[i].Start();
                 }
                 _workers = w;

@@ -36,12 +36,18 @@ namespace DnaAnd.Render
         private static Guid HardwareOk = new Guid("a634a91c-822b-41b9-a494-4de4643612b0");
 
         private IntPtr _writer; private uint _stream; private readonly int _w, _h; private long _lastTicks = -1, _t0; private bool _started;
+        /// <summary>Every how many pixels of the screen the clip keeps one: 2 on a screen wider than 1920 (a 4K screen films at
+        /// about 1080p), so filming never slows the game.</summary>
+        public readonly int Down;
+        // the frames go to the encoder on a thread of its own (the game never waits on it); if it falls behind, a frame is let go
+        private readonly System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long, long>> _queue = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long, long>>(3);
+        private System.Threading.Thread _encoder;
         public readonly string Path;
 
         /// <summary>Starts a clip at <paramref name="path"/>, <paramref name="w"/> by <paramref name="h"/> pixels (made even), about 60 frames a second.</summary>
         public Mp4Writer(string path, int w, int h)
         {
-            Path = path; _w = w & ~1; _h = h & ~1;
+            Path = path; Down = w > 1920 ? 2 : 1; _w = (w / Down) & ~1; _h = (h / Down) & ~1;
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
             CoInitializeEx(IntPtr.Zero, 0);                                             // (already started on this thread: fine)
             Check(MFStartup(0x00020070, 0), "MFStartup"); _started = true;
@@ -80,6 +86,12 @@ namespace DnaAnd.Render
             }
             finally { Com.Release(ref inType); }
             Check(Com.Method<NoArgFn>(_writer, 5)(_writer), "BeginWriting");
+            _encoder = new System.Threading.Thread(() =>
+            {
+                CoInitializeEx(IntPtr.Zero, 0);
+                foreach (var f in _queue.GetConsumingEnumerable()) { try { Encode(f.Item1, f.Item2, f.Item3, f.Item4, f.Item5); } catch { } }
+            }) { IsBackground = true, Name = "clip encoder" };
+            _encoder.Start();
         }
 
         /// <summary>Adds one frame (RGB, 3 bytes a pixel, top row first, <paramref name="srcW"/> wide), at the moment it was shown.</summary>
@@ -89,7 +101,12 @@ namespace DnaAnd.Render
             long now = System.Diagnostics.Stopwatch.GetTimestamp(); if (_lastTicks < 0) _t0 = now;
             long t = (now - _t0) * 10000000L / System.Diagnostics.Stopwatch.Frequency;      // in hundreds of nanoseconds
             long prev = _lastTicks < 0 ? 0 : (_lastTicks - _t0) * 10000000L / System.Diagnostics.Stopwatch.Frequency;
-            long dur = _lastTicks < 0 ? 166667 : Math.Max(1, t - prev); _lastTicks = now;
+            long dur = _lastTicks < 0 ? 166667 : Math.Max(1, t - prev);
+            if (!_queue.TryAdd(Tuple.Create(rgb, srcW, srcH, t, dur))) return;               // (the encoder is behind: this frame let go; the last one shown longer)
+            _lastTicks = now;
+        }
+        private void Encode(byte[] rgb, int srcW, int srcH, long t, long dur)
+        {
             int len = _w * _h * 4;
             IntPtr buf; Check(MFCreateMemoryBuffer((uint)len, out buf), "MFCreateMemoryBuffer");
             IntPtr sample = IntPtr.Zero;
@@ -99,8 +116,8 @@ namespace DnaAnd.Render
                 var row = new byte[_w * 4];
                 for (int y = 0; y < _h; y++)
                 {
-                    int s = y * srcW * 3;
-                    for (int x = 0; x < _w; x++) { row[x * 4] = rgb[s + 2]; row[x * 4 + 1] = rgb[s + 1]; row[x * 4 + 2] = rgb[s]; row[x * 4 + 3] = 255; s += 3; }   // to blue, green, red
+                    int sy = Math.Min(srcH - 1, y * srcH / _h);
+                    for (int x = 0; x < _w; x++) { int s = (sy * srcW + Math.Min(srcW - 1, x * srcW / _w)) * 3; row[x * 4] = rgb[s + 2]; row[x * 4 + 1] = rgb[s + 1]; row[x * 4 + 2] = rgb[s]; row[x * 4 + 3] = 255; }   // to blue, green, red (from whatever size it was grabbed at)
                     Marshal.Copy(row, 0, data + y * _w * 4, row.Length);
                 }
                 Com.Method<NoArgFn>(buf, 4)(buf);                                         // Unlock
@@ -117,6 +134,7 @@ namespace DnaAnd.Render
         /// <summary>Finishes the file (it plays from here on) and lets go of the encoder.</summary>
         public void Dispose()
         {
+            _queue.CompleteAdding(); if (_encoder != null) _encoder.Join(10000);               // the frames still waiting go in first
             if (_writer != IntPtr.Zero) { try { Com.Method<NoArgFn>(_writer, 11)(_writer); } catch { } Com.Release(ref _writer); }
             if (_started) { MFShutdown(); _started = false; }
         }

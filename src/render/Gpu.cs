@@ -26,6 +26,9 @@ namespace DnaAnd.Render
         public string CaptureNext;
         /// <summary>Set to copy the next finished frame into <see cref="Grabbed"/> (RGB bytes, top row first), for clips.</summary>
         public bool GrabNext; public byte[] Grabbed;
+        /// <summary>Every how many pixels the grab keeps one (2: half each way, for filming a big screen without slowing it); and the size of what was grabbed.</summary>
+        public int GrabDown = 1; public int GrabW, GrabH;
+        private IntPtr _grabRB; private long _grabRBBytes;   // (one copy-back buffer, kept: never a new one every frame)
 
         // per-frame calls, looked up once
         private D3D12.PresentFn _present; private D3D12.GetCurrentBackBufferIndexFn _getIndex;
@@ -216,7 +219,8 @@ namespace DnaAnd.Render
             if (capture != null || grab)
             {
                 pitch = (uint)((Width * 4 + 255) & ~255);
-                readback = MakeReadback((long)pitch * Height);
+                if (_grabRB == IntPtr.Zero || _grabRBBytes != (long)pitch * Height) { if (_grabRB != IntPtr.Zero) Com.Release(ref _grabRB); _grabRB = MakeReadback((long)pitch * Height); _grabRBBytes = (long)pitch * Height; }
+                readback = _grabRB;
                 var toCopy = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
                     StateBefore = D3D12.RESOURCE_STATE_RENDER_TARGET, StateAfter = D3D12.RESOURCE_STATE_COPY_SOURCE };
                 _barrier(_list, 1, ref toCopy);
@@ -251,7 +255,7 @@ namespace DnaAnd.Render
                 }
             }
             _frameIndex = _getIndex(_swapChain);
-            if (readback != IntPtr.Zero) { try { if (capture != null) SaveBmp(readback, pitch, capture); if (grab) Grabbed = Rgb(readback, pitch); } finally { Com.Release(ref readback); } }
+            if (readback != IntPtr.Zero) { if (capture != null) SaveBmp(readback, pitch, capture); if (grab) Grabbed = Rgb(readback, pitch); }   // (the buffer is kept for the next grab)
         }
 
         [StructLayout(LayoutKind.Sequential)] private struct HeapProps { public int Type, CpuPage, Pool; public uint CreateMask, VisibleMask; }
@@ -280,11 +284,15 @@ namespace DnaAnd.Render
         {
             IntPtr data;
             Com.Check(Com.Method<MapFn>(readback, 8)(readback, 0, IntPtr.Zero, out data), "Map(readback)");
-            var px = new byte[pitch * Height];
-            Marshal.Copy(data, px, 0, px.Length);
-            var rgb = new byte[Width * Height * 3];
-            for (int y = 0; y < Height; y++)
-                for (int x = 0; x < Width; x++) { int sp = (int)pitch * y + x * 4, dp = (y * Width + x) * 3; rgb[dp] = px[sp]; rgb[dp + 1] = px[sp + 1]; rgb[dp + 2] = px[sp + 2]; }
+            // only the rows kept are read (every GrabDown-th, and every GrabDown-th pixel of each)
+            int dn = Math.Max(1, GrabDown), ow = Width / dn, oh = Height / dn; GrabW = ow; GrabH = oh;
+            var row = new byte[pitch]; var rgb = new byte[ow * oh * 3];
+            for (int y = 0; y < oh; y++)
+            {
+                Marshal.Copy(data + (int)pitch * y * dn, row, 0, Width * 4);
+                for (int x = 0; x < ow; x++) { int sp = x * dn * 4, dp = (y * ow + x) * 3; rgb[dp] = row[sp]; rgb[dp + 1] = row[sp + 1]; rgb[dp + 2] = row[sp + 2]; }
+            }
+            Com.Method<UnmapFn2>(readback, 9)(readback, 0, IntPtr.Zero);
             return rgb;
         }
 
@@ -295,6 +303,7 @@ namespace DnaAnd.Render
             int w = Width, h = Height, row = (w * 3 + 3) & ~3;
             var px = new byte[pitch * h];
             Marshal.Copy(data, px, 0, px.Length);
+            Com.Method<UnmapFn2>(readback, 9)(readback, 0, IntPtr.Zero);                   // (the buffer is kept: let go of its mapping)
             var bmp = new byte[54 + row * h];
             bmp[0] = (byte)'B'; bmp[1] = (byte)'M';
             BitConverter.GetBytes(bmp.Length).CopyTo(bmp, 2); BitConverter.GetBytes(54).CopyTo(bmp, 10);

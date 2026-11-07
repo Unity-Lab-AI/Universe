@@ -1551,23 +1551,34 @@ namespace Universe.Shell
                     {
                         // one of the bodies round you (content/bodies.unt): the nearest black hole, asteroid of the belt, or comet of
                         // the Oort cloud
-                        int bi = -1; double bd = double.MaxValue;
+                        int bi = -1; double bd = double.MaxValue, nearestHole = double.MaxValue;
                         // a black hole: this galaxy's own heart (or one within a few galaxy-widths), a feeding one before a quiet one; never a
                         // feeding heart ten million light-years off outscoring the quiet one you are at (the shot would leave the galaxy
                         // with the caption saying it was going down to its heart)
                         double holeReach = what == "black-hole" && _near >= 0 && _near < _galaxies.Count ? _galaxies[_near].Scale * 4 : double.MaxValue;
+                        if (what == "black-hole" && _near >= 0 && _near < _galaxies.Count)
+                        {
+                            // this galaxy's own heart, first and surest: every galaxy has one at its middle; if the bodies round you do not
+                            // hold it yet (they are made again as you move, and a far galaxy's may lag a frame), it is made here from its
+                            // place, the same one the galaxy would get
+                            var g = _galaxies[_near]; double tol = g.Scale * 0.02;
+                            for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (!ex.Hole) continue; double hx = ex.X - g.X, hy = ex.Y - g.Y, hz = ex.Z - g.Z; if (hx * hx + hy * hy + hz * hz < tol * tol) { bi = q; break; } }
+                            if (bi < 0 && _places != null) foreach (var pl in _places) if (pl.Where == "galaxy-heart") { _extras.Add(MakeExtra(pl, g.X, g.Y, g.Z)); bi = _extras.Count - 1; ZoomLog("TOUR the heart of " + g.Name + " made for the pick (it was not among the " + (_extras.Count - 1) + " bodies round you)"); break; }
+                            if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; break; }
+                        }
                         for (int q = 0; q < _extras.Count; q++)
                         {
                             var ex = _extras[q]; string nm = ex.Name.ToLowerInvariant();
                             bool fits = what == "black-hole" ? ex.Hole : what == "asteroid" ? ex.Shape == "rock" : ex.Shape == "comet" || nm.Contains("comet");   // (an asteroid: any rocky body here, of a belt, the Kuiper belt or the Oort cloud, as the system has)
                             if (!fits) continue;
                             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = dx * dx + dy * dy + dz * dz;
-                            if (what == "black-hole" && d > holeReach * holeReach) continue;
+                            if (what == "black-hole" && d > holeReach * holeReach) { if (d < bd * 1e12) nearestHole = Math.Min(nearestHole, Math.Sqrt(d)); continue; }
                             if (what == "black-hole" && ex.Feeding > 0) d *= 1e-6;
                             if (what == "asteroid" && nm.Contains("asteroid")) d *= 1e-4;          // (the belt's own, before a far icy body)             // (a feeding one, its disc glowing, before a quiet one)
                             if (d < bd) { bd = d; bi = q; }
                         }
                         if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; }
+                        else if (what == "black-hole") ZoomLog("TOUR no black hole within " + Units.Describe(holeReach) + " (the nearest " + (nearestHole < double.MaxValue ? Units.Describe(nearestHole) : "none") + " away; galaxy " + _near + " scale " + (_near >= 0 && _near < _galaxies.Count ? Units.Describe(_galaxies[_near].Scale) : "-") + ")");
                     }
                     break;
                 case "start-galaxy":

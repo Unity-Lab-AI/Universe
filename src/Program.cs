@@ -18,6 +18,7 @@ namespace Universe
         private static int Main(string[] args)
         {
             // any crash, on any thread, is written to the log with where it happened, before the program goes
+            Universe.Platform.Watchdog.BeforeExit = () => { if (OpenClip != null) OpenClip.Dispose(); };   // (a safety exit finishes a clip being filmed first: a clip cut off without its index would not play)
             AppDomain.CurrentDomain.UnhandledException += (o, ev) => { try { if (OpenClip != null) OpenClip.Dispose(); } catch { } try {   // (a clip being filmed is finished first, so what was filmed still plays)
                                                                                      System.IO.Directory.CreateDirectory("build"); System.IO.File.AppendAllText(System.IO.Path.Combine("build", "last-run.log"), "crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine + (Universe.Render.Gpu.DeviceForLog != IntPtr.Zero ? Universe.Render.GpuLog.Describe(Universe.Render.Gpu.DeviceForLog) + Environment.NewLine : "")); } catch { } };
             // --smoke <ms>: a timed test run that closes itself after <ms> milliseconds.

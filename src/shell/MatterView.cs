@@ -1926,7 +1926,7 @@ namespace Universe.Shell
             if (_picked != null && _picked.Kind == 4)
             {
                 bool up = _picked.Sym == "up";
-                { double fx0, fy0, fz0; var fe = Focus(out fx0, out fy0, out fz0); L.Add("a " + _picked.Sym + " quark" + (fe != null ? ", in a nucleon of a nucleus of " + fe.Name.ToLowerInvariant() : "")); }
+                { double fx0, fy0, fz0; var fe = Focus(out fx0, out fy0, out fz0); L.Add((_picked.Sym == "up" ? "an " : "a ") + _picked.Sym + " quark" + (fe != null ? ", in a nucleon of a nucleus of " + fe.Name.ToLowerInvariant() : "")); }
                 L.Add(up ? "charge +2/3" : "charge -1/3");
                 L.Add("a point as far as measured; held by gluons");
                 L.Add("it has a colour charge (red, green or blue)");

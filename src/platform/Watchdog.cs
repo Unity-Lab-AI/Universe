@@ -48,8 +48,11 @@ namespace Universe.Platform
             }
         }
 
+        /// <summary>Run before a safety exit: a clip being filmed is finished first, so it plays.</summary>
+        public static Action BeforeExit;
         private static void Bail(string why)
         {
+            try { if (BeforeExit != null) BeforeExit(); } catch { }
             try
             {
                 Directory.CreateDirectory("build");

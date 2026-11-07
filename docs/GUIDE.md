@@ -1,10 +1,22 @@
+<p align="center"><img src="img/logo.png" width="90" alt="Universe" title="Universe"></p>
+
+<p align="center">
+  <a href="../README.md" title="What Universe is, and how to fly it">Universe</a>
+  &nbsp;·&nbsp;
+  <a href="GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
+  &nbsp;·&nbsp;
+  <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
+  &nbsp;·&nbsp;
+  <a href="../CREDITS.md" title="Who made it, and the science it is made from">Credits</a>
+</p>
+
 # Build your own universe
 
 > Universe is a **toolkit for making universes**: for games, for simulations, for science, for wondering. Everything in it is grown from **templates** you can read and change in plain text. Add a kind of world, a kind of star, a whole new galaxy shape, and every universe you make from then on is full of them.
 
 ---
 
-## 🧠 The big idea: templates, not things
+## The big idea: templates, not things
 
 Nothing in Universe is stored as a finished object. There's no file holding "the planet Kepler-something". Instead there are **templates**, and the generators grow things from them using a **seed**.
 
@@ -20,7 +32,7 @@ So one template makes millions of worlds, and no two are the same. **The same se
 
 ---
 
-## ✍️ The content format in five minutes
+## The content format in five minutes
 
 Every template lives in `content/`, in our own plain-text format (`.unt`). One file per subject.
 
@@ -47,7 +59,7 @@ The files are read at start-up. **Change a file, start the program, see the chan
 
 ---
 
-## 🌍 Add a new kind of world
+## Add a new kind of world
 
 Worlds are templates in `content/terrain.unt`. Each one says **where it forms** and **what it looks like**.
 
@@ -136,7 +148,7 @@ Start Universe and fly to stars until you find one. Every star's worlds are chos
 
 ---
 
-## ⭐ Add a new kind of star
+## Add a new kind of star
 
 Stars are templates in `content/stars.unt`.
 
@@ -162,7 +174,7 @@ Its worlds follow from its brightness: a hot bright star pushes the liquid-water
 
 ---
 
-## 🌀 Add a new kind of galaxy
+## Add a new kind of galaxy
 
 Galaxies are templates in `content/galaxies.unt`.
 
@@ -191,7 +203,7 @@ Every number can be a range, and each galaxy of the kind gets its own size, tilt
 
 ---
 
-## ☀️ Lay out star systems
+## Lay out star systems
 
 The kinds of star system are templates in `content/solar-systems.unt`. The usual one, `sun-like`, is the base, and other kinds give only what differs.
 
@@ -217,7 +229,7 @@ Which kind of world forms in each orbit then follows from the world templates ab
 
 ---
 
-## ⚛️ The laws of nature
+## The laws of nature
 
 Universe runs on the real laws of physics, and their numbers are templates too. They live in `content/physics.unt`, so you can read every one, and change them to build a universe with different physics.
 
@@ -225,10 +237,10 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 
 | Force | What it does in Universe | Its numbers |
 |---|---|---|
-| 🪐 **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per Sun), and the light of stars behind it bends into an **Einstein ring** | `@law gravity`: `gm-sun-m3-s2` (the Sun's pull, G times its mass), `earth-g-m-s2` |
-| ⚡ **Electromagnetism** | Each atom's **electrons** fill their shells and orbitals in their real order (1s 2s 2p 3s ...). **Bonds** are shared electrons. A star's **colour** comes from its temperature the way a glowing body's does (Planck's law). Inside the nucleus, the **protons push each other apart** | `@law coulomb`: `k-mev-fm` (the push between two protons), `@law light`: `speed-m-s` |
-| 🔴 **Strong nuclear force** | **Packs the nucleus**: protons and neutrons pull together just beyond a hard core where they push apart, and feel nothing past a few femtometres. It glues the **quarks** in every proton and neutron. A nucleus's **binding energy** comes from the strong pull against the electric push | `@law nuclear-force`: `core-fm`, `spacing-fm`, `range-fm`; `@law mass-formula`: the five terms of the Bethe–Weizsäcker formula |
-| 🟣 **Weak nuclear force** | Decides **which nuclei are stable** and how the rest decay: too many neutrons and one turns into a proton (beta-minus), too many protons and one turns into a neutron (beta-plus). Past lead, the biggest nuclei throw out alpha particles. Every nucleus's card says which | `@law beta-stability`: `c` (the valley of stability), `alpha-above-z` |
+| **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per Sun), and the light of stars behind it bends into an **Einstein ring** | `@law gravity`: `gm-sun-m3-s2` (the Sun's pull, G times its mass), `earth-g-m-s2` |
+| **Electromagnetism** | Each atom's **electrons** fill their shells and orbitals in their real order (1s 2s 2p 3s ...). **Bonds** are shared electrons. A star's **colour** comes from its temperature the way a glowing body's does (Planck's law). Inside the nucleus, the **protons push each other apart** | `@law coulomb`: `k-mev-fm` (the push between two protons), `@law light`: `speed-m-s` |
+| **Strong nuclear force** | **Packs the nucleus**: protons and neutrons pull together just beyond a hard core where they push apart, and feel nothing past a few femtometres. It glues the **quarks** in every proton and neutron. A nucleus's **binding energy** comes from the strong pull against the electric push | `@law nuclear-force`: `core-fm`, `spacing-fm`, `range-fm`; `@law mass-formula`: the five terms of the Bethe–Weizsäcker formula |
+| **Weak nuclear force** | Decides **which nuclei are stable** and how the rest decay: too many neutrons and one turns into a proton (beta-minus), too many protons and one turns into a neutron (beta-plus). Past lead, the biggest nuclei throw out alpha particles. Every nucleus's card says which | `@law beta-stability`: `c` (the valley of stability), `alpha-above-z` |
 
 ### Matter, air and stars
 
@@ -255,7 +267,7 @@ Make the strong force reach further and nuclei pack differently. Change gravity'
 
 ---
 
-## 🔭 Change the whole universe
+## Change the whole universe
 
 `content/universe.unt` holds the universe itself:
 
@@ -271,7 +283,7 @@ A smaller universe with fewer galaxies? A web with sharper walls? Change the num
 
 ---
 
-## ⚗️ Minerals, elements and matter
+## Minerals, elements and matter
 
 Below the ground, everything is real matter at its real size.
 
@@ -285,7 +297,7 @@ Add a mineral, then put it in a ground's mix, and its grains appear on every wor
 
 ---
 
-## 🎬 Write a tour
+## Write a tour
 
 Tours are lists of camera moves in `content/tours/`. The grand tour is `grand-tour.unt`. Copy it and make your own:
 
@@ -316,7 +328,7 @@ Every stop has a `caption`, which is shown on screen.
 
 ---
 
-## 🛠️ Add a feature in code
+## Add a feature in code
 
 When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, built with the compiler that comes with Windows. See **Build your own (technical)** for the full map. The short version:
 
@@ -338,6 +350,6 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 
 ---
 
-## 📦 Ship it
+## Ship it
 
 `release.cmd` builds the program and its installer. Change the name, the icon and the content, and you've made your own universe for your own game. **Build your own (technical)** has the details.

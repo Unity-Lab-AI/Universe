@@ -1,3 +1,15 @@
+<p align="center"><img src="img/logo.png" width="90" alt="Universe" title="Universe"></p>
+
+<p align="center">
+  <a href="../README.md" title="What Universe is, and how to fly it">Universe</a>
+  &nbsp;·&nbsp;
+  <a href="GUIDE.md" title="Add kinds of worlds, stars and galaxies, change the laws of physics, write tours">Build your own universe</a>
+  &nbsp;·&nbsp;
+  <a href="HOW-TO-BUILD.md" title="Build it, make the installer, find your way round the code">Technical guide</a>
+  &nbsp;·&nbsp;
+  <a href="../CREDITS.md" title="Who made it, and the science it is made from">Credits</a>
+</p>
+
 # Build your own (technical)
 
 > Universe is plain **C# 5 on Direct3D 12**, built by the C# compiler that ships with Windows. No packages, no outside libraries, no stored art: everything on screen is made at run time from a seed and the templates in `content/`.
@@ -6,17 +18,17 @@ For adding kinds of worlds, stars and galaxies without touching code, start with
 
 ---
 
-## 🧰 What you need
+## What you need
 
 | | |
 |---|---|
-| 💻 **Windows 10 or 11**, 64-bit | |
-| 🎮 **A Direct3D 12 graphics card** | The program picks the strongest one in the computer |
-| 🔧 **Nothing to install** | The compiler is `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe`, part of Windows |
+| **Windows 10 or 11**, 64-bit | |
+| **A Direct3D 12 graphics card** | The program picks the strongest one in the computer |
+| **Nothing to install** | The compiler is `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319\csc.exe`, part of Windows |
 
 ---
 
-## 🏗️ Build it
+## Build it
 
 ```
 build.cmd                 builds build\Universe.exe
@@ -40,7 +52,7 @@ Screenshots (**F12**) and clips (**F9**) go in `captures` beside the program.
 
 ---
 
-## 📦 Make the installer and the zip
+## Make the installer and the zip
 
 ```
 release.cmd
@@ -57,7 +69,7 @@ Change the version at the top of `release.cmd`.
 
 ---
 
-## 🗺️ Where things are
+## Where things are
 
 | Folder | What it holds |
 |---|---|
@@ -72,26 +84,26 @@ Change the version at the top of `release.cmd`.
 
 ---
 
-## ⚙️ How it holds together
+## How it holds together
 
 | | |
 |---|---|
-| 🧬 **Templates** | Each kind of thing is an entry in `content/` with ranges. A thing made from it takes its own value in each range from its seed (`PlanetTerrain.Instance`), so every world is its own and a seed always gives the same one. Which kind forms where is read from the template too (`SpaceGen.WorldKind`) |
-| ⚓ **One camera** | `UniverseView` keeps the camera as an anchor (a galaxy's centre, a star, a world) plus an offset, in double precision, so it's exact from light-years to atoms. Nothing switches views |
-| 🔍 **Zoom** | Each notch of the wheel moves a share of the way to the nearest thing, so it slows by itself and never runs out. W A S D Q E fly at half the distance to the nearest thing a second |
-| 📏 **Depth** | Reversed floating-point depth (`Mat4.Perspective`, compare GREATER), so near and far never fight |
-| 🌌 **The galaxies** | About 100 billion in a sphere 13.4 billion light-years across, made in regions round you along the cosmic web; beyond them, a glow of points along the same web that fades in just where the galaxies made in full fade out |
-| 🌀 **A galaxy** | One star field: the far view is the first part of the near view, so nothing swaps. Real stars round you are made in 25-light-year cubes at true density, each from its own position |
-| 🌍 **Worlds** | Ground is built in the background on every core, finer under the camera. Changes (mountains, craters) are stored as CDF 9/7 wavelet terms and swapped in whole |
-| 🪨 **Grains and matter** | `GrainField` is one field of loose rock for a whole world. `MatterView` places grains, crystals, atoms, electrons and nuclei at their real sizes round where you dive in |
-| 🌊 **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
-| ⏱️ **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
-| ⚛️ **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.unt`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
-| 🕰️ **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
+| **Templates** | Each kind of thing is an entry in `content/` with ranges. A thing made from it takes its own value in each range from its seed (`PlanetTerrain.Instance`), so every world is its own and a seed always gives the same one. Which kind forms where is read from the template too (`SpaceGen.WorldKind`) |
+| **One camera** | `UniverseView` keeps the camera as an anchor (a galaxy's centre, a star, a world) plus an offset, in double precision, so it's exact from light-years to atoms. Nothing switches views |
+| **Zoom** | Each notch of the wheel moves a share of the way to the nearest thing, so it slows by itself and never runs out. W A S D Q E fly at half the distance to the nearest thing a second |
+| **Depth** | Reversed floating-point depth (`Mat4.Perspective`, compare GREATER), so near and far never fight |
+| **The galaxies** | About 100 billion in a sphere 13.4 billion light-years across, made in regions round you along the cosmic web; beyond them, a glow of points along the same web that fades in just where the galaxies made in full fade out |
+| **A galaxy** | One star field: the far view is the first part of the near view, so nothing swaps. Real stars round you are made in 25-light-year cubes at true density, each from its own position |
+| **Worlds** | Ground is built in the background on every core, finer under the camera. Changes (mountains, craters) are stored as CDF 9/7 wavelet terms and swapped in whole |
+| **Grains and matter** | `GrainField` is one field of loose rock for a whole world. `MatterView` places grains, crystals, atoms, electrons and nuclei at their real sizes round where you dive in |
+| **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
+| **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
+| **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.unt`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
+| **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
 
 ---
 
-## ✏️ Change it
+## Change it
 
 | You want to change | Go to |
 |---|---|
@@ -109,6 +121,6 @@ Change the version at the top of `release.cmd`.
 
 ---
 
-## 👥 License and credits
+## License and credits
 
 Made by the **Unity AI Lab**. [unityailab.com](https://unityailab.com)

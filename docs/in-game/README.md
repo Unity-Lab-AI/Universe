@@ -4,7 +4,7 @@
 >
 > **New here?** Press **T** for the grand tour, a film from the whole universe down to the quarks. A click, the wheel or a key pauses it, and you can fly it yourself from there.
 
-## 🖱️ Flying
+## Flying
 
 | Control | What it does |
 |---|---|
@@ -18,7 +18,7 @@
 | **Drag** | With something picked, circle round it. With nothing picked, look around |
 | **B** | Among atoms: glide across the bond to the next atom |
 
-## ⏱️ Time
+## Time
 
 | Control | What it does |
 |---|---|
@@ -28,7 +28,7 @@
 
 Every world turns on its own day, so you can sit on the ground and watch its star rise and set.
 
-## 🎬 The grand tour
+## The grand tour
 
 | Control | What it does |
 |---|---|
@@ -38,7 +38,7 @@ Every world turns on its own day, so you can sit on the ground and watch its sta
 
 A **click**, the **wheel** or a **key** pauses the tour, and a note on screen says so and why. Shift, Ctrl, Alt, the Windows keys and shortcuts such as **Alt+Tab** or **Win+Shift+S** never stop it. Every viewing is shot afresh, so no two tours are the same.
 
-## 📸 Pictures and clips
+## Pictures and clips
 
 | Control | What it does |
 |---|---|
@@ -47,7 +47,7 @@ A **click**, the **wheel** or a **key** pauses the tour, and a note on screen sa
 
 Both go in the `captures` folder. On the landing page, tick **Film the tour** to record the whole tour. The **Clips** list plays what you have filmed, and **Open folder** shows where it is.
 
-## 🧭 On screen
+## On screen
 
 | Control | What it does |
 |---|---|
@@ -57,7 +57,7 @@ Both go in the `captures` folder. On the landing page, tick **Film the tour** to
 | **Start page** | Back to the landing page |
 | **Esc** or **Exit** | Close |
 
-## 🔭 What you will see
+## What you will see
 
 1. **Galaxies**, each of its own kind. Close to one, its own stars fade in, made round you as you go.
 2. **A star's system**: its worlds, moons, belts and the star itself.

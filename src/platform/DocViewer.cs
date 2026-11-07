@@ -338,8 +338,35 @@ namespace Universe.Platform
         }
 
         /// <summary>The page in rich text, its tables fitted to <paramref name="widthTwips"/>.</summary>
+        // the documents' bits of web page (a centred title, links with tooltips, bold, line breaks) as the Markdown the page
+        // is drawn from; pictures (which it cannot draw here) and comments left out
+        private static string FromHtml(string md)
+        {
+            var o = new StringBuilder(); bool comment = false, caption = false;
+            foreach (var raw in md.Replace("\r", "").Split('\n'))
+            {
+                string l = raw;
+                if (comment) { if (l.Contains("-->")) comment = false; continue; }
+                if (l.TrimStart().StartsWith("<!--")) { if (!l.Contains("-->")) comment = true; continue; }
+                if (l.Contains("<img") || l.TrimStart().StartsWith("![")) { caption = true; continue; }   // (a picture: not drawn here)
+                if (caption && l.Trim().Length == 0) continue;
+                if (caption && l.TrimStart().StartsWith("*") && !l.TrimStart().StartsWith("**")) { caption = false; continue; }   // (and its caption with it)
+                caption = false;
+                l = System.Text.RegularExpressions.Regex.Replace(l, "<h1[^>]*>(.*?)</h1>", "# $1");
+                l = System.Text.RegularExpressions.Regex.Replace(l, "<a href=\"([^\"]*)\"[^>]*>(.*?)</a>", "[$2]($1)");
+                l = l.Replace("<b>", "**").Replace("</b>", "**").Replace("<i>", "*").Replace("</i>", "*").Replace("<br>", "").Replace("&nbsp;", " ");
+                l = System.Text.RegularExpressions.Regex.Replace(l, "</?p[^>]*>", "");
+                l = System.Text.RegularExpressions.Regex.Replace(l, "\\]\\(([^ )]*) \"[^\"]*\"\\)", "]($1)");       // (a link's tooltip: not shown here)
+                if (raw.Trim().Length > 0 && l.Trim().Length == 0) continue;                       // (a line that was only tags)
+                if (l.Trim() == "|" || l.Trim() == "·") continue;                                  // (a separator between links: each link its own line here)
+                o.Append(l.TrimEnd()).Append('\n');
+            }
+            return o.ToString();
+        }
+
         public static string ToRtf(string md, int widthTwips = 11000)
         {
+            md = FromHtml(md);
             const string Body = "\\pard\\sl300\\slmult1\\sa140\\f0\\fs22\\cf1 ";
             var o = new StringBuilder();
             o.Append("{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Segoe UI;}{\\f1\\fmodern Consolas;}{\\f2\\fswiss Segoe UI Semibold;}}");
@@ -358,6 +385,7 @@ namespace Universe.Platform
                 for (int ri = 0; ri < table.Count; ri++)
                 {
                     var r = table[ri]; bool head = ri == 0;
+                    if (head) { bool blank = true; foreach (var hc in r) if (hc.Trim().Length > 0) blank = false; if (blank) continue; }   // (a table with no headings: no empty shaded row)
                     o.Append("\\trowd\\trgaph120\\trleft0\\trpaddt60\\trpaddb60\\trpaddft3\\trpaddfb3 ");
                     double x = 0;
                     for (int c = 0; c < cols; c++)

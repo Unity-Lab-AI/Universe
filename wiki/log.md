@@ -33,3 +33,5 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the lattice's clouds readable, the matter levels handing over by degrees): DNA-AND DESIGN 612.
 - 2026-11-07 (every zoom ending at a crawl, chained zooms one movement): DNA-AND DESIGN 613.
 - 2026-11-07 (the climb out of the hole looking up): DNA-AND DESIGN 614.
+- 2026-11-07 (the remnant from the blast, every small body on its orbit, the tuner watching the processor): DNA-AND DESIGN 615-617.
+- 2026-11-07 (the "never a ball" asides gone): DNA-AND DESIGN 618.

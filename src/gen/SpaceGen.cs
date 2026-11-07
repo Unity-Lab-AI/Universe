@@ -249,6 +249,7 @@ namespace Universe.Gen
             public float SR, SG, SB;
             public readonly List<Body> Bodies = new List<Body>();
             public StarVertex[] Static; // belts, Kuiper belt, Oort cloud, orbit lines
+            public float[] StaticRate;  // each point's turn a year (radians) about the star: the belts' rubble on its orbits (Kepler's rate at its distance); 0 for the orbit lines and the Oort cloud
             public int Planets;
         }
 
@@ -381,31 +382,31 @@ namespace Universe.Gen
                 }
             }
 
-            var stat = new List<StarVertex>();
+            var stat = new List<StarVertex>(); var rates = new List<float>();
             // orbit lines
             foreach (var b in sys.Bodies)
                 if (b.Parent < 0)
                     for (int k = 0; k < 240; k++)
                     {
                         double t = k / 240.0 * Math.PI * 2;
-                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.12f)); }   // (faint: a guide to the orbit, never a drawn ring of bodies)
+                        { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.12f)); rates.Add(0); }   // (faint: a guide to the orbit, never a drawn ring of bodies)
                     }
             // asteroid belt in the gap between the rocky planets and the giants
             if (firstGiant > 0 && lastRocky > 0)
             {
-                Ring(stat, rng, Units.Au(lastRocky * 1.15), Units.Au(firstGiant * 0.85), 3000, 0.02, 0.7f, 0.6f, 0.5f, 0.16f);   // (faint: a real belt is rubble spread thin across a huge ring, a haze from afar, never a white annulus)
+                Ring(stat, rates, rng, Units.Au(lastRocky * 1.15), Units.Au(firstGiant * 0.85), 3000, 0.02, 0.7f, 0.6f, 0.5f, 0.16f, sys.MassSol);   // (faint: a real belt is rubble spread thin across a huge ring, a haze from afar, never a white annulus)
                 sys.BeltInAu = lastRocky * 1.15; sys.BeltOutAu = firstGiant * 0.85;
             }
             // Kuiper belt beyond the last planet, and the Oort cloud far out
-            Ring(stat, rng, Units.Au(outer * 1.3), Units.Au(outer * 2.0), 4000, 0.05, 0.6f, 0.75f, 0.9f, 0.12f);
+            Ring(stat, rates, rng, Units.Au(outer * 1.3), Units.Au(outer * 2.0), 4000, 0.05, 0.6f, 0.75f, 0.9f, 0.12f, sys.MassSol);
             sys.KuiperInAu = outer * 1.3; sys.KuiperOutAu = outer * 2.0; sys.OortInAu = 2000 * scale; sys.OortOutAu = 50000 * scale;
             for (int i = 0; i < 6000; i++)
             {
                 Vec3 d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized;
                 double r = Units.Au(rng.Range(2000, 50000) * scale);
-                stat.Add(Star(d * (float)r, 0, 0.55f, 0.7f, 0.85f, 0.06f));
+                stat.Add(Star(d * (float)r, 0, 0.55f, 0.7f, 0.85f, 0.06f)); rates.Add(0);
             }
-            sys.Static = stat.ToArray();
+            sys.Static = stat.ToArray(); sys.StaticRate = rates.ToArray();
             return sys;
         }
 
@@ -495,11 +496,12 @@ namespace Universe.Gen
             return fallback;
         }
 
-        private static void Ring(List<StarVertex> list, Rng rng, double inner, double outer, int n, double thick, float r, float g, float b, float a)
+        private static void Ring(List<StarVertex> list, List<float> rates, Rng rng, double inner, double outer, int n, double thick, float r, float g, float b, float a, double massSol)
         {
             for (int i = 0; i < n; i++)
             {
                 double rad = inner + rng.NextDouble() * (outer - inner), t = rng.NextDouble() * Math.PI * 2;
+                rates.Add((float)(2 * Math.PI / Math.Sqrt(Math.Pow(rad / Units.Au(1), 3) / Math.Max(0.05, massSol))));   // (its turn a year: Kepler's third law at its distance)
                 list.Add(Star(new Vec3((float)(Math.Cos(t) * rad), (float)(rng.Gaussian() * rad * thick), (float)(Math.Sin(t) * rad)), 0, r, g, b, a));
             }
         }

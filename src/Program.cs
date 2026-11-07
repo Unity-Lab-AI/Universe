@@ -441,8 +441,13 @@ namespace Universe
                             _tuneMs = 0; double want = Math.Min(0.9, Window.GpuUse); int backlog = world.GroundBacklog;
                             // the card is not the only limit: when the ground cannot be built and put on the card as fast as it is
                             // asked for, the detail comes down (else it would keep asking for more than can ever arrive)
-                            if (backlog > 1500) Window.Detail = Math.Max(0.2, Window.Detail * 0.85);
-                            else if (Window.GpuBusy < want - 0.05 && backlog < 400) Window.Detail = Math.Min(4, Window.Detail * 1.08);
+                            // nor is the card the only clock: the processor's part of the frame (the ground's pieces chosen, drawn and
+                            // taken in, the matter, the bodies) is a limit of its own: the detail comes down when it runs over about
+                            // twenty milliseconds, and goes up only while it is under fourteen (it had climbed to 275% at five frames
+                            // a second, the card idle while the processor drowned in a thousand pieces a frame)
+                            double cpuMs = Universe.Platform.Stats.CpuSmooth;
+                            if (backlog > 1500 || cpuMs > 20) Window.Detail = Math.Max(0.2, Window.Detail * 0.85);
+                            else if (Window.GpuBusy < want - 0.05 && backlog < 400 && cpuMs < 14) Window.Detail = Math.Min(4, Window.Detail * 1.08);
                             else if (Window.GpuBusy > want + 0.03) Window.Detail = Math.Max(0.2, Window.Detail * 0.9);
                         }
                     }
@@ -457,6 +462,7 @@ namespace Universe
                     window.SetTitle(lastTitle);
                     Window.Fps = frames / titleTimer; titleTimer = 0; frames = 0;
                 }
+                Universe.Platform.Stats.Phases = world != null && !showElements ? world.CpuPhases : null;
                 Universe.Platform.Stats.Frame(gpu.GpuMs, world != null && world.AtGround, world != null ? world.GroundBacklog : 0, gpu.VideoMemory, gpu.AdapterName);   // (the stats on screen, sampled twice a second)
 
                 window.Input.EndFrame();

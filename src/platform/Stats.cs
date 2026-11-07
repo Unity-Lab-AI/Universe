@@ -18,6 +18,10 @@ namespace Universe.Platform
 
         /// <summary>The processor's time on the frame being made (from its start to handing it to the card), set each frame.</summary>
         public static double CpuMs;
+        /// <summary>The processor's part of the frame, smoothed over the last frames (for the detail tuner).</summary>
+        public static double CpuSmooth;
+        /// <summary>The processor's part of the frame by phase (the view's own words), one line on the card.</summary>
+        public static string Phases;
         /// <summary>The lines shown under the frames a second (the card's blocky letters: capitals, digits, . , : % ( ) + - /); none until the first sample.</summary>
         public static string[] Lines = new string[0];
 
@@ -28,7 +32,7 @@ namespace Universe.Platform
         /// rewritten twice a second.</summary>
         public static void Frame(double gpuMs, bool atGround, int backlog, Func<long[]> videoMemory, string card)
         {
-            _cpuSum += CpuMs; _gpuSum += gpuMs; _n++;
+            _cpuSum += CpuMs; _gpuSum += gpuMs; _n++; CpuSmooth += (CpuMs - CpuSmooth) * 0.1;
             long now = Stopwatch.GetTimestamp();
             long created, exited, kernel, user;
             if (_wallAt == 0) { _wallAt = now; if (GetProcessTimes(GetCurrentProcess(), out created, out exited, out kernel, out user)) _cpuAt = kernel + user; return; }
@@ -54,6 +58,7 @@ namespace Universe.Platform
                 string g = "GPU " + gpuAvg.ToString("0.0") + " ms, " + Math.Round(Window.GpuBusy * 100) + "% busy";
                 if (vm != null && vm.Length == 2 && vm[1] > 0) g += ", " + Gb(vm[0]) + " of " + Gb(vm[1]);
                 lines.Add(g);
+                if (!string.IsNullOrEmpty(Phases)) lines.Add("CPU by phase: " + Phases);
                 if (!string.IsNullOrEmpty(card)) lines.Add(card.Length > 38 ? card.Substring(0, 38) : card);
                 lines.Add("detail " + Math.Round(Window.Detail * 100) + "%" + (atGround && backlog > 0 ? ", " + backlog + " ground pieces waiting" : ""));
                 Lines = lines.ToArray();

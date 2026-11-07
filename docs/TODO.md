@@ -98,6 +98,12 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The climb out of the hole looking up at the mouth the whole way:** (built: DNA-AND DESIGN 614; waits on the test) "and the balck hole climb out needs to be looking up on climb out not down"
 
+- [~] **The supernova's remnant from the blast, the tour's shots to what is there:** (built: DNA-AND DESIGN 615; waits on the test) "and it went to a focus on a super nova and nothing was there just empty space, where is its nurtron star or if bigger the balck holes?"
+- [~] **Every belt, Kuiper and Oort body and every comet on its own Kepler orbit, the belts' haze turning:** (built: DNA-AND DESIGN 616; waits on the test) "and it appears astroid belts and comets and shit arnt even moving"
+- [~] **The detail tuner watching the processor too; the frame's processor time by phase on the stats card:** (built: DNA-AND DESIGN 617; waits on the test) "and im only getting 5fps on 1m range so wtf is acually taking all th fps when is looking at a small spot on the ground"
+
+- [~] **The "never a ball" asides gone from the code, the card, the tour and the docs:** (built: DNA-AND DESIGN 618; waits on the test) "get rid of the constant no ball shit you wrote everywhere into my project"
+
 ---
 
 ## Pending

@@ -73,6 +73,9 @@ namespace Universe.Gen
         /// <summary>The size (km) of the finest ground piece ready under the camera. The camera may not go lower
         /// than a few of its steps, so it always lands on finished ground and never inside a rough early piece.</summary>
         public double ReadyStep { get; private set; }
+        /// <summary>The processor's part of the last frame on this ground, by phase: pieces drawn, taken in, chosen, drawn, the rest (for the stats card and the log).</summary>
+        public string FrameStats { get; private set; }
+        private int _uploadsLast;
         // the work arrays a piece is built in: one set per thread, so pieces are built in the background on every core
         private sealed class Work
         {
@@ -1201,6 +1204,7 @@ namespace Universe.Gen
                 if (a.Pending) _pending[a.Key] = np;
                 else { Patch old; if (_cache.TryGetValue(a.Key, out old)) Release(old); _cache[a.Key] = np; }
             }
+            _uploadsLast = ti;
             if (ti < take.Count) lock (_askLock) for (; ti < take.Count; ti++) _done.Add(take[ti]);   // the rest wait for the next frame
         }
         private volatile bool _disposed;
@@ -1274,7 +1278,8 @@ namespace Universe.Gen
         {
             if ((_frame & 63) == 0) lock (_askLock) { var gone = new List<PKey>(); foreach (var kv in _wantedAt) if (_frame - kv.Value > 60) gone.Add(kv.Key); foreach (var k in gone) _wantedAt.Remove(k); }
             _frame++; _budget = newPatchBudget; _clock.Restart(); _msLimit = newPatchBudget >= 400 ? 10 : 30;
-            TakeFinished();
+            var swf = System.Diagnostics.Stopwatch.StartNew(); double tTake, tChoose = 0, tDraw = 0; int groundPieces = 0;
+            TakeFinished(); tTake = swf.Elapsed.TotalMilliseconds;
             // last frame every piece in view had its new form ready: swap the whole planet's ground at once
             if (Generation != DrawnGeneration && _framesWaiting > 0 && _missing == 0) SwapGround();
             if (Generation != DrawnGeneration) _framesWaiting++;
@@ -1312,8 +1317,8 @@ namespace Universe.Gen
                 }
             }
             // the ground (and the sea floor)
-            Collect(Ground, camX, camY, camZ, splitFactor);
-            DrawList(pipes.Solid, 0, camX, camY, camZ, Mat4.Identity, viewRot, proj, lx, ly, lz, fogDist, fr, fg, fb, x, y, w, h);
+            Collect(Ground, camX, camY, camZ, splitFactor); tChoose = swf.Elapsed.TotalMilliseconds; groundPieces = _drawList.Count;
+            DrawList(pipes.Solid, 0, camX, camY, camZ, Mat4.Identity, viewRot, proj, lx, ly, lz, fogDist, fr, fg, fb, x, y, w, h); tDraw = swf.Elapsed.TotalMilliseconds;
             // the sea surface: see-through, with glints of starlight
             if (HasWater)
             {
@@ -1330,8 +1335,10 @@ namespace Universe.Gen
                 DrawList(pipes.Clear, 2, kx, camY, kz, Mat4.RotationY((float)ang), viewRot, proj, clx, ly, clz, fogDist, fr, fg, fb, x, y, w, h);
             }
             if (!Shell) DrawAir(pipes.Glow, camX, camY, camZ, viewRot, proj, lx, ly, lz, x, y, w, h);
+            double tRest = swf.Elapsed.TotalMilliseconds;
             StartBuilding();
             Trim();
+            FrameStats = "ground " + groundPieces + " pieces: take " + tTake.ToString("0.0") + " ms (" + _uploadsLast + " up), choose " + (tChoose - tTake).ToString("0.0") + " ms, draw " + (tDraw - tChoose).ToString("0.0") + " ms, sea-clouds-air " + (tRest - tDraw).ToString("0.0") + " ms, build " + (swf.Elapsed.TotalMilliseconds - tRest).ToString("0.0") + " ms";
         }
 
         private int _camF; private double _camS, _camT;

@@ -414,7 +414,7 @@ caption: One atom
 do: zoom
 rate: 0.4
 until-km: 6e-13
-caption: An atom is not a ball
+caption: An atom: its nucleus, and its electrons where they may be
 
 @stop round-atom
 do: arc

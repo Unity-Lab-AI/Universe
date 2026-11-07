@@ -1390,8 +1390,7 @@ namespace Universe.Shell
             }
         }
 
-        // the bonds between the atoms drawn, each as what it is: the two atoms' outer electrons shared between them (never a stick:
-        // that is the picture from before the quantum theory and the mapping of the electrons)
+        // the bonds between the atoms drawn, each as what it is: the two atoms' outer electrons shared between them
         private void Bonds(List<StarVertex> glow, List<CAtom> atoms, double s, double time, float f)
         {
             if (f <= 0.02 || atoms.Count < 2) return;
@@ -1430,7 +1429,7 @@ namespace Universe.Shell
         private static double Fade(double s, double from, double to) { return Math.Max(0, Math.Min(1, Math.Log(from / s) / Math.Log(from / to))); }
 
         // the lattice's level: an atom as its electron cloud, a soft glow of its element's colour at its real size (the cloud of where
-        // its electrons may be, densest at the middle), its nucleus a spark at the middle; never a ball. Bright enough to read on a
+        // its electrons may be, densest at the middle), its nucleus a spark at the middle. Bright enough to read on a
         // capture (at a third of this brightness the level had read as black between the grain's face and the atoms' level)
         private void LatticeCloud(List<StarVertex> glow, Element e, double x, double y, double z, double s, float w)
         {
@@ -1640,7 +1639,7 @@ namespace Universe.Shell
                 // one picture at a level, never two at once, and neither the picture from before the quantum theory: the lattice's
                 // level (down to about a nanometre, four spacings) is every atom as its electron cloud at its real size, its nucleus a
                 // spark at the middle, the bonds the shared electrons between neighbours; the atom's level below it is each atom's
-                // nucleus and its electrons on their paths and in their orbitals (an atom is never a ball, a bond never a stick)
+                // nucleus and its electrons on their paths and in their orbitals
                 // the levels hand over by degrees, never in one frame: the lattice's clouds (every atom its soft cloud) fade out and
                 // the atoms' own systems fade in between five spacings and three; the atom you are at hands over to its inside view
                 // between eight widths and four, its cloud fading as its electrons' shells and orbitals come up (it had been one
@@ -1661,7 +1660,7 @@ namespace Universe.Shell
                     if ((at.X - _fx) * (at.X - _fx) + (at.Z - _fz) * (at.Z - _fz) < bondReach * bondReach) drawnAt.Add(new CAtom { E = at.E, X = at.X, Y = ay, Z = at.Z });
                     // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom as
                     // its electron cloud: a soft glow of its element's colour at its real size (the cloud of where its electrons may be,
-                    // densest at the middle), its nucleus a spark at the middle; never a ball
+                    // densest at the middle), its nucleus a spark at the middle
                     float lw = (float)((1 - cw) * (1 - fw));
                     if (lw > 0.02f && ar > px * 2) LatticeCloud(glow, at.E, at.X, ay, at.Z, s, sh * lw);
                     // the atom's level: one drawing of each atom (its nucleus and its electrons, each shown once big enough to see), the
@@ -2132,7 +2131,7 @@ namespace Universe.Shell
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
             // is for later)
-            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths; no ball)" : "level: the lattice (each atom its electron cloud, the bonds their shared electrons)"); }   // (one picture at a level, named)
+            { var fmL = FocusMineral; if (!_space && fmL != null && Structured(fmL) && L.Count > 0 && _scale < AtomSpacing * 40 && _scale > AtomSpacing * 0.05) L.Insert(1, _scale < AtomSpacing * 4 ? "level: the atom (its nucleus, its electrons on their paths)" : "level: the lattice (each atom its electron cloud, the bonds their shared electrons)"); }   // (one picture at a level, named)
             if (!_space && Greyness > 0 && L.Count > 0) L.Add(Greyness >= 1 ? "no colour this small: below light's wavelength, in greys as an electron microscope sees; the atoms' and electrons' colours are marks, not light" : "colour is going: the view is nearing light's wavelength");
             return L;
         }

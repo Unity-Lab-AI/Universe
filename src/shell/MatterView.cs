@@ -274,14 +274,12 @@ namespace DnaAnd.Shell
             double ar = AtomRadius(e), dot = s * 0.0035; int shells = e.Shells.Length;
             // (only the atoms near where you look: never every electron of every atom in view, millions of them)
             if (ar / s > 0.004 && fdx * fdx + fdy * fdy + fdz * fdz < Math.Pow(Math.Max(AtomSpacing * 6, s * 1.2), 2))
-                for (int sh = 0; sh < shells; sh++)
                 {
-                    double rr = ar * (sh + 1) / shells; bool valence = sh == shells - 1; int ne = e.Shells[sh];
-                    for (int k = 0; k < ne; k++)
+                    var els = ElectronsOf(e);
+                    for (int k = 0; k < els.Length; k++)
                     {
-                        double tilt = Hash(key + sh, k, 33, _seed) * Math.PI, turn = Hash(key + sh, k, 34, _seed) * Math.PI * 2, ang = time * (0.5 / (sh + 1)) + k * Math.PI * 2 / ne;
-                        double ox = Math.Cos(ang) * rr, oz = Math.Sin(ang) * rr, oy = oz * Math.Sin(tilt); oz *= Math.Cos(tilt);
-                        Add(glow, x + ox * Math.Cos(turn) - oz * Math.Sin(turn), y + oy, z + ox * Math.Sin(turn) + oz * Math.Cos(turn), dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
+                        var el = els[k]; bool valence = el.N == shells; double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz);
+                        Add(glow, x + ox * ar, y + oy * ar, z + oz * ar, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
                     }
                 }
             // its nucleus: a clear sharp point of light in its element's own colour, so the crystal's pattern reads at a glance
@@ -301,11 +299,100 @@ namespace DnaAnd.Shell
                     float b = (valence ? 0.9f : 0.5f) * f * 0.35f;
                     double vx = (x - _fx) / s + _ex, vy = (y + _yOff - _fy) / s + _ey, vz = (z - _fz) / s + _ez;
                     if (Math.Abs(vx - _ex) > 60 || Math.Abs(vz - _ez) > 60) continue;
-                    _orbRecs.Add(new StarVertex { X = (float)vx, Y = (float)vy, Z = (float)vz, Size = (float)(ar * n / top / s),
+                    double rf = 1; foreach (var el in ElectronsOf(e)) if (el.N == n && el.L == l) { rf = el.R; break; }   // (its subshell's own distance)
+                    _orbRecs.Add(new StarVertex { X = (float)vx, Y = (float)vy, Z = (float)vz, Size = (float)(ar * rf / s),
                         R = valence ? b : b * 0.55f, G = valence ? b * 0.78f : b * 0.7f, B = valence ? b * 0.25f : b, A = (l * 8 + m + 0.25f) / 64f });
                 }
             }
         }
+
+
+        // ── each element's own electrons, as its real make-up gives them: every electron in its subshell (1s 2s 2p 3s ...,
+        // filled in the Madelung order), each orbital holding two of opposite spin (filled one to each first, Hund's rule); how
+        // far out each subshell sits from the charge its electrons feel (Slater's rules: the nucleus less the screening of the
+        // electrons inside), its mean distance n^2 a0 / Zeff, so heavy atoms pull their inner shells in tight; and how fast each
+        // goes round (as the charge it feels and its shell: inner electrons of a heavy atom far faster); each moves on a path in
+        // its orbital's own shape (s round, p through its two lobes, d round its four leaves) ──
+        private sealed class Electron { public int N, L, M, Spin, Sub; public double R, W; }
+        private readonly Dictionary<int, Electron[]> _electrons = new Dictionary<int, Electron[]>();
+        private Electron[] ElectronsOf(Element e)
+        {
+            Electron[] r; if (_electrons.TryGetValue(e.Z, out r)) return r;
+            var subs = Subshells(e.Z); var list = new List<Electron>(); double rmax = 0;
+            var rs = new double[subs.Count]; var ws = new double[subs.Count];
+            for (int i = 0; i < subs.Count; i++)
+            {
+                int n = subs[i][0], l = subs[i][1];
+                // Slater's groups: (1s)(2s 2p)(3s 3p)(3d)(4s 4p)(4d)(4f)(5s 5p)...: the same group screens 0.35 each (1s 0.30); for an
+                // s or p electron the shell below screens 0.85 and all deeper 1.00; for a d or f electron everything inside 1.00
+                double screen = 0;
+                for (int j = 0; j < subs.Count; j++)
+                {
+                    int n2 = subs[j][0], l2 = subs[j][1], c = subs[j][2] - (j == i ? 1 : 0); if (c <= 0) continue;
+                    bool sameGroup = l <= 1 ? (n2 == n && l2 <= 1) : (n2 == n && l2 == l);
+                    bool inside = l <= 1 ? (n2 < n || (n2 == n && l2 > 1 && false)) : (n2 < n || (n2 == n && l2 < l));
+                    if (sameGroup) screen += c * (n == 1 ? 0.30 : 0.35);
+                    else if (l <= 1 && n2 == n - 1) screen += c * 0.85;
+                    else if (l <= 1 && n2 < n - 1) screen += c * 1.00;
+                    else if (l > 1 && inside) screen += c * 1.00;
+                }
+                double zeff = Math.Max(1, e.Z - screen);
+                rs[i] = n * n / zeff; ws[i] = zeff * zeff / (n * n * n); rmax = Math.Max(rmax, rs[i]);
+            }
+            double wOut = 0; for (int i = 0; i < subs.Count; i++) if (rs[i] == rmax) wOut = ws[i];
+            for (int i = 0; i < subs.Count; i++)
+            {
+                int n = subs[i][0], l = subs[i][1], count = subs[i][2], orbs = 2 * l + 1;
+                for (int k = 0; k < count; k++)
+                    list.Add(new Electron { N = n, L = l, M = k % orbs, Spin = k / orbs, Sub = i, R = rs[i] / rmax, W = Math.Min(8, ws[i] / Math.Max(1e-9, wOut)) });
+            }
+            r = list.ToArray(); _electrons[e.Z] = r; return r;
+        }
+        // where an electron is on its path (as a share of the atom's size, from its nucleus) at phase a, its orbital's shape
+        // turned its own way for this atom (key)
+        private void ElectronAt(Electron el, long key, double a, out double x, out double y, out double z)
+        {
+            double r = el.R; a += el.Spin * Math.PI;                                       // (its partner of opposite spin: across from it)
+            double u, v, w;
+            switch (el.L)
+            {
+                case 0:
+                    {
+                        // s: round, a path on its sphere, tilted its own way
+                        double tilt = Hash(key + el.Sub, el.Spin, 33, _seed) * Math.PI;
+                        u = Math.Cos(a) * r; v = Math.Sin(a) * r * Math.Sin(tilt); w = Math.Sin(a) * r * Math.Cos(tilt); break;
+                    }
+                case 1:
+                    {
+                        // p: out through one lobe, back through the node at the nucleus, out through the other, along its axis
+                        double t = Math.Sin(a), side = Math.Sin(2 * a) * 0.32;
+                        double ax = el.M == 0 ? 1 : 0, ay = el.M == 1 ? 1 : 0, az = el.M == 2 ? 1 : 0;
+                        double px = ay, py = az, pz = ax;                                      // (a direction across it)
+                        u = (ax * t * 1.25 + px * side) * r; v = (ay * t * 1.25 + py * side) * r; w = (az * t * 1.25 + pz * side) * r; break;
+                    }
+                case 2:
+                    {
+                        // d: round its four leaves in their plane (or, for d z^2, through its two lobes and round its ring)
+                        if (el.M == 4) { double t = Math.Sin(a); u = Math.Cos(3 * a) * r * 0.45; v = t * r * 1.2; w = Math.Sin(3 * a) * r * 0.45; break; }
+                        double q = Math.Abs(Math.Cos(2 * a)) * r * 1.3, c = Math.Cos(a) * q, d2 = Math.Sin(a) * q;
+                        if (el.M == 3) { double cc = (c - d2) * 0.7071, dd = (c + d2) * 0.7071; c = cc; d2 = dd; }
+                        if (el.M == 0 || el.M == 3) { u = c; v = el.M == 0 ? d2 : 0; w = el.M == 3 ? d2 : 0; }
+                        else if (el.M == 1) { u = 0; v = c; w = d2; } else { u = c; v = 0; w = d2; }
+                        break;
+                    }
+                default:
+                    {
+                        // f: round its six leaves
+                        double q = Math.Abs(Math.Cos(3 * a)) * r * 1.3, b = el.M * 0.9;
+                        u = Math.Cos(a) * q; v = Math.Sin(b) * Math.Sin(a) * q; w = Math.Cos(b) * Math.Sin(a) * q; break;
+                    }
+            }
+            // the whole atom's orbitals turned one way for this atom (its own place in the crystal)
+            double turn = Hash(key, 7, 34, _seed) * Math.PI * 2, ct = Math.Cos(turn), st = Math.Sin(turn);
+            x = u * ct - w * st; y = v; z = u * st + w * ct;
+        }
+        // how far round its path an electron is at a time (inner and more tightly held electrons faster; slowed to be watched)
+        private static double ElectronPhase(Electron el, int k, double time) { return time * 0.5 * el.W + k * 2.399963229728653; }
 
         private static int[] Shells(int z)
         {
@@ -1393,27 +1480,26 @@ namespace DnaAnd.Shell
             key = (long)Math.Round(x / 1e-16) * 73856093L ^ (long)Math.Round(y / 1e-16) * 19349663L ^ (long)Math.Round(z / 1e-16) * 83492791L;   // from where the atom is: the same atom, the same electrons, however it is drawn
             double ar = AtomRadius(e); int shells = e.Shells.Length;
             double dot = s * 0.0035;                                                     // electrons: points, shown as a clear dot a few pixels wide
-            for (int sh = 0; sh < shells; sh++)
             {
-                double rr = ar * (sh + 1) / shells; bool valence = sh == shells - 1;    // the outermost shell: the one that bonds
-                Add(glow, x, y, z, rr * 1.05, (valence ? 0.09f : 0.04f) * f, (valence ? 0.07f : 0.06f) * f, (valence ? 0.03f : 0.12f) * f, s);
-                int ne = e.Shells[sh];                                          // every one of its electrons
-                for (int k = 0; k < ne; k++)
+                // every one of its electrons, in its own subshell and orbital (this element's own make-up), each on its path in its
+                // orbital's shape, at its subshell's distance, at its own speed; the valence (outermost) shell in gold
+                var els = ElectronsOf(e);
+                for (int k = 0; k < els.Length; k++)
                 {
-                    double tilt = Hash(key + sh, k, 33, _seed) * Math.PI, turn = Hash(key + sh, k, 34, _seed) * Math.PI * 2, ang = time * (0.5 / (sh + 1)) + k * Math.PI * 2 / ne;
-                    double ct = Math.Cos(turn), st = Math.Sin(turn), ci = Math.Cos(tilt), si = Math.Sin(tilt);
-                    // its path: a ring of faint points
-                    for (int q = 0; q < 28; q++)
-                    {
-                        double pa = q * Math.PI * 2 / 28, px = Math.Cos(pa) * rr, pz = Math.Sin(pa) * rr, py = pz * si; pz *= ci;
-                        Add(glow, x + px * ct - pz * st, y + py, z + px * st + pz * ct, dot * 0.35, (valence ? 0.16f : 0.08f) * f, (valence ? 0.12f : 0.12f) * f, (valence ? 0.04f : 0.2f) * f, s);
-                    }
-                    double ox = Math.Cos(ang) * rr, oz = Math.Sin(ang) * rr, oy = oz * si; oz *= ci;
-                    Add(glow, x + ox * ct - oz * st, y + oy, z + ox * st + oz * ct, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
-                    double exx = x + ox * ct - oz * st, eyy = y + oy, ezz = z + ox * st + oz * ct;
-                    { int nb = _bodies.Count; AddBody(3, sh + 1, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells; _bodies[nb].Key = key; } }   // every atom's electrons can be picked
+                    var el = els[k]; bool valence = el.N == shells;
+                    // its path, faint (only one of each orbital's pair: they share it)
+                    if (el.Spin == 0)
+                        for (int q = 0; q < 28; q++)
+                        {
+                            double px, py, pz; ElectronAt(el, key, q * Math.PI * 2 / 28, out px, out py, out pz);
+                            Add(glow, x + px * ar, y + py * ar, z + pz * ar, dot * 0.35, (valence ? 0.16f : 0.08f) * f, (valence ? 0.12f : 0.12f) * f, (valence ? 0.04f : 0.2f) * f, s);
+                        }
+                    double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz);
+                    double exx = x + ox * ar, eyy = y + oy * ar, ezz = z + oz * ar;
+                    Add(glow, exx, eyy, ezz, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
+                    { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; } }   // every atom's electrons can be picked
                     // the electron you picked moves on its path: the camera keeps going to where it is now
-                    if (_picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.I == sh + 1 && _picked.J == k)
+                    if (_picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.J == k)
                     { _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz; _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz; }
                 }
             }
@@ -1639,6 +1725,7 @@ namespace DnaAnd.Shell
                 var ps = (_picked.Sym ?? "electron").Split(':'); var pe = ps.Length > 1 ? El(ps[1]) : null; int pshells = ps.Length > 2 ? int.Parse(ps[2]) : 0;
                 L.Add("an electron of " + (pe != null ? "an atom of " + pe.Name.ToLowerInvariant() + " (" + pe.Symbol + ")" : "an atom"));
                 L.Add("shell " + _picked.I + (pshells > 0 && _picked.I == pshells ? ", its outermost: a valence electron, the kind that bonds" : " of " + Math.Max(pshells, (int)_picked.I)));
+                if (ps.Length > 3) L.Add("in its " + ps[3] + " subshell (" + (ps[3].EndsWith("s") ? "round" : ps[3].EndsWith("p") ? "two lobes" : ps[3].EndsWith("d") ? "four leaves" : "six leaves") + ")");
                 L.Add("charge -1; mass 1/1836 of a proton");
                 L.Add("a point as far as measured: smaller than 10^-22 m");
                 L.Add("where it is: a cloud of chance round the nucleus");

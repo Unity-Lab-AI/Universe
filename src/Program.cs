@@ -193,6 +193,13 @@ namespace Universe
                 if (landed == Universe.Platform.Launcher.Choice.Quit) { window.Close(); gpu.Dispose(); return 0; }
                 if (chosen.HasValue) { Seed = chosen.Value; WriteLog("universe seed " + Seed + " (chosen on the landing page)"); }
             }
+            Universe.Shell.ScaleHud firstHud = null;
+            if (Array.IndexOf(args, "--world") >= 0 || PreviewBuild)
+            {
+                // the loading screen from the very first frame: the universe's making begins before its own screen can be drawn,
+                // and those seconds were a black window
+                try { firstHud = new Universe.Shell.ScaleHud(gpu.Device); gpu.BeginFrame(0.005f, 0.006f, 0.012f); firstHud.DrawLoading(meshes, gpu.Width, gpu.Height, 0, new[] { "Making the universe", "the first galaxies, from the seed" }); gpu.EndFrame(); } catch { }
+            }
             UniverseView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new UniverseView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the universe: one camera through every scale
             if (landing && landed == Universe.Platform.Launcher.Choice.Tour && world != null)
             {
@@ -436,6 +443,7 @@ namespace Universe
             if (rec != null) { try { rec.Dispose(); WriteLog("clip saved · " + rec.Path); } catch { } rec = null; }   // a clip being filmed when the window closes is finished, so it plays
             if (deep != null) deep.Dispose();
             if (elements != null) elements.Dispose();
+            if (firstHud != null) firstHud.Dispose();
             if (universe != null) universe.Dispose();
             if (microbes != null) microbes.Dispose();
             if (style != null) style.Dispose();

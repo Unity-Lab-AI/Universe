@@ -147,17 +147,28 @@ namespace Universe.Shell
         /// <summary>The start's loading screen: the dark of space, a bar filling as the universe is made, and what is being made.</summary>
         public void DrawLoading(MeshPipes pipes, int w, int h, double share, IList<string> lines)
         {
+            // the start's loading screen: unmistakable (a dark fill, the words MAKING THE UNIVERSE in big letters, a wide bright bar
+            // with its percentage beside it, and what is being made written under it): a thin bar on a near-black screen for a few
+            // seconds read as a black screen
             DrawFill(pipes, w, h, 0.012f, 0.014f, 0.03f);
-            var l = new List<StarVertex>(); float bw = w * 0.4f, bh = Math.Max(6, h * 0.008f), x0 = (w - bw) / 2, y0 = h * 0.55f;
-            Quad(l, x0 - 2, y0 - 2, bw + 4, bh + 4, 0.25f, 0.3f, 0.45f);                    // its frame
+            var l = new List<StarVertex>(); float px = Math.Max(1, h / 540f), bw = w * 0.5f, bh = Math.Max(10, h * 0.018f), x0 = (w - bw) / 2, y0 = h * 0.52f;
+            {
+                string title = "MAKING THE UNIVERSE"; float cell = 3.2f * px, tw = title.Length * 6 * cell, cx = (w - tw) / 2, cy = y0 - 16 * cell;
+                foreach (char ch in title) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(l, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, 0.85f, 0.9f, 1f); cx += 6 * cell; }
+            }
+            Quad(l, x0 - 3 * px, y0 - 3 * px, bw + 6 * px, bh + 6 * px, 0.3f, 0.36f, 0.55f);     // its frame
             Quad(l, x0, y0, bw, bh, 0.03f, 0.035f, 0.07f);
             Quad(l, x0, y0, (float)(bw * Math.Max(0, Math.Min(1, share))), bh, 0.55f, 0.7f, 1f);   // how far along
+            {
+                string pct = ((int)(Math.Max(0, Math.Min(1, share)) * 100)).ToString() + "%"; float cell = 2.2f * px, cx = x0 + bw + 8 * px, cy = y0 + bh / 2 - 3.5f * cell;
+                foreach (char ch in pct) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(l, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, 0.85f, 0.9f, 1f); cx += 6 * cell; }
+            }
             var arr = l.ToArray(); var buf = Slot(arr, arr.Length);
             var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 0; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;
             var c2 = new float[BillboardPipeline.ConstantCount];
             c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
             pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
-            DrawCard(pipes, lines, x0, h * 0.40, w, h);
+            DrawCard(pipes, lines, x0, y0 + bh + 12 * px, w, h);
         }
         public void DrawBars(MeshPipes pipes, int w, int h, float frac)
         {

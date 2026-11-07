@@ -145,6 +145,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The dive onto a small body firing where the zoom can reach, the camera set over the drawn stone, the matter's stops never run in open space:** (built: DNA-AND DESIGN 641; waits on the test) "the astroid is still fucked read what it says its suppose to be looking at versus what on the screen.. wtf this is totally fucked and dont you dare say the astroid IS there becasue its not. i tookk about 100 pics ofevery second passing so u cant fuck it up" / "there like 4 or 5 things it says in theose pics that is not whats in view" / "why is the astorid disappearing when zooming into it?" / "and fuck if u look at the scale it never zoomed in"
 
+- [~] **The ghost discs beside a rock gone (the far glows only the bodies not drawn as stone); the dive's state in the log:** (built: DNA-AND DESIGN 642; waits on the test and its log) "same fucking problem i got pics on first zoom in the astroid instanly disappears like it went zooming past it or astroids dont have something planets do to where the astroid is ghosting us on zoom in or it something about being too mall idk we need to build the astroids to proprly have the full zoom ability and not like ghost physics that doesnt hold up... i got pics"
+
 ---
 
 ## Pending

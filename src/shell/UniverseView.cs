@@ -1010,7 +1010,7 @@ namespace Universe.Shell
         }
         // a solid body: a sphere of triangles (an icosahedron cut four times), pushed in and out by broad lumps and pitted by craters,
         // drawn as lit stone with flat facets (never points of light); its star along +x
-        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private double _lastDrawTime; private double[] _tSpot;   // _tSpot: a spot picked on the small body you are at (unit, from its middle): the zoom flies to it, as to a spot of a world's land
+        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private double _lastDrawTime; private int _diveLogTick = -1; private double[] _tSpot;   // _tSpot: a spot picked on the small body you are at (unit, from its middle): the zoom flies to it, as to a spot of a world's land
         // a small body's shape: its radius and shade along any direction from its middle (its bumps, craters, stretch and grit), the
         // one function the mesh is built from and a dive lands on, so the ground you stand on is the stone that is drawn
         private static Func<double[], double[]> RockShape(Rng rng, double lump)
@@ -3080,6 +3080,14 @@ namespace Universe.Shell
                 _spaceScale = 1.0 / 0.6; _spaceTop = _spaceScale * 1.1;                   // from a kilometre: a fog of plasma, down to its nuclei
                 return true;
             }
+            if (_tKind == 6 && _spaceScale <= 0 && _matterScale <= 0 && _tIndex >= 0 && _tIndex < _extras.Count && (int)(_lastDrawTime * 2) != _diveLogTick)
+            {
+                // the dive's state, twice a second, so a dive that does not come says why in the log: the body, whether it is the one
+                // picked, how far its middle is against its radius and its stone's radius here, the wheel, the course, whether it is drawn as its stone
+                _diveLogTick = (int)(_lastDrawTime * 2); var exl = _extras[_tIndex]; double lx = RelX(exl) - _ox, ly = RelY(exl) - _oy, lz = RelZ(exl) - _oz, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz);
+                double lrD = exl.Hole || exl.Shape.Length == 0 ? exl.R : BodyRadiusToward(exl, _lastDrawTime, -lx / Math.Max(1e-300, ll), -ly / Math.Max(1e-300, ll), -lz / Math.Max(1e-300, ll));
+                ZoomLog("DIVE check: " + exl.Name + ", same as the pick " + (exl == _tExtra) + ", middle " + ScaleHud.Words(ll / Units.Km(1)) + " off, nominal R " + ScaleHud.Words(exl.R / Units.Km(1)) + " (pick R " + ScaleHud.Words(_tRadius / Units.Km(1)) + "), stone R here " + ScaleHud.Words(lrD / Units.Km(1)) + ", wheel " + input.Wheel.ToString("0.00") + ", on course " + OnCourse().ToString("0.00") + ", over pick " + OverPick().ToString("0.00") + ", drawn as stone " + ShapeShown(exl, _lastH) + ", bodies " + _extras.Count);
+            }
             if (_tKind == 6 && input.Wheel > 0 && _spaceScale <= 0 && _matterScale <= 0 && _tIndex >= 0 && _tIndex < _extras.Count)
             {
                 // at a picked body: on in to what it is made of, the same zoom. A small body (an asteroid, a comet's nucleus, a Kuiper
@@ -3672,18 +3680,18 @@ namespace Universe.Shell
             if (_extras.Count > 0)
             {
                 if (_extraV.Length < _extras.Count) _extraV = new StarVertex[_extras.Count + 256];
-                for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex.Shape.Length > 0 && ShapeShown(ex, h)) { _extraV[q] = new StarVertex(); continue; }   // (drawn as its own body: no point of light over it)
+                int nv = 0;   // (only the bodies not drawn as their own stone: an empty vertex had stood in for each drawn one, size nothing at the camera itself, and the card projected it into a white speckled disc on the screen, the ghosts seen beside a rock)
+                for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex.Shape.Length > 0 && ShapeShown(ex, h)) continue;   // (drawn as its own body: no point of light over it)
                     if (ex.Hole)
                     {
                         // its glow from afar (so it can be found and picked), fading out within a hundred radii as its real disc, shadow and lens take over
                         double hdx = RelX(ex) - _ox, hdy = RelY(ex) - _oy, hdz = RelZ(ex) - _oz, hrs = ex.Mass > 0 ? Units.Km(Physics.HorizonKm(ex.Mass)) : ex.R / 2.6;
                         float farF = (float)Math.Max(0, Math.Min(1, (Math.Sqrt(hdx * hdx + hdy * hdy + hdz * hdz) / Math.Max(1e-300, hrs) - 100) / 100)) * (ex.Feeding > 0 ? 0.7f : 0.25f);
-                        _extraV[q] = new StarVertex { X = (float)hdx, Y = (float)hdy, Z = (float)hdz, Size = (float)(ex.R * 3), R = ex.Cr * farF, G = ex.Cg * farF, B = ex.Cb * farF, A = 1 }; continue;
+                        _extraV[nv++] = new StarVertex { X = (float)hdx, Y = (float)hdy, Z = (float)hdz, Size = (float)(ex.R * 3), R = ex.Cr * farF, G = ex.Cg * farF, B = ex.Cb * farF, A = 1 }; continue;
                     }
-                    _extraV[q] = new StarVertex { X = (float)(RelX(ex) - _ox), Y = (float)(RelY(ex) - _oy), Z = (float)(RelZ(ex) - _oz), Size = (float)ex.R, R = ex.Cr, G = ex.Cg, B = ex.Cb, A = 1 }; }
+                    _extraV[nv++] = new StarVertex { X = (float)(RelX(ex) - _ox), Y = (float)(RelY(ex) - _oy), Z = (float)(RelZ(ex) - _oz), Size = (float)ex.R, R = ex.Cr, G = ex.Cg, B = ex.Cb, A = 1 }; }
                 if (_extraBuf == null || _extraBuf.Bytes < (long)_extras.Count * Stride) { if (_extraBuf != null) _extraBuf.Dispose(); _extraBuf = new UploadBuffer(_gpu.Device, (long)(_extras.Count + 256) * Stride); }
-                _extraBuf.Write(_extraV, _extras.Count);
-                DrawPoints(_extraBuf, _extras.Count, vp, right, up, 1f, 0.0024f, w, h, time);
+                if (nv > 0) { _extraBuf.Write(_extraV, nv); DrawPoints(_extraBuf, nv, vp, right, up, 1f, 0.0024f, w, h, time); }
             }
             Render.GpuLog.Pass = "a cluster's stars";
             if (_cstars.Count > 0 && !skyHidden)

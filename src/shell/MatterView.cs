@@ -889,6 +889,15 @@ namespace DnaAnd.Shell
                 if (inner > rad * 1.3 || ring >= 6) break;                                // the grain round you as far as can be seen (never the whole of it at nanometres: it cannot show)
             }
         }
+        // whether a point (in the view's units) is in view, with a margin of its own size: what is not is neither worked out nor drawn
+        private bool InView(double x, double y, double z, double margin)
+        {
+            if (!_haveVp) return true; var m = _lastVp;
+            double cx = x * m.M11 + y * m.M21 + z * m.M31 + m.M41, cy = x * m.M12 + y * m.M22 + z * m.M32 + m.M42, cw = x * m.M14 + y * m.M24 + z * m.M34 + m.M44;
+            if (cw < -margin) return false;
+            double lim = Math.Max(0.05, cw) * 1.15 + margin * 2;
+            return Math.Abs(cx) <= lim && Math.Abs(cy) <= lim;
+        }
         // one ring: a grid of N x N steps round the point you dive into, its quads inside 'hole' (the finer ring's reach) left out
         private void PatchRing(List<StarVertex> mesh, double s, Mineral m, long gi, long gj, double gx, double gy, double gz, double rad, double L, double step, int N, double frac, double hole)
         {
@@ -899,7 +908,8 @@ namespace DnaAnd.Shell
                 for (int b = 0; b <= N; b++)
                 {
                     long key = ((long)L * 1000003L + (ia0 + a)) * 2000003L + (ib0 + b); double[] c;   // each point fixed on the grain: worked out once
-                    if (!_patchCache.TryGetValue(key, out c))
+                    if (!_patchCache.TryGetValue(key, out c) && !InView(atA(a) / s + _ex, _ey, atB(b) / s + _ez, step / s * 2)) { hy[a, b] = 0; ok[a, b] = false; continue; }   // (out of view: not worked out)
+                    if (c == null)
                     {
                         if (_patchBudget-- <= 0) { hy[a, b] = 0; ok[a, b] = false; continue; }      // not worked out yet: next frame
                         double y; bool o = GrainTop(gi, gj, gx, gy, gz, rad, _fx + atA(a), _fz + atB(b), rad * 0.004, out y);   // every ring the same coarse shape (so no ring shows its edge); all finer detail per pixel on the card, the same everywhere   // the coarse shape here; the fine detail is the card's
@@ -940,6 +950,7 @@ namespace DnaAnd.Shell
                 for (int b = 0; b < N; b++)
                 {
                     if (!ok[a, b] || !ok[a + 1, b] || !ok[a, b + 1] || !ok[a + 1, b + 1]) continue;
+                    if (!InView((atA(a) + step * 0.5) / s + _ex, (hy[a, b] - sink + _yOff - _fy) / s + _ey, (atB(b) + step * 0.5) / s + _ez, step / s * 1.5)) continue;   // only what is in view is drawn
                     // each ring round, never a square: the finer ring inside its hole, its own edge a circle, the grain's body beyond
                     double r00 = Math.Sqrt(atA(a) * atA(a) + atB(b) * atB(b)), r11 = Math.Sqrt(atA(a + 1) * atA(a + 1) + atB(b + 1) * atB(b + 1)), r10 = Math.Sqrt(atA(a + 1) * atA(a + 1) + atB(b) * atB(b)), r01 = Math.Sqrt(atA(a) * atA(a) + atB(b + 1) * atB(b + 1));
                     double rmax = Math.Max(Math.Max(r00, r11), Math.Max(r10, r01)), edge = N / 2 * step * 0.98;

@@ -131,7 +131,7 @@ namespace DnaAnd.Shell
         private double _farScale;                                                         // how far out the wheel has zoomed (universe units): out grows it, in brings it back
         private double _uRadius = 134000, _uGalaxies = 1e11, _webUnits = 4000, _webContrast = 6, _regionUnits = 20, _nearUnits = 400; private int _glowPoints = 300000;
         private readonly HashSet<long> _regions = new HashSet<long>(); private long _lastRegionCell = long.MinValue;
-        private UploadBuffer _glowBuf; private int _glowCount; private StarVertex[] _glowAll, _glowShown = new StarVertex[0]; private double _glowAtT = -10, _glowAtX = double.NaN, _glowAtY, _glowAtZ;
+        private UploadBuffer _glowBuf; private int _glowCount; private StarVertex[] _glowAll, _glowShown = new StarVertex[0]; private long _glowCameAt; private double _glowAtT = -10, _glowAtX = double.NaN, _glowAtY, _glowAtZ;
         private void AddGalaxy(int t, ulong gseed, double x, double y, double z, float tilt, float turn, float scale)
         {
             var g = new Galaxy { Type = _types[t], Name = _typeNames[t], Seed = gseed, X = x, Y = y, Z = z, Tilt = tilt, Turn = turn, Scale = scale };
@@ -259,7 +259,7 @@ namespace DnaAnd.Shell
             if (_glowAll != null && _glowMaker == null && Math.Sqrt((_cx - _glowCX) * (_cx - _glowCX) + (_cy - _glowCY) * (_cy - _glowCY) + (_cz - _glowCZ) * (_cz - _glowCZ)) > reachU * 0.3) { _glowAll = null; _glowReady = null; }   // far from where they were made: made again round you
             if (_glowAll == null)
             {
-                if (_glowReady != null) { _glowAll = _glowReady; _glowMaker = null; }
+                if (_glowReady != null) { _glowAll = _glowReady; _glowMaker = null; _glowCameAt = System.Diagnostics.Stopwatch.GetTimestamp(); }
                 else
                 {
                     if (_glowMaker == null)
@@ -1957,6 +1957,7 @@ namespace DnaAnd.Shell
                 if (double.IsNaN(_glowAtX) || (_glowAll == null && _glowReady != null) || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
                 var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
                 float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);
+                webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
                 if (webFade > 0.01)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
                 _web[0] = (float)(1.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)(_nearUnits * 1.0);   // (from where the galaxies made in full begin to fade, so the two overlap: no gap)

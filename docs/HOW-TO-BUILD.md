@@ -141,7 +141,7 @@ Be warned before you open it: the code is **dense**. It is readable, but not the
 | **Where it is densest** | The per-pixel and per-frame work: the shaders (HLSL inside `Pipeline.cs` and `MeshPipeline.cs`), the camera and tour (`UniverseView`), the matter at its real sizes (`MatterView`), the ground (`PlanetTerrain`) |
 | **Where it is easiest** | The content (`content/`: every template is a few plain lines), the generators' entries, `Physics`, `Stats`, `Settings`, the writers (`PngWriter`, `GifWriter`) |
 | **The rule it follows** | Everything is said once, in English, next to the code that does it. Nothing is left for a reader to guess at; but nothing is spread out either |
-| **Who can change what** | The templates: anyone, with a text editor. The code, by hand: an advanced programmer, at home in C#, Direct3D 12 at the COM level, HLSL and double-precision numerics; it is not a beginner's codebase, and a careless edit in the hot paths breaks the picture. With an AI coding assistant, anyone: the comments are written so that one can read a block, understand it and change it safely |
+| **A suggestion** | Change the templates freely: a text editor is all they need. For the code, unless you are an advanced programmer at home in C#, Direct3D 12 at the COM level, HLSL and double-precision numerics, we suggest changing it with an AI coding assistant rather than by hand: the comments are written so that one can read a block, understand it and change it safely, and a careless edit in the hot paths breaks the picture |
 
 ---
 

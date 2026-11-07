@@ -33,7 +33,7 @@
 
 ## For coders: the program itself
 
-> Changing the code by hand is work for an advanced programmer; the templates are for anyone, and with an AI coding assistant the code is too.
+> A suggestion: change the templates freely; for the code, unless you are an advanced programmer, use an AI coding assistant rather than editing by hand. The comments are written for that.
 
 | Document | What it is made of | Takes |
 |---|---|---|

@@ -48,7 +48,7 @@ internal static class Setup
                 if (r == DialogResult.Cancel) return 2;
                 if (r == DialogResult.No) return Uninstall(false);
             }
-            Application.Run(new Wizard(existing ?? DefaultDir, existing != null));
+            Application.Run(new Wizard(existing ?? LastDir(), existing != null));
             return 0;
         }
         catch (Exception ex)
@@ -58,13 +58,38 @@ internal static class Setup
         }
     }
 
+    // where it is installed: Windows' Apps list entry first; failing that, where its shortcuts lead
     private static string InstalledAt()
     {
-        using (var k = Registry.CurrentUser.OpenSubKey(UninstallKey))
-        {
-            var v = k == null ? null : k.GetValue("InstallLocation") as string;
-            return v != null && Directory.Exists(v) ? v : null;
-        }
+        foreach (var root in new[] { Registry.CurrentUser, Registry.LocalMachine })
+            try
+            {
+                using (var k = root.OpenSubKey(UninstallKey))
+                {
+                    var v = k == null ? null : k.GetValue("InstallLocation") as string;
+                    if (!string.IsNullOrEmpty(v) && File.Exists(Path.Combine(v, AppName + ".exe"))) return v.TrimEnd('\\');
+                }
+            }
+            catch { }
+        foreach (var l in new[] { StartMenuLink, DesktopLink })
+            try
+            {
+                if (!File.Exists(l)) continue;
+                var t = Type.GetTypeFromProgID("WScript.Shell"); object shell = Activator.CreateInstance(t);
+                object sc = t.InvokeMember("CreateShortcut", BindingFlags.InvokeMethod, null, shell, new object[] { l });
+                var target = sc.GetType().InvokeMember("TargetPath", BindingFlags.GetProperty, null, sc, null) as string;
+                if (target != null && File.Exists(target) && Path.GetFileName(target).Equals(AppName + ".exe", StringComparison.OrdinalIgnoreCase)) return Path.GetDirectoryName(target);
+            }
+            catch { }
+        return null;
+    }
+
+    // the folder chosen last time (kept for the next install), else the usual place
+    private const string ChoiceKey = @"Software\Unity AI Lab\" + AppName;
+    private static string LastDir()
+    {
+        try { using (var k = Registry.CurrentUser.OpenSubKey(ChoiceKey)) { var v = k == null ? null : k.GetValue("InstallDir") as string; if (!string.IsNullOrEmpty(v)) return v; } } catch { }
+        return DefaultDir;
     }
 
     // ── the requirements, checked on this computer ──
@@ -257,6 +282,7 @@ internal static class Setup
                     k.SetValue("UninstallString", "\"" + uninstaller + "\" /uninstall"); k.SetValue("QuietUninstallString", "\"" + uninstaller + "\" /uninstall /quiet");
                     k.SetValue("NoModify", 1); k.SetValue("NoRepair", 1); k.SetValue("EstimatedSize", (int)(DirSize(dir) / 1024));
                 }
+                using (var c = Registry.CurrentUser.CreateSubKey(ChoiceKey)) c.SetValue("InstallDir", dir);   // (offered again next time)
                 _bar.Value = _bar.Maximum; _installed = true; _installedDir = dir;
                 foreach (Control c in _pages[8].Controls) if (c.Name == "body") c.Text = c.Text.Replace("{dir}", dir);
                 Show(8);

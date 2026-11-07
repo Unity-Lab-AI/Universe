@@ -292,6 +292,16 @@ namespace Universe.Gen
             if (layout != null && layout != "sun-like") layoutOf(layout, false);
             var hj = sysT("hot-jupiter", "share-in-universe", 0, 0);
             bool hotJupiter = layout == "hot-jupiter" || (layout == null && rng.NextDouble() < (hj != null ? hj[0] : 0.1));
+            // how far out of the system's plane its worlds lie: born in one flat disc they stay within a few degrees, but a
+            // share of systems are stirred (a star passing close, a second star) and their worlds scattered tens of degrees
+            // apart (content/solar-systems.unt tilt-spread, wild-tilt-share, wild-tilt; the stirred kind by its share, from the
+            // seed itself so every other system stays as it was)
+            var stirredShare = sysT("stirred", "share-in-universe", 0, 0);
+            ulong sh = (seed ^ 0x5A17UL) * 0x9E3779B97F4A7C15UL; sh ^= sh >> 29;
+            bool stirred = layout == "stirred" || (layout == null && stirredShare != null && (sh >> 11) * (1.0 / 9007199254740992.0) < stirredShare[0]);
+            string tiltKind = stirred ? "stirred" : (layout ?? "sun-like");
+            double[] ts = sysT(tiltKind, "tilt-spread", 0, 0) ?? sysT("sun-like", "tilt-spread", 0, 0), ws = sysT(tiltKind, "wild-tilt-share", 0, 0) ?? sysT("sun-like", "wild-tilt-share", 0, 0), wt = sysT(tiltKind, "wild-tilt", 0, 0) ?? sysT("sun-like", "wild-tilt", 0, 0);
+            double tiltSpread = ts != null ? ts[0] : 1.5, wildShare = ws != null ? ws[0] : 0.06, wildLo = wt != null ? wt[0] : 8, wildHi = wt != null ? wt[1] : 33;
             double lastRocky = 0, firstGiant = 0, outer = 0;
             for (int i = 0; i < count; i++, a *= step)
             {
@@ -334,7 +344,7 @@ namespace Universe.Gen
                 double u1 = Frac(Math.Sin(b.Phase * 91.7 + b.OrbitUnits * 1e-3) * 43758.5453), u2 = Frac(Math.Sin(b.Phase * 37.3 + 4.1) * 24634.6345), u3 = Frac(Math.Sin(b.Phase * 13.1 + 9.7) * 15731.743);
                 b.Node = u2 * Math.PI * 2;
                 if (b.Parent < 0)
-                    b.Incl = (u3 < 0.06 ? 8 + u1 * 25 : Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, u1))) * 1.5) * Math.PI / 180;   // most within a few degrees; a few far out of line
+                    b.Incl = (u3 < wildShare ? wildLo + u1 * (wildHi - wildLo) : Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, u1))) * tiltSpread) * Math.PI / 180;   // most within the kind's spread; a share far out of line
                 else
                 {
                     double far = b.OrbitUnits / Math.Max(1e-30, sys.Bodies[b.Parent].RadiusUnits);

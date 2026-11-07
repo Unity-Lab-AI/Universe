@@ -9,7 +9,9 @@
 # How a system is laid out (the usual one, sun-like, first; a kind asked for gives only what differs): planets: how many
 #   worlds; first-orbit-au: the first world's orbit in AU, times a value in first-orbit-spread; scales-with-star: moved out
 #   by the square root of the star's brightness (yes) or not; spacing: each orbit over the one before (the Sun's worlds
-#   about 1.4 to 2); share-in-universe: how often a system in the universe is of this kind.
+#   about 1.4 to 2); share-in-universe: how often a system in the universe is of this kind. tilt-spread: how far its worlds'
+#   orbits lie out of its plane, degrees (a spread; born in one flat disc, ours within a few); wild-tilt-share and wild-tilt: the
+#   share of its worlds far out of line, and how far.
 @system sun-like
 name: Sun-like system
 real: yes
@@ -21,6 +23,9 @@ first-orbit-au: 0.3
 first-orbit-spread: 0.6..1.4
 scales-with-star: yes
 spacing: 1.45..1.9
+tilt-spread: 1.5
+wild-tilt-share: 0.06
+wild-tilt: 8..33
 
 @system compact
 name: Compact system
@@ -41,6 +46,16 @@ shape: a gas giant orbiting very close to its star, usually with few close neigh
 example: 51 Pegasi
 planets: 1..3
 share-in-universe: 0.1
+
+@system stirred
+name: Stirred system
+real: yes
+shape: worlds scattered out of the plane they were born in, tens of degrees apart, after a star passed close or a second star pulled at them
+example: Upsilon Andromedae (its two outer planets 30 degrees apart)
+share-in-universe: 0.12
+tilt-spread: 12
+wild-tilt-share: 0.3
+wild-tilt: 20..45
 
 @system crowded
 name: Crowded system

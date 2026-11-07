@@ -228,6 +228,8 @@ spacing: 1.25..1.4
 | `scales-with-star` | `yes`: orbits move out with the square root of the star's brightness |
 | `spacing` | Each orbit over the one before (the Sun's worlds, about 1.4 to 2) |
 | `share-in-universe` | How often a system in the universe is of this kind |
+| `tilt-spread` | How far its worlds' orbits lie out of the system's plane, in degrees. Born in one flat disc they stay within a few (ours: 1.5); a **stirred** system, pulled at by a passing star or a second star, scatters them tens of degrees apart |
+| `wild-tilt-share`, `wild-tilt` | The share of its worlds far out of line, and how far |
 
 Which kind of world forms in each orbit then follows from the world templates above.
 

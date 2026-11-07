@@ -1872,7 +1872,8 @@ namespace DnaAnd.Shell
                 double ang = pass == 0 ? yawRad : pitchRad; if (Math.Abs(ang) < 1e-12) continue;
                 double odx, ody, odz, orad;
                 bool circle = _tKind >= 0 && _tKind != 3 && !overIt && !(_ground != null && (_matterScale > 0 || AboveGround() < Units.Km(MatterView.OverlayKm)))
-                              && TargetFromCamera(out odx, out ody, out odz, out orad) && odx * odx + ody * ody + odz * odz > 0;
+                              && TargetFromCamera(out odx, out ody, out odz, out orad) && odx * odx + ody * ody + odz * odz > 0
+                              && Math.Sqrt(odx * odx + ody * ody + odz * odz) <= Math.Max(orad * 12, NearestDistance() * 3);   // (a film circles only what is close and fills the view; far off, circling would sweep the camera across whole stretches of space, everything near streaming past: there it turns where it is)
                 // circling round a pick: about the view's own up (always square to the line to it, so it never rolls in place when
                 // seen from straight above); turning where you are: about the level up (the horizon stays level), or the view's own up
                 // when looking nearly along it

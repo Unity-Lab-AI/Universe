@@ -36,7 +36,6 @@ caption: A far galaxy
 
 @stop to-galaxy
 do: zoom
-pan: 4
 rate: 0.5
 until-km: 1.5e18
 caption: Across the universe, past galaxy after galaxy, to one far away among a hundred billion

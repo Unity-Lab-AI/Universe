@@ -57,6 +57,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The well an inward spike: the wall four tenths of a view out, closing to a line before the tip, the sheet only near the mouth, rings lines at any width:** (built: DNA-AND DESIGN 591; waits on the test) "as u can see in screen shots the grid doesnt persists to the finate point of the cone in the singularity i took shots of the shit cone thats not a cone at all" / "it need to be more like a inward spike grid i say cone and u are making it wide it turning into a singel line before hitting the singularity it squezzes so small the tip of the cone in reality"
 
+- [~] **Looking round the well as you fall, by hand and on the tour:** (built: DNA-AND DESIGN 592; waits on the test) "and as you fall u should be able to pan around slightly below and abow and to the sides to proply show the sturcture and shape of the grid u are falling into to is singularity"
+
 ---
 
 ## Pending

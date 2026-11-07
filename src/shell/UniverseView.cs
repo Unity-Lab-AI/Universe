@@ -1980,8 +1980,11 @@ namespace Universe.Shell
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
                         {
                             // the fall, on the tour: in looking back up at the horizon's ring, the view turning over as you go, down the
-                            // well's wall, to face the point only near the end; and slowly round, so the grid wheels past
-                            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / 25)), th = Math.PI * Math.Min(1, tf * 1.15), ph = _tourT * 0.25;
+                            // well's wall, to face the point only near the end; slowly round, so the grid wheels past; and swaying up,
+                            // down and to the sides all the way, so the spike's shape shows from off its axis (the walls passing, the
+                            // mouth behind, the line it closes to ahead)
+                            double rr = _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs), tf = Math.Max(0, Math.Min(1, -Math.Log10(Math.Max(1e-300, rr)) / 25));
+                            double th = Math.Max(0.06, Math.Min(Math.PI - 0.06, Math.PI * Math.Min(1, tf * 1.15) + 0.4 * Math.Sin(_tourT * 0.45))), ph = _tourT * 0.25 + 0.3 * Math.Sin(_tourT * 0.7);
                             var ax = _fallAxis; var e1 = Vec3.Cross(ax, Math.Abs(ax.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var e2 = Vec3.Cross(ax, e1).Normalized;
                             var side = e1 * (float)Math.Cos(ph) + e2 * (float)Math.Sin(ph);
                             var lk2 = (ax * (float)(-Math.Cos(th)) + side * (float)Math.Sin(th)).Normalized; _fx = lk2.X; _fy = lk2.Y; _fz = lk2.Z;
@@ -2717,6 +2720,7 @@ namespace Universe.Shell
                     var f = Turn(Look, axis, ang);
                     double odx, ody, odz, orad;
                     bool circle = _tKind >= 0 && _tKind != 3 && _dragged && !(_ground != null && (_matterScale > 0 || AboveGround() < Units.Km(MatterView.OverlayKm)))
+                                  && !(_spaceScale > 0 && _matter.SpaceKind == 12)   // (in the fall a drag looks round the well: up at the mouth, down the spike to the point, out at the walls; never a circle round the hole, which snapped the view back to its middle)
                                   && TargetFromCamera(out odx, out ody, out odz, out orad) && odx * odx + ody * ody + odz * odz > 0;
                     if (circle)
                     {

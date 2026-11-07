@@ -62,7 +62,7 @@ namespace DnaAnd.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212;
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213;
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
@@ -88,6 +88,7 @@ namespace DnaAnd.Platform
             Win32.AppendMenu(gpuMenu, Win32.MF_STRING | 0x1u, IntPtr.Zero, "now: card " + (int)Math.Round(GpuBusy * 100) + "% busy, detail " + (int)Math.Round(Detail * 100) + "%");
             Win32.AppendMenu(view, Win32.MF_POPUP, gpuMenu, "GPU use");
             IntPtr timeMenu = Win32.CreatePopupMenu();
+            Win32.AppendMenu(timeMenu, Win32.MF_STRING | (Settings.Get("always-day", false) ? Win32.MF_CHECKED : 0), (IntPtr)CmdAlwaysDay, "Always day (no night on the worlds)");
             Win32.AppendMenu(timeMenu, Win32.MF_STRING | (TimeStep == 0 ? Win32.MF_CHECKED : 0), (IntPtr)CmdPause, "Pause\tSpace");
             Win32.AppendMenu(timeMenu, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             for (int i = 1; i < TimeNames.Length; i++) Win32.AppendMenu(timeMenu, Win32.MF_STRING | (TimeStep == i ? Win32.MF_CHECKED : 0), (IntPtr)(CmdTimeBase + i), TimeNames[i]);

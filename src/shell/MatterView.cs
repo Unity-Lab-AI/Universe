@@ -1680,7 +1680,7 @@ namespace DnaAnd.Shell
         public double Glide = 4; private double _lastLeftX = double.NaN, _lastLeftZ = double.NaN;
         /// <summary>How far the point you dive into still is from what is picked, in shares of the view's size (0 with nothing
         /// picked): the tour flies in only once it is there, so it never flies past what it shows.</summary>
-        public double PickOff { get { if (_picked == null) return 0; double dx = _tfx - _fx, dy = _tfy - _fy, dz = _tfz - _fz; return Math.Sqrt(dx * dx + dy * dy + dz * dz) / Math.Max(1e-40, _scale); } }
+        public double PickOff { get { if (_picked == null) return 0; double dx = _tfx - _fx, dz = _tfz - _fz; return Math.Sqrt(dx * dx + dz * dz) / Math.Max(1e-40, _scale); } }   // (across: how high it sits is the zoom's own)
         public void PickNearest(string what)
         {
             if (what == "bonded-atom")

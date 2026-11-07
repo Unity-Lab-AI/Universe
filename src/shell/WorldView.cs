@@ -859,6 +859,7 @@ namespace DnaAnd.Shell
                 DropPlanet();
                 var b = _system.Bodies[best];
                 _planet = best;
+                _spinRef = Spin(best);                                                     // (its day as it is now: the light where its star really is)
                 _ground = new PlanetTerrain(_gpu.Device, DeepView.TerrainKind(b.Kind), b.Kind, (uint)(_galaxies[_near].Seed * 977UL + (ulong)_sysStar * 31UL + (ulong)best), false, b.RadiusUnits / Units.Km(1)) { MixId = b.Kind == "Moon" ? "moon" : null };   // (a moon: its own regolith grains)
             }
             if (_planet >= 0) BodyPos(_planet, out _px, out _py, out _pz);
@@ -892,6 +893,8 @@ namespace DnaAnd.Shell
 
         private bool _hadPos;
         private int _cpBest = -1; private double _cpBd;                         // for the log: the nearest body in its own radii
+        private double _spinRef;   // the world's spin when you came to it: its ground is held still and its sky turns by how far it has spun since
+        private double SpunSince { get { return _ground != null && _planet >= 0 ? Spin(_planet) - _spinRef : 0; } }
         private void DropPlanet() { if (_ground != null) { _ground.Dispose(); _ground = null; } _planet = -1; }
 
         // the top of what is under a direction, in km from the planet's radius: the sea's surface where there is sea, else the
@@ -1099,7 +1102,7 @@ namespace DnaAnd.Shell
                         double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Min(1, left / 0.6)) * TourPace;    // easing out over the last few tenths of a tenfold; never faster than the world is made
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
-                        input.Wheel = OffTarget() < 0.07 && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35) ? sign * notches : 0;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
+                        input.Wheel = OffTarget() < 0.07 && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35 || _tourT > 4) ? sign * notches : 0;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (st.Pan != 0 && _tKind >= 0) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
@@ -1172,7 +1175,7 @@ namespace DnaAnd.Shell
                         bool there = st.UntilKm > 0 && ((sign > 0 && d <= st.UntilKm) || (sign < 0 && d >= st.UntilKm));
                         double left = st.UntilKm > 0 && Math.Abs(st.Rate) > 0 ? Math.Abs(Math.Log10(Math.Max(1e-40, d) / st.UntilKm)) / 0.6 : Math.Max(0, st.Seconds - _tourT) / 3;
                         double ease = Math.Min(1, _tourT / 3) * Math.Min(1, Math.Max(0.15, left)); ease = ease * ease * (3 - 2 * ease);
-                        if (!there && OffTarget() < 0.07 && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35)) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
+                        if (!there && OffTarget() < 0.07 && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35 || _tourT > 4)) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
                         { double lp = LocalPitch(); if (Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
                         TourTurn(st.Turn * _shotDir * _shotMul * Math.PI / 180 * dt * Math.Max(ease, 0.4), (_ground == null && _matterScale <= 0 ? _shotCrane : 0) * Math.PI / 180 * dt * ease);
                         if (_tourT >= st.Seconds && (there || st.UntilKm <= 0 || Math.Abs(st.Rate) <= 0 || _tourT >= st.Seconds * 2)) done = true;   // (circling on to its distance for at most twice its seconds: never held there; the next stop carries on)
@@ -2213,6 +2216,15 @@ namespace DnaAnd.Shell
             }
             Mat4 proj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)(reach * 1e-3), (float)(_uRadius * 2.2));   // out to the far side of the visible universe
             Mat4 vp = view * proj;
+            if (_ground != null && _planet >= 0)
+            {
+                // at a world its ground is held still under you and the sky turns round it, by its spin (the same turn as its
+                // starlight on the ground): its star rises and sets, the stars wheel overhead, about the world's middle
+                double sp = -SpunSince; float c0 = (float)Math.Cos(sp), s0 = (float)Math.Sin(sp);
+                var rot = Mat4.Identity; rot.M11 = c0; rot.M13 = s0; rot.M31 = -s0; rot.M33 = c0;
+                float pcx = (float)(_px - _ox), pcy = (float)(_py - _oy), pcz = (float)(_pz - _oz);
+                vp = Mat4.Translation(-pcx, -pcy, -pcz) * rot * Mat4.Translation(pcx, pcy, pcz) * vp;
+            }
             _lastVp = vp; _lastW = w; _lastH = h; _haveVp = true;
             var right = new Vec3(view.M11, view.M21, view.M31); var up = new Vec3(view.M12, view.M22, view.M32);
             _viewRight = right; _viewUp = up; _haveAxes = true;
@@ -2378,8 +2390,18 @@ namespace DnaAnd.Shell
                 if (ll > 0)
                 {
                     // the starlight's way, turned back by the planet's own spin, so its days pass over the ground
-                    double sp = -Spin(_planet), c0 = Math.Cos(sp), s0 = Math.Sin(sp), sx = lx / ll, sz = lz / ll;
+                    double sp = -SpunSince, c0 = Math.Cos(sp), s0 = Math.Sin(sp), sx = lx / ll, sz = lz / ll;   // (its day where its star really is: lit on the side facing it, turning by its spin)
                     _ground.StarDir[0] = sx * c0 - sz * s0; _ground.StarDir[1] = ly / ll; _ground.StarDir[2] = sx * s0 + sz * c0;
+                    if (Settings.Get("always-day", false))
+                    {
+                        // always day (Time menu): the star high over wherever you are (sixty degrees up, so the ground still shows its
+                        // shape), turned back by the spin as the real starlight is
+                        double cr = Math.Sqrt(x * x + y * y + z * z), ux = x / cr, uy = y / cr, uz = z / cr;
+                        double ex = -uz, ez = ux, el = Math.Sqrt(ex * ex + ez * ez); if (el < 1e-6) { ex = 1; ez = 0; el = 1; }
+                        double dx = ux * 0.87 + ex / el * 0.5, dy = uy * 0.87, dz = uz * 0.87 + ez / el * 0.5, dl = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                        dx /= dl; dy /= dl; dz /= dl;
+                        _ground.StarDir[0] = dx * c0 - dz * s0; _ground.StarDir[1] = dy; _ground.StarDir[2] = dx * s0 + dz * c0;
+                    }
                 }
                 GroundLight();
                 // what the ground needs to detail: only what is in view (the view's half-angle, corner to corner)

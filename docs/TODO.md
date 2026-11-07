@@ -110,6 +110,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The fall's card measured from the horizon down the funnel, the singularity millions of light-years down by mass:** (built: DNA-AND DESIGN 621; waits on the test) "and when entering a black hole it says like 11 AU not the proper millions of light years to the center singularity" / "based on mass" / "no the singualrity is not the way in the event horizon is and the singularity is millions of light years down the funnel so it needs to be accurate to the  non pysics we dont understand of infanite space in a black hoole"
 
+- [~] **The tour's fall half a minute, not a minute and a half:** (built: DNA-AND DESIGN 622; waits on the test) "let make it faster 1 minute of falling with nothing to see but a grid cone is too much bore"
+
 ---
 
 ## Pending

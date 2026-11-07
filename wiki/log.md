@@ -51,3 +51,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (a dive onto a small body lands on the drawn stone): DNA-AND DESIGN 637.
 - 2026-11-07 (a spot on any small body picked by a click): DNA-AND DESIGN 638.
 - 2026-11-07 (small bodies from their precise offsets: the belt's grid gone): DNA-AND DESIGN 639.
+- 2026-11-07 (the pick's aim at a small body its precise offset): DNA-AND DESIGN 640.

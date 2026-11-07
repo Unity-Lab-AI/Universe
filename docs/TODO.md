@@ -141,6 +141,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Every small body drawn from its precise offset from its star, never from a billion-light-year double:** (built: DNA-AND DESIGN 639; waits on the test) "that same solar system shit aint fixed i screen shot"
 
+- [~] **The pick's aim at a small body its precise offset, the same place it is drawn at:** (built: DNA-AND DESIGN 640; waits on the test) "okay i took pics thios time it never found a astroid let alone zoomed in and it just kinada stalled and never made it to a comet either" / "i SAID I TOOK PICS"
+
 ---
 
 ## Pending

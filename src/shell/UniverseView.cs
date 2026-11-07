@@ -2555,6 +2555,10 @@ namespace Universe.Shell
                 double rr = BodyRadiusToward(_tExtra, _lastDrawTime, _tSpot[0], _tSpot[1], _tSpot[2]);
                 dx = RelX(_tExtra) - _ox + _tSpot[0] * rr; dy = RelY(_tExtra) - _oy + _tSpot[1] * rr; dz = RelZ(_tExtra) - _oz + _tSpot[2] * rr; radius = _tExtra.R * 0.05; return true;
             }
+            // a small body: from its precise offset, the same place it is drawn at (its absolute coordinate, taken against the anchor,
+            // is off by up to a million kilometres: the zoom had flown to a point beside the body and stalled there, the dive never
+            // within reach of the stone it was aimed at)
+            if (_tKind == 6 && _tExtra != null) { dx = RelX(_tExtra) - _ox; dy = RelY(_tExtra) - _oy; dz = RelZ(_tExtra) - _oz; radius = _tRadius; return true; }
             if (_tKind == 1 || _tKind == 4 || _tKind == 5 || _tKind == 6 || _tKind == 7 || _tKind == 8) { dx = (_tx - _ax) - _ox; dy = (_ty - _ay) - _oy; dz = (_tz - _az) - _oz; radius = _tRadius; return true; }   // a star, or a spot in a belt
             if (_tKind == 2 && _system != null && _tIndex < _system.Bodies.Count)
             { double x, y, z; BodyPos(_tIndex, out x, out y, out z); dx = x - _ox; dy = y - _oy; dz = z - _oz; radius = _system.Bodies[_tIndex].RadiusUnits; return true; }

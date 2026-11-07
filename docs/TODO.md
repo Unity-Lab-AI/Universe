@@ -135,6 +135,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The comet dived into on the tour the same way as the planet and the asteroid, one chain for any body:** (built: DNA-AND DESIGN 636; waits on the test) "and like i said unify all astral body zoom ins so they are all acruate based on elements zommed into as high scales"
 
+- [~] **A dive onto a small body landing on the drawn stone's own surface, its spin held while you are on it:** (built: DNA-AND DESIGN 637; waits on the test) "okay but u fixed the invisible astroid as zoom rihgt?" / "what the fuck do u mean its visible ther in not a fucking thing but stars at all the xzoom levels i screen shotted when the sasteroid was selecterd"
+
 ---
 
 ## Pending

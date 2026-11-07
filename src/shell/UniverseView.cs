@@ -350,7 +350,7 @@ namespace Universe.Shell
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
         private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8, EatLo = 1, EatHi = 1; public int Shown, Swarm; public float R, G, B; }   // EatLo..EatHi: how many stars a feeding hole tears apart at once   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
-        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; }   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; }   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -1010,8 +1010,10 @@ namespace Universe.Shell
         }
         // a solid body: a sphere of triangles (an icosahedron cut four times), pushed in and out by broad lumps and pitted by craters,
         // drawn as lit stone with flat facets (never points of light); its star along +x
-        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN;
-        private static List<StarVertex> SolidRock(Rng rng, double lump, float r0, float g0, float b0)
+        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private double _lastDrawTime;
+        // a small body's shape: its radius and shade along any direction from its middle (its bumps, craters, stretch and grit), the
+        // one function the mesh is built from and a dive lands on, so the ground you stand on is the stone that is drawn
+        private static Func<double[], double[]> RockShape(Rng rng, double lump)
         {
             var bumps = new double[14][]; for (int q = 0; q < 14; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); bumps[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), (rng.NextDouble() - 0.5) * 0.55 * lump, 1 + rng.NextDouble() * 3 }; }
             var craters = new double[40][]; for (int q = 0; q < 40; q++) { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, rr = Math.Sqrt(1 - u * u); craters[q] = new[] { rr * Math.Cos(a), u, rr * Math.Sin(a), Math.Cos(0.05 + rng.NextDouble() * 0.28), rng.NextDouble() }; }
@@ -1028,6 +1030,11 @@ namespace Universe.Shell
                 double grit = 0.94 + 0.12 * (Math.Abs(Math.Sin(x * 91.7 + y * 37.3 + z * 63.1) * 4375.5) % 1);
                 return new[] { x * (1 + 0.5 * lump) * rad, y * (1 - 0.15 * lump) * rad, z * rad, shade * grit };
             };
+            return place;
+        }
+        private static List<StarVertex> SolidRock(Rng rng, double lump, float r0, float g0, float b0)
+        {
+            var place = RockShape(rng, lump);
             // an icosahedron, each face cut in four, four times over, each corner put out to the sphere
             double t0 = (1 + Math.Sqrt(5)) / 2; var vs = new List<double[]>();
             double[][] iv = { new[] { -1, t0, 0 }, new[] { 1, t0, 0 }, new[] { -1, -t0, 0 }, new[] { 1, -t0, 0 }, new[] { 0, -1, t0 }, new[] { 0, 1, t0 }, new[] { 0, -1, -t0 }, new[] { 0, 1, -t0 }, new[] { t0, 0, -1 }, new[] { t0, 0, 1 }, new[] { -t0, 0, -1 }, new[] { -t0, 0, 1 } };
@@ -1057,6 +1064,7 @@ namespace Universe.Shell
         private void MakeSmallBodies()
         {
             {
+                _rockShape = RockShape(new Rng(0x5A57E1UL), 1); _roundShape = RockShape(new Rng(0x60BE5UL), 0.08); _nucShape = RockShape(new Rng(0xC0CE7UL), 0.9);   // (the same shapes the meshes are built from, for the dive)
                 var a = SolidRock(new Rng(0x5A57E1UL), 1, 0.52f, 0.47f, 0.42f); _rockSolidN = a.Count; _rockSolid = new UploadBuffer(_gpu.Device, (long)a.Count * Stride); _rockSolid.Write(a.ToArray(), a.Count);
                 var b = SolidRock(new Rng(0x60BE5UL), 0.08, 0.55f, 0.52f, 0.5f); _roundSolidN = b.Count; _roundSolid = new UploadBuffer(_gpu.Device, (long)b.Count * Stride); _roundSolid.Write(b.ToArray(), b.Count);
                 var c = SolidRock(new Rng(0xC0CE7UL), 0.9, 0.42f, 0.40f, 0.38f); _nucSolidN = c.Count; _nucSolid = new UploadBuffer(_gpu.Device, (long)c.Count * Stride); _nucSolid.Write(c.ToArray(), c.Count);   // a comet's nucleus: among the darkest bodies there are (albedo 0.04), shown as a camera exposing for it sees it, mid-grey, as Rosetta saw 67P (at its true darkness it was black against the stars) things known
@@ -1109,6 +1117,27 @@ namespace Universe.Shell
                 DrawPoints(buf, _ringCounts[i], m * vp, right, up, 1f, 0.0008f, w, h, time, 0f, 1f, 0f);
             }
         }
+        // a small body's spin: it turns about its star line, except while you are on it (a dive holds it, so the ground under you is
+        // the stone that is drawn and does not sweep away at a kilometre a second)
+        private static double BodySpin(Extra ex, double time) { return double.IsNaN(ex.SpinHold) ? time * 0.15 + ex.Turn : ex.SpinHold; }
+        // the body's real surface along a direction from its middle (unit, in the universe's frame): the mesh's own shape in the body's
+        // frame at this moment, so a dive lands on the stone that is drawn, not on a sphere kilometres inside or above it (a rock is
+        // half again as long as it is wide, with bumps and craters besides: "a metre above it" had been nothing but stars)
+        private double BodyRadiusToward(Extra ex, double time, double dx, double dy, double dz)
+        {
+            if (_rockSolid == null) MakeSmallBodies();
+            double bx = ex.X - _ax, by = ex.Y - _ay, bz = ex.Z - _az, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
+            var xs = bl > 0 ? new Vec3((float)(-bx / bl), (float)(-by / bl), (float)(-bz / bl)) : new Vec3(1, 0, 0);
+            var ys = Vec3.Cross(xs, Math.Abs(xs.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var zs = Vec3.Cross(xs, ys).Normalized;
+            double spin = BodySpin(ex, time); float c = (float)Math.Cos(spin), sn = (float)Math.Sin(spin);
+            var y2 = new Vec3(ys.X * c + zs.X * sn, ys.Y * c + zs.Y * sn, ys.Z * c + zs.Z * sn); var z2 = Vec3.Cross(xs, y2);
+            if (ex.Shape == "comet") { y2 = ys; z2 = zs; }
+            double lx = dx * xs.X + dy * xs.Y + dz * xs.Z, ly = dx * y2.X + dy * y2.Y + dz * y2.Z, lz = dx * z2.X + dy * z2.Y + dz * z2.Z, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz); if (ll <= 0) return ex.R;
+            bool comet = ex.Shape == "comet", round = !comet && ex.R / Units.Km(1) > 200;
+            var shape = comet ? _nucShape : round ? _roundShape : _rockShape; if (shape == null) return ex.R;
+            var p = shape(new[] { lx / ll, ly / ll, lz / ll });
+            return ex.R * Math.Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
+        }
         private void DrawSmallBodies(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             foreach (var ex in _extras)
@@ -1119,7 +1148,7 @@ namespace Universe.Shell
                 // its frame: +x toward its star (the anchor of the system you are in), spinning about that line
                 var xs = bl > 0 ? new Vec3((float)(-bx / bl), (float)(-by / bl), (float)(-bz / bl)) : new Vec3(1, 0, 0);
                 var ys = Vec3.Cross(xs, Math.Abs(xs.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var zs = Vec3.Cross(xs, ys).Normalized;
-                double spin = time * 0.15 + ex.Turn; float c = (float)Math.Cos(spin), sn = (float)Math.Sin(spin);
+                double spin = BodySpin(ex, time); float c = (float)Math.Cos(spin), sn = (float)Math.Sin(spin);   // (held still while you are on it)
                 var y2 = new Vec3(ys.X * c + zs.X * sn, ys.Y * c + zs.Y * sn, ys.Z * c + zs.Z * sn); var z2 = Vec3.Cross(xs, y2);
                 if (ex.Shape == "comet") { y2 = ys; z2 = zs; }                                  // (its tails do not spin)
                 float sc = (float)ex.R;
@@ -1272,7 +1301,7 @@ namespace Universe.Shell
             // every body on an orbit moves on it every frame (the list itself is remade only when you move to a new cell); the one
             // you are at moves you with it, so you stay beside it, or on its ground, as it goes round (at a minute a second an
             // asteroid at three AU would leave you in half a second)
-            foreach (var ex in _extras) if (ex.Orbits) { Orbit(ex); if (ex == _tExtra) { _ox += ex.X - ex.LX; _oy += ex.Y - ex.LY; _oz += ex.Z - ex.LZ; } }
+            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && (ex != _tExtra || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra) { _ox += ex.X - ex.LX; _oy += ex.Y - ex.LY; _oz += ex.Z - ex.LZ; } } }   // (a held spin let go once you are off the body)
             if (key == _extraKey) return; _extraKey = key; _extras.Clear();
             // the compact remnants of this galaxy's past supernovae: a neutron star (from a star of eight to about twenty solar masses) or a
             // stellar black hole (heavier) born at each one's middle, from the blast; the ones near you, picked like any body
@@ -3014,8 +3043,9 @@ namespace Universe.Shell
                 if (TargetFromCamera(out qx, out qy, out qz, out qr) && qr > 0)
                 {
                     double ql = Math.Sqrt(qx * qx + qy * qy + qz * qz);
+                    double qrD = exd.Hole || exd.Shape.Length == 0 ? qr : BodyRadiusToward(exd, _lastDrawTime, -qx / ql, -qy / ql, -qz / ql);   // the stone's real surface under you, not its nominal sphere
                     ulong dspot = (ulong)(long)(_ox / Units.Km(1)) * 73856093UL ^ (ulong)(long)(_oy / Units.Km(1)) * 19349663UL ^ (ulong)(long)(_oz / Units.Km(1)) * 83492791UL;
-                    if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : qr * 1.3))
+                    if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : qrD * 1.3))
                     {
                         if (exd.Hole && exd.Mass > 0)
                         {
@@ -3038,10 +3068,10 @@ namespace Universe.Shell
                             double ux = -qx / ql, uy = -qy / ql, uz = -qz / ql;                 // from the body's middle to you: its surface here, under you
                             double sx = _ax - exd.X, sy = _ay - exd.Y, sz = _az - exd.Z, sl = Math.Sqrt(sx * sx + sy * sy + sz * sz);   // its star, for the light on the grains
                             _matter.Set(exd.Mix, false, false, exd.Cr, exd.Cg, exd.Cb, dspot);
-                            _matter.SetGround(exd.R / Units.Km(1), ux, uy, uz, exd.Mix, dspot * 0x9E3779B97F4A7C15UL + 0x51UL, 0, 0);
+                            _matter.SetGround(qrD / Units.Km(1), ux, uy, uz, exd.Mix, dspot * 0x9E3779B97F4A7C15UL + 0x51UL, 0, 0); exd.SpinHold = BodySpin(exd, _lastDrawTime);   // (its ground at the drawn stone's own height here; its spin held while you are on it)
                             _matter.SetAirAbove(null);
                             _bodyUp = new[] { ux, uy, uz }; _bodyStar = sl > 0 ? new[] { sx / sl, sy / sl, sz / sl } : new[] { ux, uy, uz };
-                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, (ql - qr) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
+                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, (ql - qrD) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
                             ZoomLog("DIVE onto " + exd.Name + ": its ground " + exd.Mix + " from " + ScaleHud.Words(_spaceScale * 0.6) + " up"); return true;
                         }
                     }
@@ -3458,6 +3488,7 @@ namespace Universe.Shell
 
         public void Draw(int w, int h, double time)
         {
+            _lastDrawTime = time;
             {
                 double fine = _spaceScale > 0 ? _spaceScale : _matterScale > 0 ? _matterScale : 1;
                 _sky = (float)Math.Max(0, Math.Min(1, Math.Log(fine / 1.7e-8) / Math.Log(1.7e-6 / 1.7e-8)));   // from a millimetre down to 10 microns

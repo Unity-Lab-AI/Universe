@@ -155,7 +155,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **T · R** | The grand tour: start or carry on · start again |
 | **F12 · F9** | A screenshot · start or stop a clip |
 
-The **Time** menu has **Always day**. **View** has drag speed, FPS, render scale and GPU use. **Help** has every guide.
+The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS, render scale and GPU use. **Help** has every guide.
 
 ---
 

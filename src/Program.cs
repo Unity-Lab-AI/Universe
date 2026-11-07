@@ -237,7 +237,7 @@ namespace Universe
                 else if (cmd == Window.CmdRecord) wantRecord = true;
                 else if (cmd == Window.CmdTour) wantTour = true;
                 else if (cmd == Window.CmdFps) { Settings.Set("show-fps", !Settings.Get("show-fps", true)); menuDirty = true; }
-                else if (cmd == Window.CmdAlwaysDay) { Settings.Set("always-day", !Settings.Get("always-day", false)); menuDirty = true; }
+                else if (cmd == Window.CmdAlwaysDay) { Settings.Set("always-day", !Settings.Get("always-day", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertY) { Settings.Set("invert-up-down", !Settings.Get("invert-up-down", false)); menuDirty = true; }
                 else if (cmd == Window.CmdScaleHud && world != null) { world.ScaleOn = !world.ScaleOn; menuDirty = true; }
                 else if (cmd == Window.CmdClearMarks) { viewer.ClearMarks(); menuDirty = true; }

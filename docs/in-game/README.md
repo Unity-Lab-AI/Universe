@@ -24,7 +24,7 @@
 |---|---|
 | **Space** | Pause time, or carry on |
 | **,** and **.** | Slower and faster, from real time to ten years a second (it starts at a minute a second) |
-| **Time menu** | The same speeds, and **Always day** to keep every world in daylight |
+| **Time menu** | The same speeds, and **Always day** (on to start with) to keep every world in daylight; turn it off for true day and night |
 
 Every world turns on its own day, so you can sit on the ground and watch its star rise and set.
 

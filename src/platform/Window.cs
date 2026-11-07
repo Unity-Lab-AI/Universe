@@ -88,7 +88,7 @@ namespace Universe.Platform
             Win32.AppendMenu(gpuMenu, Win32.MF_STRING | 0x1u, IntPtr.Zero, "now: card " + (int)Math.Round(GpuBusy * 100) + "% busy, detail " + (int)Math.Round(Detail * 100) + "%");
             Win32.AppendMenu(view, Win32.MF_POPUP, gpuMenu, "GPU use");
             IntPtr timeMenu = Win32.CreatePopupMenu();
-            Win32.AppendMenu(timeMenu, Win32.MF_STRING | (Settings.Get("always-day", false) ? Win32.MF_CHECKED : 0), (IntPtr)CmdAlwaysDay, "Always day (no night on the worlds)");
+            Win32.AppendMenu(timeMenu, Win32.MF_STRING | (Settings.Get("always-day", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdAlwaysDay, "Always day (no night on the worlds)");
             Win32.AppendMenu(timeMenu, Win32.MF_STRING | (TimeStep == 0 ? Win32.MF_CHECKED : 0), (IntPtr)CmdPause, "Pause\tSpace");
             Win32.AppendMenu(timeMenu, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             for (int i = 1; i < TimeNames.Length; i++) Win32.AppendMenu(timeMenu, Win32.MF_STRING | (TimeStep == i ? Win32.MF_CHECKED : 0), (IntPtr)(CmdTimeBase + i), TimeNames[i]);

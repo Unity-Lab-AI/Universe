@@ -2556,7 +2556,7 @@ namespace Universe.Shell
                     // the starlight's way, turned back by the planet's own spin, so its days pass over the ground
                     double sp = -SpunSince, c0 = Math.Cos(sp), s0 = Math.Sin(sp), sx = lx / ll, sz = lz / ll;   // (its day where its star really is: lit on the side facing it, turning by its spin)
                     _ground.StarDir[0] = sx * c0 - sz * s0; _ground.StarDir[1] = ly / ll; _ground.StarDir[2] = sx * s0 + sz * c0;
-                    if (Settings.Get("always-day", false))
+                    if (Settings.Get("always-day", true))
                     {
                         // always day (Time menu): the star high over wherever you are (sixty degrees up, so the ground still shows its
                         // shape), turned back by the spin as the real starlight is

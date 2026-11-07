@@ -387,6 +387,9 @@ namespace Universe
                         gpu.Grabbed = null;
                     }
                     if (wantShot || rec != null) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
+                    // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
+                    gpu.CaptureHere();
+                    if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);
                     if (Window.Recording != (rec != null) || (world != null && Window.Touring != world.Touring)) { Window.Recording = rec != null; Window.Touring = world != null && world.Touring; menuDirty = true; }
                 }
                 if (clipPath != null && clipAt >= 0 && clock.Total >= clipAt)

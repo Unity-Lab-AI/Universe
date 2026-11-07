@@ -244,27 +244,39 @@ namespace Universe.Render
         public void ClearDepth() { _clearDepth(_list, _dsv, 1, 0f, 0, 0, IntPtr.Zero); }
 
         /// <summary>Finishes the frame and shows it, synced to the monitor (vsync).</summary>
+        private bool _capturedEarly; private string _earlyCapture; private bool _earlyGrab; private IntPtr _earlyRB; private uint _earlyPitch;
+        /// <summary>Takes the frame's picture now, as it stands, for a screenshot or a clip's frame wanted this frame: what is drawn after
+        /// this (the REC notice) shows on screen and stays out of the picture. EndFrame reads it back as usual.</summary>
+        public void CaptureHere()
+        {
+            if (_capturedEarly || (CaptureNext == null && !GrabNext)) return;
+            _earlyCapture = CaptureNext; CaptureNext = null; _earlyGrab = GrabNext; GrabNext = false;
+            CopyBack(out _earlyRB, out _earlyPitch); _capturedEarly = true;
+        }
+        // the back buffer copied to the readback buffer, through the card's own copy (the list stays open)
+        private void CopyBack(out IntPtr readback, out uint pitch)
+        {
+            pitch = (uint)((Width * 4 + 255) & ~255);
+            if (_grabRB == IntPtr.Zero || _grabRBBytes != (long)pitch * Height) { if (_grabRB != IntPtr.Zero) Com.Release(ref _grabRB); _grabRB = MakeReadback((long)pitch * Height); _grabRBBytes = (long)pitch * Height; }
+            readback = _grabRB;
+            var toCopy = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
+                StateBefore = D3D12.RESOURCE_STATE_RENDER_TARGET, StateAfter = D3D12.RESOURCE_STATE_COPY_SOURCE };
+            _barrier(_list, 1, ref toCopy);
+            var src = new D3D12.TextureCopyLocation { Resource = _backBuffers[_frameIndex], Type = 0, SubresourceIndex = 0 };
+            var dst = new D3D12.TextureCopyLocation { Resource = readback, Type = 1, Offset = 0, Format = D3D12.DXGI_FORMAT_R8G8B8A8_UNORM,
+                Width = (uint)Width, Height = (uint)Height, Depth = 1, RowPitch = pitch };
+            Com.Method<D3D12.CopyTextureRegionFn>(_list, 16)(_list, ref dst, 0, 0, 0, ref src, IntPtr.Zero);
+            var back = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
+                StateBefore = D3D12.RESOURCE_STATE_COPY_SOURCE, StateAfter = D3D12.RESOURCE_STATE_RENDER_TARGET };
+            _barrier(_list, 1, ref back);
+        }
         public void EndFrame()
         {
             UploadBuffer.Collect();
             string capture = CaptureNext; CaptureNext = null; bool grab = GrabNext; GrabNext = false;
             IntPtr readback = IntPtr.Zero; uint pitch = 0;
-            if (capture != null || grab)
-            {
-                pitch = (uint)((Width * 4 + 255) & ~255);
-                if (_grabRB == IntPtr.Zero || _grabRBBytes != (long)pitch * Height) { if (_grabRB != IntPtr.Zero) Com.Release(ref _grabRB); _grabRB = MakeReadback((long)pitch * Height); _grabRBBytes = (long)pitch * Height; }
-                readback = _grabRB;
-                var toCopy = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
-                    StateBefore = D3D12.RESOURCE_STATE_RENDER_TARGET, StateAfter = D3D12.RESOURCE_STATE_COPY_SOURCE };
-                _barrier(_list, 1, ref toCopy);
-                var src = new D3D12.TextureCopyLocation { Resource = _backBuffers[_frameIndex], Type = 0, SubresourceIndex = 0 };
-                var dst = new D3D12.TextureCopyLocation { Resource = readback, Type = 1, Offset = 0, Format = D3D12.DXGI_FORMAT_R8G8B8A8_UNORM,
-                    Width = (uint)Width, Height = (uint)Height, Depth = 1, RowPitch = pitch };
-                Com.Method<D3D12.CopyTextureRegionFn>(_list, 16)(_list, ref dst, 0, 0, 0, ref src, IntPtr.Zero);
-                var back = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
-                    StateBefore = D3D12.RESOURCE_STATE_COPY_SOURCE, StateAfter = D3D12.RESOURCE_STATE_RENDER_TARGET };
-                _barrier(_list, 1, ref back);
-            }
+            if (_capturedEarly) { capture = _earlyCapture; grab = _earlyGrab; readback = _earlyRB; pitch = _earlyPitch; _capturedEarly = false; }
+            else if (capture != null || grab) CopyBack(out readback, out pitch);
             var toPresent = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
                 StateBefore = D3D12.RESOURCE_STATE_RENDER_TARGET, StateAfter = D3D12.RESOURCE_STATE_PRESENT };
             _barrier(_list, 1, ref toPresent);

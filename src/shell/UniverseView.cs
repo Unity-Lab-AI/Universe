@@ -2397,6 +2397,8 @@ namespace Universe.Shell
         private int _glowMade, _glowWant = 1; private bool _loadDone; private double _loadT, _loadShare; private string[] _loadLines;
         /// <summary>Still making what is seen first, at the start.</summary>
         public bool Loading { get { return !_loadDone; } }
+        /// <summary>The recording notice over the picture (drawn after the frame is taken for the clip, so it is not in it).</summary>
+        public void DrawRec(int w, int h, double time, double seconds) { _gpu.ClearDepth(); _hud.DrawRec(_meshes, w, h, time, seconds); }
         private void LoadProgress(double dt)
         {
             if (_loadDone) return; _loadT += dt;

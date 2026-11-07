@@ -54,6 +54,8 @@ namespace Universe.Render
         private readonly System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long, long>> _queue = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long, long>>(3);
         private System.Threading.Thread _encoder;
         public readonly string Path;
+        /// <summary>How long the clip has run, in seconds (for the REC notice).</summary>
+        public double Seconds { get { return _lastTicks < 0 ? 0 : (_lastTicks - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
 
         /// <summary>Starts a clip at <paramref name="path"/>, <paramref name="w"/> by <paramref name="h"/> pixels (made even), 30 frames a second: every
         /// other frame of the game's sixty, at a bit rate a clip needs (about 6 megabits a second at 1080p: a minute is about 45 MB, not 90).</summary>

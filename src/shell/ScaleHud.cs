@@ -170,6 +170,24 @@ namespace Universe.Shell
             pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
             DrawCard(pipes, lines, x0, y0 + bh + 12 * px, w, h);
         }
+        /// <summary>The recording notice, as a camcorder's: a red dot blinking once a second, REC, and the clip's length, at the top middle.
+        /// Drawn after the frame's picture is taken, so it shows on screen and stays out of the clip.</summary>
+        public void DrawRec(MeshPipes pipes, int w, int h, double time, double seconds)
+        {
+            float px = Math.Max(1, h / 540f), cell = 2.0f * px;
+            string label = "REC " + ((int)(seconds / 60)).ToString("00") + ":" + ((int)(seconds % 60)).ToString("00");
+            float tw = label.Length * 6 * cell, dot = 9 * px, x0 = (w - (tw + dot + 8 * px)) / 2, y0 = 14 * px;
+            var l = new List<StarVertex>();
+            Quad(l, x0 - 6 * px, y0 - 5 * px, tw + dot + 20 * px, 7 * cell + 10 * px, 0.02f, 0.02f, 0.03f);   // (a dark plate, so it reads over anything)
+            if (time % 1.0 < 0.65) Quad(l, x0, y0 + 3.5f * cell - dot / 2, dot, dot, 1f, 0.15f, 0.12f);     // the red dot, on for two thirds of each second
+            float cx = x0 + dot + 8 * px;
+            foreach (char ch in label) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(l, cx + c[0] * cell, y0 + c[1] * cell, cell * 0.9f, cell * 0.9f, 1f, 0.3f, 0.28f); cx += 6 * cell; }
+            var arr = l.ToArray(); var buf = Slot(arr, arr.Length);
+            var m = Mat4.Identity; m.M11 = 2f / w; m.M22 = -2f / h; m.M33 = 0; m.M41 = -1; m.M42 = 1; m.M43 = 0.0001f; m.M44 = 1;
+            var c2 = new float[BillboardPipeline.ConstantCount];
+            c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
+            pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
+        }
         public void DrawBars(MeshPipes pipes, int w, int h, float frac)
         {
             var l = new List<StarVertex>(); float bh = h * frac;

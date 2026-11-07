@@ -25,6 +25,10 @@
 #   size-km and size-spread: its size, size-km times a value in the spread. moons: how many. dot-colour: its colour as a dot
 #   from afar. day-hours: one turn of its spin. label: what its card calls it. makeup (and makeup-dry, for one that
 #   formed with no seas): what it is made of, lines split by ;. interest: how much the tour's director wants to visit it.
+# rings-chance: how often a world of the kind has rings (1 always: every giant of ours has them; rocky worlds now and then,
+#   from a moon torn apart inside its planet's pull); rings-colour: their colour; rings: how many specks make them; rings-radii: from and to, in its radii; rings-gap: a gap in them;
+#   rings-shade: banded (bright and banded, like Saturn's) or a number (faint and even, like Uranus's).
+# volcano-count: how many great volcanoes (30 usual); seafloor-volcanoes: volcanoes deep under the sea too; rivers: no for none.
 # Spec: docs/CONTENT-FORMAT.md · content/planets.dnat
 
 @terrain default
@@ -63,6 +67,11 @@ makeup-dry: rock: silicate crust, iron core; dry basins; air: nitrogen, carbon d
 land-share: -0.04..0.16
 cloud-thickness: 0.75..1
 air-colour: 0.3 0.52 1 .. 0.42 0.6 1
+rings-chance: 0.02
+rings: 900
+rings-radii: 1.4..2.2
+rings-shade: 0.3
+rings-colour: 0.6 0.56 0.52
 
 @terrain ocean
 name: An ocean world
@@ -83,6 +92,13 @@ moons: 0..2
 dot-colour: 0.2 0.45 0.95
 interest: 5
 makeup: rock and iron deep beneath; a world-wide sea hundreds of km deep; air: nitrogen, water vapour
+volcano-count: 22
+seafloor-volcanoes: yes
+rings-chance: 0.02
+rings: 900
+rings-radii: 1.4..2.2
+rings-shade: 0.3
+rings-colour: 0.6 0.56 0.52
 
 @terrain desert
 name: A desert world
@@ -109,6 +125,12 @@ interest: 2
 makeup: rock: silicate crust, iron core; dust and stone; air: thin carbon dioxide
 air-colour: 0.9 0.56 0.34 .. 1 0.7 0.45
 rock-colour: 0.5 0.3 0.2 .. 0.64 0.4 0.26
+volcano-count: 12
+rings-chance: 0.02
+rings: 900
+rings-radii: 1.4..2.2
+rings-shade: 0.3
+rings-colour: 0.6 0.56 0.52
 
 @terrain lava
 name: A lava world
@@ -135,6 +157,13 @@ moons: 0..2
 dot-colour: 1 0.4 0.15
 interest: 2.5
 makeup: rock: molten silicate seas; iron core; air: thin rock vapour and sulfur
+volcano-count: 60
+rivers: no
+rings-chance: 0.02
+rings: 900
+rings-radii: 1.4..2.2
+rings-shade: 0.3
+rings-colour: 0.6 0.56 0.52
 
 @terrain snowball
 name: A snowball world
@@ -158,6 +187,13 @@ moons: 0..2
 dot-colour: 0.9 0.95 1
 interest: 2.5
 makeup: ice: frozen water, carbon dioxide, nitrogen; rock and iron beneath; air: thin, or none
+volcano-count: 8
+rivers: no
+rings-chance: 0.02
+rings: 900
+rings-radii: 1.4..2.2
+rings-shade: 0.3
+rings-colour: 0.6 0.56 0.52
 
 @terrain tidally-locked
 name: A tidally locked world
@@ -181,6 +217,11 @@ moons: 0..0
 dot-colour: 0.7 0.6 0.75
 interest: 4
 makeup: rock: silicate crust, iron core; one face scorched, one frozen; air: carbon dioxide, nitrogen
+rings-chance: 0.02
+rings: 900
+rings-radii: 1.4..2.2
+rings-shade: 0.3
+rings-colour: 0.6 0.56 0.52
 
 @terrain gas-giant
 name: A gas giant
@@ -204,6 +245,12 @@ makeup: hydrogen and helium; clouds: ammonia, water; core: rock and ice
 band-dark: 0.38 0.22 0.13 .. 0.5 0.32 0.2
 band-light: 0.93 0.84 0.72 .. 0.98 0.92 0.84
 bands: 13..21
+rings: 5200
+rings-radii: 1.35..2.3
+rings-gap: 1.85..1.92
+rings-shade: banded
+rings-chance: 1
+rings-colour: 0.9 0.84 0.72
 
 @terrain ice-giant
 name: An ice giant
@@ -229,6 +276,11 @@ dot-colour: 0.5 0.8 1
 interest: 1
 day-hours: 9..17
 makeup: water, ammonia and methane ices; air: hydrogen, helium, methane; core: rock
+rings: 1400
+rings-radii: 1.6..2.0
+rings-shade: 0.25
+rings-chance: 1
+rings-colour: 0.55 0.58 0.62
 
 @terrain hot-jupiter
 name: A hot Jupiter

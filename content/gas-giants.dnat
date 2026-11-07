@@ -111,6 +111,7 @@ to-r: 0.8
 matter: plasma
 real: yes
 says: hydrogen crushed so hard it conducts electricity like metal; makes up most of a gas giant and drives its huge magnetic field
+in: gas-giant, hot-jupiter
 
 @layer ice-mantle
 name: Ice mantle
@@ -119,6 +120,7 @@ to-r: 0.85
 matter: ice
 real: yes
 says: in ice giants, hot dense water, ammonia and methane under pressure
+in: ice-giant
 
 @layer core
 name: Core

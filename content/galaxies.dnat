@@ -9,6 +9,13 @@
 # layout: how its stars are laid out: spiral (a disc with arms), barred-spiral (a bar with arms from its tips), elliptical
 #   (a smooth ball of old stars: also cD, dwarf spheroidal, ultra-diffuse, radio and quasar hosts), lenticular (a disc with no
 #   arms), irregular (clumpy, no order: also starbursts, blue compact dwarfs, green peas and merging pairs), ring.
+# How each kind is grown (every one may be a range, a..b, each galaxy taking its own value from its seed):
+#   layout: its shape (spiral, barred-spiral, elliptical, lenticular, irregular, ring). arms: how many spiral arms (none
+#   given: 2 to 4 by chance). arm-spread: how loose its arms are (1 usual; ragged flocculent arms about 2.2).
+#   star-forming-rate: how much it still makes stars (a spiral like ours 1), which sets its young clusters, glowing and dark
+#   nebulae and remnants. structure-size: how much it holds against ours (giants about 3, dwarfs about 0.15).
+#   globular-clusters: how many old clusters in its halo (ours about 160, a giant elliptical like M87 about 12,000).
+#   bodies-on-arms: its young clusters and nebulae on its arms. bodies-spread: disc (a flat disc) or ball (a round swarm).
 @galaxy spiral
 name: Spiral galaxy
 layout: spiral
@@ -19,6 +26,11 @@ stars: young blue stars in the arms, older stars in the bulge
 gas: rich
 star-forming: yes, in the arms
 example: Andromeda Galaxy
+star-forming-rate: 1
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: yes
+bodies-spread: disc
 
 @galaxy barred-spiral
 name: Barred spiral galaxy
@@ -29,6 +41,11 @@ parts: bulge, bar, disk, spiral-arms, halo, central-black-hole
 gas: rich
 star-forming: yes
 example: the Milky Way
+star-forming-rate: 1
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: yes
+bodies-spread: disc
 
 @galaxy grand-design-spiral
 name: Grand-design spiral
@@ -37,6 +54,12 @@ real: yes
 shape: two long, clear, well-defined arms
 parts: bulge, disk, spiral-arms, halo
 star-forming: yes
+star-forming-rate: 1
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: yes
+bodies-spread: disc
+arms: 2
 
 @galaxy flocculent-spiral
 name: Flocculent spiral
@@ -45,6 +68,12 @@ real: yes
 shape: many short, patchy arm pieces instead of a few long arms
 parts: bulge, disk, arm-patches, halo
 star-forming: yes
+star-forming-rate: 1
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: yes
+bodies-spread: disc
+arm-spread: 2.2
 
 @galaxy elliptical
 name: Elliptical galaxy
@@ -56,6 +85,11 @@ stars: mostly old and red
 gas: poor
 star-forming: little or none
 example: Messier 87
+star-forming-rate: 0.01
+structure-size: 1
+globular-clusters: 600
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy giant-elliptical
 name: Giant elliptical galaxy
@@ -65,6 +99,11 @@ shape: huge smooth ball of stars at the heart of a galaxy cluster
 parts: body, halo, central-black-hole, globular-clusters
 gas: poor
 example: Messier 87
+star-forming-rate: 0.01
+structure-size: 3
+globular-clusters: 12000
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy lenticular
 name: Lenticular galaxy
@@ -75,6 +114,11 @@ parts: bulge, disk, halo
 gas: poor
 star-forming: little
 example: Sombrero Galaxy
+star-forming-rate: 0.05
+structure-size: 1
+globular-clusters: 600
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy irregular
 name: Irregular galaxy
@@ -84,6 +128,11 @@ shape: no clear shape
 parts: patches, gas-clouds
 gas: rich
 star-forming: yes
+star-forming-rate: 0.7
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy magellanic-spiral
 name: Magellanic spiral
@@ -92,6 +141,11 @@ real: yes
 shape: a small lopsided galaxy with one main arm
 parts: bar, single-arm, gas-clouds
 example: Large Magellanic Cloud
+star-forming-rate: 1
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: yes
+bodies-spread: disc
 
 @galaxy dwarf-elliptical
 name: Dwarf elliptical galaxy
@@ -99,6 +153,11 @@ layout: elliptical
 real: yes
 shape: small smooth ball of old stars
 gas: poor
+star-forming-rate: 0.01
+structure-size: 0.15
+globular-clusters: 600
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy dwarf-spheroidal
 name: Dwarf spheroidal galaxy
@@ -106,6 +165,11 @@ layout: elliptical
 real: yes
 shape: faint, small, loose ball of stars, often circling a big galaxy
 gas: very poor
+star-forming-rate: 0.01
+structure-size: 0.15
+globular-clusters: 600
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy dwarf-irregular
 name: Dwarf irregular galaxy
@@ -113,12 +177,22 @@ layout: irregular
 real: yes
 shape: small and shapeless, with gas and young stars
 gas: rich
+star-forming-rate: 0.7
+structure-size: 0.15
+globular-clusters: 8
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy ultra-diffuse
 name: Ultra-diffuse galaxy
 layout: elliptical
 real: yes
 shape: as wide as a big galaxy but very faint, with few stars
+star-forming-rate: 0.2
+structure-size: 0.15
+globular-clusters: 8
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy ring
 name: Ring galaxy
@@ -127,6 +201,11 @@ real: yes
 shape: a ring of stars around an empty center, made when one galaxy punches through another
 cause: collision
 example: Cartwheel Galaxy
+star-forming-rate: 0.7
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy polar-ring
 name: Polar-ring galaxy
@@ -134,6 +213,11 @@ layout: ring
 real: yes
 shape: a ring of gas and stars circling over the galaxy's poles
 cause: capturing another galaxy's material
+star-forming-rate: 0.7
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy starburst
 name: Starburst galaxy
@@ -142,24 +226,44 @@ real: yes
 shape: any shape, forming stars far faster than normal
 cause: often a collision or close pass
 example: Messier 82
+star-forming-rate: 3
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy active
 name: Active galaxy
 layout: spiral
 real: yes
 shape: any shape, with a bright feeding black hole in its core
+star-forming-rate: 0.2
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy quasar-host
 name: Quasar host galaxy
 layout: elliptical
 real: yes
 shape: a galaxy whose central black hole outshines all its stars
+star-forming-rate: 0.2
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy radio
 name: Radio galaxy
 layout: elliptical
 real: yes
 shape: a galaxy firing huge jets from its central black hole, glowing in radio light
+star-forming-rate: 0.2
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy interacting
 name: Interacting galaxies
@@ -167,6 +271,11 @@ layout: irregular
 real: yes
 shape: two galaxies pulling each other out of shape, with tails of stars between them
 cause: close pass or collision
+star-forming-rate: 0.7
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 # ── Extra galaxy types (from research) ──
 
@@ -175,18 +284,33 @@ name: Compact elliptical (cE)
 layout: elliptical
 real: yes
 shape: a small, very dense ball of stars
+star-forming-rate: 0.01
+structure-size: 1
+globular-clusters: 600
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy cd
 name: cD galaxy
 layout: elliptical
 real: yes
 shape: a giant elliptical with a huge faint halo, at the heart of a galaxy cluster
+star-forming-rate: 0.01
+structure-size: 3
+globular-clusters: 12000
+bodies-on-arms: no
+bodies-spread: ball
 
 @galaxy blue-compact-dwarf
 name: Blue compact dwarf
 layout: irregular
 real: yes
 shape: a small galaxy bursting with young blue stars
+star-forming-rate: 0.7
+structure-size: 0.15
+globular-clusters: 8
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy green-pea
 name: Green pea galaxy
@@ -194,24 +318,44 @@ layout: irregular
 real: yes
 shape: a tiny, very bright galaxy forming stars at a furious rate
 note: found by Galaxy Zoo volunteers in 2007
+star-forming-rate: 3
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy jellyfish
 name: Jellyfish galaxy
 layout: spiral
 real: yes
 shape: a galaxy falling through a cluster, its gas stripped out into long tentacles where new stars form
+star-forming-rate: 0.7
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy peculiar
 name: Peculiar galaxy
 layout: irregular
 real: yes
 shape: a galaxy that fits no normal type, usually bent by a collision or a close pass
+star-forming-rate: 0.7
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @galaxy dark
 name: Dark galaxy
 layout: elliptical
 real: hypothetical
 shape: a galaxy of gas and dark matter with few or no stars
+star-forming-rate: 0.2
+structure-size: 1
+globular-clusters: 160
+bodies-on-arms: no
+bodies-spread: disc
 
 @rule galaxy-hubble-stage
 real: rule

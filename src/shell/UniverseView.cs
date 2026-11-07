@@ -453,6 +453,33 @@ namespace DnaAnd.Shell
             }
             _cometN = cm.Count; _cometBuf = new UploadBuffer(_gpu.Device, (long)_cometN * Stride); _cometBuf.Write(cm.ToArray(), _cometN);
         }
+        // ── rings: round any world whose template gives it them (content/terrain.dnat rings-chance and its rings), made once
+        // for each world of the system you are in, in the world's own radii, placed and scaled to it where it is now ──
+        private readonly Dictionary<int, UploadBuffer> _ringBufs = new Dictionary<int, UploadBuffer>(); private readonly Dictionary<int, int> _ringCounts = new Dictionary<int, int>(); private object _ringSystem;
+        private void DrawRings(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
+        {
+            if (_system == null) return;
+            if (_ringSystem != _system) { foreach (var b0 in _ringBufs.Values) b0.Dispose(); _ringBufs.Clear(); _ringCounts.Clear(); _ringSystem = _system; }
+            for (int i = 0; i < _system.Bodies.Count && i + 1 < _bodyCount; i++)
+            {
+                var b = _system.Bodies[i]; if (!b.Rings || b.Terrain == null) continue;
+                double dx = _bodyVerts[i + 1].X - _ox, dy = _bodyVerts[i + 1].Y - _oy, dz = _bodyVerts[i + 1].Z - _oz, dl = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                if (dl <= 0 || b.RadiusUnits / dl * h < 3) continue;                       // (too small on screen to show)
+                UploadBuffer buf;
+                if (!_ringBufs.TryGetValue(i, out buf))
+                {
+                    string nm; var rings = PlanetGen.Build(_content, b.Terrain, WorldSeed(i), out nm);
+                    float[] col = PlanetGen.RingColour(_content, b.Terrain);
+                    var v = new StarVertex[Math.Max(1, rings.Points.Count)];
+                    for (int q = 0; q < rings.Points.Count; q++) { var p = rings.Points[q]; float s = rings.Shade[q] * 2; v[q] = new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.012f, R = col[0] * s, G = col[1] * s, B = col[2] * s, A = 1 }; }
+                    buf = new UploadBuffer(_gpu.Device, (long)v.Length * Stride); buf.Write(v, rings.Points.Count);
+                    _ringBufs[i] = buf; _ringCounts[i] = rings.Points.Count;
+                }
+                if (_ringCounts[i] == 0) continue;
+                float sc = (float)b.RadiusUnits; var m = Mat4.Identity; m.M11 = sc; m.M22 = sc; m.M33 = sc; m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
+                DrawPoints(buf, _ringCounts[i], m * vp, right, up, 1f, 0.0008f, w, h, time, 0f, 1f, 0f);
+            }
+        }
         private void DrawSmallBodies(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             foreach (var ex in _extras)
@@ -962,12 +989,12 @@ namespace DnaAnd.Shell
         // how far above the planet's ground the camera is (universe units)
         private double _surfaceCell, _lastAbove = 1;
         // a giant's layers (content/gas-giants.dnat @layer: from-r, to-r, matter), and where its core begins
-        private sealed class Layer { public string Id, Name, Matter, Says; public double From, To; }
+        private sealed class Layer { public string Id, Name, Matter, Says; public double From, To; public List<string> In; }   // In: the kinds of world that have it (none: every giant)
         private List<Layer> _layers;
         private List<Layer> Layers()
         {
             if (_layers != null) return _layers; _layers = new List<Layer>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
-            foreach (var e in _content.OfKind("gas-giants.dnat", "layer")) { double a, b; if (!double.TryParse(e.Get("from-r", ""), fs, ci, out a) || !double.TryParse(e.Get("to-r", ""), fs, ci, out b)) continue; _layers.Add(new Layer { Id = e.Id, Name = e.Name, Matter = e.Get("matter", "air"), Says = e.Get("says", ""), From = a, To = b }); }
+            foreach (var e in _content.OfKind("gas-giants.dnat", "layer")) { double a, b; if (!double.TryParse(e.Get("from-r", ""), fs, ci, out a) || !double.TryParse(e.Get("to-r", ""), fs, ci, out b)) continue; _layers.Add(new Layer { Id = e.Id, Name = e.Name, Matter = e.Get("matter", "air"), Says = e.Get("says", ""), From = a, To = b, In = e.Props.ContainsKey("in") ? new List<string>(System.Linq.Enumerable.Select(e.Get("in", "").Split(','), x => x.Trim())) : null }); }
             return _layers;
         }
         private double CoreShare { get { foreach (var l in Layers()) if (l.Matter == "core") return l.To; return 0.15; } }
@@ -975,11 +1002,11 @@ namespace DnaAnd.Shell
         private Layer LayerHere()
         {
             if (_ground == null || _ground.Solid) return null; double x, y, z; CamFromPlanet(out x, out y, out z); double share = Math.Sqrt(x * x + y * y + z * z) / _ground.Radius;
-            bool ice = _ground.Kind == "ice-giant"; Layer best = null;
+            Layer best = null;
             foreach (var l in Layers())
             {
                 if (share < l.From || share > l.To) continue;
-                if (ice && l.Id == "metallic-hydrogen") continue; if (!ice && l.Id == "ice-mantle") continue;   // an ice giant has an ice mantle; a gas giant metallic hydrogen
+                if (l.In != null && !l.In.Contains(_ground.Kind)) continue;              // only the layers its kind has (gas-giants.dnat in:)
                 if (best == null || l.To - l.From < best.To - best.From) best = l;
             }
             return best;
@@ -2335,7 +2362,8 @@ namespace DnaAnd.Shell
             }
             UpdateExtras();
             DrawBlackHoles(vp, right, up, w, h, time);                               // the feeding ones' discs and jets
-            DrawSmallBodies(vp, right, up, w, h, time);                              // asteroids and comets close in: their own bodies
+            DrawSmallBodies(vp, right, up, w, h, time);
+            DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them                              // asteroids and comets close in: their own bodies
             {
                 // the black hole that bends the most light on screen: its Einstein ring, sqrt(2 Rs / distance) radians (light from far
                 // behind it), set for every point drawn

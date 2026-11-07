@@ -18,7 +18,21 @@ namespace DnaAnd.Gen
         /// <summary>Main-sequence star types and how common each is, read from content/stars.dnat.</summary>
         // each kind of galaxy's shape (content/galaxies.dnat layout:), read once
         private static readonly Dictionary<string, string> Shapes = new Dictionary<string, string>();
-        public static void LoadShapes(ContentLibrary content) { if (Shapes.Count == 0) foreach (var e in content.OfKind("galaxies.dnat", "galaxy")) Shapes[e.Id] = e.Get("layout", "spiral"); }
+        public static void LoadShapes(ContentLibrary content) { if (Shapes.Count == 0) foreach (var e in content.OfKind("galaxies.dnat", "galaxy")) { Shapes[e.Id] = e.Get("layout", "spiral"); Kinds[e.Id] = e; } }
+        // each kind of galaxy's template (content/galaxies.dnat): how it is grown is read from its traits, never its name
+        private static readonly Dictionary<string, ContentEntry> Kinds = new Dictionary<string, ContentEntry>();
+        /// <summary>A trait of a kind of galaxy for one galaxy of it: a range (a..b) gives each galaxy its own value from its seed.</summary>
+        public static double Trait(string type, string key, double fallback, ulong seed)
+        {
+            ContentEntry e; double lo, hi; if (!Kinds.TryGetValue(type ?? "", out e) || !e.TryRange(key, out lo, out hi)) return fallback;
+            if (hi == lo) return lo;
+            ulong h = seed * 0x9E3779B97F4A7C15UL; foreach (char c in key) h = (h ^ c) * 0x100000001B3UL; h ^= h >> 29;
+            return lo + (hi - lo) * ((h >> 11) * (1.0 / 9007199254740992.0));
+        }
+        /// <summary>A yes-or-no trait of a kind of galaxy.</summary>
+        public static bool Yes(string type, string key, bool fallback) { ContentEntry e; if (!Kinds.TryGetValue(type ?? "", out e) || !e.Props.ContainsKey(key)) return fallback; return e.Get(key, "") == "yes"; }
+        /// <summary>A word trait of a kind of galaxy.</summary>
+        public static string Word(string type, string key, string fallback) { ContentEntry e; return Kinds.TryGetValue(type ?? "", out e) ? e.Get(key, fallback) : fallback; }
         private static string ShapeOf(string type) { string v; return Shapes.TryGetValue(type ?? "", out v) ? v : type; }
         public static List<StarKind> StarKinds(ContentLibrary content)
         {
@@ -171,14 +185,14 @@ namespace DnaAnd.Gen
                     }
                     default: // spiral family: spiral, grand-design-spiral, flocculent-spiral
                     {
-                        int nArms = type == "grand-design-spiral" ? 2 : arms;
+                        int nArms = Math.Max(1, (int)Math.Round(Trait(type, "arms", arms, seed)));                // (its template's arms, else 2 to 4 by chance)
                         if (part < 0.18) { Bulge(rng, 0.10f, out x, out y, out z); hotBias = 0.3; }
                         else if (part < 0.35) { float a = rng.Range(0, (float)Math.PI * 2), r = rng.Range(0.05f, 1f); x = (float)Math.Cos(a) * r; z = (float)Math.Sin(a) * r; y = rng.Gaussian() * 0.03f; hotBias = 0.8; }
                         else
                         {
                             float r = (float)Math.Pow(rng.NextDouble(), 0.7) * 0.95f + 0.05f;
                             int arm = rng.Int(nArms);
-                            float spread = type == "flocculent-spiral" ? armSpread * 2.2f : armSpread;
+                            float spread = armSpread * (float)Trait(type, "arm-spread", 1, seed);              // (how loose its arms are, from its template)
                             float ang = arm * (float)(Math.PI * 2 / nArms) + (float)Math.Log(r / 0.05f + 1) * twist;
                             ang += rng.Gaussian() * spread * (1.2f - r * 0.5f);
                             x = (float)Math.Cos(ang) * r; z = (float)Math.Sin(ang) * r; y = rng.Gaussian() * 0.025f;

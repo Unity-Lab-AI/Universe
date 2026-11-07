@@ -109,7 +109,8 @@ namespace DnaAnd.Gen
         // two are the same, and the same seed always gives the same world ──
         public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
             public double LandShare = 0.06, CloudShift, DayHours = 24, Tides = 0.5, Bands = 19, GreatStorm = 1;
-            public bool Molten, Dunes, FrozenSea, SnowPatches, Locked, PolarIce = true, Dry, TropicalSoil, Life = true, ManyVolcanoes;
+            public bool Molten, Dunes, FrozenSea, SnowPatches, Locked, PolarIce = true, Dry, TropicalSoil, Life = true, ManyVolcanoes, Rivers = true, SeaFloorVolcanoes;
+            public double VolcanoCount = 30;
             public double[][] Ground;                  // land colours by height: below h, r g b, and 1 if the ground's patchiness tints it
             public float[] BandLow = { 0.42f, 0.26f, 0.16f }, BandHigh = { 0.96f, 0.88f, 0.78f }, Storm = { 0.96f, 0.93f, 0.86f }, River = { 0.1f, 0.3f, 0.5f }; }
         private static readonly Dictionary<string, TerrainKindData> Kinds = new Dictionary<string, TerrainKindData>();
@@ -163,6 +164,7 @@ namespace DnaAnd.Gen
             t.Molten = yes("molten", false); t.Dunes = yes("dunes", false); t.FrozenSea = yes("frozen-sea", false); t.SnowPatches = yes("snow-patches", false);
             t.Locked = yes("tidally-locked", false); t.PolarIce = yes("polar-ice", true); t.Dry = yes("dry", false); t.TropicalSoil = yes("tropical-soil", false);
             t.Life = yes("life", true); t.ManyVolcanoes = g("volcanoes") == "many";
+            t.Rivers = yes("rivers", true); t.SeaFloorVolcanoes = yes("seafloor-volcanoes", false); t.VolcanoCount = d("volcano-count", 30);
             t.BandLow = c("band-dark", t.BandLow); t.BandHigh = c("band-light", t.BandHigh); t.Storm = c("storm-colour", t.Storm); t.River = c("river-colour", t.River);
             var gl = g("ground");
             if (gl.Length > 0)
@@ -248,7 +250,7 @@ namespace DnaAnd.Gen
         /// <paramref name="layers"/> is how much fine detail to add (more when the camera is close).</summary>
         public double Height(double x, double y, double z, int layers, out float r, out float g, out float b, out float glow)
         {
-            if (Kind == "dyson-shell")
+            if (Shell && Habitable)
             {
                 // the inside of the orb is a planet landscape turned inside out: the same working terrain as the planets,
                 // sized to the orb itself, so it curves up and around you with the star at the centre
@@ -510,10 +512,9 @@ namespace DnaAnd.Gen
             double land, h;
             switch (Kind)
             {
-                case "dyson-shell": land = cont + _shellLand; break;   // each terraformed section has its own share of land
-                default: land = cont + _tk.LandShare; break;   // from its kind (terrain.dnat): Earth-like about a third land
+                default: land = Shell && Habitable ? cont + _shellLand : cont + _tk.LandShare; break;   // (a shell: each terraformed section its own share of land)   // from its kind (terrain.dnat): Earth-like about a third land
             }
-            double mtn = ridge * ridge * Smooth(0, 0.35, land) * (Kind == "dyson-shell" ? _shellMtn : 1);
+            double mtn = ridge * ridge * Smooth(0, 0.35, land) * (Shell && Habitable ? _shellMtn : 1);
             _land = land; _mtn = mtn; _tint = tint;
             h = land * 3.2 + mtn * 7.5 + mtn * (mtnFine - 0.5) * 2.2 + detail * (0.12 + 0.35 * Smooth(0, 0.4, land) + 0.6 * mtn) + micro;
             if (_tk.Dunes)
@@ -667,7 +668,7 @@ namespace DnaAnd.Gen
         private void MakeVolcanoes()
         {
             int count;
-            switch (Kind) { case "lava": count = 60; break; case "desert": count = 12; break; case "snowball": count = 8; break; case "ocean": count = 22; break; default: count = 30; break; }
+            count = (int)Math.Round(_tk.VolcanoCount);                                  // (its template: volcano-count)
             var rng = new Rng(_seed ^ 0xF1AEUL);
             var list = new List<Volcano>();
             for (int tries = 0; tries < 4000 && list.Count < count; tries++)
@@ -679,7 +680,7 @@ namespace DnaAnd.Gen
                 // volcanoes rise where plates meet (the mountain belts) and on hot spots; on wet worlds some are islands
                 bool belt = _mtn > 0.15, hotspot = rng.NextDouble() < 0.25;
                 if (!belt && !hotspot) continue;
-                if (h0 < -2.5 && Kind != "ocean") continue;
+                if (h0 < -2.5 && !_tk.SeaFloorVolcanoes) continue;   // (deep under the sea only where its template says: seafloor-volcanoes)
                 list.Add(new Volcano { X = x, Y = y, Z = z, Size = (_tk.ManyVolcanoes ? 0.012 : 0.007) * (0.6 + rng.NextDouble()) * 6371 / Radius,
                     Tall = _tk.ManyVolcanoes ? 3 + rng.NextDouble() * 6 : 2 + rng.NextDouble() * 4, Active = _tk.ManyVolcanoes || rng.NextDouble() < 0.4 });
             }
@@ -716,7 +717,7 @@ namespace DnaAnd.Gen
             }
             // rivers: thin winding channels through the lowlands, running toward the sea
             _river = 0;
-            if (h > 0.02 && h < 2.2 && Kind != "lava" && Kind != "snowball")
+            if (h > 0.02 && h < 2.2 && _tk.Rivers)   // (its template: rivers)
             {
                 double line = 1 - Math.Abs(Fbm(x, y, z, _seed + 4000u, 22, 3 + Math.Min(Math.Max(0, layers - 6), 6)) * 2 - 1);
                 double width = 0.988 - 0.004 * Smooth(0, 2, h);
@@ -844,7 +845,7 @@ namespace DnaAnd.Gen
         /// <summary>A good place to start the fly-down: on the lit side, on land with hills or mountains in view.</summary>
         public void StartPoint(out double lat, out double lon)
         {
-            if (Kind == "dyson-shell")
+            if (Shell && Habitable)
             {
                 // inside a shell: dry land on a habitat plate, near the middle band
                 var rs = new Rng(_seed ^ 0xD150UL);

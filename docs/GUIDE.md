@@ -113,7 +113,20 @@ ground: 99 0.14 0.13 0.13 tinted
 | `land-share` | More land (higher) or more sea (lower) |
 | `water`, `dry`, `frozen-sea`, `molten`, `dunes`, `snow-patches`, `polar-ice` | What its surface is like |
 | `bands`, `band-dark`, `band-light`, `great-storm`, `storm-colour` | For giants: belts, zones and storms |
-| `tidally-locked`, `tides`, `volcanoes`, `life` | Its behaviour |
+| `tidally-locked`, `tides`, `volcanoes`, `volcano-count`, `seafloor-volcanoes`, `rivers`, `life` | Its behaviour |
+
+#### Rings
+
+Any kind of world can have rings, giants and rocky worlds alike.
+
+| Trait | Means |
+|---|---|
+| `rings-chance` | How often a world of the kind has rings (`1` always; every giant of ours has them. Rocky worlds now and then, from a moon torn apart by its planet's pull) |
+| `rings` | How many specks make them |
+| `rings-radii` | From and to, in the world's radii (`1.4..2.2`) |
+| `rings-gap` | A gap in them, in radii |
+| `rings-shade` | `banded` (bright and banded, like Saturn's) or a number (faint and even, like Uranus's) |
+| `rings-colour` | Their colour |
 
 Anything you leave out is taken from `@terrain default`.
 
@@ -161,9 +174,46 @@ shape: a faint disk with wide open arms
 example: (yours)
 ```
 
-`layout` picks the shape the galaxy is grown in: `spiral`, `barred-spiral`, `elliptical`, `lenticular`, `irregular` or `ring`. Each galaxy of the kind gets its own size, tilt, turn and stars from its seed.
+| Trait | Means |
+|---|---|
+| `layout` | The shape it's grown in: `spiral`, `barred-spiral`, `elliptical`, `lenticular`, `irregular` or `ring` |
+| `arms` | How many spiral arms (left out: 2 to 4 by chance) |
+| `arm-spread` | How loose its arms are (`1` usual, about `2.2` for ragged, flocculent arms) |
+| `star-forming-rate` | How much it still makes stars (a spiral like ours `1`). Sets its young clusters, glowing and dark nebulae and remnants |
+| `structure-size` | How much it holds against ours (giants about `3`, dwarfs about `0.15`) |
+| `globular-clusters` | Old clusters in its halo (ours about `160`, a giant elliptical about `12000`) |
+| `bodies-on-arms` | Its young clusters and nebulae lie along its arms |
+| `bodies-spread` | `disc` (a flat disc) or `ball` (a round swarm) |
+
+Every number can be a range, and each galaxy of the kind gets its own size, tilt, turn, stars and values from its seed.
 
 > A new *shape* (not just a new kind on an existing shape) is a code change in `src/gen/GalaxyGen.cs`. See *Add a feature in code* below.
+
+---
+
+## ☀️ Lay out star systems
+
+The kinds of star system are templates in `content/solar-systems.dnat`. The usual one, `sun-like`, is the base, and other kinds give only what differs.
+
+```
+@system compact
+name: Compact system
+planets: 6..8
+first-orbit-au: 0.012
+first-orbit-spread: 0.8..1.2
+scales-with-star: no
+spacing: 1.25..1.4
+```
+
+| Trait | Means |
+|---|---|
+| `planets` | How many worlds |
+| `first-orbit-au`, `first-orbit-spread` | The first world's orbit in AU, times a value in the spread |
+| `scales-with-star` | `yes`: orbits move out with the square root of the star's brightness |
+| `spacing` | Each orbit over the one before (the Sun's worlds, about 1.4 to 2) |
+| `share-in-universe` | How often a system in the universe is of this kind |
+
+Which kind of world forms in each orbit then follows from the world templates above.
 
 ---
 

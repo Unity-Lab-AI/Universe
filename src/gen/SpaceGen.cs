@@ -74,18 +74,16 @@ namespace DnaAnd.Gen
             // nebulae and remnants from its old stars.
             var rng = new Rng(seed ^ 0xC1u);
             var list = new List<StarVertex>();
-            string t = galaxyType.ToLowerInvariant();
-            bool spiral = t.Contains("spiral");
-            bool irregular = t.Contains("irregular") || t.Contains("magellanic") || t.Contains("blue-compact") || t.Contains("green-pea") || t.Contains("jellyfish") || t.Contains("starburst") || t.Contains("ring") || t.Contains("interacting") || t.Contains("peculiar");
-            bool elliptical = t.Contains("elliptical") || t.Contains("spheroidal") || t == "cd" || t.Contains("lenticular");
-            bool giant = t.Contains("giant") || t == "cd";
-            bool dwarf = t.Contains("dwarf") || t.Contains("ultra-diffuse");
-            double young = t.Contains("starburst") || t.Contains("green-pea") ? 3 : spiral ? 1 : irregular ? 0.7 : t.Contains("lenticular") ? 0.05 : elliptical ? 0.01 : 0.2;   // how much it is still making stars
-            double size = giant ? 3 : dwarf ? 0.15 : 1;
+            // all from its kind's template (content/galaxies.dnat), never its name: whether its young things lie on arms, whether
+            // its bodies swarm in a ball or lie in a disc, how much it still makes stars, how much it holds, its old clusters
+            bool spiral = GalaxyGen.Yes(galaxyType, "bodies-on-arms", false);
+            bool elliptical = GalaxyGen.Word(galaxyType, "bodies-spread", "disc") == "ball";
+            double young = GalaxyGen.Trait(galaxyType, "star-forming-rate", 0.2, seed);   // how much it is still making stars
+            double size = GalaxyGen.Trait(galaxyType, "structure-size", 1, seed);
             // researched counts: the Milky Way about 150-180 globular clusters, a few tens of thousands of open clusters (about 10,000
             // known), about 10,000-30,000 planetary nebulae (about 3,500 known), about 1,000 supernova remnants (about 300 known);
             // a giant elliptical like M87 about 12,000-15,000 globular clusters
-            int globulars = (int)((giant ? 12000 : elliptical ? 600 : dwarf ? 8 : 160) * (0.8 + 0.4 * rng.NextDouble()));
+            int globulars = (int)(GalaxyGen.Trait(galaxyType, "globular-clusters", 160, seed) * (0.8 + 0.4 * rng.NextDouble()));
             int opens = (int)(3000 * young * size), emis = (int)(2000 * young * size), refl = (int)(500 * young * size), dark = (int)(3000 * young * size);
             int planetary = (int)(3000 * size), remnants = (int)((300 + 700 * young) * size);
             clusterCount = 0; nebulaCount = 0;
@@ -219,7 +217,7 @@ namespace DnaAnd.Gen
         {
             public string Kind; public double OrbitUnits, RadiusUnits, Period, Phase; public float R, G, B;
             /// <summary>Its kind's template in content/terrain.dnat (null for a moon), and whether it is a giant (no ground).</summary>
-            public string Terrain; public bool Giant;
+            public string Terrain; public bool Giant, Rings;
             /// <summary>What it is made of, for its card; and how much the tour's director wants to visit it.</summary>
             public string[] MakeUp, MakeUpDry; public double Interest = 1;
             // its orbit's tilt to the system's plane and where it crosses it (radians): planets lie within a few degrees of one
@@ -268,11 +266,25 @@ namespace DnaAnd.Gen
             double scale = Math.Sqrt(sys.Luminosity);
             sys.FrostLineAu = frostSun * scale; sys.HabitableAu = hzSun * scale;
 
-            int count = 3 + rng.Int(8);
-            double a = 0.3 * scale * rng.Range(0.6f, 1.4f), step = rng.Range(1.45f, 1.9f);
-            if (layout == "compact") { count = 6 + rng.Int(3); a = 0.012 * rng.Range(0.8f, 1.2f); step = rng.Range(1.25f, 1.4f); } // packed close to a dim star (content: compact system)
-            if (layout == "hot-jupiter") count = 1 + rng.Int(3);                                                                  // few close neighbors (content: hot-Jupiter system)
-            bool hotJupiter = layout == "hot-jupiter" || (layout == null && rng.NextDouble() < 0.1);
+            // its layout from the system kinds in content/solar-systems.dnat (none named here): the usual one (sun-like) first,
+            // then the kind asked for over it, each trait it gives taking the place of the usual one's; planets: how many,
+            // first-orbit-au and first-orbit-spread: the first world's orbit, scales-with-star: moved out by the star's
+            // brightness, spacing: each orbit over the one before; share-in-universe: how often a system is of that kind
+            int count; double a, step; double lo, hi;
+            Func<string, string, double, double, double[]> sysT = (id, key, l0, h0) => { foreach (var e in content.OfKind("solar-systems.dnat", "system")) if (e.Id == id && e.TryRange(key, out lo, out hi)) return new[] { lo, hi }; return null; };
+            Func<string, bool> scales = id => { foreach (var e in content.OfKind("solar-systems.dnat", "system")) if (e.Id == id && e.Props.ContainsKey("scales-with-star")) return e.Get("scales-with-star", "yes") == "yes"; return true; };
+            Action<string, bool> layoutOf = (id, first) =>
+            {
+                var pl = sysT(id, "planets", 0, 0); var fo = sysT(id, "first-orbit-au", 0, 0); var fs2 = sysT(id, "first-orbit-spread", 0, 0); var sp = sysT(id, "spacing", 0, 0);
+                if (pl != null || first) count = (int)(pl != null ? pl[0] : 3) + rng.Int((int)(pl != null ? pl[1] - pl[0] : 7) + 1);
+                if (fo != null || first) a = (fo != null ? fo[0] : 0.3) * (scales(id) ? scale : 1) * rng.Range((float)(fs2 != null ? fs2[0] : 0.6), (float)(fs2 != null ? fs2[1] : 1.4));
+                if (sp != null || first) step = rng.Range((float)(sp != null ? sp[0] : 1.45), (float)(sp != null ? sp[1] : 1.9));
+            };
+            count = 0; a = 0; step = 1;
+            layoutOf("sun-like", true);
+            if (layout != null && layout != "sun-like") layoutOf(layout, false);
+            var hj = sysT("hot-jupiter", "share-in-universe", 0, 0);
+            bool hotJupiter = layout == "hot-jupiter" || (layout == null && rng.NextDouble() < (hj != null ? hj[0] : 0.1));
             double lastRocky = 0, firstGiant = 0, outer = 0;
             for (int i = 0; i < count; i++, a *= step)
             {
@@ -285,6 +297,8 @@ namespace DnaAnd.Gen
                 b.Terrain = k.Id; b.Giant = giant; b.Kind = k.Label; b.MakeUp = k.MakeUp; b.MakeUpDry = k.MakeUpDry; b.Interest = k.Interest;
                 b.RadiusUnits = Units.Km(k.SpreadLo != k.SpreadHi ? k.SizeKm * rng.Range((float)k.SpreadLo, (float)k.SpreadHi) : k.SizeKm * k.SpreadLo);
                 b.R = k.Dot[0]; b.G = k.Dot[1]; b.B = k.Dot[2];
+                // rings by its template's chance (rings-chance), from its own place, so the seed's other worlds stay as they were
+                { ulong rh = (seed ^ (ulong)(i + 1) * 0x9E3779B97F4A7C15UL) * 0xBF58476D1CE4E5B9UL; rh ^= rh >> 31; b.Rings = (rh >> 11) * (1.0 / 9007199254740992.0) < k.RingChance; }
                 if (giant) { if (firstGiant == 0) firstGiant = a; } else lastRocky = a;
                 sys.Bodies.Add(b); outer = a;
                 int planetIndex = sys.Bodies.Count - 1;
@@ -343,7 +357,7 @@ namespace DnaAnd.Gen
         public sealed class WorldKindRule
         {
             public string Id, Label, Forms; public double HzLo = -1, HzHi = -1, FrostLo = -1, FrostHi = -1, LumLo = -1, LumHi = -1, Weight = 1, Interest = 1;
-            public double SizeKm = 6371, SpreadLo = 1, SpreadHi = 1; public int MoonsLo, MoonsHi; public float[] Dot = { 0.75f, 0.65f, 0.55f };
+            public double SizeKm = 6371, SpreadLo = 1, SpreadHi = 1, RingChance; public int MoonsLo, MoonsHi; public float[] Dot = { 0.75f, 0.65f, 0.55f };
             public string[] MakeUp, MakeUpDry;
         }
         private static List<WorldKindRule> _kinds;
@@ -361,6 +375,7 @@ namespace DnaAnd.Gen
                 if (e.TryRange("star-brightness", out lo, out hi)) { k.LumLo = lo; k.LumHi = hi; }
                 if (e.TryRange("weight", out lo, out hi)) k.Weight = lo;
                 if (e.TryRange("interest", out lo, out hi)) k.Interest = lo;
+                if (e.TryRange("rings-chance", out lo, out hi)) k.RingChance = lo;
                 if (e.TryRange("size-km", out lo, out hi)) k.SizeKm = lo;
                 if (e.TryRange("size-spread", out lo, out hi)) { k.SpreadLo = lo; k.SpreadHi = hi; }
                 if (e.TryRange("moons", out lo, out hi)) { k.MoonsLo = (int)lo; k.MoonsHi = (int)hi; }

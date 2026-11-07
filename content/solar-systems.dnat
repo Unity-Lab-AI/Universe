@@ -6,12 +6,21 @@
 
 # ── Kinds of systems (real) ──
 
+# How a system is laid out (the usual one, sun-like, first; a kind asked for gives only what differs): planets: how many
+#   worlds; first-orbit-au: the first world's orbit in AU, times a value in first-orbit-spread; scales-with-star: moved out
+#   by the square root of the star's brightness (yes) or not; spacing: each orbit over the one before (the Sun's worlds
+#   about 1.4 to 2); share-in-universe: how often a system in the universe is of this kind.
 @system sun-like
 name: Sun-like system
 real: yes
 star: g-type or k-type
 shape: small rocky planets close in, gas and ice giants further out, belts and an icy outer shell
 example: the Solar System
+planets: 3..10
+first-orbit-au: 0.3
+first-orbit-spread: 0.6..1.4
+scales-with-star: yes
+spacing: 1.45..1.9
 
 @system compact
 name: Compact system
@@ -19,12 +28,19 @@ real: yes
 star: m-type
 shape: many rocky planets packed tightly close to a dim star
 example: TRAPPIST-1
+planets: 6..8
+first-orbit-au: 0.012
+first-orbit-spread: 0.8..1.2
+scales-with-star: no
+spacing: 1.25..1.4
 
 @system hot-jupiter
 name: Hot-Jupiter system
 real: yes
 shape: a gas giant orbiting very close to its star, usually with few close neighbors
 example: 51 Pegasi
+planets: 1..3
+share-in-universe: 0.1
 
 @system crowded
 name: Crowded system

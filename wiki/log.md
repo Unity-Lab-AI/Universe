@@ -13,3 +13,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the road built): every world's mass (DNA-AND DESIGN 579), the gravity switch (580), frame dragging and the rest of relativity (581), a star's layers (582), decay before your eyes (583), the tour's end figure (584), the clip's text scaled (585); our own star's name swept out (578); `u03`, `u06`, `u08`, `u09` updated, the roadmap's U12 marked.
 - 2026-11-07 (the clip's size on the landing page, its text measured right): DNA-AND DESIGN 587; `u09` updated.
 - 2026-11-07 (the cards short again): every line added today one clause, no card more than two thirds of the screen (DNA-AND DESIGN 588).
+- 2026-11-07 (the face and the ride, from the creator's shots): DNA-AND DESIGN 589.

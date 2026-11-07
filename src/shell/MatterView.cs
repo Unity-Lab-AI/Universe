@@ -241,7 +241,7 @@ namespace Universe.Shell
         }
         // the point you dive into (km, across the ground) and where it is easing to (what you picked)
         private double _fx, _fz, _tfx, _tfz, _fy, _tfy, _lastTime = -1;   // (and its height, so a pick in any layer is gone to)
-        private sealed class Body { public int Kind; public long I, J, Key; public double X, Y, Z, Size; public string Sym; }   // Kind 0 a grain, 1 an atom, 2 a spot   // 0 a grain, 1 an atom
+        private sealed class Body { public int Kind; public long I, J, Key; public double X, Y, Z, Size; public string Sym; public double AX, AY, AZ; }   // AX AY AZ: an electron's atom, so the ride can work out where the electron is every frame   // Kind 0 a grain, 1 an atom, 2 a spot   // 0 a grain, 1 an atom
         private readonly List<Body> _bodies = new List<Body>();
         private Mat4 _lastVp; private int _lastW = 1, _lastH = 1; private bool _haveVp;
         private Body _picked;
@@ -392,7 +392,7 @@ namespace Universe.Shell
                             double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
                         }
                         Add(glow, exx, eyy, ezz, riding ? Math.Max(dot, s * 0.07) : dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
-                        { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; } }   // every atom's electrons can be picked, however its atom is drawn
+                        { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; _bodies[nb].AX = x; _bodies[nb].AY = y; _bodies[nb].AZ = z; } }   // every atom's electrons can be picked, however its atom is drawn
                     }
                 }
             // its nucleus: a clear sharp point of light in its element's own colour, so the crystal's pattern reads at a glance
@@ -1061,6 +1061,9 @@ namespace Universe.Shell
         }
 
         // the point on top of a grain straight above (x, z), and false if (x, z) is off the grain
+        // the one cell the face's coarse shape is read at (the camera's height, the spots to pick, the face's rings): finer detail is the
+        // card's, per pixel, so nothing worked out here stands off anything else
+        private static double CoarseCell(double s, double frad) { return Math.Max(Math.Max(s / 40, AtomSpacing), s < frad * 1.5 ? frad * 0.004 : 0); }
         private bool GrainTop(long gi, long gj, double cx, double cy, double cz, double rad, double x, double z, double cell, out double y)
         {
             y = cy + rad; double dx = x - cx, dz = z - cz;
@@ -1096,6 +1099,7 @@ namespace Universe.Shell
             _patchKey = gi; _patchGX = gx; _patchGY = gy; _patchGZ = gz; _patchRad = rad;
             var m = GrainMineral(gi, gj); if (m == null) return;
             if (_patchGrain != gi || _patchCache.Count > 600000) { _patchCache.Clear(); _patchGrain = gi; }
+            float dimF = s < AtomSpacing * 40 ? 0.45f : 1f, lusF = s < AtomSpacing * 40 ? 0.3f : m.Lustre;   // (at the nanometres: matte, dimmed, in greys: no glint blowing the face out to white)
             if (Floor)
             {
                 double big = 400, y0 = 0, sxp = 0, szp = 0;
@@ -1109,17 +1113,17 @@ namespace Universe.Shell
                     if (GrainTop(gi, gj, gx, gy, gz, rad, _fx + d, _fz, rad * 0.004, out ya) && GrainTop(gi, gj, gx, gy, gz, rad, _fx - d, _fz, rad * 0.004, out yb)) sxp = (ya - yb) / (2 * d);
                     if (GrainTop(gi, gj, gx, gy, gz, rad, _fx, _fz + d, rad * 0.004, out ya) && GrainTop(gi, gj, gx, gy, gz, rad, _fx, _fz - d, rad * 0.004, out yb)) szp = (ya - yb) / (2 * d);
                     double sink0 = Structured(m) ? AtomSpacing * 3 * Fade(s, AtomSpacing * 40, AtomSpacing * 22) : 0, under = Math.Max(AtomSpacing * 0.4, s * 0.004);
-                    float n1 = PackNormal(-sxp, 1, -szp), fr1 = m.R * FocusShade, fg1 = m.G * FocusShade, fb1 = m.B * FocusShade;
-                    Func<double, double, StarVertex> sv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)((y0 + sxp * x * s + szp * z * s - sink0 - under + _yOff - _fy) / s + _ey), Z = (float)(z + _ez), Size = n1, R = fr1, G = fg1, B = fb1, A = m.Lustre };
+                    float n1 = PackNormal(-sxp, 1, -szp), fr1 = m.R * FocusShade * dimF, fg1 = m.G * FocusShade * dimF, fb1 = m.B * FocusShade * dimF;
+                    Func<double, double, StarVertex> sv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)((y0 + sxp * x * s + szp * z * s - sink0 - under + _yOff - _fy) / s + _ey), Z = (float)(z + _ez), Size = n1, R = fr1, G = fg1, B = fb1, A = lusF };
                     _patchMesh.Add(sv(-big, -big)); _patchMesh.Add(sv(big, -big)); _patchMesh.Add(sv(big, big)); _patchMesh.Add(sv(-big, -big)); _patchMesh.Add(sv(big, big)); _patchMesh.Add(sv(-big, big));
                 }
                 else
                 {
                     // farther out: a level floor of the face's own colour under its rings, far out all round, at the bed the grain lies
                     // on (never at its top, which buried the grains round it to their middles): never a hole or the dark past its edge
-                    float fr = m.R * FocusShade * 0.85f, fg = m.G * FocusShade * 0.85f, fb = m.B * FocusShade * 0.85f, n0 = PackNormal(0, 1, 0);
+                    float fr = m.R * FocusShade * 0.85f * dimF, fg = m.G * FocusShade * 0.85f * dimF, fb = m.B * FocusShade * 0.85f * dimF, n0 = PackNormal(0, 1, 0);
                     double fy = (Math.Max(gy - rad * 0.9, -_yOff - 6 * s) + _yOff - _fy) / s + _ey;   // (deep in, just under the face: a backdrop past the rings, never black)
-                    Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = m.Lustre };
+                    Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = lusF };
                     _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, big));
                 }
             }
@@ -1175,7 +1179,17 @@ namespace Universe.Shell
                     // on the face): thrown out, and the sheet under the face shows there instead
                     if (!ok[a, b]) continue; double sum = 0; int cnt = 0;
                     if (ok[a - 1, b]) { sum += hy[a - 1, b]; cnt++; } if (ok[a + 1, b]) { sum += hy[a + 1, b]; cnt++; } if (ok[a, b - 1]) { sum += hy[a, b - 1]; cnt++; } if (ok[a, b + 1]) { sum += hy[a, b + 1]; cnt++; }
-                    if (cnt >= 2 && Math.Abs(hy[a, b] - sum / cnt) > step * 2.5 + AtomSpacing * 2) ok[a, b] = false;
+                    if (cnt >= 2 && Math.Abs(hy[a, b] - sum / cnt) > step * 1.2 + AtomSpacing) ok[a, b] = false;   // (a step off its neighbours is a spike: a black wall across the face otherwise)
+                }
+            // never a hole with the stars through it: a point not worked out yet, out of view, or thrown out as a spike takes its
+            // neighbours' height for the drawing (not for the spike test), so every quad in view is drawn
+            var okd = (bool[,])ok.Clone();
+            for (int a = 0; a <= N; a++)
+                for (int b = 0; b <= N; b++)
+                {
+                    if (ok[a, b]) continue; double sum = 0; int cnt = 0;
+                    if (a > 0 && ok[a - 1, b]) { sum += hy[a - 1, b]; cnt++; } if (a < N && ok[a + 1, b]) { sum += hy[a + 1, b]; cnt++; } if (b > 0 && ok[a, b - 1]) { sum += hy[a, b - 1]; cnt++; } if (b < N && ok[a, b + 1]) { sum += hy[a, b + 1]; cnt++; }
+                    if (cnt > 0) { hy[a, b] = sum / cnt; okd[a, b] = true; }
                 }
             if (frac > 0)
             {
@@ -1193,7 +1207,7 @@ namespace Universe.Shell
                     }
                 hy = hm;
             }
-            float sh = FocusShade;
+            float sh = FocusShade * (s < AtomSpacing * 40 ? 0.45f : 1f), lusR = s < AtomSpacing * 40 ? 0.3f : m.Lustre;   // (at the nanometres: matte, dimmed: no glint blowing the face out to white)
             double sink = Structured(m) ? AtomSpacing * 3 * Fade(s, AtomSpacing * 40, AtomSpacing * 22) : 0;   // under the atoms once they show
             var nrm = new float[N + 1, N + 1]; var occ = new float[N + 1, N + 1];
             mesh = _patchMesh;                                                           // drawn on its own, with the card working out its detail
@@ -1209,11 +1223,11 @@ namespace Universe.Shell
                     occ[a, b] = (float)Math.Max(0.55, Math.Min(1.08, 1 - hollow / span * 3));   // a hollow sees less of the sky
                 }
             float r = m.R * sh, g = m.G * sh, bl = m.B * sh;
-            Func<int, int, StarVertex> v = (aa, bb) => new StarVertex { X = (float)(atA(aa) / s + _ex), Y = (float)((hy[aa, bb] - sink + _yOff - _fy) / s + _ey), Z = (float)(atB(bb) / s + _ez), Size = nrm[aa, bb], R = r * occ[aa, bb] * st[aa, bb, 0], G = g * occ[aa, bb] * st[aa, bb, 1], B = bl * occ[aa, bb] * st[aa, bb, 2], A = m.Lustre };
+            Func<int, int, StarVertex> v = (aa, bb) => new StarVertex { X = (float)(atA(aa) / s + _ex), Y = (float)((hy[aa, bb] - sink + _yOff - _fy) / s + _ey), Z = (float)(atB(bb) / s + _ez), Size = nrm[aa, bb], R = r * occ[aa, bb] * st[aa, bb, 0], G = g * occ[aa, bb] * st[aa, bb, 1], B = bl * occ[aa, bb] * st[aa, bb, 2], A = lusR };
             for (int a = 0; a < N; a++)
                 for (int b = 0; b < N; b++)
                 {
-                    if (!ok[a, b] || !ok[a + 1, b] || !ok[a, b + 1] || !ok[a + 1, b + 1]) continue;
+                    if (!okd[a, b] || !okd[a + 1, b] || !okd[a, b + 1] || !okd[a + 1, b + 1]) continue;
                     if (!InView((atA(a) + step * 0.5) / s + _ex, (hy[a, b] - sink + _yOff - _fy) / s + _ey, (atB(b) + step * 0.5) / s + _ez, step / s * 1.5)) continue;   // only what is in view is drawn
                     // each ring round, never a square: the finer ring inside its hole, its own edge a circle, the grain's body beyond
                     double r00 = Math.Sqrt(atA(a) * atA(a) + atB(b) * atB(b)), r11 = Math.Sqrt(atA(a + 1) * atA(a + 1) + atB(b + 1) * atB(b + 1)), r10 = Math.Sqrt(atA(a + 1) * atA(a + 1) + atB(b) * atB(b)), r01 = Math.Sqrt(atA(a) * atA(a) + atB(b + 1) * atB(b + 1));
@@ -1500,7 +1514,7 @@ namespace Universe.Shell
             if (!_space && !_noGrains)
             {
                 long fgi, fgj; double fgx, fgy, fgz, frad, top; FocusGrain(out fgi, out fgj, out fgx, out fgy, out fgz, out frad);
-                if (GrainTop(fgi, fgj, fgx, fgy, fgz, frad, _fx, _fz, Math.Max(Math.Max(s / 40, AtomSpacing), s < frad * 1.5 ? frad * 0.004 : 0), out top)) _yOff = -top;   // you stay the same height above it (on the face: above the coarse shape the face is drawn from, its finer detail only shading; measured against the fine shape the camera sat a few views under the drawn face at nanometres, looking up through it)
+                if (GrainTop(fgi, fgj, fgx, fgy, fgz, frad, _fx, _fz, CoarseCell(s, frad), out top)) _yOff = -top;   // you stay the same height above it (on the face: above the coarse shape the face is drawn from, its finer detail only shading; measured against the fine shape the camera sat a few views under the drawn face at nanometres, looking up through it)
             }
             if (_space && s < _gasSpacing * 10 && s > AtomSpacing * 2)
             {
@@ -1555,7 +1569,7 @@ namespace Universe.Shell
                     for (long b = b0 - 2; b <= b0 + 2; b++)
                     {
                         double sx = a * step, sz = b * step, sy;
-                        if (!GrainTop(fgi, fgj, fgx, fgy, fgz, frad, sx, sz, step, out sy)) continue;
+                        if (!GrainTop(fgi, fgj, fgx, fgy, fgz, frad, sx, sz, Math.Max(step, CoarseCell(s, frad)), out sy)) continue;   // (on the same coarse shape the face is drawn from and the camera is held over: a picked spot is on the drawn face, never nanometres off it with the lattice whole views away)
                         AddBody(2, a, b, sx, sy, sz, step * 0.45, s);
                     }
             }
@@ -1803,7 +1817,7 @@ namespace Universe.Shell
                     }
                     bool riding = _picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.J == k;
                     Add(glow, exx, eyy, ezz, riding ? Math.Max(dot, s * 0.07) : dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);   // (the one you ride beside: a glowing body a share of the view, as a comet is when you fly with it; a point has no size, this is the size we give it)
-                    { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; } }   // every atom's electrons can be picked
+                    { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; _bodies[nb].AX = x; _bodies[nb].AY = y; _bodies[nb].AZ = z; } }   // every atom's electrons can be picked
                 }
             }
             { double odx = x - _fx, ody = y + _yOff - _fy, odz = z - _fz; if (odx * odx + ody * ody + odz * odz < Math.Pow(AtomSpacing * 0.6, 2)) Orbitals(glow, e, x, y, z, s, time, key, f); }   // and where its electrons may be, as steady clouds: only for the atom you are at
@@ -1852,6 +1866,24 @@ namespace Universe.Shell
             var solid = new List<StarVertex>(20000); var glow = new List<StarVertex>(2000); var mesh = pipes != null ? new List<StarVertex>(60000) : null;
             _bodies.Clear();
             _clock = time; Build(scaleKm, time, solid, glow, mesh, overlay);
+            if (_picked != null && _picked.Kind == 3 && !overlay)
+            {
+                // the electron you ride: where it is now, worked out from the pick itself (its atom, its shell and orbital, its phase), the
+                // dive point taken to it, and it drawn there as a glowing body a share of the view, whatever its atom's own drawing did
+                var ps = (_picked.Sym ?? "").Split(':'); var pe = ps.Length > 1 ? El(ps[1]) : null;
+                if (pe != null)
+                {
+                    var els = ElectronsOf(pe); int kq = (int)_picked.J;
+                    if (kq >= 0 && kq < els.Length)
+                    {
+                        double ox, oy, oz; ElectronAt(els[kq], _picked.Key, ElectronPhase(els[kq], kq, time), out ox, out oy, out oz, ElectronDrift(time)); double ar = AtomRadius(pe);
+                        double exx = _picked.AX + ox * ar, eyy = _picked.AY + oy * ar, ezz = _picked.AZ + oz * ar;
+                        _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz; _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz;
+                        double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < scaleKm * scaleKm * 9) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
+                        Add(glow, exx, eyy, ezz, scaleKm * 0.07, 1f, 0.8f, 0.25f, scaleKm);
+                    }
+                }
+            }
             if (mesh != null) { Solidify(solid, mesh, h); solid.Clear(); }
             Put(solid, ref _sv, ref _solidBuf); Put(glow, ref _gv, ref _glowBuf);
             if (mesh != null) Put(mesh, ref _mv, ref _meshBuf);

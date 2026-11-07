@@ -51,6 +51,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Every card line one short clause; no card more than two thirds of the screen:** (built: DNA-AND DESIGN 588; waits on the test) "like currently the text is full from top to bottom and takes up too much screen"
 
+- [~] **The spots on the drawn face, the ridden electron always drawn, the face at the nanometres matte and whole:** (built: DNA-AND DESIGN 589; waits on the test) "i took sshots of issues and at near 100 micometers im seeing through the planet at certain zoom. so that needs fixed and we are good, and all the shots are obvious of the issue like when it says is following a electron and ther is no electon in the selection and the weird shit like complete darkness when its saying other things are happening"
+
 ---
 
 ## Pending

@@ -307,7 +307,7 @@ Below the ground, everything is real matter at its real size.
 
 | File | What it holds |
 |---|---|
-| `content/elements.unt` | All 118 elements: their atoms, shells and most common isotopes; for the unstable ones `half-life` and `decays` (alpha, beta-minus, electron-capture, fission), so each decays before your eyes at its own moment |
+| `content/elements.unt` | All 118 elements: their atoms, shells and most common isotopes, and where each was forged (`made-in`: the big bang, cosmic rays, dying low-mass stars, exploding massive stars, exploding white dwarfs, merging neutron stars, uranium's and thorium's decay, the lab); for the unstable ones `half-life` and `decays` (alpha, beta-minus, electron-capture, fission), so each decays before your eyes at its own moment |
 | `content/minerals.unt` | Minerals (their crystal from its published unit cell, and their **trace elements**: `trace <host> <element> <share>`, each element standing in for the host atom on that share of its sites, so nickel sits in olivine, strontium in feldspar, gold in pyrite, and the sea's ions among its water) and the **mix** each kind of ground is made of |
 | `content/physics.unt` | The laws of nature, gases and particles (see *The laws of nature* above) |
 
@@ -317,7 +317,7 @@ Add a mineral, then put it in a ground's mix, and its grains appear on every wor
 
 ### What the small bodies and stars are made of
 
-An asteroid's kind lives in `content/small-bodies.unt` (`@asteroid` with `mix`, `makeup`, `density`, `albedo` and `belt-share`, its share at the belt's inner edge .. outer edge; the belt draws each asteroid's kind by these at its place), a Kuiper body's and a comet's in the same file, a rogue planet's in `content/planets.unt`. Each `mix` is a ground in `content/minerals.unt` (`@mix`), and the card works the elements and traces out from the minerals' own atoms and `trace` lines. A star's `makeup` (`content/stars.unt`, by count of atoms) is what its card gives and what its plasma is made of when you dive into it; `makeup-note` is what the card says of it.
+An asteroid's kind lives in `content/small-bodies.unt` (`@asteroid` with `mix`, `makeup`, `density`, `albedo` and `belt-share`; its mix's `vary` in `content/minerals.unt` gives each body its own shares of the kind's minerals, scattered by its seed, its share at the belt's inner edge .. outer edge; the belt draws each asteroid's kind by these at its place), a Kuiper body's and a comet's in the same file, a rogue planet's in `content/planets.unt`. Each `mix` is a ground in `content/minerals.unt` (`@mix`), and the card works the elements and traces out from the minerals' own atoms and `trace` lines. A star's `makeup` (`content/stars.unt`, by count of atoms) is what its card gives and what its plasma is made of when you dive into it; `makeup-note` is what the card says of it.
 
 ### Supernovae
 

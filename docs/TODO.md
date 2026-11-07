@@ -88,6 +88,12 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The well's grid gone once you are out of the hole, no space kind outside space:** (built: DNA-AND DESIGN 607; waits on the test) "and im out of the black hole now and ime seeing the grid all over the universe" / "i took snaps"
 - [~] **The text a warm ivory and gold with a dark rim under every letter, readable on black and white alike:** (built: DNA-AND DESIGN 608; waits on the test) "and we need a differnt color text that not gody as in the none light scale the white text on white and black environment make it impossible to read the text, but we need something that sint clashy but works for bioth black and white screen when in eveironments of the the universe"
 
+- [~] **The supernova's fireball drawn as a star's face, full-bright while it shines:** (built: DNA-AND DESIGN 609; waits on the test) "check first shot of issue nothing is in focus so wtf is the text meaning something isnt built"
+- [~] **Every asteroid its own shares of its kind's minerals, eight elements and their forges on the card:** (built: DNA-AND DESIGN 610; waits on the test) "and astroids still just genericly say rock and iron not theri actual varied and differnt vasness of compositions of all types and elements from a super nova"
+- [~] **The zoom brought up from rest and slowed to a crawl on approach; the shot's pan before its travel:** (built: DNA-AND DESIGN 611; waits on the test) "and its still jerky at points like pan away from black hole and zoom to solar systems and when it first pans out the the galactic webbing it need s to pace slow down to a craw on appraches and properly pan away berfore travel away from a point body focus"
+
+- [~] **The lattice's clouds bright enough to read; the hand-overs to the orbs and to the orbitals by degrees:** (built: DNA-AND DESIGN 612; waits on the test) "i took some screen shots of issues and at 200 picometers jsut befoer it there is a had off between orbs and elctrons and there is not middle ground it jsut instaly jusmps to orbs then instantly jusmps to our electron fields of yellow abnd blue elctrons, check clips"
+
 ---
 
 ## Pending

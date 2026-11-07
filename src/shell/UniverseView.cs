@@ -505,6 +505,7 @@ namespace Universe.Shell
         {
             var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             ex.KindName = made.Name; ex.Mix = made.Get("mix", null); if (ex.Mix != null && ex.Mix.Length == 0) ex.Mix = null;
+            if (ex.Mix != null) ex.Mix = _matter.VaryMix(ex.Mix, (ulong)(Math.Abs(Math.Sin(ex.X * 7.1 + ex.Y * 13.3 + ex.Z * 3.7) * 1e6) % 1e6));   // its own shares of its kind's minerals, by its seed (content/minerals.unt vary): no two bodies of a kind the same
             ex.Lines.Add(made.Name);   // (its kind; its words are in the content and the docs: the card stays short)
             { var parts = made.Get("makeup", "").Split(';'); if (parts.Length > 0 && parts[0].Trim().Length > 0) ex.Lines.Add("made of: " + Short(parts[0].Trim(), 70)); }   // (the first clause of its make-up: the minerals and elements below say the rest)
             if (ex.Mix != null) foreach (var ln in _matter.MakeUpWords(ex.Mix)) ex.Lines.Add(ln);
@@ -652,7 +653,7 @@ namespace Universe.Shell
         }
         private double SnShellKmS(Sn sn, double years) { double v = sn.K.V; return years <= _snFreeYears ? v : v * 0.4 * Math.Pow(_snFreeYears / years, 0.6); }
         private static string Years(double y) { return y < 1 ? (y * 365.25).ToString("0") + " days" : y < 1000 ? y.ToString("0") + " years" : y < 1e6 ? (y / 1000).ToString("0.#") + " thousand years" : (y / 1e6).ToString("0.#") + " million years"; }
-        private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf, _shellCrabBuf, _shellCasBuf; private int _snPointCap, _shellN, _fireCap;
+        private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf, _shellCrabBuf, _shellCasBuf; private int _snPointCap, _shellN; private StarSurface _fireSurf; private StarVertex[] _fireVerts;   // (_fireSurf: a fireball's face, drawn as a star's, coloured by its heat each frame)
         private void MakeShells()
         {
             // a shell of flung matter: a thin sphere of points, bunched into filaments (knots and streamers, as the real ones are), the
@@ -713,7 +714,7 @@ namespace Universe.Shell
         {
             if (!_snLoaded) LoadSupernovaLaw();
             if (_shellYoungBuf == null) MakeShells();
-            double now = _simYears; var pts = new List<StarVertex>(); var fire = new List<StarVertex>();
+            double now = _simYears; var pts = new List<StarVertex>();
             for (int i = 0; i < _galaxies.Count; i++)
             {
                 var g = _galaxies[i]; double gx = (g.X - _ax) - _ox, gy = (g.Y - _ay) - _oy, gz = (g.Z - _az) - _oz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
@@ -739,15 +740,17 @@ namespace Universe.Shell
                         }
                         else
                         {
-                            // the fireball: a ball of glowing gas at its real size, in the colour of its heat, brighter at its middle (the limb
-                            // thinner), the ejecta's thin outer cloud round it; as it thins, the ball fades and the cloud is what is left
-                            var rng = new Rng((ulong)(long)(sn.T * 1e6) ^ 0xF1AEUL); int n = 1400; float dim = (float)Math.Min(1, L / sn.K.Peak + 0.15);
-                            for (int q = 0; q < n; q++)
-                            {
-                                double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, sq = Math.Sqrt(1 - u * u), rr = Math.Pow(rng.NextDouble(), 0.6);
-                                float bq = (float)((0.35 + 0.65 * (1 - rr * rr)) * dim);
-                                fire.Add(new StarVertex { X = (float)(ux + sq * Math.Cos(a) * rr * rPhot), Y = (float)(uy + u * rr * rPhot), Z = (float)(uz + sq * Math.Sin(a) * rr * rPhot), Size = (float)(rPhot * 0.12), R = cr * bq, G = cg * bq, B = cb * bq, A = 1 });
-                            }
+                            // the fireball: its glowing face, a ball of plasma at its real size in the colour of its heat, drawn as a star's
+                            // face is (one sheet of boiling cells, darker to the limb), full-bright while it shines (a photosphere's face is
+                            // as bright as its heat says, whatever its light is against its peak: a thin dim puff of points had stood for it,
+                            // and at two hundred days there was nothing to see in the ring), fading only as it thins to a cloud on the tail
+                            double end = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving; float bright = (float)Math.Max(0.05, days <= end ? 1 : Math.Exp(-(days - end) / 40));
+                            if (_fireSurf == null) { string nm0; StarGen.Build(_content, "supernova-fireball", 0xF1AEUL, out nm0, out _fireSurf); _fireSurf.Giant = true; _fireSurf.Cell = 1.6f; _fireVerts = new StarVertex[_fireSurf.Normals.Length]; _fireBuf = new UploadBuffer(_gpu.Device, (long)_fireVerts.Length * Stride); }
+                            _fireSurf.R = cr; _fireSurf.G = cg; _fireSurf.B = cb; _fireSurf.Hot = SnHeatK(sn, days) > 7000;
+                            var toEye = new Vec3((float)(-ux / d), (float)(-uy / d), (float)(-uz / d));
+                            int n = _fireSurf.Draw(toEye, time, _fireVerts, 0); _fireBuf.Write(_fireVerts, n);
+                            var mf = Mat4.Identity; mf.M11 = mf.M22 = mf.M33 = (float)rPhot; mf.M41 = (float)ux; mf.M42 = (float)uy; mf.M43 = (float)uz;
+                            DrawPoints(_fireBuf, n, mf * vp, right, up, 1f, 0f, w, h, time, 0, bright);
                         }
                         if (rEj > rPhot * 1.5 && rEj / Math.Max(1e-30, d) * h > 2.5)
                         {
@@ -776,12 +779,6 @@ namespace Universe.Shell
                 if (_snPointBuf == null || _snPointCap < pts.Count) { if (_snPointBuf != null) _snPointBuf.Dispose(); _snPointCap = pts.Count + 64; _snPointBuf = new UploadBuffer(_gpu.Device, (long)_snPointCap * Stride); }
                 var arr = pts.ToArray(); _snPointBuf.Write(arr, arr.Length);
                 DrawPoints(_snPointBuf, arr.Length, vp, right, up, 1f, 0.0005f, w, h, time, 0, 1f, 2f);
-            }
-            if (fire.Count > 0)
-            {
-                if (_fireBuf == null || _fireCap < fire.Count) { if (_fireBuf != null) _fireBuf.Dispose(); _fireCap = fire.Count + 256; _fireBuf = new UploadBuffer(_gpu.Device, (long)_fireCap * Stride); }
-                var arr = fire.ToArray(); _fireBuf.Write(arr, arr.Length);
-                DrawPoints(_fireBuf, arr.Length, vp, right, up, 1f, 0.0008f, w, h, time, 0, 1f, 2f);
             }
         }
         // the nearest supernova going now (within about a year of its blast), in any galaxy made round you; null for none
@@ -1997,8 +1994,9 @@ namespace Universe.Shell
                         // one steady rate in scale (each tenfold the same time), eased in and out
                         double d = ViewDistanceKm(), want = st.UntilKm, sign = st.Rate >= 0 ? 1 : -1;
                         double left = Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, want)));
-                        double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Min(1, left / 0.6)) * TourPace;    // easing out over the last few tenths of a tenfold; never faster than the world is made
-                        _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
+                        double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Max(0.12, Math.Min(1, left / 1.5))) * TourPace;   // slowing to a crawl over the last tenfold and a half of an approach (an eighth of its rate at the end); never faster than the world is made
+                        double ramp = Math.Min(1, _tourT / 2.5); ramp = ramp * ramp * (3 - 2 * ramp);                     // brought up from rest over the first two and a half seconds (an exponential ease-in was fastest in its first frame: a jerk away from the last thing)
+                        _tourRate += (target * ramp - _tourRate) * (1 - Math.Exp(-dt * 1.5));
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
@@ -2074,7 +2072,10 @@ namespace Universe.Shell
                             _shotTurnT = Math.Max(1.5, turnDeg / 20 * 1.5); _shotLen = Math.Max(_shotLen, _shotTurnT + 3);   // (where it looks as the shot begins: it turns from there to the subject, never snapping)
                         }
                         if (!WebNotMade) _shotT += dt;                                          // (held while the web's light is made)
-                        double u = Math.Min(1, _shotT / _shotLen), e = u * u * (3 - 2 * u);
+                        // the pan before the travel: the camera holds where it is while the look turns to the new subject (seven tenths of
+                        // the turn's time), and only then sets off, so it is never pulled away from the last thing while still facing it
+                        double hold = _shotLook0 != null ? Math.Max(1.5, _shotTurnT) * 0.7 : 0;
+                        double u = Math.Min(1, Math.Max(0, _shotT - hold) / Math.Max(0.1, _shotLen - hold)), e = u * u * (3 - 2 * u);
                         // where the shot has the camera at a point e of its glide: the way from the subject and the distance
                         Func<double, double[]> frame = ee =>
                         {

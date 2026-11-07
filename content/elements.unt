@@ -16,6 +16,11 @@
 #   (alpha: two protons and two neutrons flung out, the atom two places down the table; beta-minus: a neutron turns into a
 #   proton, an electron flung out, one place up; electron-capture: a proton turns into a neutron, one place down; fission: the
 #   nucleus splits in two); NUBASE2020 and the NNDC tables, rounded. The stable elements carry none: they last.
+# made-in: where the element's atoms were forged, by the share of each source (the periodic table of nucleosynthesis, Johnson 2019): the big
+#   bang (hydrogen, helium, some lithium), cosmic rays breaking heavier atoms (lithium, beryllium, boron), dying low-mass stars (carbon,
+#   nitrogen, the s-process from strontium to lead), exploding massive stars (oxygen to zinc), exploding white dwarfs (the iron peak),
+#   merging neutron stars (the r-process: the heavy rare earths, gold, platinum, thorium, uranium), uranium's and thorium's decay
+#   (polonium to actinium, protactinium), the lab (technetium, promethium, everything past uranium). A body's card says where its elements were forged.
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.unt
 
 @element h
@@ -33,6 +38,7 @@ period: 1
 group: Nonmetal
 state-at-room-temp: gas
 origin: natural
+made-in: the big bang
 in-game: Makes water, fuels stars, part of all life
 melt-k: 14
 boil-k: 20
@@ -51,6 +57,7 @@ period: 1
 group: Noble gas
 state-at-room-temp: gas
 origin: natural
+made-in: the big bang
 in-game: Made by stars; light gas for balloons and cooling
 melt-k: 1
 boil-k: 4
@@ -69,6 +76,7 @@ period: 2
 group: Alkali metal
 state-at-room-temp: solid
 origin: natural
+made-in: the big bang and cosmic rays
 in-game: Batteries for tech
 melt-k: 454
 boil-k: 1615
@@ -87,6 +95,7 @@ period: 2
 group: Alkaline earth
 state-at-room-temp: solid
 origin: natural
+made-in: cosmic rays
 in-game: Light, strong alloys for spacecraft
 melt-k: 1560
 boil-k: 2742
@@ -106,6 +115,7 @@ period: 2
 group: Metalloid
 state-at-room-temp: solid
 origin: natural
+made-in: cosmic rays
 in-game: Plant nutrient; strong glass
 melt-k: 2349
 boil-k: 4200
@@ -125,6 +135,7 @@ period: 2
 group: Nonmetal
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: The backbone of all life; coal, diamond
 melt-k: 3915
 boil-k: 3915
@@ -144,6 +155,7 @@ period: 2
 group: Nonmetal
 state-at-room-temp: gas
 origin: natural
+made-in: dying low-mass stars
 in-game: Builds DNA and proteins; most of Earth's air
 melt-k: 63
 boil-k: 77
@@ -163,6 +175,7 @@ period: 2
 group: Nonmetal
 state-at-room-temp: gas
 origin: natural
+made-in: exploding massive stars
 in-game: Breathing, water, fire
 melt-k: 54
 boil-k: 90
@@ -182,6 +195,7 @@ period: 2
 group: Halogen
 state-at-room-temp: gas
 origin: natural
+made-in: dying low-mass stars and exploding massive stars
 in-game: Strong teeth and bones; toxic gas in bulk
 melt-k: 54
 boil-k: 85
@@ -200,6 +214,7 @@ period: 2
 group: Noble gas
 state-at-room-temp: gas
 origin: natural
+made-in: exploding massive stars
 in-game: Glowing signs in cities
 melt-k: 25
 boil-k: 27
@@ -218,6 +233,7 @@ period: 3
 group: Alkali metal
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Salt in the seas; nerves need it
 melt-k: 371
 boil-k: 1156
@@ -236,6 +252,7 @@ period: 3
 group: Alkaline earth
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Heart of chlorophyll — photosynthesis needs it
 melt-k: 923
 boil-k: 1363
@@ -254,6 +271,7 @@ period: 3
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Light metal for aircraft and tech
 melt-k: 933
 boil-k: 2792
@@ -274,6 +292,7 @@ period: 3
 group: Metalloid
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Rock and sand; computer chips
 melt-k: 1687
 boil-k: 3538
@@ -293,6 +312,7 @@ period: 3
 group: Nonmetal
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: DNA backbone and cell energy
 melt-k: 317
 boil-k: 550
@@ -312,6 +332,7 @@ period: 3
 group: Nonmetal
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Proteins; volcanic gas; gunpowder
 melt-k: 388
 boil-k: 718
@@ -331,6 +352,7 @@ period: 3
 group: Halogen
 state-at-room-temp: gas
 origin: natural
+made-in: exploding massive stars
 in-game: Salt in the seas; poison gas in war
 melt-k: 172
 boil-k: 239
@@ -349,6 +371,7 @@ period: 3
 group: Noble gas
 state-at-room-temp: gas
 origin: natural
+made-in: exploding massive stars
 in-game: Inert gas in the air; welding
 melt-k: 84
 boil-k: 87
@@ -367,6 +390,7 @@ period: 4
 group: Alkali metal
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Plant growth; nerves
 melt-k: 337
 boil-k: 1032
@@ -385,6 +409,7 @@ period: 4
 group: Alkaline earth
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Bones, shells, coral reefs, limestone
 melt-k: 1115
 boil-k: 1757
@@ -403,6 +428,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Light aerospace alloys
 melt-k: 1814
 boil-k: 3109
@@ -423,6 +449,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Strong, light metal for spacecraft
 melt-k: 1941
 boil-k: 3560
@@ -441,6 +468,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Hard steel
 melt-k: 2183
 boil-k: 3680
@@ -461,6 +489,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding white dwarfs and massive stars
 in-game: Stainless steel
 melt-k: 2180
 boil-k: 2944
@@ -479,6 +508,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding white dwarfs
 in-game: Photosynthesis helper; steel
 melt-k: 1519
 boil-k: 2334
@@ -499,6 +529,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding white dwarfs and massive stars
 in-game: Blood carries oxygen with it; the Iron Age; planet cores
 melt-k: 1811
 boil-k: 3134
@@ -519,6 +550,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Vitamin B12; magnets and batteries
 melt-k: 1768
 boil-k: 3200
@@ -539,6 +571,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding white dwarfs and massive stars
 in-game: Planet cores; alloys
 melt-k: 1728
 boil-k: 3186
@@ -559,6 +592,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: The Copper Age; wires for electricity
 melt-k: 1358
 boil-k: 2835
@@ -579,6 +613,7 @@ period: 4
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Enzymes; brass and batteries
 melt-k: 693
 boil-k: 1180
@@ -597,6 +632,7 @@ period: 4
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Electronics and solar panels
 melt-k: 303
 boil-k: 2477
@@ -617,6 +653,7 @@ period: 4
 group: Metalloid
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Early electronics
 melt-k: 1211
 boil-k: 3106
@@ -637,6 +674,7 @@ period: 4
 group: Metalloid
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Poison
 melt-k: 887
 boil-k: 887
@@ -657,6 +695,7 @@ period: 4
 group: Nonmetal
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars
 in-game: Trace nutrient; solar cells
 melt-k: 494
 boil-k: 958
@@ -676,6 +715,7 @@ period: 4
 group: Halogen
 state-at-room-temp: liquid
 origin: natural
+made-in: exploding massive stars
 in-game: Fire retardants; sea salt
 melt-k: 266
 boil-k: 332
@@ -695,6 +735,7 @@ period: 4
 group: Noble gas
 state-at-room-temp: gas
 origin: natural
+made-in: exploding massive stars and dying low-mass stars
 in-game: Lighting
 melt-k: 116
 boil-k: 120
@@ -713,6 +754,7 @@ period: 5
 group: Alkali metal
 state-at-room-temp: solid
 origin: natural
+made-in: exploding massive stars and dying low-mass stars
 in-game: Atomic clocks
 melt-k: 312
 boil-k: 961
@@ -731,6 +773,7 @@ period: 5
 group: Alkaline earth
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Red fireworks
 melt-k: 1050
 boil-k: 1655
@@ -748,6 +791,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Lasers and superconductors
 melt-k: 1799
 boil-k: 3609
@@ -765,6 +809,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Nuclear reactor parts
 melt-k: 2128
 boil-k: 4682
@@ -782,6 +827,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Superconducting magnets
 melt-k: 2750
 boil-k: 5017
@@ -799,6 +845,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Nitrogen-fixing enzymes; hard steel
 melt-k: 2896
 boil-k: 4912
@@ -818,6 +865,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: lab-made (only tiny traces in nature)
+made-in: the lab
 in-game: Radioactive; medical scans
 melt-k: 2430
 boil-k: 4538
@@ -835,6 +883,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Electronics
 melt-k: 2607
 boil-k: 4423
@@ -852,6 +901,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Engine catalysts
 melt-k: 2237
 boil-k: 3968
@@ -869,6 +919,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars and dying low-mass stars
 in-game: Catalysts
 melt-k: 1828
 boil-k: 3236
@@ -889,6 +940,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Money; kills germs
 melt-k: 1235
 boil-k: 2435
@@ -906,6 +958,7 @@ period: 5
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Batteries; toxic
 melt-k: 594
 boil-k: 1040
@@ -923,6 +976,7 @@ period: 5
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Touch screens
 melt-k: 430
 boil-k: 2345
@@ -941,6 +995,7 @@ period: 5
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Bronze (with copper)
 melt-k: 505
 boil-k: 2875
@@ -960,6 +1015,7 @@ period: 5
 group: Metalloid
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Alloys; toxic
 melt-k: 904
 boil-k: 1860
@@ -979,6 +1035,7 @@ period: 5
 group: Metalloid
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Solar panels
 melt-k: 723
 boil-k: 1261
@@ -999,6 +1056,7 @@ period: 5
 group: Halogen
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Needed for growth; medicine
 melt-k: 387
 boil-k: 457
@@ -1017,6 +1075,7 @@ period: 5
 group: Noble gas
 state-at-room-temp: gas
 origin: natural
+made-in: merging neutron stars and dying low-mass stars
 in-game: Ion engines for spacecraft
 melt-k: 161
 boil-k: 165
@@ -1036,6 +1095,7 @@ period: 6
 group: Alkali metal
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Atomic clocks
 melt-k: 302
 boil-k: 944
@@ -1054,6 +1114,7 @@ period: 6
 group: Alkaline earth
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Green fireworks; medical scans
 melt-k: 1000
 boil-k: 2170
@@ -1070,6 +1131,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Camera lenses; batteries
 melt-k: 1193
 boil-k: 3737
@@ -1086,6 +1148,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Catalysts; polishing glass
 melt-k: 1068
 boil-k: 3716
@@ -1102,6 +1165,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Strong magnets
 melt-k: 1208
 boil-k: 3793
@@ -1118,6 +1182,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Super-strong magnets for motors
 melt-k: 1297
 boil-k: 3347
@@ -1136,6 +1201,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: lab-made (only tiny traces in nature)
+made-in: the lab
 in-game: Radioactive; nuclear batteries
 melt-k: 1315
 boil-k: 3273
@@ -1152,6 +1218,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Magnets
 melt-k: 1345
 boil-k: 2067
@@ -1168,6 +1235,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Red glow in screens
 melt-k: 1099
 boil-k: 1802
@@ -1184,6 +1252,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Medical scans
 melt-k: 1585
 boil-k: 3546
@@ -1200,6 +1269,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Green glow in screens
 melt-k: 1629
 boil-k: 3503
@@ -1216,6 +1286,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Magnets that stand heat
 melt-k: 1680
 boil-k: 2840
@@ -1232,6 +1303,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Strongest magnetic fields
 melt-k: 1734
 boil-k: 2993
@@ -1248,6 +1320,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Fiber-optic signals
 melt-k: 1802
 boil-k: 3141
@@ -1264,6 +1337,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Lasers
 melt-k: 1818
 boil-k: 2223
@@ -1280,6 +1354,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Atomic clocks
 melt-k: 1097
 boil-k: 1469
@@ -1296,6 +1371,7 @@ period: 6
 group: Lanthanide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Medical treatments
 melt-k: 1925
 boil-k: 3675
@@ -1313,6 +1389,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars and dying low-mass stars
 in-game: Reactor control rods
 melt-k: 2506
 boil-k: 4876
@@ -1330,6 +1407,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars and dying low-mass stars
 in-game: Electronics
 melt-k: 3290
 boil-k: 5731
@@ -1347,6 +1425,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars and dying low-mass stars
 in-game: Hardest metal to melt; light bulbs, armor
 melt-k: 3695
 boil-k: 5828
@@ -1364,6 +1443,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Jet and rocket engines
 melt-k: 3459
 boil-k: 5869
@@ -1383,6 +1463,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Densest element
 melt-k: 3306
 boil-k: 5285
@@ -1400,6 +1481,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Left by asteroid strikes
 melt-k: 2719
 boil-k: 4701
@@ -1419,6 +1501,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Catalysts; wealth
 melt-k: 2041
 boil-k: 4098
@@ -1439,6 +1522,7 @@ period: 6
 group: Transition
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Wealth and trade; electronics
 melt-k: 1337
 boil-k: 3129
@@ -1458,6 +1542,7 @@ period: 6
 group: Transition
 state-at-room-temp: liquid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Liquid metal; poison
 melt-k: 234
 boil-k: 630
@@ -1475,6 +1560,7 @@ period: 6
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Poison
 melt-k: 577
 boil-k: 1746
@@ -1495,6 +1581,7 @@ period: 6
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars
 in-game: Pipes and shielding; poison
 melt-k: 601
 boil-k: 2022
@@ -1516,6 +1603,7 @@ period: 6
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: dying low-mass stars and merging neutron stars
 in-game: Medicine; low-melting alloys
 melt-k: 544
 boil-k: 1837
@@ -1535,6 +1623,7 @@ period: 6
 group: Post-transition
 state-at-room-temp: solid
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Highly radioactive
 melt-k: 527
 boil-k: 1235
@@ -1554,6 +1643,7 @@ period: 6
 group: Halogen
 state-at-room-temp: solid
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Rare and radioactive
 melt-k: 575
 boil-k: 610
@@ -1574,6 +1664,7 @@ period: 6
 group: Noble gas
 state-at-room-temp: gas
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Radioactive gas from rock; causes mutations
 melt-k: 202
 boil-k: 211
@@ -1592,6 +1683,7 @@ period: 7
 group: Alkali metal
 state-at-room-temp: solid
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Extremely rare and radioactive
 melt-k: 300
 boil-k: 950
@@ -1612,6 +1704,7 @@ period: 7
 group: Alkaline earth
 state-at-room-temp: solid
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Radioactive glow
 melt-k: 973
 boil-k: 2010
@@ -1630,6 +1723,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Radioactive; medicine
 melt-k: 1323
 boil-k: 3471
@@ -1648,6 +1742,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Nuclear fuel; heats planet interiors
 melt-k: 2023
 boil-k: 5061
@@ -1666,6 +1761,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: natural
+made-in: uranium's and thorium's decay
 in-game: Rare and radioactive
 melt-k: 1841
 boil-k: 4300
@@ -1686,6 +1782,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: natural
+made-in: merging neutron stars
 in-game: Nuclear power and bombs; heats planet interiors
 melt-k: 1405
 boil-k: 4404
@@ -1704,6 +1801,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: natural
+made-in: the lab
 in-game: Made in reactors
 unlock: once a civilization first creates it
 melt-k: 917
@@ -1725,6 +1823,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: natural
+made-in: the lab
 in-game: Nuclear bombs; space probe power
 unlock: once a civilization first creates it
 melt-k: 913
@@ -1744,6 +1843,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Smoke detectors
 unlock: once a civilization first creates it
 melt-k: 1449
@@ -1763,6 +1863,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Space probe power
 unlock: once a civilization first creates it
 melt-k: 1613
@@ -1781,6 +1882,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Lab-made only
 unlock: once a civilization first creates it
 melt-k: 1259
@@ -1799,6 +1901,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Starts nuclear reactors
 unlock: once a civilization first creates it
 melt-k: 1173
@@ -1817,6 +1920,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Lab-made only
 unlock: once a civilization first creates it
 melt-k: 1133
@@ -1835,6 +1939,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Lab-made only
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1853,6 +1958,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Lab-made only
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1871,6 +1977,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Lab-made only
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1889,6 +1996,7 @@ period: 7
 group: Actinide
 state-at-room-temp: solid
 origin: lab-made
+made-in: the lab
 in-game: Lab-made only
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1907,6 +2015,7 @@ period: 7
 group: Transition
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts seconds
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1925,6 +2034,7 @@ period: 7
 group: Transition
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts seconds
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1943,6 +2053,7 @@ period: 7
 group: Transition
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts seconds
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1961,6 +2072,7 @@ period: 7
 group: Transition
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts seconds
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1979,6 +2091,7 @@ period: 7
 group: Transition
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts seconds
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -1997,6 +2110,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2014,6 +2128,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2031,6 +2146,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2048,6 +2164,7 @@ period: 7
 group: Transition
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2065,6 +2182,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2082,6 +2200,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2099,6 +2218,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2116,6 +2236,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2133,6 +2254,7 @@ period: 7
 group: Predicted (never measured)
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Lab-made, lasts moments
 unlock: once a civilization first creates it
 melt-k: unknown
@@ -2150,6 +2272,7 @@ period: 7
 group: Noble gas
 state-at-room-temp: unknown
 origin: lab-made
+made-in: the lab
 in-game: Heaviest known element
 unlock: once a civilization first creates it
 melt-k: unknown

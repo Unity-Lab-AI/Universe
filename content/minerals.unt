@@ -1185,6 +1185,9 @@ site: 0.5 0.5 0 C
 
 # ── what each kind of ground is made of: mineral share, mineral share, ... (parts per 100) ──
 
+# vary: a mix's spread from body to body: each body of the kind has its own shares of these minerals, each share scattered from
+#   the kind's by the body's seed (the share's factor's logarithm, so 0.45 is about a half up or down at one sigma); no two bodies the same.
+
 @mix temperate
 name: Land of a temperate world
 grain-mm: 0.1..0.5
@@ -1444,42 +1447,49 @@ name: Carbon-rich asteroid ground
 grain-mm: 0.03..0.3
 clasts: pebble 4..64 0.08, cobble 64..256 0.05, boulder 256..20000 0.04
 minerals: forsterite 20, enstatite 12, magnetite 14, troilite 8, graphite 14, calcite 8, water-ice 12, fayalite 6, pyrite 4, kamacite 2
+vary: 0.45
 
 @mix asteroid-s
 name: Stony asteroid ground
 grain-mm: 0.05..0.5
 clasts: pebble 4..64 0.1, cobble 64..256 0.08, boulder 256..20000 0.05
 minerals: forsterite 34, enstatite 20, augite 6, anorthite 8, albite 6, kamacite 8, taenite 2, troilite 8, fayalite 6, magnetite 2
+vary: 0.45
 
 @mix asteroid-m
 name: Metal asteroid ground
 grain-mm: 0.1..1
 clasts: pebble 4..64 0.06, cobble 64..256 0.04, boulder 256..20000 0.03
 minerals: kamacite 62, taenite 22, troilite 8, enstatite 4, graphite 1, pyrite 2, forsterite 1
+vary: 0.35
 
 @mix asteroid-e
 name: Enstatite asteroid ground
 grain-mm: 0.05..0.5
 clasts: pebble 4..64 0.08, cobble 64..256 0.05, boulder 256..20000 0.03
 minerals: enstatite 68, kamacite 10, troilite 10, forsterite 4, anorthite 6, albite 2
+vary: 0.35
 
 @mix asteroid-v
 name: Basalt asteroid ground
 grain-mm: 0.05..0.5
 clasts: pebble 4..64 0.1, cobble 64..256 0.06, boulder 256..20000 0.04
 minerals: augite 36, anorthite 34, enstatite 10, forsterite 5, ilmenite 4, troilite 4, magnetite 3, quartz 4
+vary: 0.35
 
 @mix asteroid-p
 name: Dark icy asteroid ground
 grain-mm: 0.02..0.3
 clasts: pebble 4..64 0.05, cobble 64..256 0.03, boulder 256..20000 0.02
 minerals: graphite 18, water-ice 30, forsterite 14, enstatite 10, magnetite 8, troilite 6, methane-ice 4, ammonia-ice 4, carbon-monoxide-ice 2, calcite 4
+vary: 0.45
 
 @mix kuiper
 name: Kuiper-belt body ground
 grain-mm: 0.02..0.3
 clasts: pebble 4..64 0.04, cobble 64..256 0.02, boulder 256..20000 0.01
 minerals: water-ice 42, methane-ice 10, nitrogen-ice 8, carbon-monoxide-ice 5, ammonia-ice 5, dry-ice 4, graphite 10, forsterite 8, enstatite 5, troilite 3
+vary: 0.4
 
 @mix comet
 name: Comet nucleus

@@ -33,11 +33,12 @@ namespace Universe.Shell
         public const double PlanckKm = 1.6e-38;
         private double Grain = 2e-7;                // a grain's size across (km): from its ground's mix (content: grain-mm)
         private readonly Dictionary<string, double> _grainKm = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> _mixVary = new Dictionary<string, double>();   // a mix's spread from body to body (content/minerals.unt vary)
         private const double AtomSpacing = 2.5e-13; // about 0.25 nm between atoms in a crystal
         private const double Nucleon = 0.85e-18;    // a proton's or neutron's radius, about 0.85 femtometres
 
         private sealed class Mineral { public string Id, Name, Formula; public string[] Atoms; public float R, G, B, Lustre = 1; public Lattice Lat; public KeyValuePair<string, double[]>[] Molecule; public string Structure = ""; public bool Liquid; public double Spacing; public Dictionary<string, KeyValuePair<string, double>[]> Traces; }   // Traces: for each atom of the formula, the elements that stand in for it on its sites now and then, each with its share of those sites (content: trace)
-        private sealed class Element { public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; public double HalfLifeS; public string Decays = ""; }   // HalfLifeS: 0 stable (content/elements.unt half-life, decays)
+        private sealed class Element { public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; public double HalfLifeS; public string Decays = "", MadeIn = ""; }   // HalfLifeS: 0 stable; MadeIn: where its atoms were forged (content/elements.unt made-in) (content/elements.unt half-life, decays)
         private readonly Dictionary<string, Mineral> _minerals = new Dictionary<string, Mineral>();
         private readonly Dictionary<string, List<KeyValuePair<Mineral, double>>> _mixes = new Dictionary<string, List<KeyValuePair<Mineral, double>>>();
         private readonly Dictionary<string, Element> _elements = new Dictionary<string, Element>(); private readonly Dictionary<int, Element> _byZ = new Dictionary<int, Element>();
@@ -193,6 +194,21 @@ namespace Universe.Shell
         }
         /// <summary>What a ground's mix is made of, in words for a card: its minerals with their shares, the elements they hold (by count
         /// of atoms) and the traces down to parts per billion (from every mineral's real trace chemistry, content/minerals.unt).</summary>
+        /// <summary>A body's own make-up: its kind's mix with each mineral's share scattered by the body's seed (content/minerals.unt
+        /// vary), registered under its own id for the card, the grains and the dive alike; the kind's id back when its mix does not vary.</summary>
+        public string VaryMix(string mixId, ulong seed)
+        {
+            double vary; List<KeyValuePair<Mineral, double>> b;
+            if (mixId == null || !_mixVary.TryGetValue(mixId, out vary) || vary <= 0 || !_mixes.TryGetValue(mixId, out b)) return mixId;
+            var gm = Universe.Gen.GrainField.Vary(mixId, seed, vary); if (gm == null || gm.Id == mixId) return mixId;
+            if (!_mixes.ContainsKey(gm.Id))
+            {
+                var list = new List<KeyValuePair<Mineral, double>>();
+                foreach (var kv in b) { int q = Array.IndexOf(gm.Minerals, kv.Key.Id); list.Add(new KeyValuePair<Mineral, double>(kv.Key, q >= 0 ? gm.Share[q] : kv.Value)); }
+                _mixes[gm.Id] = list; double gk; if (_grainKm.TryGetValue(mixId, out gk)) _grainKm[gm.Id] = gk;
+            }
+            return gm.Id;
+        }
         public string[] MakeUpWords(string mixId)
         {
             List<KeyValuePair<Mineral, double>> mix; if (mixId == null || !_mixes.TryGetValue(mixId, out mix) || mix.Count == 0) return new string[0];
@@ -211,11 +227,16 @@ namespace Universe.Shell
             var trs = new List<KeyValuePair<string, double>>(tr); trs.Sort((a, b) => b.Value.CompareTo(a.Value));
             Func<string, string> name = sym => { var e = El(sym); return e != null ? e.Name.ToLowerInvariant() : sym; };
             Func<double, string> share = v => v >= 0.0001 ? (v * 100).ToString(v >= 0.01 ? "0.#" : "0.##") + "%" : v >= 1e-7 ? (v * 1e6).ToString("0.#") + " ppm" : (v * 1e9).ToString("0.##") + " ppb";
-            var ew = new List<string>(); for (int q = 0; q < Math.Min(6, els.Count); q++) ew.Add(name(els[q].Key) + " " + share(els[q].Value)); if (els.Count > 6) ew.Add("and " + (els.Count - 6) + " more");
+            var ew = new List<string>(); for (int q = 0; q < Math.Min(8, els.Count); q++) ew.Add(name(els[q].Key) + " " + share(els[q].Value)); if (els.Count > 8) ew.Add("and " + (els.Count - 8) + " more");
             var tw = new List<string>(); int shown = Math.Min(trs.Count, 5); for (int q = 0; q < shown; q++) tw.Add(name(trs[q].Key) + " " + share(trs[q].Value));
             if (mw.Count > 5) { int more = mw.Count - 5; mw.RemoveRange(5, more); mw.Add("and " + more + " more"); }
             var L = new List<string> { "minerals: " + string.Join(", ", mw.ToArray()), "elements: " + string.Join(", ", ew.ToArray()) };
             if (tw.Count > 0) L.Add("traces: " + string.Join(", ", tw.ToArray()) + (trs.Count > shown ? ", and " + (trs.Count - shown) + " more" : ""));
+            // where its elements were forged (content/elements.unt made-in): the big bang, dying low-mass stars, exploding massive stars
+            // and white dwarfs, merging neutron stars; the forges in the order of the elements' shares, each with its first two
+            var forge = new Dictionary<string, List<string>>(); var forgeOrder = new List<string>();
+            foreach (var kv in els) { var e = El(kv.Key); if (e == null || e.MadeIn.Length == 0) continue; List<string> lst; if (!forge.TryGetValue(e.MadeIn, out lst)) { if (forgeOrder.Count >= 3) continue; lst = new List<string>(); forge[e.MadeIn] = lst; forgeOrder.Add(e.MadeIn); } if (lst.Count < 2) lst.Add(e.Name.ToLowerInvariant()); }
+            if (forgeOrder.Count > 0) { var fw = new List<string>(); foreach (var f in forgeOrder) fw.Add(f + " (" + string.Join(", ", forge[f].ToArray()) + ")"); L.Add("forged in: " + string.Join("; ", fw.ToArray())); }
             return L.ToArray();
         }
         public void SetAir(string air, ulong spot)
@@ -268,7 +289,7 @@ namespace Universe.Shell
                 if (cs.Length == 3) { float.TryParse(cs[0], fs, ci, out cr); float.TryParse(cs[1], fs, ci, out cg); float.TryParse(cs[2], fs, ci, out cb); }
                 double cov, rad; if (!double.TryParse(e.Get("covalent-a", ""), fs, ci, out cov)) cov = 1.5;
                 if (!double.TryParse(e.Get("atomic-a", ""), fs, ci, out rad)) rad = cov;
-                _elements[sym] = new Element { Symbol = sym, Name = e.Name, Z = z, A = a, R = cr, G = cg, B = cb, Radius = rad * 1e-13, Cov = cov * 1e-13, Chi = TryD(e.Get("electronegativity", "0"), 0), Shells = Shells(z), HalfLifeS = HalfLifeSeconds(e.Get("half-life", "")), Decays = e.Get("decays", "") };
+                _elements[sym] = new Element { Symbol = sym, Name = e.Name, Z = z, A = a, R = cr, G = cg, B = cb, Radius = rad * 1e-13, Cov = cov * 1e-13, Chi = TryD(e.Get("electronegativity", "0"), 0), Shells = Shells(z), HalfLifeS = HalfLifeSeconds(e.Get("half-life", "")), Decays = e.Get("decays", ""), MadeIn = e.Get("made-in", "") };
                 _byZ[z] = _elements[sym];
             }
             foreach (var e in content.OfKind("minerals.unt", "mineral"))
@@ -322,6 +343,7 @@ namespace Universe.Shell
                 }
                 if (list.Count > 0) _mixes[e.Id] = list;
                 double glo, ghi; if (e.TryRange("grain-mm", out glo, out ghi)) _grainKm[e.Id] = (glo + ghi) * 0.5 * 1e-6;
+                double vv; if (double.TryParse(e.Get("vary", "0"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out vv) && vv > 0) _mixVary[e.Id] = vv;
             }
         }
 
@@ -1407,6 +1429,17 @@ namespace Universe.Shell
 
         private static double Fade(double s, double from, double to) { return Math.Max(0, Math.Min(1, Math.Log(from / s) / Math.Log(from / to))); }
 
+        // the lattice's level: an atom as its electron cloud, a soft glow of its element's colour at its real size (the cloud of where
+        // its electrons may be, densest at the middle), its nucleus a spark at the middle; never a ball. Bright enough to read on a
+        // capture (at a third of this brightness the level had read as black between the grain's face and the atoms' level)
+        private void LatticeCloud(List<StarVertex> glow, Element e, double x, double y, double z, double s, float w)
+        {
+            if (e == null || w <= 0.02f) return; double ar = AtomRadius(e);
+            Add(glow, x, y, z, ar * 1.1, (0.45f + 0.55f * e.R) * w * 0.75f, (0.45f + 0.55f * e.G) * w * 0.75f, (0.45f + 0.55f * e.B) * w * 0.75f, s);
+            Add(glow, x, y, z, ar * 0.45, (0.45f + 0.55f * e.R) * w * 0.35f, (0.45f + 0.55f * e.G) * w * 0.35f, (0.45f + 0.55f * e.B) * w * 0.35f, s);
+            Add(glow, x, y, z, Math.Max(NucleusRadius(e), s * 0.002), 1f * w, 0.95f * w, 0.9f * w, s);
+        }
+
         // a grain as a lit, lumpy stone: a once-split icosahedron, squashed and turned its own way, each corner pushed in or out
         private static Vec3[] _ico; private static int[] _icoTri;
         private static void MakeIco()
@@ -1608,14 +1641,18 @@ namespace Universe.Shell
                 // level (down to about a nanometre, four spacings) is every atom as its electron cloud at its real size, its nucleus a
                 // spark at the middle, the bonds the shared electrons between neighbours; the atom's level below it is each atom's
                 // nucleus and its electrons on their paths and in their orbitals (an atom is never a ball, a bond never a stick)
-                bool lattice = s >= AtomSpacing * 4;
+                // the levels hand over by degrees, never in one frame: the lattice's clouds (every atom its soft cloud) fade out and
+                // the atoms' own systems fade in between five spacings and three; the atom you are at hands over to its inside view
+                // between eight widths and four, its cloud fading as its electrons' shells and orbitals come up (it had been one
+                // switch at four spacings and another at four radii: black, then orbs in a frame, then the orbitals in a frame)
+                double cw = Fade(s, AtomSpacing * 5, AtomSpacing * 3); bool lattice = cw < 0.98;
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
                 {
                     var at = at0; double dSince; Element dPar; { var dE = Daughter(at0.E, AtomKey(at0.X, at0.Y, at0.Z), out dSince, out dPar); if (dE != at0.E) at = new CAtom { E = dE, X = at0.X, Y = at0.Y, Z = at0.Z }; }   // (as it is now: decayed, if its moment has come)
                     double ar = AtomRadius(at.E), ay = at.Y - ar - _yOff;                     // on the grain's real surface
                     if (dSince >= 0) DecayFlash(glow, solid, dPar, at.X, ay, at.Z, dSince, s);   // (its particle still flying out)
-                    bool inFocus = at.E == focus && Math.Abs(at.X - fax) < 1e-20 && Math.Abs(ay - fay) < 1e-20 && Math.Abs(at.Z - faz) < 1e-20 && s < ar * 4;
-                    if (inFocus) continue;
+                    bool inFocus = at.E == focus && Math.Abs(at.X - fax) < 1e-20 && Math.Abs(ay - fay) < 1e-20 && Math.Abs(at.Z - faz) < 1e-20 && s < Math.Max(ar, AtomSpacing) * 8;
+                    float fw = inFocus ? (float)Fade(s, Math.Max(ar, AtomSpacing) * 8, Math.Max(ar, AtomSpacing) * 4) : 0f; if (fw >= 0.98f) continue;   // (handed over by degrees to its inside view below)
                     float sh = (float)(1 + 0.6 * at.Y / AtomSpacing * 0.25); sh = Math.Max(0.45f, sh);
                     // from afar a ball in its colour, growing up out of the face; close in the ball gives way to the atom's own system
                     // (its nucleus and its electrons on their paths), as the electrons are what an atom's size really is
@@ -1625,14 +1662,14 @@ namespace Universe.Shell
                     // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom as
                     // its electron cloud: a soft glow of its element's colour at its real size (the cloud of where its electrons may be,
                     // densest at the middle), its nucleus a spark at the middle; never a ball
-                    if (lattice) { if (ar > px * 2) { Add(glow, at.X, ay, at.Z, ar * 1.1, (0.45f + 0.55f * at.E.R) * sh * 0.3f, (0.45f + 0.55f * at.E.G) * sh * 0.3f, (0.45f + 0.55f * at.E.B) * sh * 0.3f, s); Add(glow, at.X, ay, at.Z, ar * 0.45, (0.45f + 0.55f * at.E.R) * sh * 0.35f, (0.45f + 0.55f * at.E.G) * sh * 0.35f, (0.45f + 0.55f * at.E.B) * sh * 0.35f, s); Add(glow, at.X, ay, at.Z, Math.Max(NucleusRadius(at.E), s * 0.002), 1f * sh, 0.95f * sh, 0.9f * sh, s); } }
-                    // the atom's level: one drawing of each atom (its nucleus and its electrons, each shown once big enough to see),
-                    // the ones near where you look with their electrons' paths too
-                    else if (NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
-                    else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, f * sh);
+                    float lw = (float)((1 - cw) * (1 - fw));
+                    if (lw > 0.02f && ar > px * 2) LatticeCloud(glow, at.E, at.X, ay, at.Z, s, sh * lw);
+                    // the atom's level: one drawing of each atom (its nucleus and its electrons, each shown once big enough to see), the
+                    // ones near where you look with their electrons' paths too; coming up by degrees as the lattice's clouds fade
+                    if (cw > 0.02) { float fa = f * sh * (float)cw * (1 - fw); if (NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, fa); else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, fa); }
                     { int nb = _bodies.Count; AddBody(1, 0, 0, at.X, ay, at.Z, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = at.E.Symbol; }   // every layer's atoms
                 }
-                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, lattice ? 1f : 0.4f);   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
+                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, (float)(1 - 0.6 * cw));   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
@@ -1645,8 +1682,8 @@ namespace Universe.Shell
                             var el = SiteAtom(fm, i, j, k);
                             if (el == null) continue;
                             double ar = AtomRadius(el);
-                            bool inFocus = i == ai0 && j == aj0 && k == 0 && s < ar * 4;
-                            if (inFocus) continue;                                          // you are going into this one: drawn from inside below
+                            bool inFocus = i == ai0 && j == aj0 && k == 0 && s < Math.Max(ar, AtomSpacing) * 8;
+                            float fw = inFocus ? (float)Fade(s, Math.Max(ar, AtomSpacing) * 8, Math.Max(ar, AtomSpacing) * 4) : 0f; if (fw >= 0.98f) continue;   // (you are going into this one: handed over by degrees to its inside view below)
                             float sh = (float)(1 - 0.25 * -k);
                             double sx, sy, sz; SitePos(fm, i, j, k, out sx, out sy, out sz);                // its place (a liquid's: loose and moving)
                             var mol = fm.Molecule;
@@ -1657,28 +1694,30 @@ namespace Universe.Shell
                                 {
                                     var me = El(mol[q].Key); if (me == null) continue; double ox, oy, oz; Orient(i, j, k, mol[q].Value, out ox, out oy, out oz);
                                     double mr = AtomRadius(me) * 0.55;                       // bonded atoms overlap: drawn at their bonded size
-                                    AtomSystem(glow, me, sx + ox, sy - ar + oy - _yOff, sz + oz, s, time, i * 7919 ^ j * 104729 ^ k * 31 + q, sh * f);
+                                    AtomSystem(glow, me, sx + ox, sy - ar + oy - _yOff, sz + oz, s, time, i * 7919 ^ j * 104729 ^ k * 31 + q, sh * f * (1 - fw));
                                 }
-                                AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f);
+                                AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f * (1 - fw));
                                 { int nb = _bodies.Count; AddBody(6, i, j, sx, sy - ar - _yOff, sz, ar * 1.6, s); if (_bodies.Count > nb) _bodies[nb].Sym = fm.Id; }   // the whole molecule
                             }
                             else
                             {
                                 if (ar < px * 0.5) continue;
-                                if (s < AtomSpacing * 4 && NearLook(sx, sy - ar - _yOff, sz, s)) Cloud(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f);
-                                else AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f);
+                                double cw2 = Fade(s, AtomSpacing * 5, AtomSpacing * 3); float lw2 = (float)((1 - cw2) * (1 - fw));
+                                if (ar > px * 2) LatticeCloud(glow, el, sx, sy - ar - _yOff, sz, s, sh * lw2);   // (above the atoms' level each as its cloud, as a crystal's; the hand-overs by degrees, the same)
+                                if (cw2 > 0.02) { float fa = sh * f * (float)cw2 * (1 - fw); if (NearLook(sx, sy - ar - _yOff, sz, s)) Cloud(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, fa); else AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, fa); }
                             }
                             { int nb = _bodies.Count; AddBody(1, i, j, sx, sy - ar - _yOff, sz, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = el.Symbol; }   // every layer's atoms
                         }
             }
             // the atom under you, from inside: its electrons in their shells, moving round it, and its nucleus at the middle
-            if (focus != null && s < Math.Max(AtomRadius(focus), AtomSpacing) * 4)
+            if (focus != null && s < Math.Max(AtomRadius(focus), AtomSpacing) * 8)
             {
                 double ar = AtomRadius(focus), cy = fay, nr = NucleusRadius(focus), ax0 = fax, az0 = faz;
+                float iw = (float)Fade(s, Math.Max(ar, AtomSpacing) * 8, Math.Max(ar, AtomSpacing) * 4);   // (coming up by degrees from eight widths to four, as its drawing among the others above fades out)
                 // its electrons, the same as every atom's system: each a clear dot on its own path in its shells, the valence shell
                 // in gold (the nucleus is drawn below, for real)
                 float cloud = (float)Fade(s, Math.Max(ar, AtomSpacing) * 4, Math.Max(ar, AtomSpacing) * 2);
-                Cloud(glow, focus, ax0, cy, az0, s, time, 777, Math.Max(0.6f, cloud));   // fully drawn from as far as every atom's
+                Cloud(glow, focus, ax0, cy, az0, s, time, 777, Math.Max(0.6f, cloud) * iw);   // fully drawn from as far as every atom's
                 if (s < ar * 0.5)
                 {
                     // inside its electron cloud it is not empty: the innermost electrons (1s) are densest at the nucleus itself,
@@ -2209,7 +2248,7 @@ namespace Universe.Shell
                 L.Add("width: " + ScaleHud.Words(_picked.Size * 2));
                 var seen = new List<string>(); foreach (var a in g.Atoms) if (!seen.Contains(a)) seen.Add(a);
                 L.Add("elements: " + string.Join(", ", seen.ToArray()));
-                L.Add("ground: " + (_mixes.ContainsKey(_mixId) ? _mixId : "rock"));
+                L.Add("ground: " + (_mixes.ContainsKey(_mixId) ? _mixId.Split('#')[0] : "rock"));   // (its kind's mix; a body's own is the kind's id and its seed)
                 return L;
             }
             if (_picked == null && !_space && _scale > AtomSpacing * 8)

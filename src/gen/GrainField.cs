@@ -70,6 +70,19 @@ namespace Universe.Gen
         }
 
         public static Mix For(string id) { Mix m; return id != null && Mixes.TryGetValue(id, out m) ? m : null; }
+        /// <summary>A body's own mix: its kind's minerals with each share scattered from the kind's by the body's seed (vary: the spread of
+        /// the share's factor, as a logarithm; about half up or down at one, a third at the usual setting), registered under its own id
+        /// (the kind's id, a hash sign, the seed); the same id again is the same mix. Its palette slot is its kind's: the same minerals
+        /// and colours, only the shares differ, and the shares are picked on the processor.</summary>
+        public static Mix Vary(string id, ulong seed, double vary)
+        {
+            Mix b = For(id); if (b == null || vary <= 0) return b;
+            string vid = id + "#" + (seed % 1000000UL); Mix m; if (Mixes.TryGetValue(vid, out m)) return m;
+            var sh = new double[b.Share.Length];
+            for (int q = 0; q < sh.Length; q++) { double g = (Hash(q, 1, 0, seed) + Hash(q, 2, 0, seed) + Hash(q, 3, 0, seed) - 1.5) * 2; sh[q] = b.Share[q] * Math.Exp(vary * g); }
+            m = new Mix { Id = vid, Minerals = b.Minerals, Share = sh, Colour = b.Colour, Size = b.Size, ClassSize = b.ClassSize, ClassCover = b.ClassCover, Index = b.Index };
+            Mixes[vid] = m; return m;
+        }
 
         public static double Hash(long i, long j, long k, ulong seed)
         {

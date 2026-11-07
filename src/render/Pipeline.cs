@@ -64,7 +64,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         // fading with distance otherwise (seen through the whole web at once it would stack into an even dust)
         float wl = length(s.pos - webA.xyz);
         webOut = wl < webA.w || wl > lensB.w * 3;
-        s.color.rgb *= 2.5 * exp(-wl / lensB.w);                        // each point a galaxy's whole light, bright enough that the web's strands read across hundreds of millions of light-years
+        s.color.rgb *= 4.0 * exp(-wl / lensB.w);                        // each point a galaxy's whole light, bright enough that the web's strands read across hundreds of millions of light-years
     }
     if (lensB.y > 0.5)
     {

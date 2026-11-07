@@ -19,14 +19,13 @@ caption: We begin beside a galaxy, a hundred billion stars turning in the dark
 
 @stop leave
 do: zoom
-pan: 6
-rate: -0.3
+rate: -0.22
 until-km: 5e21
 caption: Every point of light out here is a whole galaxy
 
 @stop web
 do: orbit
-turn: 20
+turn: 5
 seconds: 10
 caption: The cosmic web: galaxies along filaments, round vast empty voids
 

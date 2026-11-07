@@ -257,12 +257,12 @@ namespace DnaAnd.Shell
         private System.Threading.Thread _glowMaker; private volatile StarVertex[] _glowReady; private double _glowCX, _glowCY, _glowCZ;
         private void MakeGlow()
         {
-            double reachU = 3.0e9 / Units.LightYearsPerUnit;
+            double reachU = 4.5e9 / Units.LightYearsPerUnit;
             // made round where you are, half again past the reach it is drawn to, and made again round you (on its own thread)
-            // once you have gone a quarter of that reach; the old light stays drawn till the new is ready, so it is never dark
+            // once you have gone an eighth of that reach; the old light stays drawn till the new is ready, so it is never dark
             // and never has an edge in view
             if (_glowReady != null && _glowMaker != null) { bool first = _glowAll == null; _glowAll = _glowReady; _glowReady = null; _glowMaker = null; if (first) _glowCameAt = System.Diagnostics.Stopwatch.GetTimestamp(); }
-            bool moved = _glowAll != null && Math.Sqrt((_cx - _glowCX) * (_cx - _glowCX) + (_cy - _glowCY) * (_cy - _glowCY) + (_cz - _glowCZ) * (_cz - _glowCZ)) > reachU * 0.25;
+            bool moved = _glowAll != null && Math.Sqrt((_cx - _glowCX) * (_cx - _glowCX) + (_cy - _glowCY) * (_cy - _glowCY) + (_cz - _glowCZ) * (_cz - _glowCZ)) > reachU * 0.12;
             if (_glowAll == null || moved)
             {
                 {
@@ -2120,7 +2120,7 @@ namespace DnaAnd.Shell
                 webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
                 if (webFade > 0.01)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
-                _web[0] = (float)(1.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)(_nearUnits * 0.4);   // (well inside where the galaxies made in full are drawn: the two overlap, so where they are still being made it is never dark)
+                _web[0] = (float)(2.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)(_nearUnits * 0.4);   // (well inside where the galaxies made in full are drawn: the two overlap, so where they are still being made it is never dark)
                 DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f, w, h, time, 0.007f, others * webFade, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd

@@ -32,7 +32,7 @@ cbuffer C : register(b0)
     float4 sunCol;      // the starlight's colour on this ground (the star's colour through the air); a = 0: plain white
     float4 nightCol;    // the night side's light: half bright, in the colour of the air's glow and the starlight
     float4 detA;        // detail mode: grain-local position = view position * w + xyz (the grain's own frame, its radius 1)
-    float4 detB;        // x: the grain's key, y: its radius in view units, z: steps on, w: 1 = work its detail out here per pixel
+    float4 detB;        // x: the grain's key, y: its radius in view units, z: one atomic layer's height in the grain's own units (0: none), w: 1 = work its detail out here per pixel
 };
 struct V { float3 pos; float glow; float4 col; };
 StructuredBuffer<float> wave : register(t1);
@@ -207,6 +207,20 @@ float4 PS(VO i) : SV_Target
         double3 L = (double3)i.wp * (double)detA.w + (double3)detA.xyz + double3(light.w, cam.w, fog.w); uint key = asuint(detB.x);
         float fw = max(1e-15, length(fwidth(i.wp)) * detA.w), maxF = 0.5 / fw;        // this pixel's size on the grain (from the view, exact)
         float h = woctavesD(L, key, 2.5, 0.16, 0.5, maxF) * detB.y;                    // in view units
+        // close in, the face steps in single atomic layers: flat terraces with a step one layer high between them, as on a real
+        // crystal face. They come in from about a micrometre across the view (a pixel three layers wide) to a tenth of that,
+        // the face growing flatter as they do, so zooming on shows them open out, wider and wider, never the same look
+        float stepE = 0;
+        if (detB.z > 0)
+        {
+            float lay = detB.z, tw = saturate(log10(3 * lay / fw)); tw = tw * tw * (3 - 2 * tw);
+            if (tw > 0)
+            {
+                float hg = h / max(1e-30, detB.y) * lerp(1, 0.25, tw), hq = floor(hg / lay + 0.5) * lay;
+                stepE = saturate(fwidth(hq / lay)) * tw;                                   // where a step's edge runs through this pixel
+                h = lerp(hg, hq, tw) * detB.y;
+            }
+        }
         float3 dpdx = ddx(i.wp), dpdy = ddy(i.wp); float dhx = ddx(h), dhy = ddy(h);
         float3 r1 = cross(dpdy, n), r2 = cross(n, dpdx); float det = dot(dpdx, r1);
         if (abs(det) > 1e-20)
@@ -220,7 +234,21 @@ float4 PS(VO i) : SV_Target
         float iron = woctavesD(L, key * 7u + 300u, 2.0, 1, 0.6, lim), clay = woctavesD(L + double3(9, 0, -4), key * 7u + 400u, 2.0, 1, 0.6, lim);
         float crk = woctavesD(L * 1.7, key * 7u + 500u, 2.0, 1, 0.6, lim), dark = clamp(0.5 - abs(crk) * 3, 0, 0.6);
         float ir = clamp(iron / 2.4 * 2.4 - 0.15, 0, 0.6), cl = clamp(clay / 2.4 * 2.4 - 0.2, 0, 0.5);
-        stain = float3(1 + ir * 0.25 + cl * 0.3, 1 - ir * 0.35 + cl * 0.3, 1 - ir * 0.55 + cl * 0.25) * (1 - dark);
+        stain = float3(1 + ir * 0.25 + cl * 0.3, 1 - ir * 0.35 + cl * 0.3, 1 - ir * 0.55 + cl * 0.25) * (1 - dark) * (1 - 0.3 * stepE);   // (each step's edge a fine shaded line)
+        // and closer still, the face is its atoms: rows of them 0.25 nm apart in the crystal's plane, coming in as soon as a pixel
+        // is a third of an atom across and sharpening as you come in, so the atoms made in full that follow land on a face
+        // that already shows them (never a handoff)
+        if (detB.z > 0)
+        {
+            float sp = detB.z * 0.8333;                                                      // 0.25 nm in the grain's own units
+            float aw = saturate(log2(sp / (3 * fw)) * 0.5); aw = aw * aw * (3 - 2 * aw);
+            if (aw > 0)
+            {
+                double isp = (double)(1.0 / sp); float2 fr = float2(wreduce(L.x * isp, 1.0), wreduce(L.z * isp, 1.0)) - 0.5;   // where in its atom's cell this pixel is (in double precision: far out on a grain the cells are millions)
+                float dot01 = smoothstep(0.42, 0.18, length(fr));
+                stain *= lerp(1, 0.5 + 0.8 * dot01, aw);
+            }
+        }
     }
     float3 baseCol = i.col.rgb;
     if (nightCol.a > 0.5 && misc.z < 0.5 && misc.w < 0.5)

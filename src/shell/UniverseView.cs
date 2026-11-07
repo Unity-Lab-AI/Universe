@@ -716,7 +716,7 @@ namespace DnaAnd.Shell
             _localCX = cx; _localCY = cy; _localCZ = cz;
             if (fast) { _localKey = long.MinValue + 1; _localCount = 0; _localCells.Clear(); return; }
             _localKey = key;
-            _localList.Clear(); _localKind.Clear(); _localId.Clear();
+            _localList.Clear(); _localKind.Clear(); _localId.Clear(); _localVersion++;   // (remade: put on the card again)
             var keep = new Dictionary<long, StarVertex[]>();
             for (long ox = -1; ox <= 1; ox++) for (long oy = -1; oy <= 1; oy++) for (long oz = -1; oz <= 1; oz++)
             {
@@ -1104,7 +1104,8 @@ namespace DnaAnd.Shell
         // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
         // the last galaxy's kind, so the next is another kind
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
-        private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
+        private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin;
+        private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
         {
             _shotDir = _shotRng.NextDouble() < 0.5 ? -1 : 1; _shotMul = 0.75 + 0.5 * _shotRng.NextDouble(); _shotCrane = (_shotRng.NextDouble() * 2 - 1) * 1.5;
@@ -1155,7 +1156,7 @@ namespace DnaAnd.Shell
                         double target = Math.Abs(st.Rate) * (st.Through ? 1 : Math.Min(1, left / 0.6)) * TourPace;    // easing out over the last few tenths of a tenfold; never faster than the world is made
                         _tourRate += (target - _tourRate) * (1 - Math.Exp(-dt * 1.5));            // and easing in
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
-                        input.Wheel = OnCourse() * ((_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35 || _tourT > 4) ? sign * notches : 0);   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
+                        input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         if (st.Pan != 0 && _tKind >= 0) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_ground != null && _ground.Backlog > 0) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (held back by ground still being built, or the web's light: waiting, never given up on)
@@ -1236,7 +1237,7 @@ namespace DnaAnd.Shell
                         bool there = st.UntilKm > 0 && ((sign > 0 && d <= st.UntilKm) || (sign < 0 && d >= st.UntilKm));
                         double left = st.UntilKm > 0 && Math.Abs(st.Rate) > 0 ? Math.Abs(Math.Log10(Math.Max(1e-40, d) / st.UntilKm)) / 0.6 : Math.Max(0, st.Seconds - _tourT) / 3;
                         double ease = Math.Min(1, _tourT / 3) * Math.Min(1, Math.Max(0.15, left)); ease = ease * ease * (3 - 2 * ease);
-                        if (!there && (_matterScale <= 0 && _spaceScale <= 0 || _matter.PickOff < 0.35 || _tourT > 4)) input.Wheel = OnCourse() * sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
+                        if (!there) input.Wheel = OnCourse() * OverPick() * sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
                         { double lp = LocalPitch(); if (Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
                         TourTurn(st.Turn * _shotDir * _shotMul * Math.PI / 180 * dt * Math.Max(ease, 0.4 * Math.Min(1, _tourT / 3)), (_ground == null && _matterScale <= 0 ? _shotCrane : 0) * Math.PI / 180 * dt * ease);
                         if (_tourT >= st.Seconds && (there || st.UntilKm <= 0 || Math.Abs(st.Rate) <= 0 || _tourT >= st.Seconds * 2)) done = true;   // (circling on to its distance for at most twice its seconds: never held there; the next stop carries on)
@@ -2058,6 +2059,9 @@ namespace DnaAnd.Shell
         // how far (radians) the view is from facing what is picked; 0 with nothing picked
         // how far on course the tour's flight is (1 looking at what it flies to, easing to 0 by 0.12 radians off): it slows as
         // it turns and speeds as it comes round, never starting or stopping all at once
+        // in the matter, how far over what is picked the view is: the tour slows as it lines up (to a quarter, never stopped,
+        // so it never looks frozen) and speeds again once over it
+        private double OverPick() { if (_matterScale <= 0 && _spaceScale <= 0) return 1; double u = Math.Max(0, Math.Min(1, (0.6 - _matter.PickOff) / 0.4)); u = u * u * (3 - 2 * u); return 0.25 + 0.75 * u; }
         private double OnCourse() { double u = Math.Max(0, Math.Min(1, (0.12 - OffTarget()) / 0.08)); return u * u * (3 - 2 * u); }
         private double OffTarget()
         {
@@ -2300,6 +2304,19 @@ namespace DnaAnd.Shell
             var right = new Vec3(view.M11, view.M21, view.M31); var up = new Vec3(view.M12, view.M22, view.M32);
             _viewRight = right; _viewUp = up; _haveAxes = true;
             double share = NearShare(), within = InsideShare();
+            // the world you are falling to fills the whole view: everything behind it (the web, the galaxies, their clusters and
+            // nebulae, the stars round you) cannot be seen, so none of it is drawn; what lies in front (its moons, its rings) still is
+            bool skyHidden = false;
+            if (_ground != null && _planet >= 0)
+            {
+                double qx = _px - _ox, qy = _py - _oy, qz = _pz - _oz, qd = Math.Sqrt(qx * qx + qy * qy + qz * qz), pr = _ground.Radius * Units.Km(1) * (_ground.Solid ? 0.999 : 0.97);
+                if (qd > pr)
+                {
+                    var lk = Look; double off = Math.Acos(Math.Max(-1, Math.Min(1, (qx * lk.X + qy * lk.Y + qz * lk.Z) / qd)));
+                    double aspect = w / (double)Math.Max(1, h), halfDiag = Math.Atan(Math.Tan(0.45) * Math.Sqrt(1 + aspect * aspect));
+                    skyHidden = off + halfDiag < Math.Asin(Math.Min(1, pr / qd));
+                }
+            }
             // inside a galaxy its own stars fill the sky and the other galaxies show fainter behind them (as Andromeda
             // is barely seen with the eye): the others and the web's glow fade to a sixth as you go in
             float others = (float)(1 - 0.45 * Math.Max(0, Math.Min(1, within)));   // (dimmed a little: the other galaxies still show in its sky)
@@ -2309,14 +2326,14 @@ namespace DnaAnd.Shell
                 var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
                 float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);   // (inside a galaxy the web's points are not drawn: its sky shows the other galaxies themselves, made in full round you)
                 webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
-                if (webFade > 0.01)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
+                if (webFade > 0.01 && !skyHidden)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
                 _web[0] = (float)(2.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)_nearUnits;   // (from where the galaxies made in full begin to fade out, the web fades in over the same span: they hand over, never both at once, never a gap)
                 DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f, w, h, time, 0.007f, others * webFade, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd
             }
-            for (int i = 0; i < _galaxies.Count; i++)
+            for (int i = 0; i < _galaxies.Count && !skyHidden; i++)
             {
                 // every galaxy is one field of its own stars: the near one shows more of them as it grows on screen, each point
                 // a little smaller so the galaxy's glow stays the same; the first stars are always the same ones, so nothing swaps
@@ -2355,7 +2372,7 @@ namespace DnaAnd.Shell
                 order.Sort((a, b) => a.Key.CompareTo(b.Key));
                 foreach (var kv in order)
                 {
-                    if (drawn >= 12) break; var g = _galaxies[kv.Value];
+                    if (drawn >= 12 || skyHidden) break; var g = _galaxies[kv.Value];
                     if (g.Features == null) { if (made) continue; EnsureStruct(g); made = true; }
                     if (g.StructCount > 0) { DrawPoints(g.Struct, g.StructCount, Placement(g) * vp, right, up, 1f, 0.0016f, w, h, time, 0, (float)Math.Max(0, Math.Min(1, (60 - kv.Key) / 20))); drawn++; }   // fading in from 60 to 40 of its sizes
                 }
@@ -2388,7 +2405,7 @@ namespace DnaAnd.Shell
                 _extraBuf.Write(_extraV, _extras.Count);
                 DrawPoints(_extraBuf, _extras.Count, vp, right, up, 1f, 0.0024f, w, h, time);
             }
-            if (_cstars.Count > 0)
+            if (_cstars.Count > 0 && !skyHidden)
             {
                 // the cluster's own stars round you: old red and orange giants and yellow stars in a globular, young blue-white in an open one
                 if (_cstarV.Length < _cstars.Count) _cstarV = new StarVertex[_cstars.Count + 1024];
@@ -2402,12 +2419,15 @@ namespace DnaAnd.Shell
                 _cstarBuf.Write(_cstarV, _cstars.Count);
                 DrawPoints(_cstarBuf, _cstars.Count, vp, right, up, 1f, 0.0022f, w, h, time);
             }
-            if (_near >= 0 && _localCount > 0 && inside > 0)
+            if (_near >= 0 && _localCount > 0 && inside > 0 && !skyHidden)
             {
                 // the real stars of this space at their real sizes (a small point from afar, never smaller than a dot on screen)
                 float lf = (float)(inside * inside * (3 - 2 * inside));
-                for (int k = 0; k < _localCount; k++) { var v = _localList[k]; v.A = 1; v.R *= lf; v.G *= lf; v.B *= lf; _localDrawn[k] = v; }
-                _localBuf.Write(_localDrawn, _localCount);
+                if (Math.Abs(lf - _localLf) > 0.002f || _localVersion != _localWritten || _localCount != _localWrittenN)   // (put on the card again only when they change)
+                {
+                    for (int k = 0; k < _localCount; k++) { var v = _localList[k]; v.A = 1; v.R *= lf; v.G *= lf; v.B *= lf; _localDrawn[k] = v; }
+                    _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
+                }
                 DrawPoints(_localBuf, _localCount, Placement(_galaxies[_near]) * vp, right, up, 1f, 0.0022f, w, h, time);
             }
             if (_system != null)

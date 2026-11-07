@@ -2068,6 +2068,13 @@ namespace Universe.Shell
         }
         // your horizon, for a caption written as "{horizon}": how far you see each way, and why it ends there (the expansion of space, sped by dark energy)
         private string HorizonWords() { return "It ends only at your horizon, " + Units.Describe(_uRadius) + " each way, which moves with you: past it space stretches away faster than light can cross it, sped by dark energy (" + (_darkEnergy * 100).ToString("0") + "% of everything, " + _hubble.ToString("0") + " km/s a megaparsec)"; }
+        // a stop that only means anything inside a body's matter (its crystal, lattice, atoms, electrons, nucleus, nucleons, quarks)
+        private static bool MatterStop(string name)
+        {
+            if (name == null) return false; string n = name.ToLowerInvariant();
+            foreach (var w in new[] { "crystal", "lattice", "atom", "electron", "shell", "bond", "nucleus", "proton", "quark", "let-go" }) if (n.Contains(w)) return true;
+            return false;
+        }
         private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()).Replace("{horizon}", HorizonWords()).Replace("{supernova}", SupernovaWords()).Replace("{seen}", SeenWords()).Replace("{body}", BodyWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
@@ -2085,6 +2092,7 @@ namespace Universe.Shell
             if (_tourAt >= _tour.Count) { PauseTour(null); return; }   // (the end: it says so, and offers it again)
             var st = _tour[_tourAt]; _tourT += dt; bool done = false;
             if (_pickFailed && st.Do != "pick") { ZoomLog("TOUR stop " + st.Name + " skipped: its pick found nothing"); _tourAt++; _tourT = 0; NewShot(); return; }   // (never a shot of the wrong thing with the caption of the right one)
+            if (MatterStop(st.Name) && _matterScale <= 0 && _spaceScale <= 0) { ZoomLog("TOUR stop " + st.Name + " skipped: not in any body's matter (the dive did not come)"); _tourAt++; _tourT = 0; NewShot(); return; }   // (a lattice's caption over open sky, a fly across six million km: never)
             input.MouseX = w / 2; input.MouseY = h / 2;                                    // the controls act at the middle of the view
             switch (st.Do)
             {
@@ -3084,7 +3092,7 @@ namespace Universe.Shell
                     double cxv = RelX(exd) - _ox, cyv = RelY(exd) - _oy, czv = RelZ(exd) - _oz, cl = Math.Max(1e-300, Math.Sqrt(cxv * cxv + cyv * cyv + czv * czv));   // (from the body's middle: a spot picked on it only steers the way down; the ground is what is under you)
                     double qrD = exd.Hole || exd.Shape.Length == 0 ? qr : BodyRadiusToward(exd, _lastDrawTime, -cxv / cl, -cyv / cl, -czv / cl);   // the stone's real surface under you, not its nominal sphere
                     ulong dspot = (ulong)(long)(_ox / Units.Km(1)) * 73856093UL ^ (ulong)(long)(_oy / Units.Km(1)) * 19349663UL ^ (ulong)(long)(_oz / Units.Km(1)) * 83492791UL;
-                    if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : double.MaxValue) && (exd.Hole || cl < qrD * 1.3))
+                    if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : double.MaxValue) && (exd.Hole || cl < Math.Max(qr, qrD) * 1.3))   // (within 1.3 of its nominal radius, where the zoom's own pacing, which stops at 1.2 of it, can reach: measured against the drawn stone alone, a rock squashed along this side was never reached, and the dive never fired)
                     {
                         if (exd.Hole && exd.Mass > 0)
                         {
@@ -3110,7 +3118,8 @@ namespace Universe.Shell
                             _matter.SetGround(qrD / Units.Km(1), ux, uy, uz, exd.Mix, dspot * 0x9E3779B97F4A7C15UL + 0x51UL, 0, 0); exd.SpinHold = BodySpin(exd, _lastDrawTime);   // (its ground at the drawn stone's own height here; its spin held while you are on it)
                             _matter.SetAirAbove(null);
                             _bodyUp = new[] { ux, uy, uz }; _bodyStar = sl > 0 ? new[] { sx / sl, sy / sl, sz / sl } : new[] { ux, uy, uz };
-                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, (cl - qrD) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
+                            double hgt = Math.Max(cl - qrD, Units.Km(MatterView.OverlayKm * 2)); _ox = RelX(exd) + ux * (qrD + hgt); _oy = RelY(exd) + uy * (qrD + hgt); _oz = RelZ(exd) + uz * (qrD + hgt);   // (the camera set just over the drawn stone under it, never inside a stone that reaches past its nominal sphere)
+                            _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, hgt / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
                             ZoomLog("DIVE onto " + exd.Name + ": its ground " + exd.Mix + " from " + ScaleHud.Words(_spaceScale * 0.6) + " up"); return true;
                         }
                     }

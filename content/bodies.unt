@@ -7,6 +7,8 @@
 #   floating, rogue, planets for every star; between galaxies, intracluster stars are about a ten-thousandth as common as in
 #   a galaxy); in a belt or cloud: shown, how many are made round you at a time.
 # entry: the content entry it is (its card); size-km: how big it is drawn (a black hole: its glowing disc); colour.
+# coma-km and tail-km: a comet's coma and tail at their real sizes (comas 100,000 km to over a million, tails tens of
+#   millions of km), each comet its own in the range: a comet shows by its tail across its whole system.
 # shape: what it is drawn as close in: rock (a lumpy body lit by its star, cratered), comet (a dark nucleus in its coma of
 #   gas and dust, its tail pushed straight away from the star); without one, a point of light.
 # Spec: docs/CONTENT-FORMAT.md · content/black-holes.unt · content/small-bodies.unt · content/stars.unt
@@ -111,3 +113,6 @@ size-km: 5
 colour: 0.85 0.92 1
 shape: comet
 says: a nucleus of ice and dust warmed by its star: gas and dust boil off into its coma and are pushed out into its tail
+
+coma-km: 1e5..1e6
+tail-km: 1e7..8e7

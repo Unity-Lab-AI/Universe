@@ -131,7 +131,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, gas giants, ice giants and hot Jupiters. Some have **rings**. Those that orbit close to their star are **tidally locked**: one face always toward it, a day as long as a year |
 | **Moons** | Worlds in their own right: mostly airless rock or ice, now and then an ocean, a lava world or one with air |
 | **Orbits** | Never perfect circles: every orbit an ellipse, most gently oval, some long and wild, each body fastest at its closest point |
-| **Comets** | A dark nucleus, a glowing coma, an ion tail straight from the star and a curved dust tail |
+| **Comets** | A dark nucleus a few km across in a glowing coma up to a million km wide, an ion tail straight from the star and a curved dust tail, tens of millions of km long: seen right across their system |
 | **Asteroids** | Lumpy, cratered rock in a star's belts |
 | **Wanderers** | Neutron stars and rogue planets drifting between the stars |
 

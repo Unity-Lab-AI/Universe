@@ -329,8 +329,8 @@ namespace Universe.Shell
         // ── every other kind of body, made round you from content/bodies.unt, drawn and clickable: a supermassive black hole at
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
-        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare; public int Shown; public float R, G, B; }
-        private sealed class Extra { public double X, Y, Z, R, Mass; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; }   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi; public int Shown; public float R, G, B; }
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; }   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -380,7 +380,7 @@ namespace Universe.Shell
         private bool ShapeShown(Extra ex, int h)
         {
             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-            double reach = ex.Shape == "comet" ? 2000 : 1;                                  // (a comet's coma shows from much farther)
+            double reach = ex.Shape == "comet" ? Units.Km(ex.TailKm) / Math.Max(1e-30, ex.R) : 1;   // (a comet shows by its tail, millions of km long: across its whole system)
             return ex.R * reach / Math.Max(1e-30, d) * h > 3;
         }
         private static void RockPoints(List<StarVertex> l, Rng rng, int n, float r0, float g0, float b0, double albedo, double lump = 1)
@@ -455,19 +455,22 @@ namespace Universe.Shell
             for (int k = 0; k < 9000; k++)
             {
                 // the coma: gas and dust round the nucleus, densest close in, out to about 2000 times its size
-                double rr = Math.Exp(Math.Log(1.5) + rng.NextDouble() * Math.Log(2000 / 1.5)), u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, s2 = Math.Sqrt(1 - u * u);
-                float br = (float)(0.5 * Math.Pow(1.5 / rr, 0.35));
+                double rr = Math.Exp(Math.Log(0.0007) + rng.NextDouble() * Math.Log(1 / 0.0007)), u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, s2 = Math.Sqrt(1 - u * u);   // (in the coma's own size: 1 its edge)
+                float br = (float)(0.5 * Math.Pow(0.0007 / rr, 0.35));
                 cm.Add(new StarVertex { X = (float)(rr * s2 * Math.Cos(a) + rr * 0.3), Y = (float)(rr * u), Z = (float)(rr * s2 * Math.Sin(a)), Size = (float)(rr * 0.35), R = 0.55f * br, G = 0.75f * br, B = 0.8f * br, A = 1 });
             }
             for (int k = 0; k < 9000; k++)
             {
                 // the ion tail: straight away from the star (along -x), thin, blue; the dust tail: wider, curved, yellow-white
-                bool ion = (k & 1) == 0; double t = Math.Pow(rng.NextDouble(), 0.7) * 60000, w = (ion ? 0.02 : 0.08) * t + 200, a = rng.NextDouble() * Math.PI * 2, q = rng.Gaussian() * 0.4;
-                float br = (float)((ion ? 0.35 : 0.3) * Math.Exp(-t / 30000));
-                double bend = ion ? 0 : t * t / 60000 * 0.25;
+                bool ion = (k & 1) == 0; double t = Math.Pow(rng.NextDouble(), 0.7), w = (ion ? 0.02 : 0.08) * t + 0.0033, a = rng.NextDouble() * Math.PI * 2, q = rng.Gaussian() * 0.4;   // (in the tail's own length: 1 its end)
+                float br = (float)((ion ? 0.35 : 0.3) * Math.Exp(-t / 0.5));
+                double bend = ion ? 0 : t * t * 0.25;
                 cm.Add(new StarVertex { X = (float)(-t), Y = (float)(Math.Cos(a) * w * q), Z = (float)(Math.Sin(a) * w * q + bend), Size = (float)(w * 0.8), R = (ion ? 0.35f : 0.9f) * br, G = (ion ? 0.55f : 0.85f) * br, B = (ion ? 1f : 0.7f) * br, A = 1 });
             }
-            _cometN = cm.Count; _cometBuf = new UploadBuffer(_gpu.Device, (long)_cometN * Stride); _cometBuf.Write(cm.ToArray(), _cometN);
+            // the coma (the first 9,000) and the tails (the rest) each on its own, each drawn to its own size
+            _comaN = 9000; var tl = cm.GetRange(_comaN, cm.Count - _comaN); _tailN = tl.Count;
+            _cometN = _comaN; _cometBuf = new UploadBuffer(_gpu.Device, (long)_comaN * Stride); _cometBuf.Write(cm.GetRange(0, _comaN).ToArray(), _comaN);
+            _tailBuf = new UploadBuffer(_gpu.Device, (long)_tailN * Stride); _tailBuf.Write(tl.ToArray(), _tailN);
         }
         // ── rings: round any world whose template gives it them (content/terrain.unt rings-chance and its rings), made once
         // for each world of the system you are in, in the world's own radii, placed and scaled to it where it is now ──
@@ -517,7 +520,16 @@ namespace Universe.Shell
                 m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
                 // a comet's coma first: thin gas, bright from afar, only a faint haze once you are inside it (its points stacked
                 // into a white blaze that hid the nucleus); its dark nucleus is drawn over it
-                if (ex.Shape == "comet") { float inC = (float)Math.Max(0.06, Math.Min(1, Math.Sqrt(Math.Sqrt(dx * dx + dy * dy + dz * dz) / Math.Max(1e-30, ex.R * 3000)))); DrawPoints(_cometBuf, _cometN, m * vp, right, up, 1f, 0.0008f / sc, w, h, time, 0f, inC, 0f); }
+                if (ex.Shape == "comet")
+                {
+                    // the coma and the tails, each scaled to its own real size round the nucleus, the same frame (the tails straight
+                    // away from the star); the coma thins to a faint haze as you come into it
+                    double dc = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                    Func<double, Mat4> sized = km => { float k = (float)Units.Km(km); var mm = m; mm.M11 = xs.X * k; mm.M12 = xs.Y * k; mm.M13 = xs.Z * k; mm.M21 = y2.X * k; mm.M22 = y2.Y * k; mm.M23 = y2.Z * k; mm.M31 = z2.X * k; mm.M32 = z2.Y * k; mm.M33 = z2.Z * k; return mm; };
+                    float inC = (float)Math.Max(0.06, Math.Min(1, Math.Sqrt(dc / Math.Max(1e-30, Units.Km(ex.ComaKm) * 1.5))));
+                    DrawPoints(_cometBuf, _comaN, sized(ex.ComaKm) * vp, right, up, 1f, 0.0008f, w, h, time, 0f, inC, 0f);
+                    DrawPoints(_tailBuf, _tailN, sized(ex.TailKm) * vp, right, up, 1f, 0.0008f, w, h, time, 0f, 1f, 0f);
+                }
                 // the body itself, solid stone lit from its star (its camera's place in its own frame, for which faces show)
                 {
                     var mvp = m * vp; var mc = new float[BillboardPipeline.ConstantCount];
@@ -540,6 +552,7 @@ namespace Universe.Shell
             foreach (var e in _content.OfKind("bodies.unt", "place"))
             {
                 double v; var pl = new Place { Id = e.Id, Name = e.Name, Where = e.Get("where", ""), Entry = e.Get("entry", ""), Says = e.Get("says", ""), Shape = e.Get("shape", "") };
+                { double lo, hi; if (e.TryRange("coma-km", out lo, out hi)) { pl.ComaLo = lo; pl.ComaHi = hi; } if (e.TryRange("tail-km", out lo, out hi)) { pl.TailLo = lo; pl.TailHi = hi; } }   // (a comet's coma and tail at their real sizes)
                 if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; if (double.TryParse(e.Get("size-km", "1000"), fs, ci, out v)) pl.SizeKm = v;
                 int n; if (int.TryParse(e.Get("shown", "0"), out n)) pl.Shown = n;
                 var c = e.Get("colour", "1 1 1").Split(' '); float r = 1, g = 1, b = 1; if (c.Length == 3) { float.TryParse(c[0], fs, ci, out r); float.TryParse(c[1], fs, ci, out g); float.TryParse(c[2], fs, ci, out b); }
@@ -550,6 +563,14 @@ namespace Universe.Shell
         {
             var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm * (pl.Shape == "rock" ? Math.Exp(-1.6 + 3.2 * Math.Pow(Math.Abs(Math.Sin(x * 3.1 + y * 5.7 + z * 1.9) * 7919.1) % 1, 2.5)) : 1)), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>() };
             ex.Lines.Add(pl.Name); if (pl.Says.Length > 0) ex.Lines.Add(pl.Says);
+            if (pl.Shape == "comet")
+            {
+                // its coma and tail, each comet its own size in its kind's ranges (from where it is): real comets' comas a hundred
+                // thousand km to over a million, their tails tens of millions of km
+                double uc = Math.Abs(Math.Sin(x * 1.7 + y * 2.9 + z * 4.3) * 4321.7) % 1, ut = Math.Abs(Math.Sin(x * 3.3 + y * 1.1 + z * 2.7) * 8765.3) % 1;
+                ex.ComaKm = pl.ComaLo > 0 ? pl.ComaLo + (pl.ComaHi - pl.ComaLo) * uc : 1e4; ex.TailKm = pl.TailLo > 0 ? pl.TailLo + (pl.TailHi - pl.TailLo) * ut : 3e5;
+                ex.Lines.Add("coma about " + ex.ComaKm.ToString("N0") + " km across, tail about " + (ex.TailKm / 1e6).ToString("0.#") + " million km");
+            }
             var en = pl.Entry.Split(' ');
             if (en.Length == 2) foreach (var e in _content.Entries) if (e.Kind == en[0] && e.Id == en[1])
             {
@@ -2673,6 +2694,7 @@ namespace Universe.Shell
         }
 
         private float _sky = 1;                                                           // how much of space shows behind (fades away at the very small)
+        private int _comaN, _tailN; private UploadBuffer _tailBuf;
         private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2)
         {
             if (buf == null || count <= 0) return;

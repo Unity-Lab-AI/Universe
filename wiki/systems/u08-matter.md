@@ -23,10 +23,11 @@ Below the ground's finest piece the same camera goes on into what the ground is 
 | The nucleus | Its real protons and neutrons packed by the strong force against the protons' push (`@law nuclear-force`, `coulomb`); binding energy by the mass formula; beta stability and how it would decay; the 1s cloud inside the atom | `MatterView.NucleonsOf`, `Decay` |
 | The quarks | Three in each nucleon in their gluon flux tubes, sea pairs popping in and out; points as far as measured; the zoom on below past the Planck length, the card saying what is known there, which is nothing | `MatterView` (the nucleon block), `ScaleHud.Words` |
 | Picking | Every grain, face spot, atom, electron, nucleon and quark clickable with its card; a click always picks something; the activating click too | `MatterView.Pick`, `AddBody` |
+| Decay | Every unstable atom in view goes at its own moment by its real half-life (`elements.unt` half-life, decays) on the universe's clock at whatever speed it runs: its alpha knot, electron or other half flung out and flying off, and it is its daughter from then on; the cards give the half-life, how long half of them take by the clock here, and what an atom decayed from | `MatterView.SetClock`, `Daughter`, `DecayFlash` |
 | Other matter | A nebula's gas, a star's plasma, a neutron star's crust, a black hole's fall, the sea bed, a giant's layers, the air over every ground: the same zoom everywhere | `MatterView.SetSpace`, `SetHole`, `SetNeutronCrust`, `SetAirAbove` |
 
 ## Still to come (U12)
 
-Light rendered truly below its wavelength; decay before your eyes; the fields below the quarks' points.
+Light rendered truly below its wavelength (the greys are in); the fields below the quarks' points.
 
 See also: [U7 Worlds](u07-worlds.md) · [U3 Engine core](u03-engine-core.md) · [How it works](../../docs/in-game/HOW-IT-WORKS.md)

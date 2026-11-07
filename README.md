@@ -44,7 +44,7 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 | **Over a world** | Seas, mountains, clouds, ice caps, volcanoes, rings |
 | **Under the sea** | Down through the water, the light dying with depth, to the bed and its silt |
 | **On the ground** | Stones, then grains, then the steps of a crystal's face |
-| **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them |
+| **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them; a star's layers from its photosphere down to its core, each its own plasma |
 
 Straight from the grand tour, as the program records it (the frame counter and the card are its own):
 
@@ -74,7 +74,7 @@ Straight from the grand tour, as the program records it (the frame counter and t
 
 | | |
 |---|---|
-| **A universe to fly through** | Install it, press **T**, and watch the grand tour from the cosmic web to a quark. Then take the controls and go anywhere. |
+| **A universe to fly through** | Install it, press **T**, and watch the grand tour from the cosmic web to a quark; it ends with a true count of how much of the universe it reached. Then take the controls and go anywhere. |
 | **A toolkit to build universes** | Every galaxy, star and world grows from a **template** in plain text. Add your own kinds and use it for your own **game or simulation**. |
 
 ---
@@ -172,10 +172,10 @@ About 19,600 lines of C# and shader code in 61 files, and about 10,900 lines of 
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. A body's card gives its pull and escape speed where you are. Black holes have real horizons and bend the light behind them, and their shadow is the size the law gives from where you stand. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well: your own clock against far clocks is in the title wherever you are, a world's card gives the microseconds a day its pull costs the ground's clocks and a satellite's gain, and at a horizon your clock stops against far clocks |
+| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. Every world and moon has its mass from its size and its kind's density; a body's card gives its mass, the pull at its ground, its escape speed, and its pull where you are. Turn gravity off in the Time menu and watch what it was holding. Black holes have real horizons and bend the light behind them, and their shadow is the size the law gives from where you stand. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well: your own clock against far clocks is in the title wherever you are, a world's card gives the microseconds a day its pull costs the ground's clocks and a satellite's gain, and at a horizon your clock stops against far clocks |
 | **Electromagnetism** | Electrons in their real shells and orbitals, bonds as shared electrons, stars the colour of their heat |
 | **Strong force** | Packs every nucleus, and glues the quarks in every proton and neutron |
-| **Weak force** | Decides which nuclei are stable, and how the rest would decay |
+| **Weak force** | Decides which nuclei are stable, and the rest decay before your eyes: each unstable atom goes at its own moment by its half-life, its alpha or electron flung out, and the card says what it has become |
 
 Every law's numbers are in `content/physics.unt`. **Change them, and you change the physics.**
 
@@ -185,7 +185,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 
 | | |
 |---|---|
-| **Black holes** | A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets, a supermassive one tearing several stars apart at once; quiet ones are a shadow and bent starlight. Zooming in at the shadow flies down to the horizon with the disc all round and the shadow growing to fill the view, then falls through: black, the gravity well itself round you as a grid (Flamm's surface outside the throat, its inner surface down to the point), your escape speed, time left and tide on the card, to the singularity at the quarks' size |
+| **Black holes** | Every one spinning, its disc reaching closer in the faster it spins, its horizon pulled in and space swept round it (frame dragging twists the fall's funnel). A giant at every galaxy's heart, more among the stars. Feeding ones blaze with discs and jets, a supermassive one tearing several stars apart at once; quiet ones are a shadow and bent starlight. Zooming in at the shadow flies down to the horizon with the disc all round and the shadow growing to fill the view, then falls through: black, the gravity well itself round you as a grid (Flamm's surface outside the throat, its inner surface down to the point), your escape speed, time left and tide on the card, to the singularity at the quarks' size |
 | **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, gas giants, ice giants and hot Jupiters. Some have **rings**. Those that orbit close to their star are **tidally locked**: one face always toward it, a day as long as a year |
 | **Moons** | Worlds in their own right: mostly airless rock or ice, now and then an ocean, a lava world or one with air |
 | **Orbits** | Never perfect circles: every orbit an ellipse, most gently oval, some long and wild, each body fastest at its closest point |
@@ -214,7 +214,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **T · R** | The grand tour: start or carry on · start again |
 | **F12 · F9** | A screenshot · start or stop a clip (View > Clip size: auto, full, half or quarter of the screen) |
 
-The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, the clip's size, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
+The **Time** menu has **Always day**, on to start with; turn it off for true day and night. It also has **Gravity**: turn it off and every body goes straight on at its speed, every star is blown apart by its own pressure, and a galaxy's stars fly off on their tangents. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, the clip's size, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 
 ---
 
@@ -227,8 +227,6 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | **Shot afresh every time** | Each shot picks its own way round, speed and crane |
 | **A true crossing** | Billions of light-years, straight to one far galaxy, made from its own place before you set off |
 | **A feeding black hole** | It crosses to a galaxy whose heart is feeding, flies down to it, round its accretion disc and skims it in its own plane, edge-on through the light it bends, in to the shadow at its horizon, and through it: the fall in black down the gravity well itself, looking back at the horizon, on the law's own clock to the singularity at the quarks' size, and back out: with its jets, if it fires them. The disc is gas on its own orbits, the inner ones round fastest, brighter on the side coming at you; stars are swept round the hole on tight ellipses; and a star that came too close is torn into a stream and swallowed |
-| **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
-| **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark; about a quarter of an hour in all |
 | **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
 | **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark; about a quarter of an hour in all |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
@@ -253,10 +251,7 @@ Universe is a 0.1 preview of a program that is finished in its shape and growing
 
 | | |
 |---|---|
-| **A star's layers** | Down through a star from its surface to the heavier elements at its core; today the dive goes into its surface plasma |
-| **Gravity as a live force** | Orbits shaped moment by moment by every body's pull (today every orbit follows Kepler's law exactly), and a switch to turn gravity off and watch every body fly straight on |
-| **The rest of relativity** | Length contraction, redshift and frame dragging, beside the turning perihelion, the slowed clocks and the horizons already in |
-| **Decay before your eyes** | Each nucleus already says how it would decay; it will do it |
+| **Gravity as a live force** | Orbits shaped moment by moment by every body's pull (today every orbit follows Kepler's law exactly; the switch to turn gravity off is in) |
 | **The fields** | The fields that particles are waves in, below the quarks' points |
 | **Light below its wavelength** | Today the grain's face goes to greys there, as an electron microscope sees; a true rendering of light that small is for later |
 | **The waveform everywhere** | The CDF 9/7 waveform carrying every field from the cosmic web to the microbes: gas and star fields, the ground itself, clouds, stars' surfaces |

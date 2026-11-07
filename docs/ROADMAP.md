@@ -90,10 +90,10 @@ The public pages (`README.md`, `CREDITS.md`, `docs/GUIDE.md`, `docs/HOW-TO-BUILD
 
 Each item keeps the creator's words from its TODO line; the public side of this list is "Still to come" in `README.md`.
 
-- A star's layers down through to the heavier elements at its core: "stars shoiuld be mostly hydrogen till getting to it heavey m,etal cores ect ect"
-- Gravity as a live force: orbits shaped moment by moment (today Kepler's law exactly), and the gravity switch: "like if i has a setting to turn off all gravity.. would stars explode pressures of all bodies zero and every body move to straight line travel... right?"
-- The rest of relativity: length contraction, redshift, frame dragging
-- Decay happening before your eyes, and the fields particles are waves in
+- (built, waiting on the test: DNA-AND DESIGN 582) A star's layers down through to the heavier elements at its core: "stars shoiuld be mostly hydrogen till getting to it heavey m,etal cores ect ect"
+- Gravity as a live force: orbits shaped moment by moment (today Kepler's law exactly), and the gravity switch (the switch built, waiting on the test: DNA-AND DESIGN 580): "like if i has a setting to turn off all gravity.. would stars explode pressures of all bodies zero and every body move to straight line travel... right?"
+- (built, waiting on the test: DNA-AND DESIGN 581) The rest of relativity: length contraction, redshift, frame dragging
+- Decay happening before your eyes (built, waiting on the test: DNA-AND DESIGN 583), and the fields particles are waves in
 - Light rendered truly below its wavelength: "later when ther is color properly do it"
 - The waveform carrying every field, from the cosmic web to the microbes (gas and star fields, the ground itself, clouds, stars' surfaces)
 - Native Linux and Mac builds; the Wine path proven on a Linux desktop: "okay well make sure that path is real"

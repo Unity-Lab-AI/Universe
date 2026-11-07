@@ -12,6 +12,10 @@
 #   one that pulls harder.
 # look: how a lump of it looks (its real colour) and shiny: a metal's shine; glow-colour: the colour the gas glows lit by
 #   electricity (neon orange-red, argon violet, hydrogen pink). The families' colours on the periodic table are @family below.
+# half-life and decays: for the elements with no stable form, how long half of a lump of the named isotope lasts and how it goes
+#   (alpha: two protons and two neutrons flung out, the atom two places down the table; beta-minus: a neutron turns into a
+#   proton, an electron flung out, one place up; electron-capture: a proton turns into a neutron, one place down; fission: the
+#   nucleus splits in two); NUBASE2020 and the NNDC tables, rounded. The stable elements carry none: they last.
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.unt
 
 @element h
@@ -804,6 +808,8 @@ name: Technetium
 real: yes
 number: 43
 mass-number: 98
+half-life: 4.2 million years
+decays: beta-minus
 symbol: Tc
 colour: 0.231 0.62 0.62
 covalent-a: 1.47
@@ -1121,6 +1127,8 @@ name: Promethium
 real: yes
 number: 61
 mass-number: 145
+half-life: 17.7 years
+decays: electron-capture
 symbol: Pm
 colour: 0.639 1 0.78
 covalent-a: 1.99
@@ -1496,6 +1504,8 @@ name: Bismuth
 real: yes
 number: 83
 mass-number: 209
+half-life: 2.0e19 years
+decays: alpha
 symbol: Bi
 look: 0.8 0.6 0.85
 shiny: yes
@@ -1515,6 +1525,8 @@ name: Polonium
 real: yes
 number: 84
 mass-number: 209
+half-life: 124 years
+decays: alpha
 symbol: Po
 colour: 0.671 0.361 0
 covalent-a: 1.40
@@ -1532,6 +1544,8 @@ name: Astatine
 real: yes
 number: 85
 mass-number: 210
+half-life: 8.1 hours
+decays: electron-capture
 symbol: At
 colour: 0.459 0.31 0.271
 covalent-a: 1.50
@@ -1549,6 +1563,8 @@ name: Radon
 real: yes
 number: 86
 mass-number: 222
+half-life: 3.82 days
+decays: alpha
 symbol: Rn
 glow-colour: 0.95 0.25 0.2
 colour: 0.259 0.51 0.588
@@ -1567,6 +1583,8 @@ name: Francium
 real: yes
 number: 87
 mass-number: 223
+half-life: 22 minutes
+decays: beta-minus
 symbol: Fr
 colour: 0.259 0 0.4
 covalent-a: 2.60
@@ -1583,6 +1601,8 @@ name: Radium
 real: yes
 number: 88
 mass-number: 226
+half-life: 1600 years
+decays: alpha
 symbol: Ra
 look: 0.85 0.88 0.85
 shiny: yes
@@ -1601,6 +1621,8 @@ name: Actinium
 real: yes
 number: 89
 mass-number: 227
+half-life: 21.8 years
+decays: beta-minus
 symbol: Ac
 colour: 0.439 0.671 0.98
 covalent-a: 2.15
@@ -1617,6 +1639,8 @@ name: Thorium
 real: yes
 number: 90
 mass-number: 232
+half-life: 1.40e10 years
+decays: alpha
 symbol: Th
 colour: 0 0.729 1
 covalent-a: 2.06
@@ -1633,6 +1657,8 @@ name: Protactinium
 real: yes
 number: 91
 mass-number: 231
+half-life: 32800 years
+decays: alpha
 symbol: Pa
 colour: 0 0.631 1
 covalent-a: 2.00
@@ -1649,6 +1675,8 @@ name: Uranium
 real: yes
 number: 92
 mass-number: 238
+half-life: 4.47e9 years
+decays: alpha
 symbol: U
 look: 0.45 0.47 0.45
 shiny: yes
@@ -1667,6 +1695,8 @@ name: Neptunium
 real: yes
 number: 93
 mass-number: 237
+half-life: 2.14 million years
+decays: alpha
 symbol: Np
 colour: 0 0.502 1
 covalent-a: 1.90
@@ -1684,6 +1714,8 @@ name: Plutonium
 real: yes
 number: 94
 mass-number: 244
+half-life: 80 million years
+decays: alpha
 symbol: Pu
 look: 0.5 0.45 0.42
 shiny: yes
@@ -1703,6 +1735,8 @@ name: Americium
 real: yes
 number: 95
 mass-number: 243
+half-life: 7370 years
+decays: alpha
 symbol: Am
 colour: 0.329 0.361 0.949
 covalent-a: 1.80
@@ -1720,6 +1754,8 @@ name: Curium
 real: yes
 number: 96
 mass-number: 247
+half-life: 15.6 million years
+decays: alpha
 symbol: Cm
 colour: 0.471 0.361 0.89
 covalent-a: 1.69
@@ -1737,6 +1773,8 @@ name: Berkelium
 real: yes
 number: 97
 mass-number: 247
+half-life: 1380 years
+decays: alpha
 symbol: Bk
 colour: 0.541 0.31 0.89
 period: 7
@@ -1753,6 +1791,8 @@ name: Californium
 real: yes
 number: 98
 mass-number: 251
+half-life: 898 years
+decays: alpha
 symbol: Cf
 colour: 0.631 0.212 0.831
 period: 7
@@ -1769,6 +1809,8 @@ name: Einsteinium
 real: yes
 number: 99
 mass-number: 252
+half-life: 472 days
+decays: alpha
 symbol: Es
 colour: 0.702 0.122 0.831
 period: 7
@@ -1785,6 +1827,8 @@ name: Fermium
 real: yes
 number: 100
 mass-number: 257
+half-life: 100.5 days
+decays: alpha
 symbol: Fm
 colour: 0.702 0.122 0.729
 period: 7
@@ -1801,6 +1845,8 @@ name: Mendelevium
 real: yes
 number: 101
 mass-number: 258
+half-life: 51.5 days
+decays: alpha
 symbol: Md
 colour: 0.702 0.051 0.651
 period: 7
@@ -1817,6 +1863,8 @@ name: Nobelium
 real: yes
 number: 102
 mass-number: 259
+half-life: 58 minutes
+decays: alpha
 symbol: No
 colour: 0.741 0.051 0.529
 period: 7
@@ -1833,6 +1881,8 @@ name: Lawrencium
 real: yes
 number: 103
 mass-number: 262
+half-life: 3.6 hours
+decays: electron-capture
 symbol: Lr
 colour: 0.78 0 0.4
 period: 7
@@ -1849,6 +1899,8 @@ name: Rutherfordium
 real: yes
 number: 104
 mass-number: 267
+half-life: 1.3 hours
+decays: fission
 symbol: Rf
 colour: 0.8 0 0.349
 period: 7
@@ -1865,6 +1917,8 @@ name: Dubnium
 real: yes
 number: 105
 mass-number: 268
+half-life: 16 hours
+decays: fission
 symbol: Db
 colour: 0.82 0 0.31
 period: 7
@@ -1881,6 +1935,8 @@ name: Seaborgium
 real: yes
 number: 106
 mass-number: 269
+half-life: 14 minutes
+decays: alpha
 symbol: Sg
 colour: 0.851 0 0.271
 period: 7
@@ -1897,6 +1953,8 @@ name: Bohrium
 real: yes
 number: 107
 mass-number: 270
+half-life: 1 minute
+decays: alpha
 symbol: Bh
 colour: 0.878 0 0.22
 period: 7
@@ -1913,6 +1971,8 @@ name: Hassium
 real: yes
 number: 108
 mass-number: 269
+half-life: 16 seconds
+decays: alpha
 symbol: Hs
 colour: 0.902 0 0.18
 period: 7
@@ -1929,6 +1989,8 @@ name: Meitnerium
 real: yes
 number: 109
 mass-number: 278
+half-life: 4.5 seconds
+decays: alpha
 symbol: Mt
 colour: 0.922 0 0.149
 period: 7
@@ -1945,6 +2007,8 @@ name: Darmstadtium
 real: yes
 number: 110
 mass-number: 281
+half-life: 12.7 seconds
+decays: fission
 symbol: Ds
 period: 7
 group: Predicted (never measured)
@@ -1960,6 +2024,8 @@ name: Roentgenium
 real: yes
 number: 111
 mass-number: 282
+half-life: 100 seconds
+decays: alpha
 symbol: Rg
 period: 7
 group: Predicted (never measured)
@@ -1975,6 +2041,8 @@ name: Copernicium
 real: yes
 number: 112
 mass-number: 285
+half-life: 28 seconds
+decays: alpha
 symbol: Cn
 period: 7
 group: Transition
@@ -1990,6 +2058,8 @@ name: Nihonium
 real: yes
 number: 113
 mass-number: 286
+half-life: 9.5 seconds
+decays: alpha
 symbol: Nh
 period: 7
 group: Predicted (never measured)
@@ -2005,6 +2075,8 @@ name: Flerovium
 real: yes
 number: 114
 mass-number: 289
+half-life: 1.9 seconds
+decays: alpha
 symbol: Fl
 period: 7
 group: Predicted (never measured)
@@ -2020,6 +2092,8 @@ name: Moscovium
 real: yes
 number: 115
 mass-number: 290
+half-life: 650 milliseconds
+decays: alpha
 symbol: Mc
 period: 7
 group: Predicted (never measured)
@@ -2035,6 +2109,8 @@ name: Livermorium
 real: yes
 number: 116
 mass-number: 293
+half-life: 57 milliseconds
+decays: alpha
 symbol: Lv
 period: 7
 group: Predicted (never measured)
@@ -2050,6 +2126,8 @@ name: Tennessine
 real: yes
 number: 117
 mass-number: 294
+half-life: 51 milliseconds
+decays: alpha
 symbol: Ts
 period: 7
 group: Predicted (never measured)
@@ -2065,6 +2143,8 @@ name: Oganesson
 real: yes
 number: 118
 mass-number: 294
+half-life: 0.69 milliseconds
+decays: alpha
 symbol: Og
 period: 7
 group: Noble gas

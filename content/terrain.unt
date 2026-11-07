@@ -19,9 +19,12 @@
 #   own value in each range from its seed, so no two worlds of a kind are the same, and a seed always gives the same world.
 # Where a kind forms (a kind with no forms: is drawn only when something asks for it by name):
 #   forms: rocky, giant (past the frost line) or hot-jupiter (the closest orbit of a hot-Jupiter system).
-#   orbit-hz: where its orbit lies against the habitable zone's middle (1 = in the middle; the Sun's is 1.175 AU, and it
-#   moves out with the star's brightness). orbit-frost: against the frost line (the Sun's 2.7 AU). star-brightness: the
-#   star's brightness (the Sun 1; red dwarfs below 0.08). weight: when several kinds fit an orbit, how often this one is chosen.
+#   orbit-hz: where its orbit lies against the habitable zone's middle (1 = in the middle; our own star's is 1.175 AU, and it
+#   moves out with the star's brightness). orbit-frost: against the frost line (our own star's 2.7 AU). star-brightness: the
+#   star's brightness (our own star 1; red dwarfs below 0.08). weight: when several kinds fit an orbit, how often this one is chosen.
+#   density-g-cc: what a world of this kind weighs for its size (grams a cubic centimetre: rocky worlds about 5.5, giants about
+#   1.3, ice giants about 1.6, rocky moons about 3.3, icy ones about 1.9); its mass follows from its size, and from the mass its
+#   pull at the ground, its escape speed and how much it slows clocks.
 #   size-km and size-spread: its size, size-km times a value in the spread. moons: how many. dot-colour: its colour as a dot
 #   from afar. day-hours: one turn of its spin. label: what its card calls it. makeup (and makeup-dry, for one that
 #   formed with no seas): what it is made of, lines split by ;. interest: how much the tour's director wants to visit it.
@@ -75,6 +78,7 @@ rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
 moon-weight: 0.3
+density-g-cc: 5.5
 
 @terrain ocean
 name: An ocean world
@@ -103,6 +107,7 @@ rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
 moon-weight: 0.4
+density-g-cc: 4.8
 
 @terrain desert
 name: A desert world
@@ -136,6 +141,7 @@ rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
 moon-weight: 1.5
+density-g-cc: 5.3
 
 @terrain lava
 name: A lava world
@@ -170,6 +176,7 @@ rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
 moon-weight: 0.6
+density-g-cc: 6.0
 
 @terrain snowball
 name: A snowball world
@@ -201,6 +208,7 @@ rings-radii: 1.4..2.2
 rings-shade: 0.3
 rings-colour: 0.6 0.56 0.52
 moon-weight: 1
+density-g-cc: 4.6
 
 @terrain tidally-locked
 # (a look for samples only: any world close enough to its star is locked by its orbit, physics.unt tidal-lock)
@@ -215,6 +223,7 @@ dry: yes
 day-hours: 2000
 tides: 0.1
 river-colour: 0.46 0.4 0.35
+density-g-cc: 5.4
 
 @terrain gas-giant
 name: A gas giant
@@ -244,6 +253,7 @@ rings-gap: 1.85..1.92
 rings-shade: banded
 rings-chance: 1
 rings-colour: 0.9 0.84 0.72
+density-g-cc: 1.33
 
 @terrain ice-giant
 name: An ice giant
@@ -274,6 +284,7 @@ rings-radii: 1.6..2.0
 rings-shade: 0.25
 rings-chance: 1
 rings-colour: 0.55 0.58 0.62
+density-g-cc: 1.64
 
 @terrain hot-jupiter
 name: A hot Jupiter
@@ -295,6 +306,7 @@ dot-colour: 0.95 0.75 0.5
 interest: 1
 day-hours: 9..17
 makeup: hydrogen and helium, swollen by heat; clouds: silicates and iron; core: rock
+density-g-cc: 1.0
 
 @terrain dyson-hull
 name: A Dyson shell's outer hull
@@ -327,6 +339,7 @@ interest: 1
 day-hours: 10..40
 grains: moon
 makeup: rock and dust, iron-poor; no air; craters from strikes
+density-g-cc: 3.3
 
 @terrain icy-moon
 name: An icy moon
@@ -350,3 +363,4 @@ dot-colour: 0.9 0.95 1
 interest: 1.5
 grains: ice
 makeup: a crust of ice; perhaps a dark sea of water beneath; no air
+density-g-cc: 1.9

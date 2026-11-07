@@ -27,6 +27,6 @@ last-verified: 1591b7f
 
 ## Still to come (U12)
 
-Gravity as a live force shaping orbits moment by moment, and the gravity switch; the rest of relativity; decay before your eyes; the fields.
+Gravity as a live force shaping orbits moment by moment (the switch is in); the fields particles are waves in.
 
 See also: [U6 Universe](u06-universe.md) · [U8 Matter](u08-matter.md) · [Build your own universe](../../docs/GUIDE.md)

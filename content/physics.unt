@@ -53,18 +53,19 @@ does: radioactive decay, and turns one kind of particle into another; helps star
 #   fewer protons than that and a neutron turns into a proton (beta-minus decay, the weak force: an electron and an
 #   antineutrino out); more and a proton turns into a neutron (beta-plus or electron capture); past lead (Z above 82)
 #   the biggest nuclei throw out alpha particles (two protons, two neutrons) as the electric push outgrows the strong pull.
-# gravity: G times the Sun's mass (the Sun's pull, m3/s2, known far better than G itself); orbits follow Kepler's third law
-#   from it (a year squared is the orbit in AU cubed over the star's mass in Suns), a pull falls with the distance squared
-#   (Newton), and a black hole's horizon is 2GM/c2 (Schwarzschild: about 2.95 km for each Sun). earth-g: Earth's pull at
+# gravity: G times one solar mass (the pull of a star of one solar mass, m3/s2, known far better than G itself); orbits follow Kepler's third law
+#   from it (a year squared is the orbit in AU cubed over the star's mass in solar masses), a pull falls with the distance squared
+#   (Newton), and a black hole's horizon is 2GM/c2 (Schwarzschild: about 2.95 km for each solar mass). earth-g: Earth's pull at
 #   its ground, to compare with. light: the speed of light in empty space.
 @law gravity
 name: Gravity's pull
-gm-sun-m3-s2: 1.32712e20
+gm-sol-m3-s2: 1.32712e20
+g-m3-kg-s2: 6.674e-11
 earth-g-m-s2: 9.81
 
 # tidal-lock: a body orbiting close to another is slowed by its pull until one face always points at it (our Moon at the
 #   Earth, most moons at their planets, worlds close to dim stars at their star); its day is then its year. Within about
-#   lock-au-sun AU of a star of the Sun's mass a world is locked over billions of years, the reach growing with the cube root
+#   lock-au-sol AU of a star of one solar mass a world is locked over billions of years, the reach growing with the cube root
 #   of the star's mass (Gladman et al. 1996, Kasting et al. 1993: red dwarfs' habitable zones lie inside it).
 # orbits: no orbit is a perfect circle; each follows from the body's speed where it was placed, as the laws of motion have
 #   it: a share f of the circular speed there (1 a circle; a little off an oval; near root 2, escape speed, a long thin loop
@@ -87,11 +88,35 @@ moon-far-radii: 25
 
 @law tidal-lock
 name: Tidal locking
-lock-au-sun: 0.5
+lock-au-sol: 0.5
 
 @law light
 name: The speed of light
 speed-m-s: 2.998e8
+
+# frame-dragging: a spinning mass drags space round with it (Lense-Thirring; measured round Earth by Gravity Probe B).
+#   Every black hole spins, born from a spinning star or fed by a spinning disc: its spin a is a share of the most it could
+#   have (1), taken from spin-range by its place. Its horizon pulls in to r+ = M (1 + root(1 - a^2)) (M = GM/c^2; a hole at
+#   rest has r+ = 2M, the Schwarzschild radius) and its ergosphere reaches out to 2M at the equator, where space itself is
+#   swept round faster than light and nothing can stand still; just outside the horizon space turns at a c / (2 r+). The
+#   disc's innermost stable orbit comes in with the spin, from 6M at rest to 1.24M near the most (Bardeen, Press and
+#   Teukolsky 1972), so a fast spinner's disc reaches closer in and shines hotter.
+@law frame-dragging
+name: Frame dragging: a spinning mass drags space round with it
+real: yes
+spin-range: 0.1..0.998
+says: a spinning mass drags space round with it; round a spinning black hole nothing can stand still inside its ergosphere, and its disc reaches closer in the faster it spins
+
+# gravity-off: what happens when gravity is switched off (the Time menu): every body carries on in a straight line at the
+#   speed it had (its orbit's speed where it was), every star's own pressure, unopposed, blows it apart, growing at about
+#   its sound speed: it doubles in size in about its sound-crossing time (a star of one solar mass in about an hour), which is
+#   about swell-over-freefall times its free-fall time root(R^3 / GM); a galaxy's stars fly off on their tangents at the
+#   speed they circled at (rim-speed-km-s in @law cosmos), those of a round galaxy every way.
+@law gravity-off
+name: Gravity switched off
+real: yes
+swell-over-freefall: 2
+says: without gravity every body goes straight on at its speed, every star is blown apart by its own pressure in about an hour, and a galaxy's stars fly off on their tangents
 
 @law nuclear-force
 name: The strong force between nucleons
@@ -465,10 +490,10 @@ free-years: 300
 remnant-years: 100000
 neutron-star-max-sol: 20
 kinds: ii-p, ii-l, iin, ib-c, ia, superluminous
-says: a galaxy of a hundred billion stars has about three supernovae a century (two to five: the core collapse of a star of eight solar masses or more about two of them, a white dwarf pushed past its limit by a companion about one), so across the observable universe several go off every second; a core-collapse supernova shines at about five hundred million suns' worth for its hundred-day plateau (absolute magnitude about -17), a white-dwarf one at about four billion (absolute magnitude -19.3, up in eighteen days, halving every twelve after), brighter than most galaxies; the star's matter is flung out at five to ten thousand km/s (a few hundredths of light's speed, the outermost layers up to a tenth of it), free for a few hundred years, then slowed as it sweeps up the gas between the stars (the radius growing as the two-fifths power of the age), seen as a shell for about a hundred thousand years until it merges with that gas; the core of a star of eight to about twenty solar masses becomes a neutron star (the youngest spin fastest, tens of times a second), heavier than that a black hole; a white dwarf's blast leaves nothing but the shell
+says: a galaxy of a hundred billion stars has about three supernovae a century (two to five: the core collapse of a star of eight solar masses or more about two of them, a white dwarf pushed past its limit by a companion about one), so across the observable universe several go off every second; a core-collapse supernova shines at about five hundred million solar luminosities for its hundred-day plateau (absolute magnitude about -17), a white-dwarf one at about four billion (absolute magnitude -19.3, up in eighteen days, halving every twelve after), brighter than most galaxies; the star's matter is flung out at five to ten thousand km/s (a few hundredths of light's speed, the outermost layers up to a tenth of it), free for a few hundred years, then slowed as it sweeps up the gas between the stars (the radius growing as the two-fifths power of the age), seen as a shell for about a hundred thousand years until it merges with that gas; the core of a star of eight to about twenty solar masses becomes a neutron star (the youngest spin fastest, tens of times a second), heavier than that a black hole; a white dwarf's blast leaves nothing but the shell
 
 # ── The kinds of supernova (their shares of all, their light curves, what they leave) ──
-# share: of all supernovae; peak-sol: its peak light in suns; rise-days: to the peak; plateau-days: held near the peak (0 for
+# share: of all supernovae; peak-sol: its peak light in solar luminosities; rise-days: to the peak; plateau-days: held near the peak (0 for
 # none); halving-days: how fast it fades after; tail-share: the share of the peak the slow radioactive tail (cobalt-56, halving
 # every 77 days) starts from; peak-k: the heat of its glowing face at the peak (its colour: the fireball is a hundred thousand
 # degrees at the shock's breakout, cooling to this by the peak, to about 5,500 on a plateau and 4,500 after); ejecta-km-s: how

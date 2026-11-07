@@ -37,7 +37,10 @@
 | Electronegativity | Pauling's scale |
 | The nucleus | The semi-empirical (Bethe–Weizsäcker) mass formula and the valley of beta stability |
 | Grain and stone sizes | The Wentworth scale |
-| Supernovae | Rates, kinds, light curves and remnants from the published surveys and reviews noted at the top of `content/physics.unt` (`@law supernova`, `@supernova`) |
+| A star's layers | The standard model of a star of one solar mass (Bahcall, Serenelli and Basu 2005), the structure of heavier and lighter stars, and the burning shells of giants and supergiants (Woosley, Heger and Weaver 2002) |
+| Spinning black holes | The innermost stable orbit and the horizon by spin (Bardeen, Press and Teukolsky 1972); frame dragging (Lense and Thirring 1918; Gravity Probe B) |
+| Half-lives | NUBASE2020 and the NNDC nuclear data tables |
+| Worlds' densities | Standard planetary science values for rocky worlds, giants, ice giants and moons |
 | Supernovae | Rates, kinds, light curves and remnants from the published surveys and reviews noted at the top of `content/physics.unt` (`@law supernova`, `@supernova`) |
 
 ## The code

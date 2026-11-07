@@ -12,6 +12,8 @@ namespace Universe.Shell
 {
     internal sealed class ScaleHud : IDisposable
     {
+        /// <summary>How much larger every letter and card is drawn (1: as the screen has it): while a clip is recorded at half or a quarter size the text is drawn that much larger, so in the clip it reads at the size it has on screen.</summary>
+        public static float TextScale = 1f;
         private readonly IntPtr _device; private UploadBuffer _buf; private StarVertex[] _v = new StarVertex[0];
         public bool Visible = true;
         /// <summary>How long a card's line may run before it wraps (the corner cards keep short lines; a full screen of words, longer).</summary>
@@ -59,7 +61,7 @@ namespace Universe.Shell
         public void Draw(MeshPipes pipes, double kmPerPixel, int w, int h)
         {
             if (!Visible || kmPerPixel <= 0 || double.IsInfinity(kmPerPixel) || double.IsNaN(kmPerPixel)) return;
-            float px = Math.Max(1, h / 540f);                                   // one letter cell, bigger on bigger screens
+            float px = Math.Max(1, h / 540f) * TextScale;                                   // one letter cell, bigger on bigger screens
             double km = Round(kmPerPixel * 220 * px);
             float barLen = (float)(km / kmPerPixel);
             var list = new List<StarVertex>();
@@ -95,7 +97,7 @@ namespace Universe.Shell
         public void DrawRing(MeshPipes pipes, double x, double y, double radius, int w, int h)
         {
             // a thin, faint, unbroken circle (its dashes read as a ring of bodies round a star)
-            var list = new List<StarVertex>(); float px = Math.Max(1, h / 540f), s2 = Math.Max(1f, 0.9f * px);
+            var list = new List<StarVertex>(); float px = Math.Max(1, h / 540f) * TextScale, s2 = Math.Max(1f, 0.9f * px);
             int n = Math.Max(48, Math.Min(400, (int)(radius * 0.9)));
             for (int i = 0; i < n; i++)
             {
@@ -153,7 +155,7 @@ namespace Universe.Shell
             // with its percentage beside it, and what is being made written under it): a thin bar on a near-black screen for a few
             // seconds read as a black screen
             DrawFill(pipes, w, h, 0.012f, 0.014f, 0.03f);
-            var l = new List<StarVertex>(); float px = Math.Max(1, h / 540f), bw = w * 0.5f, bh = Math.Max(10, h * 0.018f), x0 = (w - bw) / 2, y0 = h * 0.52f;
+            var l = new List<StarVertex>(); float px = Math.Max(1, h / 540f) * TextScale, bw = w * 0.5f, bh = Math.Max(10, h * 0.018f), x0 = (w - bw) / 2, y0 = h * 0.52f;
             {
                 string title = "MAKING THE UNIVERSE"; float cell = 3.2f * px, tw = title.Length * 6 * cell, cx = (w - tw) / 2, cy = y0 - 16 * cell;
                 foreach (char ch in title) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Quad(l, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, 0.85f, 0.9f, 1f); cx += 6 * cell; }
@@ -176,7 +178,7 @@ namespace Universe.Shell
         /// Drawn after the frame's picture is taken, so it shows on screen and stays out of the clip.</summary>
         public void DrawRec(MeshPipes pipes, int w, int h, double time, double seconds)
         {
-            float px = Math.Max(1, h / 540f), cell = 2.0f * px;
+            float px = Math.Max(1, h / 540f) * TextScale, cell = 2.0f * px;
             string label = "REC " + ((int)(seconds / 60)).ToString("00") + ":" + ((int)(seconds % 60)).ToString("00");
             float tw = label.Length * 6 * cell, dot = 9 * px, x0 = (w - (tw + dot + 8 * px)) / 2, y0 = 14 * px;
             var l = new List<StarVertex>();
@@ -196,7 +198,7 @@ namespace Universe.Shell
         /// At the horizon the speed to escape is exactly light's; outside less, inside more.</summary>
         public void DrawWell(MeshPipes pipes, int w, int h, double radii)
         {
-            float px = Math.Max(1, h / 1080f), cell = 2.0f * px;
+            float px = Math.Max(1, h / 1080f) * TextScale, cell = 2.0f * px;
             float pw = 380 * px, ph = 230 * px, x0 = w - pw - 20 * px, y0 = h * 0.5f - ph * 0.5f;
             var l = new List<StarVertex>();
             Quad(l, x0, y0, pw, ph, 0.02f, 0.02f, 0.03f);
@@ -282,7 +284,7 @@ namespace Universe.Shell
                 wrapped.Add(l);
             }
             lines = wrapped;
-            float px = Math.Max(1, h / 540f), cell = 1.1f * px, adv = 6 * cell, lh = 10 * cell, pad = 6 * px;
+            float px = Math.Max(1, h / 540f) * TextScale, cell = 1.1f * px, adv = 6 * cell, lh = 10 * cell, pad = 6 * px;
             // never above the top it is allowed (the tour's bar) nor below the bottom: a card too tall for the room is cut short
             // with a mark, its first lines always shown (a tall card had been pushed up under the bar, its first lines hidden)
             float top = Math.Max(4, CardTop), bottom = CardBottom > 0 ? Math.Min(h - 4, CardBottom) : h - 4;

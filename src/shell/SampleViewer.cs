@@ -25,7 +25,7 @@ namespace Universe.Shell
         private UploadBuffer _frameBuf;
         private readonly StarVertex[] _frameVerts = new StarVertex[9 * 4 * FrameDots];
         private const int TrailPoints = 72;
-        private static readonly string[] SystemLayouts = { "sun-like", "compact", "hot-jupiter" };
+        private static readonly string[] SystemLayouts = { "usual", "compact", "hot-jupiter" };
         private static readonly string[] SystemStars = { "g-type", "m-type", "g-type" };
         private readonly string[] _systemNames = new string[3];
         private readonly SpaceGen.StarSystem[] _systems = new SpaceGen.StarSystem[3];
@@ -150,7 +150,7 @@ namespace Universe.Shell
                 _dysonBufs[i].Write(pc, pc.Length);
             }
             {
-                // the star at the centre: a glowing ball the size of the Sun's
+                // the star at the centre: a glowing ball of one solar radius
                 var rng = new Rng(9); var sv = new StarVertex[1500];
                 for (int i = 0; i < sv.Length; i++)
                 {

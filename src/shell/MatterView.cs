@@ -37,10 +37,10 @@ namespace Universe.Shell
         private const double Nucleon = 0.85e-18;    // a proton's or neutron's radius, about 0.85 femtometres
 
         private sealed class Mineral { public string Id, Name, Formula; public string[] Atoms; public float R, G, B, Lustre = 1; public Lattice Lat; public KeyValuePair<string, double[]>[] Molecule; public string Structure = ""; public bool Liquid; public double Spacing; public Dictionary<string, KeyValuePair<string, double>[]> Traces; }   // Traces: for each atom of the formula, the elements that stand in for it on its sites now and then, each with its share of those sites (content: trace)
-        private sealed class Element { public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; }
+        private sealed class Element { public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; public double HalfLifeS; public string Decays = ""; }   // HalfLifeS: 0 stable (content/elements.unt half-life, decays)
         private readonly Dictionary<string, Mineral> _minerals = new Dictionary<string, Mineral>();
         private readonly Dictionary<string, List<KeyValuePair<Mineral, double>>> _mixes = new Dictionary<string, List<KeyValuePair<Mineral, double>>>();
-        private readonly Dictionary<string, Element> _elements = new Dictionary<string, Element>();
+        private readonly Dictionary<string, Element> _elements = new Dictionary<string, Element>(); private readonly Dictionary<int, Element> _byZ = new Dictionary<int, Element>();
         private List<KeyValuePair<Mineral, double>> _mix; private string _mixId = "";
         private ulong _seed; private bool _noGrains;
         // in space (a nebula's or cluster's gas) instead of a ground: its kind (0 globular cluster, 1 open cluster, 2 emission
@@ -53,7 +53,7 @@ namespace Universe.Shell
         private SpaceGen.Part[] _gasParts;
         public void SetSpace(int kind, ulong spot, double fromCentre, SpaceGen.Part[] parts)
         {
-            _gasParts = parts;
+            _gasParts = parts; _bornSec = double.NaN;
             _space = true; _spaceKind = kind; _seed = spot; _mix = null; _mixId = "space"; _noGrains = true; _plasma = false;
             // denser at the middle: an emission nebula about 9,000 atoms a cubic centimetre at its centre down to about 100 at its edge,
             // a reflection nebula about 3,000 to 30; between a cluster's stars about 1 (fromCentre: 0 the middle, 1 the edge)
@@ -117,7 +117,10 @@ namespace Universe.Shell
         /// shares, at its density, with free electrons darting between them (too hot for any atom to keep its electrons).</summary>
         public void SetPlasma(ulong spot) { SetPlasma(spot, _plasmaMake); }
         /// <summary>A star's plasma, of its own make-up ("hydrogen 91.2%, helium 8.7%, ...", by count of atoms).</summary>
-        public void SetPlasma(ulong spot, string makeup)
+        public void SetPlasma(ulong spot, string makeup) { SetPlasma(spot, makeup, 0, null, 0); }
+        private string _plasmaWhere; private double _plasmaTempK;
+        /// <summary>A star's plasma at a layer: its make-up there, its density (g/cc: the nuclei packed accordingly), the layer's name and its heat.</summary>
+        public void SetPlasma(ulong spot, string makeup, double densityGcc, string where, double tempK)
         {
             var parts = new List<SpaceGen.Part>(); double total = 0;
             foreach (var bit in (makeup ?? _plasmaMake).Split(','))
@@ -129,8 +132,10 @@ namespace Universe.Shell
             }
             if (total <= 0) { parts.Add(new SpaceGen.Part("hydrogen", "H", 1, 1, 1, 1)); total = 1; }
             foreach (var q in parts) q.Share /= total;
-            SetSpace(11, spot, 0, parts.ToArray()); _plasma = true;
-            _gasSpacing = 1e-5 / Math.Pow(_plasmaPerCc, 1 / 3.0);
+            SetSpace(11, spot, 0, parts.ToArray()); _plasma = true; _plasmaWhere = where; _plasmaTempK = tempK;
+            double perCc = _plasmaPerCc;
+            if (densityGcc > 0) { double meanA = 0; foreach (var q in parts) { var el = El(q.El); meanA += q.Share * (el != null ? el.A : 1); } perCc = densityGcc * 6.022e23 / Math.Max(1, meanA); }   // nuclei a cubic centimetre, from the density and the mean mass of them
+            _gasSpacing = 1e-5 / Math.Pow(perCc, 1 / 3.0);
         }
         public bool InSpace { get { return _space; } }
         public int SpaceKind { get { return _spaceKind; } }
@@ -145,9 +150,13 @@ namespace Universe.Shell
         public double HoleRs { get { return _holeRs; } }
         /// <summary>Inside a black hole's horizon: the fall, pitch black (no light from anything here reaches anything else), down to
         /// the singularity at the middle, where the zoom finds quarks pressed closer than anything, as far as the laws we have go.</summary>
-        public void SetHole(ulong spot, double rsKm, double massSol)
+        public void SetHole(ulong spot, double rsKm, double massSol) { SetHole(spot, rsKm, massSol, 0); }
+        private double _holeSpin;
+        /// <summary>The hole's spin, a share of the most it could have: frame dragging twists the fall's funnel (content/physics.unt @law frame-dragging).</summary>
+        public double HoleSpin { get { return _holeSpin; } }
+        public void SetHole(ulong spot, double rsKm, double massSol, double spin)
         {
-            SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _gasSpacing = 1e-40;
+            SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _holeSpin = spin; _gasSpacing = 1e-40;
         }
         // the singularity: its whole mass in a point with no size at all, as far as the laws we have can say; drawn, once the zoom
         // is down at the quarks' size, as quarks pressed into a ball a third of the view wide at every size on down (a point: however
@@ -226,9 +235,9 @@ namespace Universe.Shell
             if (_gasParts != null)
             {
                 // its own make-up (hydrogen most, then its oxygen, sulfur, nitrogen, iron, or its molecules' carbon, oxygen and nitrogen)
-                foreach (var q in _gasParts) { u -= q.Share; if (u <= 0) { var e = El(q.El); if (e != null) return e; } }
+                foreach (var q in _gasParts) { u -= q.Share; if (u <= 0) { var e = El(q.El); if (e != null) { double sr; Element par; return Daughter(e, i * 9176 + j * 131 + k, out sr, out par); } } }
             }
-            return El(u < 0.905 ? "H" : u < 0.995 ? "He" : u < 0.998 ? "O" : "N");
+            { double sr; Element par; return Daughter(El(u < 0.905 ? "H" : u < 0.995 ? "He" : u < 0.998 ? "O" : "N"), i * 9176 + j * 131 + k, out sr, out par); }
         }
         // the point you dive into (km, across the ground) and where it is easing to (what you picked)
         private double _fx, _fz, _tfx, _tfz, _fy, _tfy, _lastTime = -1;   // (and its height, so a pick in any layer is gone to)
@@ -252,7 +261,8 @@ namespace Universe.Shell
                 if (cs.Length == 3) { float.TryParse(cs[0], fs, ci, out cr); float.TryParse(cs[1], fs, ci, out cg); float.TryParse(cs[2], fs, ci, out cb); }
                 double cov, rad; if (!double.TryParse(e.Get("covalent-a", ""), fs, ci, out cov)) cov = 1.5;
                 if (!double.TryParse(e.Get("atomic-a", ""), fs, ci, out rad)) rad = cov;
-                _elements[sym] = new Element { Symbol = sym, Name = e.Name, Z = z, A = a, R = cr, G = cg, B = cb, Radius = rad * 1e-13, Cov = cov * 1e-13, Chi = TryD(e.Get("electronegativity", "0"), 0), Shells = Shells(z) };
+                _elements[sym] = new Element { Symbol = sym, Name = e.Name, Z = z, A = a, R = cr, G = cg, B = cb, Radius = rad * 1e-13, Cov = cov * 1e-13, Chi = TryD(e.Get("electronegativity", "0"), 0), Shells = Shells(z), HalfLifeS = HalfLifeSeconds(e.Get("half-life", "")), Decays = e.Get("decays", "") };
+                _byZ[z] = _elements[sym];
             }
             foreach (var e in content.OfKind("minerals.unt", "mineral"))
             {
@@ -523,7 +533,7 @@ namespace Universe.Shell
         /// <summary>What the ground at this spot is made of: its kind, whether it is under water or ice, and its colour; and
         /// the spot (a seed), so the same place always holds the same grains.</summary>
         public void Set(string planetKind, bool sea, bool ice, float r, float g, float b, ulong spot)
-        {
+        { _bornSec = double.NaN;
             string id = sea ? "sea" : ice ? "ice" : planetKind;
             if (!_mixes.ContainsKey(id)) id = "desert";
             _space = false; _mixId = id; _mix = _mixes.ContainsKey(id) ? _mixes[id] : null; _seed = spot;
@@ -613,6 +623,72 @@ namespace Universe.Shell
         }
 
         private Element El(string sym) { Element e; return _elements.TryGetValue(sym, out e) ? e : null; }
+        // ── decay before your eyes: the universe's clock here, and each unstable atom's own moment to go ──
+        private double _simSec, _simPerReal = 1, _bornSec = double.NaN; private string _speedName = "";
+        /// <summary>The universe's time (seconds), how many of them pass a real second, and the speed's name: each unstable atom here
+        /// decays at its own moment by its half-life (content/elements.unt), counted from when this matter came into view.</summary>
+        public void SetClock(double simSec, double simPerRealSec, string speedName) { _simSec = simSec; _simPerReal = Math.Max(1e-30, simPerRealSec); _speedName = speedName; if (double.IsNaN(_bornSec)) _bornSec = simSec; }
+        private static double HalfLifeSeconds(string t)
+        {
+            if (string.IsNullOrEmpty(t)) return 0; var w = t.Trim().Split(' '); double v; var ci = System.Globalization.CultureInfo.InvariantCulture;
+            if (w.Length < 2 || !double.TryParse(w[0], System.Globalization.NumberStyles.Float, ci, out v)) return 0;
+            string u = w[w.Length - 1]; if (w.Length >= 3) { if (w[1] == "thousand") v *= 1e3; else if (w[1] == "million") v *= 1e6; else if (w[1] == "billion") v *= 1e9; }
+            return u.StartsWith("millisecond") ? v * 1e-3 : u.StartsWith("second") ? v : u.StartsWith("minute") ? v * 60 : u.StartsWith("hour") ? v * 3600 : u.StartsWith("day") ? v * 86400 : v * 31557600.0;
+        }
+        private readonly Dictionary<Element, Element> _daughters = new Dictionary<Element, Element>();
+        // what an unstable atom becomes: alpha two down the table and four lighter; beta-minus one up; electron capture (or beta-plus) one
+        // down; fission about two fifths of it (the heavier half shown)
+        private Element DaughterOf(Element e)
+        {
+            Element d; if (_daughters.TryGetValue(e, out d)) return d;
+            string how = e.Decays ?? ""; int z = how == "alpha" ? e.Z - 2 : how == "beta-minus" ? e.Z + 1 : how == "electron-capture" || how == "beta-plus" ? e.Z - 1 : how == "fission" ? (int)Math.Round(e.Z * 0.6) : e.Z;
+            Element b; if (z == e.Z || !_byZ.TryGetValue(z, out b)) return _daughters[e] = null;
+            int A = how == "alpha" ? e.A - 4 : how == "fission" ? (int)Math.Round(e.A * 0.6) : e.A;
+            d = new Element { Symbol = b.Symbol, Name = b.Name, Z = b.Z, A = Math.Max(b.Z, A), R = b.R, G = b.G, B = b.B, Radius = b.Radius, Cov = b.Cov, Chi = b.Chi, Shells = b.Shells, HalfLifeS = 0, Decays = "" };   // (one step shown; its own decays follow in their own time)
+            return _daughters[e] = d;
+        }
+        // the atom as it is now: itself, or what it has decayed into (its moment from its own hash and its half-life: half of them gone
+        // after one half-life, as the law has it); sinceReal: real seconds since it went (the particle still flying), -1 if not
+        private Element Daughter(Element e, long key, out double sinceReal, out Element parent)
+        {
+            sinceReal = -1; parent = null; if (e == null || e.HalfLifeS <= 0 || double.IsNaN(_bornSec)) return e;
+            double u = Math.Max(1e-12, Hash(key, 7701, 7702, _seed)), tD = _bornSec + e.HalfLifeS * (-Math.Log(u) / Math.Log(2));
+            if (_simSec < tD) return e;
+            var d = DaughterOf(e); if (d == null) return e;
+            parent = e; sinceReal = (_simSec - tD) / _simPerReal; return d;
+        }
+        private static long AtomKey(double x, double y, double z) { return (long)Math.Round(x / 1e-14) * 73856093L ^ (long)Math.Round(y / 1e-14) * 19349663L ^ (long)Math.Round(z / 1e-14) * 83492791L; }
+        private static string DecayWords(string how) { return how == "alpha" ? "alpha decay: two protons and two neutrons flung out" : how == "beta-minus" ? "beta-minus decay: a neutron turned into a proton, an electron flung out" : how == "electron-capture" ? "electron capture: a proton turned into a neutron" : how == "beta-plus" ? "beta-plus decay: a proton turned into a neutron, a positron flung out" : how == "fission" ? "fission: the nucleus split in two" : how; }
+        private static string Span(double s)
+        {
+            if (s < 1e-3) return (s * 1e6).ToString("0.#") + " microseconds"; if (s < 1) return (s * 1e3).ToString("0.#") + " milliseconds"; if (s < 90) return s.ToString("0.#") + " seconds";
+            if (s < 5400) return (s / 60).ToString("0.#") + " minutes"; if (s < 172800) return (s / 3600).ToString("0.#") + " hours"; if (s < 3.156e7 * 2) return (s / 86400).ToString("0.#") + " days";
+            double y = s / 31557600.0; return y < 1000 ? y.ToString("0") + " years" : y < 1e6 ? (y / 1e3).ToString("0.#") + " thousand years" : y < 1e9 ? (y / 1e6).ToString("0.#") + " million years" : y < 1e12 ? (y / 1e9).ToString("0.#") + " billion years" : y.ToString("0.#E+0") + " years";
+        }
+        // the particle flung out of a decayed atom, still flying: an alpha (a tight knot of two protons and two neutrons, yellow-white),
+        // an electron (a blue-white spark), or the other half of a split nucleus; out along its own way, a share of the view a second,
+        // gone from view in a few seconds
+        private void DecayFlash(List<StarVertex> glow, List<StarVertex> solid, Element parent, double x, double y, double z, double since, double s)
+        {
+            if (parent == null || since < 0 || since > 4) return;
+            string how = parent.Decays ?? ""; long k = AtomKey(x, y + _yOff, z);
+            double th = Math.Acos(1 - 2 * Hash(k, 1, 7703, _seed)), ph = Hash(k, 2, 7703, _seed) * Math.PI * 2, dx = Math.Sin(th) * Math.Cos(ph), dy = Math.Cos(th), dz = Math.Sin(th) * Math.Sin(ph);
+            double d = (how == "beta-minus" || how == "beta-plus" ? 0.9 : 0.5) * s * since; float f = (float)Math.Max(0, 1 - since / 4);
+            double px = x + dx * d, py = y + dy * d, pz = z + dz * d;
+            if (how == "alpha" || how == "fission")
+            {
+                int n = how == "alpha" ? 4 : (int)Math.Max(4, Math.Round(parent.A * 0.4));
+                double R = (how == "alpha" ? 1.2 : 0.6 * Math.Pow(n, 1 / 3.0) * 1.8) * 1e-18;
+                for (int q = 0; q < Math.Min(n, 60); q++)
+                {
+                    double u = q * 2.399963, v = Math.Acos(1 - 2 * ((q * 0.618034) % 1)), rr = R * Math.Pow((q + 0.5) / Math.Min(n, 60), 1 / 3.0); bool pr = q % 2 == 0;
+                    Add(solid, px + rr * Math.Sin(v) * Math.Cos(u), py + rr * Math.Cos(v), pz + rr * Math.Sin(v) * Math.Sin(u), Nucleon / 0.75, pr ? 0.9f : 0.6f, pr ? 0.22f : 0.65f, pr ? 0.2f : 0.75f, s);
+                }
+                Add(glow, px, py, pz, Math.Max(s * 0.008, R * 3), 1f * f, 0.95f * f, 0.6f * f, s);
+            }
+            else Add(glow, px, py, pz, s * 0.006, 0.7f * f, 0.85f * f, 1f * f, s);
+        }
+        private double _focusSince = -1; private Element _focusParent;
 
         // the atom right under you: one of the focus grain's own atoms (picked from its formula by the spot)
         private long FocusGI { get { return (long)Math.Round(_fx / Grain); } }
@@ -670,8 +746,9 @@ namespace Universe.Shell
         private Element SiteAtom(Mineral m, long i, long j, long k)
         {
             if (m == null) return null;
-            if (m.Molecule != null) return El(Traced(m, m.Molecule[0].Key, i, j, k));            // a molecule's first atom sits on the site (or a dissolved ion in a molecule's place)
-            return El(Traced(m, m.Atoms[(int)(Hash(i, j, k + 20, _seed) * m.Atoms.Length) % m.Atoms.Length], i, j, k));
+            var e0 = m.Molecule != null ? El(Traced(m, m.Molecule[0].Key, i, j, k))            // a molecule's first atom sits on the site (or a dissolved ion in a molecule's place)
+                : El(Traced(m, m.Atoms[(int)(Hash(i, j, k + 20, _seed) * m.Atoms.Length) % m.Atoms.Length], i, j, k));
+            double sr; Element par; return Daughter(e0, i * 9176 + j * 131 + k, out sr, out par);   // (as it is now: decayed, if its moment has come)
         }
         // the atom on a site, after its mineral's trace elements have had their chance to stand in for it (each on its share of
         // the host's sites, from the site's own hash: fixed in place, the same each time you come back)
@@ -711,17 +788,17 @@ namespace Universe.Shell
             if (Structured(m))
             {
                 // the atom nearest the point you dive into, in any layer (worked out from where it is)
-                Element best = null; double bd = double.MaxValue, fy = _fy;                   // (heights here measured from the surface under you)
+                Element best = null; double bd = double.MaxValue, fy = _fy; long bestKey = 0;                   // (heights here measured from the surface under you)
                 foreach (var at in Crystal(m, _fx, _fz, AtomSpacing * 3, AtomSpacing * 8, 4000))
                 {
                     double ay = at.Y - AtomRadius(at.E), d = (at.X - _fx) * (at.X - _fx) + (ay - fy) * (ay - fy) + (at.Z - _fz) * (at.Z - _fz);
-                    if (d < bd) { bd = d; best = at.E; x = at.X; y = ay - _yOff; z = at.Z; }
+                    if (d < bd) { bd = d; best = at.E; x = at.X; y = ay - _yOff; z = at.Z; bestKey = AtomKey(at.X, at.Y, at.Z); }
                 }
-                if (best != null) return best;
+                if (best != null) return Daughter(best, bestKey, out _focusSince, out _focusParent);
             }
             long fk = (long)Math.Max(-7, Math.Min(0, Math.Round(_fy / SiteA(m))));               // the layer you are at
             var e = SiteAtom(m, FocusAI, FocusAJ, fk); double sx, sy, sz; SitePos(m, FocusAI, FocusAJ, fk, out sx, out sy, out sz);
-            x = sx; z = sz; y = sy - AtomRadius(e) - _yOff; return e;
+            x = sx; z = sz; y = sy - AtomRadius(e) - _yOff; return e;   // (SiteAtom gives it as it is now)
         }
 
         // ── real crystal structures, where they are in: rock salt (halite) and the silica network (quartz) ──
@@ -922,7 +999,7 @@ namespace Universe.Shell
             if (_space && e != null && s > AtomRadius(e) * 3)
             {
                 string[] kinds = { "a globular cluster", "an open cluster", "an emission nebula", "a reflection nebula", "a planetary nebula", "a supernova remnant", "a dark nebula" };
-                string where = _spaceKind == 12 ? "a black hole, inside its horizon, falling" : _spaceKind == 13 ? "a neutron star's crust (iron nuclei in a lattice, electrons racing between them)" : _spaceKind == 11 ? "a star's plasma (bare nuclei and free electrons, thousands of degrees)" : _spaceKind == 10 ? "the air (the world's own gases, at about one bar)" : _spaceKind >= 0 && _spaceKind < kinds.Length ? kinds[_spaceKind] : "the space between the stars";
+                string where = _spaceKind == 12 ? "a black hole, inside its horizon, falling" : _spaceKind == 13 ? "a neutron star's crust (iron nuclei in a lattice, electrons racing between them)" : _spaceKind == 11 ? "a star's plasma" + (_plasmaWhere != null ? ", its " + _plasmaWhere : "") + " (bare nuclei and free electrons" + (_plasmaTempK > 0 ? " at about " + _plasmaTempK.ToString("N0") + " K" : ", thousands of degrees") + ")" : _spaceKind == 10 ? "the air (the world's own gases, at about one bar)" : _spaceKind >= 0 && _spaceKind < kinds.Length ? kinds[_spaceKind] : "the space between the stars";
                 return "the gas of " + where + ": one atom about every " + ScaleHud.Words(_gasSpacing) + ", mostly hydrogen; the one ahead " + e.Name.ToLowerInvariant();
             }
             string mn = m != null ? m.Name.ToLowerInvariant() + " (" + m.Formula + ")" : "rock";
@@ -1533,7 +1610,9 @@ namespace Universe.Shell
                 bool lattice = s >= AtomSpacing * 4;
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
                 {
-                    var at = at0; double ar = AtomRadius(at.E), ay = at.Y - ar - _yOff;                     // on the grain's real surface
+                    var at = at0; double dSince; Element dPar; { var dE = Daughter(at0.E, AtomKey(at0.X, at0.Y, at0.Z), out dSince, out dPar); if (dE != at0.E) at = new CAtom { E = dE, X = at0.X, Y = at0.Y, Z = at0.Z }; }   // (as it is now: decayed, if its moment has come)
+                    double ar = AtomRadius(at.E), ay = at.Y - ar - _yOff;                     // on the grain's real surface
+                    if (dSince >= 0) DecayFlash(glow, solid, dPar, at.X, ay, at.Z, dSince, s);   // (its particle still flying out)
                     bool inFocus = at.E == focus && Math.Abs(at.X - fax) < 1e-20 && Math.Abs(ay - fay) < 1e-20 && Math.Abs(at.Z - faz) < 1e-20 && s < ar * 4;
                     if (inFocus) continue;
                     float sh = (float)(1 + 0.6 * at.Y / AtomSpacing * 0.25); sh = Math.Max(0.45f, sh);
@@ -1618,6 +1697,7 @@ namespace Universe.Shell
                 // it is too small to see, a small spark marks where it is
                 if (nr / s < 0.004) Add(glow, ax0, cy, az0, s * 0.0014, 1f, 0.95f, 0.9f, s);   // a sharp point of light until its protons and neutrons can be seen
                 var nuc = NucleonsOf(focus); int A = nuc.Length;                                   // every one of its protons and neutrons, where the forces put them
+                if (_focusSince >= 0) DecayFlash(glow, solid, _focusParent, ax0, cy, az0, _focusSince, s);   // (just decayed: its alpha, electron or other half still flying out)
                 for (int k = 0; k < A; k++)
                 {
                     bool proton = nuc[k][3] > 0;
@@ -2007,7 +2087,7 @@ namespace Universe.Shell
                 // exactly light's; inside it is more, and outside it is less: content/physics.unt); the time left to the middle on
                 // your own clock (a radial fall from rest far away, the same in Newton's and Einstein's gravity: two thirds of
                 // r^1.5 over the root of 2GM); the stretch head to foot (the tide: 2GM over r cubed, across two metres)
-                double r = _scale * 0.6, rM = r * 1000, gm = Universe.Core.Physics.GmSun * _holeMass; bool at = _scale <= Nucleon * 8;
+                double r = _scale * 0.6, rM = r * 1000, gm = Universe.Core.Physics.GmSol * _holeMass; bool at = _scale <= Nucleon * 8;
                 if (!at)
                 {
                     L.Add("inside the event horizon: no light out");
@@ -2015,6 +2095,7 @@ namespace Universe.Shell
                     L.Add("your own time: " + Secs(_fallTau) + " since the horizon, " + Secs(2.0 / 3 * Math.Pow(rM, 1.5) / Math.Sqrt(2 * gm)) + " left" + (Math.Abs(_fallRate - 1) > 0.05 ? " (shown " + (_fallRate < 1 ? (1 / _fallRate).ToString("N0") + " times slower" : _fallRate.ToString("N0") + " times faster") + ")" : ""));
                     L.Add("to a watcher far away your clock slowed toward a stop as you neared the horizon, and they never see you cross it; by your own clock you did, and it runs on to the middle");
                     L.Add("falling inward at " + (_fallSpeed < 10 ? _fallSpeed.ToString("0.##") : _fallSpeed.ToString("0.#E+0")) + " times light (root(rs over r): light's own at the horizon)");
+                    if (_holeSpin > 0) L.Add("the hole spins (" + _holeSpin.ToString("0.00") + " of the most it could): frame dragging sweeps space, and you, round with it; the funnel's spokes twist with it, more the deeper you go");
                     { double tide = 2 * gm / Math.Pow(Math.Max(1e-300, rM), 3) * 2; L.Add("the tide head to foot: " + (tide < 1e4 ? tide.ToString("0.###") : tide.ToString("0.#E+0")) + " m/s2" + (tide > 100 ? ", torn apart" : "")); }
                 }
                 else
@@ -2078,6 +2159,7 @@ namespace Universe.Shell
                 double bind = BindingMeV(ne.Z, ne.A);
                 if (ne.A > 1) L.Add("held by the strong force: " + bind.ToString("0") + " MeV in all, " + (bind / ne.A).ToString("0.0") + " MeV each, against its protons' electric push (" + (_aC * ne.Z * (ne.Z - 1) / Math.Pow(ne.A, 1 / 3.0)).ToString("0") + " MeV)");
                 L.Add(Decay(ne));
+                if (ne.HalfLifeS > 0) L.Add("half-life: " + Span(ne.HalfLifeS) + " (" + DecayWords(ne.Decays) + "); by the clock here (" + _speedName + ") half of them go in " + Span(ne.HalfLifeS / _simPerReal));
                 L.Add("width: about " + ScaleHud.Words(NucleusRadius(ne) * 2));
                 L.Add("about 100,000 times smaller than its atom");
                 return L;
@@ -2127,6 +2209,8 @@ namespace Universe.Shell
             L.Add((_picked != null ? "an atom of " : "under you: ") + e.Name.ToLowerInvariant() + " (" + e.Symbol + ")");
             L.Add("atomic number " + e.Z + ", mass " + e.A);
             L.Add("protons: " + e.Z + ", neutrons: " + (e.A - e.Z) + ", electrons: " + e.Z);
+            if (e.HalfLifeS > 0) L.Add("half-life: " + Span(e.HalfLifeS) + " (" + DecayWords(e.Decays) + "); by the clock here (" + _speedName + ") half of them go in " + Span(e.HalfLifeS / _simPerReal));
+            if (_picked == null && _focusParent != null) L.Add("decayed " + Span(_focusSince * _simPerReal) + " ago (" + DecayWords(_focusParent.Decays) + ") from " + _focusParent.Name.ToLowerInvariant() + "-" + _focusParent.A + "; its own decays follow in their own time");
             L.Add("shells: " + string.Join(", ", Array.ConvertAll(e.Shells, x => x.ToString())));
             L.Add("width: about " + ScaleHud.Words(AtomRadius(e) * 2) + ", nucleus " + ScaleHud.Words(NucleusRadius(e) * 2));
             if (_space && _gasParts != null) { var top = (SpaceGen.Part[])_gasParts.Clone(); Array.Sort(top, (a, b) => b.Share.CompareTo(a.Share)); L.Add("made of: " + top[0].Name + ", " + top[1].Name + (top.Length > 2 ? ", " + top[2].Name : "")); }

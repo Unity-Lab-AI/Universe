@@ -62,9 +62,11 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdClipBase = 220;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
+        /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
+        public static bool GravityOn = true;
         /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
         public static volatile bool LandingOpen, CloseAsked;
         /// <summary>Frames a second, measured over the last half second or so (shown on screen when View > Show FPS is on).</summary>
@@ -89,6 +91,7 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_POPUP, gpuMenu, "GPU use");
             IntPtr timeMenu = Win32.CreatePopupMenu();
             Win32.AppendMenu(timeMenu, Win32.MF_STRING | (Settings.Get("always-day", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdAlwaysDay, "Always day (no night on the worlds)");
+            Win32.AppendMenu(timeMenu, Win32.MF_STRING | (GravityOn ? Win32.MF_CHECKED : 0), (IntPtr)CmdGravity, "Gravity (off: every body straight on at its speed, every star blown apart by its own pressure, a galaxy's stars flung off)");
             Win32.AppendMenu(timeMenu, Win32.MF_STRING | (TimeStep == 0 ? Win32.MF_CHECKED : 0), (IntPtr)CmdPause, "Pause\tSpace");
             Win32.AppendMenu(timeMenu, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             for (int i = 1; i < TimeNames.Length; i++) Win32.AppendMenu(timeMenu, Win32.MF_STRING | (TimeStep == i ? Win32.MF_CHECKED : 0), (IntPtr)(CmdTimeBase + i), TimeNames[i]);

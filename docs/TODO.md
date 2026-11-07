@@ -32,6 +32,17 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 ### Built, waiting on the creator's test
 **Spec:** `wiki/systems/u06-universe.md`
 
+- [~] **A star's layers down through to the heavier elements at its core:** (DNA-AND ROADMAP R18; built: DNA-AND DESIGN 582; waits on the test) "stars shoiuld be mostly hydrogen till getting to it heavey m,etal cores ect ect"
+
+- [~] **A gravity switch: bodies straight on, stars blown apart; gravity as a live force:** (DNA-AND DESIGN 519; the switch built: DNA-AND DESIGN 580; waits on the test; gravity as a live force shaping orbits moment by moment stays open, below) "as i dont thinkg galxies are acutally being held togetther buy the laws of nature. like if i has a setting to turn off all gravity.. would stars explode pressures of all bodies zero and every body move to straight line travel... right?"
+
+- [~] **The rest of relativity:** length contraction, redshift, frame dragging (built: DNA-AND DESIGN 581; waits on the test)
+
+- [~] **Decay happening before your eyes, and the fields particles are waves in** (today each nucleus says how it would decay) (the decay built: DNA-AND DESIGN 583; waits on the test; the fields stay open, below)
+
+- [~] **Every world's own mass, on its card and in its clocks:** (built: DNA-AND DESIGN 579; waits on the test) "mass is not in"
+- [~] **The tour's end: a true figure of what it reached against everything there is:** (built: DNA-AND DESIGN 584; waits on the test) "and at the end of the tour say something acurat like Now youve seen .0000000000012% of the universe. but a real number of total number of destinmnations version the trip the tour takes" / "Vs* not version"
+- [~] **The clip's text scaled to the clip's size:** (built: DNA-AND DESIGN 585; waits on the test) "and when we change resolution of the recorder the text needs to be proerply scales and sized to the resolutions"
 - [~] **The well a complete dilation cone from the mouth to the point at every depth, longer than the hole:** (built: DESIGN 576; waits on the test) "amnnd the black hole graph thing i think u are missing is space and distance in a black hole is strached to infinity so the grid funnel needs to be complete from top to bottom able to see the shole thing when looking down to the pin point or tit big opening looking up" / "its longer than the space that existes the black hole takes up... it stratches beyound the confines of space and time and is a complete funnel from top to bottom at all zoom scalled, and u actuall need to travel a long ways like a long long weays the funnel is a time and distance dialtion cone squeezing down to one point of non space existace"
 
 - [~] **Your own clock against far clocks wherever you are; a world's pull on clocks and a satellite's gain on its card; the far watcher at the horizon:** (built: DESIGN 577; waits on the test) "rtemebre time speeds up further from gravity and slows whenin very high gravity and maybe even stops" / "its why we have time dialtion codes for satilights further from gravity time runs differnt"
@@ -43,11 +54,9 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 ### U12 — The program's own road
 **Spec:** `docs/ROADMAP.md#U12`, `wiki/systems/u06-universe.md`, `wiki/systems/u03-engine-core.md`, `wiki/systems/u10-packaging.md`
 
-- [ ] **A star's layers down through to the heavier elements at its core:** (DNA-AND ROADMAP R18) "stars shoiuld be mostly hydrogen till getting to it heavey m,etal cores ect ect"
-- [ ] **A gravity switch: bodies straight on, stars blown apart; gravity as a live force:** (DNA-AND DESIGN 519) "as i dont thinkg galxies are acutally being held togetther buy the laws of nature. like if i has a setting to turn off all gravity.. would stars explode pressures of all bodies zero and every body move to straight line travel... right?"
-- [ ] **The rest of relativity:** length contraction, redshift, frame dragging
-- [ ] **Decay happening before your eyes, and the fields particles are waves in** (today each nucleus says how it would decay)
-- [ ] **Light rendered truly below its wavelength:** "later when ther is color properly do it"
+- [ ] **Gravity as a live force:** orbits shaped moment by moment by every body's pull (today every orbit follows Kepler's law exactly)
+- [ ] **The fields particles are waves in**, below the quarks' points
+- [ ] **Light rendered truly below its wavelength:** "later when ther is color properly do it" (the greys below light's wavelength, as an electron microscope sees, are in: DNA-AND DESIGN 472; the true rendering waits on colour done properly)
 - [ ] **The waveform carrying every field, from the cosmic web to the microbes** (gas and star fields, the ground itself, clouds, stars' surfaces)
 - [ ] **The Linux path run on a Linux desktop:** (waits on a Linux machine or a Linux user's report) "okay well make sure that path is real"
 - [ ] **(Later) Native Linux and Mac builds** (Vulkan, their own windowing, a C# runtime there)

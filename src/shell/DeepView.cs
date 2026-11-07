@@ -37,7 +37,7 @@ namespace Universe.Shell
         // the target star is reached one wheel notch at a time (see Update)
         private int _pendingStar = -1;              // the journey: the star being flown toward, opened once close enough
 
-        /// <summary>The journey: aim at a Sun-like star out in the disc, so rolling the wheel in flies to it.</summary>
+        /// <summary>The journey: aim at a one-solar-mass star out in the disc, so rolling the wheel in flies to it.</summary>
         public void AimForJourney()
         {
             int best = -1; double bestScore = 1e9;

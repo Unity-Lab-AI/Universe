@@ -270,6 +270,7 @@ namespace Universe
                 else if (cmd == Window.CmdRecord) wantRecord = true;
                 else if (cmd == Window.CmdTour) wantTour = true;
                 else if (cmd == Window.CmdFps) { Settings.Set("show-fps", !Settings.Get("show-fps", true)); menuDirty = true; }
+                else if (cmd == Window.CmdGravity && world != null) { world.ToggleGravity(); menuDirty = true; }
                 else if (cmd == Window.CmdAlwaysDay) { Settings.Set("always-day", !Settings.Get("always-day", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertY) { Settings.Set("invert-up-down", !Settings.Get("invert-up-down", false)); menuDirty = true; }
                 else if (cmd >= Window.CmdClipBase && cmd <= Window.CmdClipBase + 4) { Settings.Set("clip-down", cmd - Window.CmdClipBase); menuDirty = true; }   // the clip's size (takes effect on the next clip)
@@ -407,6 +408,7 @@ namespace Universe
                     // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
                     gpu.CaptureHere();
                     if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);
+                    Universe.Shell.ScaleHud.TextScale = rec != null ? rec.Down : 1;   // (a clip made at half or a quarter size: its text drawn that much larger, so it reads at the clip's size)
                     if (Window.Recording != (rec != null) || (world != null && Window.Touring != world.Touring)) { Window.Recording = rec != null; Window.Touring = world != null && world.Touring; menuDirty = true; }
                 }
                 if (clipPath != null && clipAt >= 0 && clock.Total >= clipAt)

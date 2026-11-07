@@ -33,7 +33,7 @@ Everything is our own C# code, compiled by the C# compiler that ships with Windo
 Every kind of galaxy, star, system, world, body, mineral and law is an entry in `content/`; every value a range; nothing tested by name in code. The four rules of the toolkit (`docs/GUIDE.md`): templates not names, ranges not single values, seeds not storage, the graphics card first.
 
 ### LAW 9 · Words matter
-- A star is a star. "The Sun" is only our star's name, and there is no Sun in this universe.
+- A star is a star. The name of our own star is never used in this project (there is none of it in this universe): it is "our own star". Masses, radii and brightness are in solar units (solar masses, solar radii, solar luminosities), the correct terminology for the use case.
 - The range is the cosmic web of galaxies and the supermassive black holes at their hearts down to the quarks, and on below; never "galaxy to atom".
 - Universe is "the program", never "the game"; life, gameplay and the interface are DNA-AND's.
 - The creator's words are quoted exactly in DESIGN, TODO and FINALIZED.

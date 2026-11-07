@@ -7,7 +7,8 @@
 # through: yes flies on into the next stop without slowing or pausing; pan: degrees a second a zoom circles what it flies to
 # (turn: degrees a second for the circling stops). There are no pauses: each caption stays on while the flight goes on.
 # A caption of {sky} is written from what is really up from where you stand (its star only if it is in view, its moons, the
-# other worlds, the galaxy's stars by night or the day sky by day); {hole} from the black hole picked (its jets if it fires
+# other worlds, the galaxy's stars by night or the day sky by day); {seen} is how much of the universe the tour reached (the
+# places it went to against every galaxy, star, world and moon there is, as a true percentage); {hole} from the black hole picked (its jets if it fires
 # them, its disc, or quiet; its horizon's size and its mass). The far-galaxy pick prefers a galaxy whose heart is feeding, and
 # the black-hole pick a feeding one, so the tour flies by a feeding black hole: its disc, the light it bends, its shadow.
 # The film's grammar: an establishing shot; a straight push in or pull back to change scale; a calm circle only round what
@@ -560,5 +561,5 @@ caption: Out to the cosmic web, galaxies by the million
 @stop end
 do: orbit
 turn: 4
-seconds: 12
-caption: The same universe at every scale, from the cosmic web to a quark
+seconds: 16
+caption: The same universe at every scale, from the cosmic web to a quark. {seen}

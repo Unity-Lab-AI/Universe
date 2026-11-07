@@ -326,10 +326,10 @@ float4 PS(VO i) : SV_Target
             if (any) n = normalize(lerp(n, bn, gw));
         }
     }
-    float sun = saturate(dot(n, light.xyz));
-    float lit = 0.5 + 0.5 * sun;                                  // a god sees by night: the night side is about half as bright, never black
+    float star = saturate(dot(n, light.xyz));
+    float lit = 0.5 + 0.5 * star;                                  // a god sees by night: the night side is about half as bright, never black
     float3 sc = sunCol.a > 0 ? sunCol.rgb : float3(1, 1, 1), nc = sunCol.a > 0 ? nightCol.rgb : float3(0.5, 0.5, 0.5);
-    float3 lit3 = lerp(nc, sc, sun);                              // by day the star's own light through the air, by night the air's glow
+    float3 lit3 = lerp(nc, sc, star);                              // by day the star's own light through the air, by night the air's glow
     if (misc.z > 1.5 && misc.z < 2.5)
     {
         // clouds scatter light through themselves: lit from the star's side of the planet, glowing grey from below
@@ -364,7 +364,7 @@ float4 PS(VO i) : SV_Target
         else if (lu > 0.65) { shine = 0.35; power = 14; c += fres * 0.25 * sc; }      // pearly: a soft sheen across it
         else if (lu > 0.55) { shine = 0.3; power = 20; }                              // resinous, waxy: a soft greasy glint
         else if (lu > 0.45) { shine = 0.9; power = 140; }                             // wet: a mirror glint
-        c += spec * sc * shine * pow(nh, power) * saturate(sun * 4) * 0.8;   // a glint, never blown out to white
+        c += spec * sc * shine * pow(nh, power) * saturate(star * 4) * 0.8;   // a glint, never blown out to white
         c += sc * fres * (lu > 0.75 && lu < 0.85 ? 0.15 : 0.35) * shine;               // the edge catches the light (glass and ice most)
         if (clr > 0.5)
         {

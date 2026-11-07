@@ -6,8 +6,10 @@ namespace Universe.Core
 {
     internal static class Physics
     {
-        /// <summary>G times the Sun's mass (m³/s²): gravity's pull of one Sun.</summary>
-        public static double GmSun = 1.32712e20;
+        /// <summary>G times one solar mass (m³/s²): the pull of a star of one solar mass.</summary>
+        public static double GmSol = 1.32712e20;
+        /// <summary>G itself (m³ kg⁻¹ s⁻²), for the pull of a world whose mass is known in kilograms.</summary>
+        public static double G = 6.674e-11;
         /// <summary>The speed of light (m/s).</summary>
         public static double C = 2.998e8;
         /// <summary>Gravity at Earth's surface (m/s²), to compare a pull with.</summary>
@@ -22,18 +24,19 @@ namespace Universe.Core
             {
                 if (e.Id == "gravity")
                 {
-                    if (double.TryParse(e.Get("gm-sun-m3-s2", ""), nf, ci, out v)) GmSun = v;
+                    if (double.TryParse(e.Get("gm-sol-m3-s2", ""), nf, ci, out v)) GmSol = v;
+                    if (double.TryParse(e.Get("g-m3-kg-s2", ""), nf, ci, out v)) G = v;
                     if (double.TryParse(e.Get("earth-g-m-s2", ""), nf, ci, out v)) EarthG = v;
                 }
                 if (e.Id == "light" && double.TryParse(e.Get("speed-m-s", ""), nf, ci, out v)) C = v;
             }
         }
 
-        /// <summary>A black hole's event horizon (the Schwarzschild radius, 2GM/c²) in km, for a mass in Suns.</summary>
-        public static double HorizonKm(double massSol) { return 2 * GmSun * massSol / (C * C) / 1000; }
-        /// <summary>Gravity's pull (m/s²) at a distance in metres from a mass in Suns (Newton: falling with the distance squared).</summary>
-        public static double Pull(double massSol, double metres) { return GmSun * massSol / (metres * metres); }
-        /// <summary>The speed needed to get away (m/s) at a distance in metres from a mass in Suns.</summary>
-        public static double Escape(double massSol, double metres) { return Math.Sqrt(2 * GmSun * massSol / metres); }
+        /// <summary>A black hole's event horizon (the Schwarzschild radius, 2GM/c²) in km, for a mass in solar masses.</summary>
+        public static double HorizonKm(double massSol) { return 2 * GmSol * massSol / (C * C) / 1000; }
+        /// <summary>Gravity's pull (m/s²) at a distance in metres from a mass in solar masses (Newton: falling with the distance squared).</summary>
+        public static double Pull(double massSol, double metres) { return GmSol * massSol / (metres * metres); }
+        /// <summary>The speed needed to get away (m/s) at a distance in metres from a mass in solar masses.</summary>
+        public static double Escape(double massSol, double metres) { return Math.Sqrt(2 * GmSol * massSol / metres); }
     }
 }

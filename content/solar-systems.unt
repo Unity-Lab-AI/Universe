@@ -2,17 +2,17 @@
 # researched: exoplanet architecture reviews (resonant chains: TRAPPIST-1, TOI-178); NASA Solar System overviews
 # Real seeds for the solar-system generator: kinds of systems, real examples,
 # the zones a system is built from, and the rules.
-# Distances in au (1 au = the Earth–Sun distance). Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
+# Distances in au (1 au = Earth's distance from our own star). Spec: docs/CONTENT-FORMAT.md · wiki/systems/r05-universe.md
 
 # ── Kinds of systems (real) ──
 
-# How a system is laid out (the usual one, sun-like, first; a kind asked for gives only what differs): planets: how many
+# How a system is laid out (the usual one, usual, first; a kind asked for gives only what differs): planets: how many
 #   worlds; first-orbit-au: the first world's orbit in AU, times a value in first-orbit-spread; scales-with-star: moved out
-#   by the square root of the star's brightness (yes) or not; spacing: each orbit over the one before (the Sun's worlds
+#   by the square root of the star's brightness (yes) or not; spacing: each orbit over the one before (our own star's worlds
 #   about 1.4 to 2); share-in-universe: how often a system in the universe is of this kind. tilt-spread: how far its worlds'
 #   orbits lie out of its plane, degrees (a spread; born in one flat disc, ours within a few); wild-tilt-share and wild-tilt: the
 #   share of its worlds far out of line, and how far.
-@system sun-like
+@system usual
 name: System of a one-solar-mass star
 real: yes
 star: g-type or k-type
@@ -129,7 +129,7 @@ shape: a rogue planet with no star, sometimes with moons
 @example solar-system
 name: The Solar System
 real: yes
-star: the Sun
+star: our own star
 planets: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune
 dwarf-planets: Ceres, Pluto, Eris, Haumea, Makemake
 belts: asteroid belt, Kuiper belt, Oort cloud
@@ -143,7 +143,7 @@ planets: 7 rocky planets, several in the habitable zone
 @example proxima-centauri
 name: Proxima Centauri
 real: yes
-star: m-type red dwarf, the closest star to the Sun
+star: m-type red dwarf, the closest star to our own
 planets: at least one planet in the habitable zone
 
 @example 51-pegasi
@@ -273,4 +273,4 @@ says: young systems still have dust disks and forming planets; old systems have 
 
 @rule system-name
 real: rule
-says: only our own system is the Solar System and only our own star is the Sun; generated ones get generated names
+says: only our own system is the Solar System, and our own star is never named here; generated ones get generated names

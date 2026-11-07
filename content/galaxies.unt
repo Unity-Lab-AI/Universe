@@ -370,7 +370,7 @@ type: barred-spiral
 width-ly: 100000
 stars: 1e11..4e11
 center: Sagittarius A*, a black hole of about 4 million solar masses
-note: our home galaxy, the Sun is in one of its arms
+note: our home galaxy, our own star is in one of its arms
 
 @example andromeda
 name: Andromeda Galaxy
@@ -520,4 +520,4 @@ says: big galaxies are circled by dwarf and satellite galaxies
 
 @rule galaxy-name
 real: rule
-says: only our own galaxy is the Milky Way and only our own star is the Sun; generated ones get generated names
+says: only our own galaxy is the Milky Way, and our own star is never named here; generated ones get generated names

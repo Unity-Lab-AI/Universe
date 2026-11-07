@@ -98,6 +98,7 @@ namespace Universe.Shell
                 var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float; double v;
                 if (double.TryParse(e.Get("across-ly", "1.34e10"), fs, ci, out v)) _uRadius = v * 0.5 / Units.LightYearsPerUnit;
                 foreach (var law in _content.OfKind("physics.unt", "law")) if (law.Id == "cosmos") { if (double.TryParse(law.Get("dark-matter-share", "0"), fs, ci, out v)) _darkMatter = Math.Max(0, Math.Min(0.99, v)); if (double.TryParse(law.Get("rim-speed-km-s", "220"), fs, ci, out v)) _rimSpeed = v; if (double.TryParse(law.Get("dark-energy-share", "0"), fs, ci, out v)) _darkEnergy = v; if (double.TryParse(law.Get("hubble-km-s-mpc", "70"), fs, ci, out v)) _hubble = v; }
+                foreach (var law in _content.OfKind("physics.unt", "law")) { if (law.Id == "frame-dragging") { double lo, hi; if (law.TryRange("spin-range", out lo, out hi)) { _spinLo = lo; _spinHi = hi; } } if (law.Id == "gravity-off" && double.TryParse(law.Get("swell-over-freefall", "2"), fs, ci, out v)) _swellOverFreefall = v; }
                 if (double.TryParse(e.Get("galaxies", "1e11"), fs, ci, out v)) _uGalaxies = v;
                 if (double.TryParse(e.Get("web-ly", "2e8"), fs, ci, out v)) _webUnits = v / Units.LightYearsPerUnit;
                 if (double.TryParse(e.Get("web-contrast", "6"), fs, ci, out v)) _webContrast = v;
@@ -139,7 +140,8 @@ namespace Universe.Shell
         private bool _matterCardDrawn;                                                 // this frame: a card of the matter is up, so no other card is drawn over it
         private double _statsLeft = double.MaxValue, _statsBottom;   // the frame counter and stats card's left edge and bottom on screen, so no other card lands on it
         private double _uRadius = 134000, _uGalaxies = 1e11, _webUnits = 4000, _webContrast = 6, _regionUnits = 20, _nearUnits = 400; private int _glowPoints = 300000;
-        private double _darkMatter, _rimSpeed = 220, _darkEnergy, _hubble = 70;   // the dark universe (content/physics.unt @law cosmos): for the galaxies' cards and the horizon's words
+        private double _darkMatter, _rimSpeed = 220, _darkEnergy, _hubble = 70;
+        private double _spinLo = 0.1, _spinHi = 0.998, _swellOverFreefall = 2;   // every hole's spin, a share of the most (content/physics.unt @law frame-dragging); a star's swelling with gravity off (@law gravity-off)
         private readonly HashSet<long> _regions = new HashSet<long>(); private long _lastRegionCell = long.MinValue;
         private UploadBuffer _glowBuf; private int _glowCount; private StarVertex[] _glowAll, _glowShown = new StarVertex[0]; private long _glowCameAt; private double _glowAtT = -10, _glowAtX = double.NaN, _glowAtY, _glowAtZ;
         private void AddGalaxy(int t, ulong gseed, double x, double y, double z, float tilt, float turn, float scale)
@@ -348,7 +350,7 @@ namespace Universe.Shell
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
         private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8, EatLo = 1, EatHi = 1; public int Shown, Swarm; public float R, G, B; }   // EatLo..EatHi: how many stars a feeding hole tears apart at once   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
-        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; }   // EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; }   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -408,6 +410,7 @@ namespace Universe.Shell
             double tCam = Math.Min(T - 0.01, -Math.Log10(Math.Max(1e-300, rhoCam)));                   // your own depth in tenfolds below the horizon
             Func<double, double> radiusAt = t => 1.5 * Math.Max(0, T - t) / (T - tCam);                 // the cone's radius at a depth, in views: a view and a half at yours, nothing at the point
             double Smouth = radiusAt(0);                                                                 // the mouth's radius in views: the sheet outside the horizon is drawn at that scale (one horizon radius = Smouth)
+            double spin = _matter.HoleSpin; Func<double, double> tw = t => spin * (0.35 * t + time * 0.12);   // frame dragging: the hole's spin twists the spokes more the deeper they go, and sweeps the whole cone round
             Func<double, double> along = rho => rho >= 1 ? -tCam * PerTenfold - 2 * Math.Sqrt(rho - 1) * Smouth : (-Math.Log10(Math.Max(1e-300, rho)) - tCam) * PerTenfold;   // how far ahead of you (down) a ring of that radius lies; negative: above
             Func<double, double> width = rho => rho >= 1 ? rho * Smouth : radiusAt(-Math.Log10(Math.Max(1e-300, rho)));   // its radius in views
             var pts = new List<StarVertex>();
@@ -435,12 +438,12 @@ namespace Universe.Shell
             {
                 double t = Math.Min(T, k / 6.0), rho = Math.Pow(10, -t); if (radiusAt(t) <= 0) break;
                 float br = (float)(0.55 * Math.Max(0.3, 1 - Math.Abs(t - tCam) * 0.25));
-                for (int q = 0; q < 96; q++) { double a = q * Math.PI * 2 / 96; put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
+                for (int q = 0; q < 96; q++) { double a = q * Math.PI * 2 / 96 + tw(t); put(Math.Cos(a) * rho, Math.Sin(a) * rho, br, 0.35f, 0.9f, 0.6f); }
             }
             for (int sp = 0; sp < 24; sp++)
             {
                 double a = sp * Math.PI * 2 / 24;
-                for (int q = 0; q <= 400; q++) { double t = T * q / 400.0, rho = Math.Pow(10, -t); put(Math.Cos(a) * rho, Math.Sin(a) * rho, 0.3f, 0.35f, 0.9f, 0.6f); }
+                for (int q = 0; q <= 400; q++) { double t = T * q / 400.0, rho = Math.Pow(10, -t), a2 = a + tw(t); put(Math.Cos(a2) * rho, Math.Sin(a2) * rho, 0.3f, 0.35f, 0.9f, 0.6f); }
             }
             for (int q = 0; q < 240; q++) { double a = q * Math.PI * 2 / 240; put(Math.Cos(a), Math.Sin(a), 0.9f, 0.7f, 0.95f, 1f); }   // the mouth: the horizon's ring, bright
             { var p = ax * (float)((T - tCam) * PerTenfold); pts.Add(new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.04f, R = 1f, G = 1f, B = 1f, A = 1 }); }   // the point it all squeezes down to, at the cone's end
@@ -601,7 +604,7 @@ namespace Universe.Shell
             }
             return c;
         }
-        // its light, in suns, by its age in days: the real light curves (content/physics.unt @law supernova)
+        // its light, in solar luminosities, by its age in days: the real light curves (content/physics.unt @law supernova)
         private double SnLum(Sn sn, double days)
         {
             if (days < 0) return 0; var k = sn.K;
@@ -673,7 +676,7 @@ namespace Universe.Shell
         }
         private double SnEjectaKm(Sn sn, double days) { return sn.K.V * 86400 * Math.Max(0, days); }
         /// <summary>The supernovae going now in the galaxies round you, each as bright as physics says from where you are (its light
-        /// over the square of its distance, against a sun-like star ten light-years off: a glow that grows with the logarithm of that,
+        /// over the square of its distance, against a star of one solar luminosity ten light-years off: a glow that grows with the logarithm of that,
         /// so in its own galaxy it outshines every star, as a real one does, and from another galaxy it is one point among that
         /// galaxy's); close in, the fireball itself at its real size and the colour of its heat, then the thinning cloud of its
         /// ejecta with its remnant inside; and in the galaxy you are in, the shells of the old ones, each at its own size by its age.</summary>
@@ -698,7 +701,7 @@ namespace Universe.Shell
                         bool closeIn = rPhot > 0 && rPhot / Math.Max(1e-30, d) * h > 6;
                         if (!closeIn)
                         {
-                            double ratio = L / (dLy * dLy) * 100;                                                // against a sun at ten light-years
+                            double ratio = L / (dLy * dLy) * 100;                                                // against one solar luminosity at ten light-years
                             double frac = 0.0022 * Math.Max(0.25, 1 + 0.5 * Math.Log10(Math.Max(1e-6, ratio)));     // its glow's share of the view
                             float size = (float)(frac * d);                                                         // (the glow is that share of the view at its distance)
                             float fr = sn.K.R * 0.5f + cr * 0.5f, fg = sn.K.G * 0.5f + cg * 0.5f, fb = sn.K.B * 0.5f + cb * 0.5f;
@@ -808,7 +811,7 @@ namespace Universe.Shell
                 return "A " + sn.K.Name.ToLowerInvariant() + " " + Years(yrs) + " ago, mid-process: its shell " + SnShellLy(sn, yrs).ToString("0.#") + " light-years out, moving at " + SnShellKmS(sn, yrs).ToString("N0") + " km/s, " + (yrs < 300 ? "flying free" : "slowed as it sweeps up the gas between the stars") + "; " + (sn.K.Leaves == "nothing" ? "nothing at its middle but the shell" : (sn.K.Leaves == "magnetar" ? "a magnetar" : sn.Mass < _snNsMax ? "a neutron star" : "a black hole") + " at its middle, born in it; the star that died is gone, its worlds with it");
             }
             double days = (_simYears - sn.T) * 365.25, L = SnLum(sn, days), v = sn.K.V; string stage = days < sn.K.Rise ? "still rising" : days < sn.K.Rise + sn.K.Plateau ? "on its plateau" : days < sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? "fading" : "on its long radioactive tail";
-            return sn.K.Name + ", " + days.ToString("0") + " days after its blast, " + stage + ": " + (sn.Ia ? "a white dwarf blown apart, " : "the core of a star of " + sn.Mass.ToString("0") + " solar masses collapsed, ") + "shining at " + (L >= 1e6 ? (L / 1e6).ToString("0.#") + " million" : L.ToString("N0")) + " suns' worth, its matter flung out at " + v.ToString("N0") + " km/s" + (sn.K.Leaves == "nothing" ? "; it leaves nothing but its shell" : sn.K.Leaves == "magnetar" ? "; a magnetar is born at its middle" : sn.Mass < _snNsMax ? "; a neutron star is born at its middle" : "; a black hole is born at its middle");
+            return sn.K.Name + ", " + days.ToString("0") + " days after its blast, " + stage + ": " + (sn.Ia ? "a white dwarf blown apart, " : "the core of a star of " + sn.Mass.ToString("0") + " solar masses collapsed, ") + "shining at " + (L >= 1e6 ? (L / 1e6).ToString("0.#") + " million" : L.ToString("N0")) + " solar luminosities, its matter flung out at " + v.ToString("N0") + " km/s" + (sn.K.Leaves == "nothing" ? "; it leaves nothing but its shell" : sn.K.Leaves == "magnetar" ? "; a magnetar is born at its middle" : sn.Mass < _snNsMax ? "; a neutron star is born at its middle" : "; a black hole is born at its middle");
         }
         private void SupernovaCard(List<string> L, double dist)
         {
@@ -826,7 +829,7 @@ namespace Universe.Shell
             string stage = days < sn.K.Rise ? "still rising to its peak" : days < sn.K.Rise + sn.K.Plateau ? "on its plateau" : days < sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? "fading, halving every " + sn.K.Halving.ToString("0") + " days" : "on its long radioactive tail (cobalt-56, halving every 77 days)";
             L.Add(sn.K.Name); L.Add("id: SN-" + ((long)(sn.T * 1000) & 0xFFFFFF).ToString("X6") + " in " + sn.G.Name);
             L.Add(sn.Ia ? "a white dwarf of 1.4 solar masses, blown apart entirely" : "a star of " + sn.Mass.ToString("0") + " solar masses, its fuel spent");
-            L.Add(days.ToString("0") + " days since its blast, " + stage + "; shining now at " + (L0 >= 1e6 ? (L0 / 1e6).ToString("0.#") + " million" : L0.ToString("N0")) + " suns' worth (its peak " + (peak / 1e6).ToString("0") + " million: " + (peak >= 2e9 ? "brighter than most galaxies" : "a hundred million stars' light") + ")");
+            L.Add(days.ToString("0") + " days since its blast, " + stage + "; shining now at " + (L0 >= 1e6 ? (L0 / 1e6).ToString("0.#") + " million" : L0.ToString("N0")) + " solar luminosities (its peak " + (peak / 1e6).ToString("0") + " million: " + (peak >= 2e9 ? "brighter than most galaxies" : "a hundred million stars' light") + ")");
             L.Add("its matter flung out at " + v.ToString("N0") + " km/s (" + (v / 299792.458 * 100).ToString("0.#") + "% of light's speed, the outermost up to a tenth of it): its edge now " + ScaleHud.Words(SnEjectaKm(sn, Math.Max(1, days)) * 2) + " across");
             { double rp = SnPhotKm(sn, days), tk = SnHeatK(sn, days); L.Add(rp > 1e6 ? "its glowing face: " + ScaleHud.Words(rp * 2) + " across, " + tk.ToString("N0") + " K (" + (tk > 9000 ? "blue-white" : tk > 6500 ? "white" : tk > 5000 ? "yellow-white" : "orange") + ")" + (days > sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? ", drawing back in as the fireball thins to a cloud" : "") : "the fireball has thinned to a cloud: its remnant shows at the middle"); }
             L.Add("its worlds: the inner ones vaporised, the outer flung loose; its neighbours scorched");
@@ -836,7 +839,7 @@ namespace Universe.Shell
         }
         // a supernova whose shock has reached here: the nearest, and what it did (by how near: within a couple of light-years the worlds'
         // air is stripped and their faces scorched; within ten the air thins and its ozone goes, life on the exposed sides dies; out to
-        // about thirty the sky is lit as by a second sun for months and the particles harm life)
+        // about thirty the sky is lit as by a second star for months and the particles harm life)
         private string ScorchWords(double ux, double uy, double uz)
         {
             if (_near < 0 || _near >= _galaxies.Count) return null; var c = Supernovae(_galaxies[_near], true); string best = null; double bd = double.MaxValue;
@@ -845,14 +848,15 @@ namespace Universe.Shell
                 double years = _simYears - sn.T; if (years < 0 || years > _snRemnantYears) continue;
                 double dx = sn.Ux - ux, dy = sn.Uy - uy, dz = sn.Uz - uz, dLy = Math.Sqrt(dx * dx + dy * dy + dz * dz) * Units.LightYearsPerUnit;
                 if (dLy > 30 || dLy > SnShellLy(sn, years) || dLy >= bd || dLy < 1e-6) continue;
-                bd = dLy; best = "a " + sn.K.Name.ToLowerInvariant() + " " + dLy.ToString("0.#") + " light-years away, " + Years(years) + " ago: its shock has passed here" + (dLy < 2 ? "; the worlds' air stripped and their faces scorched, their life gone" : dLy < 10 ? "; the air thinned and its ozone gone, life on the exposed sides killed" : "; the sky lit as by a second sun for months, its particles harming life");
+                bd = dLy; best = "a " + sn.K.Name.ToLowerInvariant() + " " + dLy.ToString("0.#") + " light-years away, " + Years(years) + " ago: its shock has passed here" + (dLy < 2 ? "; the worlds' air stripped and their faces scorched, their life gone" : dLy < 10 ? "; the air thinned and its ozone gone, life on the exposed sides killed" : "; the sky lit as by a second star for months, its particles harming life");
             }
             return best;
         }
-        private HoleParts PartsFor(Place pl)
+        private HoleParts PartsFor(Place pl, double spin)
         {
-            HoleParts hp; string id = pl != null ? pl.Id : ""; if (_holeParts.TryGetValue(id, out hp)) return hp;
-            double lo = pl != null ? pl.DiscLo : 3, hi = pl != null ? pl.DiscHi : 60, secs = pl != null ? pl.OrbitSeconds : 8;
+            HoleParts hp; string id = (pl != null ? pl.Id : "") + ":" + Math.Round(spin, 1).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture); if (_holeParts.TryGetValue(id, out hp)) return hp;
+            // its disc's inner edge by its spin: the innermost stable orbit comes in from three horizon radii at rest (content/physics.unt @law frame-dragging)
+            double lo = Math.Min(pl != null ? pl.DiscLo : 3, Math.Max(0.6, IscoRs(spin))), hi = pl != null ? pl.DiscHi : 60, secs = pl != null ? pl.OrbitSeconds : 8;
             var rng = new Rng(0xB1AC4UL); var disc = new List<StarVertex>(); var jets = new List<StarVertex>(); var swarm = new List<StarVertex>(); var stream = new List<StarVertex>();
             for (int k = 0; k < 28000; k++)
             {
@@ -902,7 +906,7 @@ namespace Universe.Shell
                 if (!ex.Hole || ex.Mass <= 0) continue;
                 double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                 if (rs * 600 / Math.Max(1e-30, d) * h < 2) continue;                      // (too small on screen to show yet)
-                var hp = PartsFor(ex.Pl);
+                var hp = PartsFor(ex.Pl, ex.Spin);
                 // its frame: tilted its own way, its horizon's radius 1; nothing turns as a plate: every point moves on its own
                 // orbit on the card (the hole's own turn is only a phase of the time)
                 float sc = (float)rs, ct = (float)Math.Cos(ex.Tilt), st = (float)Math.Sin(ex.Tilt);
@@ -1180,7 +1184,7 @@ namespace Universe.Shell
                 }
                 if (e.Kind == "blackhole" && ex.Mass > 0)
                 {
-                    // a black hole is its mass: its event horizon the Schwarzschild radius 2GM/c^2 (2.95 km a Sun), the shadow round it
+                    // a black hole is its mass: its event horizon the Schwarzschild radius 2GM/c^2 (2.95 km a solar mass), the shadow round it
                     // about 2.6 times that, the photon ring where light circles it
                     ex.Hole = true; double rs = 2.953 * ex.Mass; ex.R = Units.Km(rs * 2.6);
                     ex.Lines.Add("event horizon: " + ScaleHud.Words(rs * 2) + " across");
@@ -1190,9 +1194,17 @@ namespace Universe.Shell
                     ex.Feeding = u2 < pl.FeedShare ? (u3 < pl.JetShare ? 2 : 1) : 0; ex.Pl = pl;
                     { double u4 = Math.Abs(Math.Sin(x * 7.3 + y * 29.7 + z * 61.1) * 9173.513) % 1, u5 = Math.Abs(Math.Sin(x * 11.3 + y * 3.7 + z * 41.9) * 6571.771) % 1; ex.Eating = ex.Feeding > 0 && u4 < pl.EatShare; ex.EatN = ex.Eating ? (int)Math.Round(pl.EatLo + (pl.EatHi - pl.EatLo) * u5) : 0; }   // (a star being torn apart and eaten now, by its kind's share, from its place; a supermassive one may have several in its disc at once)
                     ex.Tilt = (float)(u3 * Math.PI); ex.Turn = (float)(u2 * 37 % (Math.PI * 2));
+                    {
+                        // its spin, from its place (content/physics.unt @law frame-dragging): its horizon pulled in, its ergosphere, space
+                        // swept round at its horizon, and how far in its disc reaches (the innermost stable orbit, by the spin)
+                        double u6 = Math.Abs(Math.Sin(x * 19.3 + y * 7.7 + z * 23.9) * 4391.317) % 1; ex.Spin = _spinLo + u6 * (_spinHi - _spinLo);
+                        double rsM = rs * 1000, M = rsM / 2, rp = M * (1 + Math.Sqrt(Math.Max(0, 1 - ex.Spin * ex.Spin))), omega = ex.Spin * Physics.C / (2 * rp);
+                        ex.Lines.Add("spin: " + ex.Spin.ToString("0.00") + " of the most it could; its horizon pulled in to " + ScaleHud.Words(rp * 2 / 1000) + " across, its ergosphere out to " + ScaleHud.Words(rs * 2) + " at its equator, where space is swept round faster than light");
+                        ex.Lines.Add("frame dragging: space at its horizon is swept round " + TurnsWords(omega / (2 * Math.PI)) + "; its disc's inner edge at " + IscoRs(ex.Spin).ToString("0.##") + " horizon radii");
+                    }
                     ex.Lines.Add(ex.Feeding == 0 ? "quiet: not feeding, only its shadow and the light it bends" : ex.Feeding == 1 ? "feeding: a disc of gas spiralling in, heated to millions of degrees" : "feeding, and firing jets from its poles at nearly the speed of light");
                     if (ex.Eating) ex.Lines.Add(ex.EatN > 1 ? "stars being eaten now: " + ex.EatN + ", each stretched along its orbit into a stream of gas winding into the disc" : "a star being eaten now: stretched along its orbit into a stream of gas winding into the disc");
-                    { double gm = Physics.GmSun * ex.Mass, rsM = rs * 1000; ex.Lines.Add("escape speed: light's at the horizon; the fall from there to the middle: " + Secs(2.0 / 3 * Math.Pow(rsM, 1.5) / Math.Sqrt(2 * gm)) + " of your own time"); }
+                    { double gm = Physics.GmSol * ex.Mass, rsM = rs * 1000; ex.Lines.Add("escape speed: light's at the horizon; the fall from there to the middle: " + Secs(2.0 / 3 * Math.Pow(rsM, 1.5) / Math.Sqrt(2 * gm)) + " of your own time"); }
                 }
                 if (e.Props.ContainsKey("made-by")) ex.Lines.Add("made by: " + e.Get("made-by", ""));
                 if (e.Props.ContainsKey("example")) ex.Lines.Add("for example: " + e.Get("example", ""));
@@ -1739,7 +1751,7 @@ namespace Universe.Shell
             double best = double.MaxValue;
             for (int i = 0; i < _bodyCount; i++)
             {
-                double r = i == 0 ? _system.StarRadius : _system.Bodies[i - 1].RadiusUnits;
+                double r = i == 0 ? StarRadiusNow : _system.Bodies[i - 1].RadiusUnits;
                 double dx = _bodyVerts[i].X - _ox, dy = _bodyVerts[i].Y - _oy, dz = _bodyVerts[i].Z - _oz;
                 best = Math.Min(best, Math.Max(r * 0.05, Math.Sqrt(dx * dx + dy * dy + dz * dz) - r));
             }
@@ -1764,7 +1776,7 @@ namespace Universe.Shell
         private List<TourStop> _tour; private int _tourAt; private double _tourClock, _tourStall, _tourLastD, _tourT, _tourRate;
         /// <summary>Starts the tour of that name (content/tours/name.unt); false if there is none.</summary>
         public bool StartTour(string name)
-        {
+        { _tourVisited = 0;
             var list = new List<TourStop>(); var ci = System.Globalization.CultureInfo.InvariantCulture; var fs = System.Globalization.NumberStyles.Float;
             Func<string, double, double> num = (t, f) => { double v; return double.TryParse(t, fs, ci, out v) ? v : f; };
             foreach (var e in _content.OfKind("tours/" + name + ".unt", "stop"))
@@ -1931,7 +1943,7 @@ namespace Universe.Shell
         }
         // your horizon, for a caption written as "{horizon}": how far you see each way, and why it ends there (the expansion of space, sped by dark energy)
         private string HorizonWords() { return "It ends only at your horizon, " + Units.Describe(_uRadius) + " each way, which moves with you: past it space stretches away faster than light can cross it, sped by dark energy (" + (_darkEnergy * 100).ToString("0") + "% of everything, " + _hubble.ToString("0") + " km/s a megaparsec)"; }
-        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()).Replace("{horizon}", HorizonWords()).Replace("{supernova}", SupernovaWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()).Replace("{horizon}", HorizonWords()).Replace("{supernova}", SupernovaWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()).Replace("{seen}", SeenWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {
@@ -2147,7 +2159,7 @@ namespace Universe.Shell
                         if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
                         if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5))
                         {
-                            done = true; _pickFailed = !got && st.Target != "none";
+                            done = true; _pickFailed = !got && st.Target != "none"; if (got) _tourVisited++; if (got) _tourVisited++; if (got) _tourVisited++; if (got) _tourVisited++; if (got) _tourVisited++;
                             ZoomLog("TOUR pick " + st.Target + (got ? ": " + _tName + " (kind " + _tKind + ")" : " FAILED after " + _tourT.ToString("0.0") + " s: " + _extras.Count + " bodies round you, " + _localCount + " stars, system " + (_system != null ? "open" : "none") + ", galaxy " + _near + "; its stops are skipped"));
                         }
                     }
@@ -2570,8 +2582,13 @@ namespace Universe.Shell
                 _tName = "a point in the space between the stars"; return;
             }
             if (kind < 0) return;
-            var layHere = LayerHere();
-            if (layHere != null && layHere.Matter != "core" && (kind < 0 || kind == 3))
+            var layHere = LayerHere(); var starHere = StarLayerHere();
+            if (layHere == null && starHere != null && (kind < 0 || kind == 1))
+            {
+                // inside a star, a click is a point in the layer you are in, just ahead: the wheel flies to it and on into that layer's plasma
+                double reachS = Units.Km(1000); kind = 7; idx = 0; tx = _ax + _ox + dir.X * reachS; ty = _ay + _oy + dir.Y * reachS; tz = _az + _oz + dir.Z * reachS; trad = 0; name = "a point in its " + starHere.Name.ToLowerInvariant();
+            }
+            else if (layHere != null && layHere.Matter != "core" && (kind < 0 || kind == 3))
             {
                 // inside a giant, a click is a point in the layer you are in, just ahead where you clicked (its gas, its plasma, its
                 // hot dense water): the wheel flies to it and on into that layer's own matter
@@ -2766,7 +2783,7 @@ namespace Universe.Shell
                 if (input.WasPressed(0x20)) TogglePause();
                 if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);
                 if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);
-                _simYears += dt * TimeSpeeds[TimeStep];
+                _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);
                 if (TimeStep > 0) _matterClock += dt;
                 return true;
             }
@@ -2794,7 +2811,7 @@ namespace Universe.Shell
                 if (input.WasPressed(0x20)) TogglePause();
                 if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);
                 if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);
-                _simYears += dt * TimeSpeeds[TimeStep];
+                _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);
                 if (TimeStep > 0) _matterClock += dt;
                 if (_matterScale > _matterTop)
                 {
@@ -2825,18 +2842,25 @@ namespace Universe.Shell
                 {
                     var lay = LayerHere(); ulong lspot = (ulong)(_tx / Units.Km(1)) ^ (ulong)(_tz / Units.Km(1)) * 31UL;
                     string air; if (!PlanetTerrain.Air.TryGetValue(_ground != null ? _ground.Kind : "", out air)) air = "hydrogen 90%, helium 10%";
-                    if (lay != null && lay.Matter == "plasma") _matter.SetPlasma(lspot);
+                    var slh = StarLayerHere();
+                    if (slh != null) { double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz), shr = sdK / Math.Max(1e-30, StarRadiusNow); _matter.SetPlasma(lspot, slh.MakeUp ?? SystemStarMakeUp(), LayerDensity(slh, shr), slh.Name.ToLowerInvariant(), LayerTempK(slh, shr)); }
+                    else if (lay != null && lay.Matter == "plasma") _matter.SetPlasma(lspot);
                     else if (lay != null && lay.Matter == "ice") { _matter.SetAir("water vapour 70%, ammonia 15%, methane 15%", lspot); }   // hot dense water, ammonia and methane
                     else _matter.SetAir(air, lspot);
                     _spaceScale = Math.Max(MatterView.BottomKm, Math.Sqrt(qx * qx + qy * qy + qz * qz) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;
                     return true;
                 }
             }
-            if (_system != null && _ground == null && input.Wheel > 0 && _spaceScale <= 0 && Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) < _system.StarRadius * 1.002 && Math.Abs(_ax) + Math.Abs(_ay) + Math.Abs(_az) >= 0)
+            if (_system != null && _ground == null && input.Wheel > 0 && _spaceScale <= 0 && Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) < StarRadiusNow * 1.002 && Math.Abs(_ax) + Math.Abs(_ay) + Math.Abs(_az) >= 0)
             {
                 // into the star's surface: its plasma, the same zoom carrying on
                 ulong sspot = (ulong)(long)(_ox / Units.Km(1e3)) * 73856093UL ^ (ulong)(long)(_oy / Units.Km(1e3)) * 19349663UL ^ (ulong)(long)(_oz / Units.Km(1e3)) * 83492791UL;
-                _matter.SetPlasma(sspot, SystemStarMakeUp());                            // (its own make-up: content/stars.unt)
+                {
+                    // its layer at this depth (content/stars.unt @layer): its own make-up, heat and density there, the photosphere at the face
+                    double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz), shr = Math.Min(1, sdK / Math.Max(1e-30, StarRadiusNow)); var sl = StarLayerAt(shr);
+                    if (sl != null) _matter.SetPlasma(sspot, sl.MakeUp ?? SystemStarMakeUp(), LayerDensity(sl, shr), sl.Name.ToLowerInvariant(), LayerTempK(sl, shr));
+                    else _matter.SetPlasma(sspot, SystemStarMakeUp());                      // (its own make-up: content/stars.unt)
+                }
                 _spaceScale = 1.0 / 0.6; _spaceTop = _spaceScale * 1.1;                   // from a kilometre: a fog of plasma, down to its nuclei
                 return true;
             }
@@ -2855,9 +2879,9 @@ namespace Universe.Shell
                         if (exd.Hole && exd.Mass > 0)
                         {
                             double rsKm = Physics.HorizonKm(exd.Mass);
-                            _matter.SetHole(dspot, rsKm, exd.Mass); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1; _fallHole = exd;
+                            _matter.SetHole(dspot, rsKm, exd.Mass, exd.Spin); _bodyUp = null; _spaceScale = rsKm / 0.6; _spaceTop = _spaceScale * 1.1; _fallHole = exd;
                             // the fall's clock: from the horizon to the middle takes two thirds of rs over c of your own time (26 seconds for a
-                            // four-million-sun hole, 70 microseconds for a stellar one, eleven minutes for a hundred-million-sun one); it is
+                            // four-million-solar-mass hole, 70 microseconds for a stellar one, eleven minutes for a hundred-million-solar-mass one); it is
                             // shown over about thirty seconds, slowed or sped as that needs, and the card says by how much
                             { double tauEnd = 2.0 / 3 * rsKm / 299792.458; _fallTau = 0; _fallRate = tauEnd / 30.0; _fallDeep = false; }
                             { double ql2 = Math.Max(1e-300, ql); _fallAxis = new Vec3((float)(qx / ql2), (float)(qy / ql2), (float)(qz / ql2)); _fx = -_fallAxis.X; _fy = -_fallAxis.Y; _fz = -_fallAxis.Z; }   // the axis you came in on: the well's grid is drawn down it; and you come in looking back at the horizon's ring, not down at the point
@@ -2965,7 +2989,7 @@ namespace Universe.Shell
             if (input.WasPressed(0x20)) TogglePause();                                 // Space: pause, or carry on
             if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);                        // , slower
             if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);                        // . faster
-            _simYears += dt * TimeSpeeds[TimeStep];                                    // time runs at the speed chosen
+            _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);                                    // time runs at the speed chosen
             if (TimeStep > 0) _matterClock += dt;
             ChooseNear(); Jumped("ChooseNear"); ClusterStars();
             LocalStars(); Jumped("LocalStars");
@@ -2987,7 +3011,7 @@ namespace Universe.Shell
                 PlaceSystem();
                 for (int i = 0; i < _bodyCount; i++)
                 {
-                    double r = i == 0 ? _system.StarRadius : _system.Bodies[i - 1].RadiusUnits;
+                    double r = i == 0 ? StarRadiusNow : _system.Bodies[i - 1].RadiusUnits;
                     double dx = _bodyVerts[i].X - _ox, dy = _bodyVerts[i].Y - _oy, dz = _bodyVerts[i].Z - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     if (l <= 0) continue;
                     double c = (dx * dir.X + dy * dir.Y + dz * dir.Z) / l;
@@ -3387,7 +3411,8 @@ namespace Universe.Shell
                 // (its light at a third of a full point a pixel on the average: its dense heart glows, its thin rim fades to nothing, so
                 // from afar it is a soft shape in its own colours with a fine edge, never a solid white disc or a white spiral icon)
                 float crowd = (float)Math.Max(0.015, Math.Min(1, Math.PI * gpx * gpx / (count * dotPx * dotPx) * 0.35)) * nearF * (i == _near ? 1f : others);
-                DrawPoints(buf, count, Placement(g) * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
+                var pg = Placement(g); float drift = GalaxyDrift(g, ref pg);
+                DrawPoints(buf, count, pg * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f, 0, 0, 0, 0, 0, drift);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
             }
             double inside = InsideShare();
             {
@@ -3515,15 +3540,21 @@ namespace Universe.Shell
                 _sysBodies.Write(_bodyVerts, _bodyCount);
                 DrawPoints(_sysBodies, _bodyCount, vp, right, up, 1f, 0.004f, w, h, time);
                 // close enough to see its disc: the star's real body at its real size
-                double R = _system.StarRadius, sd = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz);
+                double R = StarRadiusNow, sd = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz); float swellDim = (float)(1 / (StarSwell * StarSwell));   // (blown apart: thinner, dimmer)
                 if (_starSurf != null && R / Math.Max(1e-30, sd) > 0.004)
                 {
                     var toEye = new Vec3((float)(_ox / sd), (float)(_oy / sd), (float)(_oz / sd));
                     int n = _starSurf.Draw(toEye, time, _starSurfVerts, 0);
                     _surfBuf.Write(_starSurfVerts, n);
                     var m = Mat4.Identity; m.M11 = m.M22 = m.M33 = (float)R; m.M41 = (float)-_ox; m.M42 = (float)-_oy; m.M43 = (float)-_oz;
-                    DrawPoints(_surfBuf, n, m * vp, right, up, 1f, 0f, w, h, time);
-                    DrawPoints(_coronaBuf, _starCorona.Length, m * vp, right, up, 1f, 0f, w, h, time);
+                    DrawPoints(_surfBuf, n, m * vp, right, up, 1f, 0f, w, h, time, 0, swellDim);
+                    DrawPoints(_coronaBuf, _starCorona.Length, m * vp, right, up, 1f, 0f, w, h, time, 0, swellDim);
+                }
+                {
+                    // inside the star: nothing is seen but its own glow, in the colour of the heat of the layer you are in (the plasma's own
+                    // picture takes over when you dive into it)
+                    var sl = StarLayerHere();
+                    if (sl != null && _spaceScale <= 0) { float gr, gg, gb; StarGlow(LayerTempK(sl, sd / Math.Max(1e-30, R)), out gr, out gg, out gb); _hud.DrawFill(_meshes, w, h, gr, gg, gb); _gpu.ClearDepth(); }
                 }
             }
             // the solid small bodies (asteroids, comets' nuclei) and worlds' rings last of everything in space: after every star,
@@ -3739,7 +3770,7 @@ namespace Universe.Shell
 
         private float _sky = 1;                                                           // how much of space shows behind (fades away at the very small)
         private int _comaN, _tailN; private UploadBuffer _tailBuf;
-        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0)
+        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0, float drift = 0)
         {
             if (buf == null || count <= 0) return;
             float b = bright * _sky; if (b <= 0.003f) return;
@@ -3747,7 +3778,7 @@ namespace Universe.Shell
             c[0] = vp.M11; c[1] = vp.M12; c[2] = vp.M13; c[3] = vp.M14; c[4] = vp.M21; c[5] = vp.M22; c[6] = vp.M23; c[7] = vp.M24;
             c[8] = vp.M31; c[9] = vp.M32; c[10] = vp.M33; c[11] = vp.M34; c[12] = vp.M41; c[13] = vp.M42; c[14] = vp.M43; c[15] = vp.M44;
             c[16] = right.X; c[17] = right.Y; c[18] = right.Z; c[20] = up.X; c[21] = up.Y; c[22] = up.Z;
-            c[24] = (float)time; c[25] = sizeScale; c[26] = style; c[27] = 4; c[28] = w; c[29] = h; c[30] = minSize; c[31] = maxSize; c[32] = 1 - Math.Min(1, b);
+            c[24] = (float)time; c[25] = sizeScale; c[26] = style; c[27] = 4; c[28] = w; c[29] = h; c[30] = minSize; c[31] = maxSize; c[32] = 1 - Math.Min(1, b); c[34] = drift;   /* (gravity off: how far a galaxy's stars have flown, in their own frame) */
             c[36] = _lens[0]; c[37] = _lens[1]; c[38] = _lens[2]; c[39] = _lens[3]; c[40] = w / (float)Math.Max(1, h);
             c[43] = _web[0]; c[44] = _web[1]; c[45] = _web[2]; c[46] = _web[3]; c[47] = _web[4];   // the web's light, sifted on the card (0: not the web)
             if (holeK > 0) { c[33] = holeK; c[35] = holeMode; c[43] = 0; c[44] = hx; c[45] = hy; c[46] = hz; c[47] = 0; }   // a feeding black hole's parts: moved on the card in its own frame (the pace, which part, where the camera is in that frame)
@@ -3867,6 +3898,14 @@ namespace Universe.Shell
                     var sy = _system;
                     L.Add("surface: " + sy.TempK.ToString("N0") + " K"); L.Add("mass: " + sy.MassSol.ToString("0.##") + " solar masses, width " + sy.RadiusSol.ToString("0.##") + " solar radii");
                     L.Add("brightness: " + sy.Luminosity.ToString(sy.Luminosity < 0.1 ? "0.###" : "0.##") + " solar luminosities");
+                    {
+                        // its light climbing out of its own well (gravitational redshift, GM/Rc^2 for a star), and its layers from the surface to the core
+                        double gmS = Physics.GmSol * sy.MassSol, RS = Math.Max(1, sy.StarRadius / Units.Km(1) * 1000), zS = 1 / Math.Sqrt(Math.Max(1e-30, 1 - 2 * gmS / (RS * Physics.C * Physics.C))) - 1;
+                        L.Add("relativity: its light climbs out of its own well redshifted by " + ShiftWords(zS) + "; clocks on its surface run slower by the same");
+                        var lays = StarLayersFor(SystemStarId()); if (lays.Count > 0) { var nm = new List<string>(); foreach (var l in lays) nm.Add(l.Name.ToLowerInvariant()); L.Add("its layers, in from the surface: " + string.Join(", ", nm.ToArray()) + " (fly in: each is a place)"); }
+                        var sl = StarLayerHere(); if (sl != null) { double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) / Units.Km(1), RK = StarRadiusNow / Units.Km(1); L.Add("you are inside it, " + ScaleHud.Words(RK - sdK) + " below its surface, in its " + sl.Name.ToLowerInvariant() + ": about " + LayerTempK(sl, sdK / RK).ToString("N0") + " K, " + DensityWords(LayerDensity(sl, sdK / RK)) + "; " + sl.Says); }
+                        if (!Window.GravityOn) L.Add("gravity off for " + Years(Math.Max(0, _simYears - _gravityOffYear)) + ": swollen to " + (StarSwell >= 100 ? StarSwell.ToString("N0") : StarSwell.ToString("0.#")) + " times its size, its own pressure unopposed, growing at about " + (StarSwellSpeedKmS()).ToString("N0") + " km/s; its worlds gone straight on at their speeds");
+                    }
                     L.Add("planets and moons: " + sy.Bodies.Count + " (" + sy.Planets + " planets)");
                     L.Add("habitable zone: " + (sy.HabitableAu * 0.75).ToString("0.##") + " to " + (sy.HabitableAu * 1.4).ToString("0.##") + " AU");
                     L.Add("frost line: " + sy.FrostLineAu.ToString("0.##") + " AU");
@@ -3882,6 +3921,12 @@ namespace Universe.Shell
                 L.Add(b.Kind + (b.Parent >= 0 ? " of " + sy.Bodies[b.Parent].Kind : ""));
                 L.Add("id: S-" + _sysStar.ToString("X") + (b.Parent >= 0 ? "-P" + (b.Parent + 1) + "-M" : "-P") + (_tIndex + 1));
                 L.Add("width: " + Km(b.RadiusUnits * 2));
+                {
+                    // its mass (from its size and its kind's density), its pull at its ground and the speed to get away from it
+                    double rwM = Math.Max(1, b.RadiusUnits / Units.Km(1) * 1000), gmw = Physics.G * b.MassKg, gS = gmw / (rwM * rwM), vE = Math.Sqrt(2 * gmw / rwM);
+                    L.Add("mass: " + MassWords(b.MassKg));
+                    L.Add("pull at its ground: " + gS.ToString("0.##") + " m/s2 (" + (gS / Physics.EarthG).ToString("0.##") + " of Earth's); escape speed " + (vE >= 1000 ? (vE / 1000).ToString("0.#") + " km/s" : vE.ToString("0") + " m/s"));
+                }
                 var top = b.Parent >= 0 ? sy.Bodies[b.Parent] : b;
                 if (b.Parent < 0)
                 {
@@ -3893,7 +3938,7 @@ namespace Universe.Shell
                         // its speed, by the laws of motion (vis-viva): now, from how far it is from its star this moment, and at its
                         // closest point; and relativity: its closest point turning round the star, and clocks slowed by the star's pull
                         double rx = _bodyVerts[_tIndex + 1].X - _bodyVerts[0].X, ry = _bodyVerts[_tIndex + 1].Y - _bodyVerts[0].Y, rz = _bodyVerts[_tIndex + 1].Z - _bodyVerts[0].Z;
-                        double rM = Math.Max(1, Math.Sqrt(rx * rx + ry * ry + rz * rz) / Units.Km(1) * 1000), aM = b.OrbitUnits / Units.Km(1) * 1000, gm = Physics.GmSun * sy.MassSol;
+                        double rM = Math.Max(1, Math.Sqrt(rx * rx + ry * ry + rz * rz) / Units.Km(1) * 1000), aM = b.OrbitUnits / Units.Km(1) * 1000, gm = Physics.GmSol * sy.MassSol;
                         double vNow = Math.Sqrt(Math.Max(0, gm * (2 / rM - 1 / aM))), vPeri = Math.Sqrt(gm * (1 + b.Ecc) / (aM * (1 - b.Ecc))), vApo = Math.Sqrt(gm * (1 - b.Ecc) / (aM * (1 + b.Ecc)));
                         L.Add("speed now: " + (vNow / 1000).ToString("0.#") + " km/s; " + (vPeri / 1000).ToString("0.#") + " at its closest, " + (vApo / 1000).ToString("0.#") + " at its farthest");
                         double arcsecCentury = b.PeriRate * (100 / Math.Max(1e-9, b.Period)) * 206264.8, slow = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gm / (rM * Physics.C * Physics.C)));
@@ -3907,12 +3952,11 @@ namespace Universe.Shell
                             L.Add("its own pull slows clocks on its ground by " + (usDay >= 10 ? usDay.ToString("0") : usDay.ToString("0.##")) + " microseconds a day against far away; a satellite four radii up runs " + (gain >= 10 ? gain.ToString("0") : gain.ToString("0.##")) + " of them faster than the ground");
                         }
                         {
-                            // its own pull on clocks: slower on its ground than far away, and faster higher up, so a satellite's clock runs
-                            // ahead of the ground's by so many microseconds a day (the correction every satellite clock carries)
+                            // the rest of it: its light climbing out of its own well and its star's reaches far away redshifted; its light swinging
+                            // blue and red as it comes and goes round its star (Doppler); at its speed its length along its path shorter (special relativity)
                             double gmw = WorldGm(b), rw = Math.Max(1, b.RadiusUnits / Units.Km(1) * 1000), c2 = Physics.C * Physics.C;
-                            double sGround = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gmw / (rw * c2))), sSat = 1 - Math.Sqrt(Math.Max(0, 1 - 2 * gmw / (4.2 * rw * c2)));
-                            double usDay = sGround * 86400e6, gain = (sGround - sSat) * 86400e6;
-                            L.Add("its own pull slows clocks on its ground by " + (usDay >= 10 ? usDay.ToString("0") : usDay.ToString("0.##")) + " microseconds a day against far away; a satellite four radii up runs " + (gain >= 10 ? gain.ToString("0") : gain.ToString("0.##")) + " of them faster than the ground");
+                            double z = 1 / Math.Sqrt(Math.Max(1e-30, 1 - 2 * gm / (rM * c2) - 2 * gmw / (rw * c2))) - 1, dop = vNow / Physics.C, gam = 1 / Math.Sqrt(Math.Max(1e-30, 1 - dop * dop)) - 1;
+                            L.Add("more relativity: light from its ground reaches far away redshifted by " + ShiftWords(z) + "; coming and going round its star its light swings blue and red by " + ShiftWords(dop) + "; at its speed its length along its path is shorter by " + ShiftWords(gam));
                         }
                     }
                     L.Add(au >= sy.HabitableAu * 0.75 && au <= sy.HabitableAu * 1.4 ? "in the habitable zone" : au < sy.HabitableAu * 0.75 ? "inside the habitable zone: too hot" : "outside the habitable zone: too cold");
@@ -3960,14 +4004,17 @@ namespace Universe.Shell
             {
                 var exk = _extras[_tIndex]; foreach (var ln in exk.Lines) L.Add(ln);
                 L.Add("distance: " + Units.Describe(dist));
-                if (exk.Mass > 0)
+                double massSol = exk.Mass > 0 ? exk.Mass : exk.Density > 0 && exk.R > 0 ? SpaceGen.MassOf(exk.R, exk.Density) / 1.989e30 : 0;   // (a small body's mass from its size and its density)
+                if (massSol > 0)
                 {
+                    if (exk.Mass <= 0) L.Add("mass: " + (massSol * 1.989e30).ToString("0.##E+0") + " kg");
                     // its pull where you are, falling with the square of the distance; the speed you would need to get away
                     double rM = Math.Max(1, (dist + exk.R) / Units.Km(1) * 1000);                // metres
-                    double g = Physics.Pull(exk.Mass, rM), vesc = Physics.Escape(exk.Mass, rM);     // (Newton's gravity, content/physics.unt)
+                    double g = Physics.Pull(massSol, rM), vesc = Physics.Escape(massSol, rM);     // (Newton's gravity, content/physics.unt)
                     L.Add("its pull here: " + (g >= 0.01 ? g.ToString("0.###") : g.ToString("0.##E+0")) + " m/s2 (" + (g / Physics.EarthG).ToString(g / Physics.EarthG >= 0.01 ? "0.###" : "0.##E+0") + " of Earth's)");
-                    L.Add("escape speed here: " + (vesc >= Physics.C ? "faster than light: inside, nothing gets out" : (vesc / 1000).ToString("N0") + " km/s (" + (vesc / Physics.C * 100).ToString("0.###") + "% of light)"));
-                    { double gmx = Physics.GmSun * exk.Mass, q = 1 - 2 * gmx / (rM * Physics.C * Physics.C); L.Add("relativity: clocks here run " + (q <= 0 ? "to a stop at its horizon" : "slower by " + ((1 - Math.Sqrt(q)) * 100 >= 0.01 ? ((1 - Math.Sqrt(q)) * 100).ToString("0.##") + "%" : "1 part in " + (1 / (1 - Math.Sqrt(q))).ToString("0.##E+0")))); }
+                    L.Add("escape speed here: " + (vesc >= Physics.C ? "faster than light: inside, nothing gets out" : vesc >= 1000 ? (vesc / 1000).ToString("N0") + " km/s (" + (vesc / Physics.C * 100).ToString("0.###") + "% of light)" : vesc.ToString("0.#") + " m/s"));
+                    { double gmx = Physics.GmSol * massSol, q = 1 - 2 * gmx / (rM * Physics.C * Physics.C); L.Add("relativity: clocks here run " + (q <= 0 ? "to a stop at its horizon" : "slower by " + ((1 - Math.Sqrt(q)) * 100 >= 0.01 ? ((1 - Math.Sqrt(q)) * 100).ToString("0.##") + "%" : "1 part in " + (1 / (1 - Math.Sqrt(q))).ToString("0.##E+0")))); }
+                    if (exk.Hole) { double gmx2 = Physics.GmSol * massSol, q2 = 1 - 2 * gmx2 / (rM * Physics.C * Physics.C); L.Add(q2 <= 0 ? "light from here reaches no one: redshifted without limit at the horizon" : "light from here reaches far away redshifted by " + ShiftWords(1 / Math.Sqrt(q2) - 1)); }
                 }
             }
             else if (_tKind == 4 && _system != null)
@@ -4000,17 +4047,29 @@ namespace Universe.Shell
         {
             if (_spaceScale > 0 && _matter.SpaceKind == 12) return 0;
             double sum = 0, c2 = Physics.C * Physics.C;
-            if (_system != null) { double d = Math.Max(1, DistToSysStar() / Units.Km(1) * 1000); sum += 2 * Physics.GmSun * _system.MassSol / (d * c2); }
+            if (_system != null) { double d = Math.Max(1, DistToSysStar() / Units.Km(1) * 1000); sum += 2 * Physics.GmSol * _system.MassSol / (d * c2); }
             if (_system != null && _planet >= 0 && _planet < _system.Bodies.Count) { double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Max(1, Math.Sqrt(x * x + y * y + z * z) * 1000); sum += 2 * WorldGm(_system.Bodies[_planet]) / (r * c2); }
-            foreach (var ex in _extras) { if (!ex.Hole || ex.Mass <= 0) continue; double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Max(1, Math.Sqrt(dx * dx + dy * dy + dz * dz) / Units.Km(1) * 1000); sum += 2 * Physics.GmSun * ex.Mass / (d * c2); }
+            foreach (var ex in _extras) { if (!ex.Hole || ex.Mass <= 0) continue; double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Max(1, Math.Sqrt(dx * dx + dy * dy + dz * dz) / Units.Km(1) * 1000); sum += 2 * Physics.GmSol * ex.Mass / (d * c2); }
             return Math.Sqrt(Math.Max(0, 1 - sum));
         }
-        // a world's GM from its size and what it is (rock about 5.5 g/cc, a giant about 1.3, ice about 2): no body carries a mass of its own
-        private static double WorldGm(SpaceGen.Body b)
+        // a world's GM from its own mass (its size and its kind's density, content/terrain.unt density-g-cc)
+        private static double WorldGm(SpaceGen.Body b) { return Physics.G * b.MassKg; }
+        private static string MassWords(double kg) { double e = kg / 5.972e24; return (e >= 100 ? e.ToString("N0") : e >= 1 ? e.ToString("0.#") : e >= 0.01 ? e.ToString("0.##") : e.ToString("0.#E+0")) + " Earths (" + kg.ToString("0.##E+0") + " kg)"; }
+        private static string TurnsWords(double perSec)
         {
-            double rM = b.RadiusUnits / Units.Km(1) * 1000, rho = b.Kind != null && (b.Kind.Contains("giant") || b.Kind.Contains("Jupiter")) ? 1300 : b.Kind != null && b.Kind.Contains("ic") && b.Parent >= 0 ? 2000 : 5500;
-            return 6.674e-11 * 4.0 / 3 * Math.PI * rM * rM * rM * rho;
+            if (perSec >= 1) return (perSec >= 100 ? perSec.ToString("N0") : perSec.ToString("0.#")) + " times a second";
+            if (perSec * 60 >= 1) return (perSec * 60).ToString("0.#") + " times a minute";
+            if (perSec * 3600 >= 1) return (perSec * 3600).ToString("0.#") + " times an hour";
+            return "once every " + (perSec * 86400 >= 1 ? (1 / (perSec * 3600)).ToString("0.#") + " hours" : (1 / (perSec * 86400)).ToString("0.#") + " days");
         }
+        // the innermost stable orbit round a spinning hole, going its way, in horizon radii (Bardeen, Press and Teukolsky 1972): 3 at rest, down to 0.62 near the most
+        private static double IscoRs(double a)
+        {
+            a = Math.Max(0, Math.Min(0.9999, a));
+            double z1 = 1 + Math.Pow(1 - a * a, 1 / 3.0) * (Math.Pow(1 + a, 1 / 3.0) + Math.Pow(1 - a, 1 / 3.0)), z2 = Math.Sqrt(3 * a * a + z1 * z1);
+            return (3 + z2 - Math.Sqrt((3 - z1) * (3 + z1 + 2 * z2))) / 2;
+        }
+        private static string ShiftWords(double z) { return z <= 0 ? "not at all" : z >= 0.01 ? "a share of " + z.ToString("0.###") : "1 part in " + (1 / z).ToString("0.##E+0"); }
         private static string SlowWords(double f)
         {
             double slow = 1 - f; if (slow <= 0) return "the same as far away";
@@ -4023,6 +4082,102 @@ namespace Universe.Shell
             if (f <= 0) return " · your clock here: stopped against far clocks";
             return 1 - f < 1e-7 ? "" : " · your clock here: " + SlowWords(f);
         }
+        // ── gravity switched off (the Time menu; content/physics.unt @law gravity-off): the year it went, the star's swelling ──
+        private double _gravityOffYear = double.NaN;
+        public void ToggleGravity() { Window.GravityOn = !Window.GravityOn; _gravityOffYear = Window.GravityOn ? double.NaN : _simYears; SpaceGen.GravityOffYear = _gravityOffYear; MenuChanged = true; }
+        private string GravityWords() { return Window.GravityOn || double.IsNaN(_gravityOffYear) ? "" : " · gravity off for " + Years(Math.Max(0, _simYears - _gravityOffYear)) + ": every body straight on, every star blown apart"; }
+        // how much the system's star has swollen: its own pressure unopposed grows it at about its sound speed, doubling it in about its
+        // sound-crossing time (swell-over-freefall times its free-fall time root(R^3 / GM): about an hour for a star of one solar mass)
+        private double StarSwell
+        {
+            get
+            {
+                if (Window.GravityOn || double.IsNaN(_gravityOffYear) || _system == null) return 1;
+                double R = _system.StarRadius / Units.Km(1) * 1000, gm = Physics.GmSol * Math.Max(0.01, _system.MassSol), tff = Math.Sqrt(R * R * R / gm);
+                return Math.Min(1e6, 1 + Math.Max(0, _simYears - _gravityOffYear) * 31557600.0 / (_swellOverFreefall * tff));
+            }
+        }
+        private double StarSwellSpeedKmS() { if (_system == null) return 0; double R = _system.StarRadius / Units.Km(1) * 1000, gm = Physics.GmSol * Math.Max(0.01, _system.MassSol); return R / (_swellOverFreefall * Math.Sqrt(R * R * R / gm)) / 1000; }
+        private double StarRadiusNow { get { return _system != null ? _system.StarRadius * StarSwell : 0; } }
+        // a galaxy's stars flung off with gravity off: how far each has flown in the galaxy's own frame (the disc's on their tangents at the
+        // rim speed, a round galaxy's every way: negative), and the camera's own star's flight taken out of the placing, so you ride with it
+        private readonly Dictionary<string, bool> _ballType = new Dictionary<string, bool>();
+        private float GalaxyDrift(Galaxy g, ref Mat4 pg)
+        {
+            if (Window.GravityOn || double.IsNaN(_gravityOffYear)) return 0;
+            double years = Math.Max(0, _simYears - _gravityOffYear), kmPerUnit = g.Scale / Units.Km(1);
+            double drift = _rimSpeed * years * 31557600.0 / Math.Max(1e-30, kmPerUnit);
+            bool ball; if (!_ballType.TryGetValue(g.Type, out ball)) { ball = false; foreach (var e in _content.OfKind("galaxies.unt", "galaxy")) if (e.Id == g.Type) ball = e.Get("bodies-spread", "disc") == "ball"; _ballType[g.Type] = ball; }
+            if (!ball)
+            {
+                // the camera in the galaxy's frame (the placing's rows are the galaxy's axes, scaled): its own tangent taken out when it is within the galaxy
+                double rx = _cx - g.X, ry = _cy - g.Y, rz = _cz - g.Z, s2 = (double)g.Scale * g.Scale;
+                double lx = (rx * pg.M11 + ry * pg.M12 + rz * pg.M13) / s2, lz = (rx * pg.M31 + ry * pg.M32 + rz * pg.M33) / s2, lr = Math.Sqrt(lx * lx + lz * lz);
+                if (lr > 1e-6 && lr < 1.5) { double tx = -lz / lr * drift, tz = lx / lr * drift; pg.M41 -= (float)(tx * pg.M11 + tz * pg.M31); pg.M42 -= (float)(tx * pg.M12 + tz * pg.M32); pg.M43 -= (float)(tx * pg.M13 + tz * pg.M33); }
+            }
+            return (float)(ball ? -drift : drift);
+        }
+        // ── a star's layers from its surface down to its core (content/stars.unt @layer): which the system's star has, which you are in ──
+        private sealed class StarLayer { public string Id, Name, Says, MakeUp; public double From, To, TLo, THi, DLo, DHi; public List<string> In; }
+        private List<StarLayer> _starLayers;
+        private List<StarLayer> StarLayers()
+        {
+            if (_starLayers != null) return _starLayers; _starLayers = new List<StarLayer>();
+            foreach (var e in _content.OfKind("stars.unt", "layer"))
+            {
+                double a, b, tl, th, dl, dh; if (!e.TryRange("from-r", out a, out b)) continue; double f = a; if (!e.TryRange("to-r", out a, out b)) continue;
+                var l = new StarLayer { Id = e.Id, Name = e.Name, Says = e.Get("says", ""), From = f, To = a, MakeUp = e.Props.ContainsKey("makeup") ? e.Get("makeup", "") : null };
+                if (e.TryRange("temp-k", out tl, out th)) { l.TLo = tl; l.THi = th; } if (e.TryRange("density-g-cc", out dl, out dh)) { l.DLo = dl; l.DHi = dh; }
+                if (e.Props.ContainsKey("in")) { l.In = new List<string>(); foreach (var q in e.Get("in", "").Split(',')) if (q.Trim().Length > 0) l.In.Add(q.Trim()); }
+                _starLayers.Add(l);
+            }
+            return _starLayers;
+        }
+        private string SystemStarId() { return _sysStar >= 0 && _sysStar < _localCount ? _kinds[_localKind[_sysStar]].Id : ""; }
+        private List<StarLayer> StarLayersFor(string starId)
+        {
+            var l = new List<StarLayer>(); foreach (var q in StarLayers()) if (q.In == null || q.In.Contains(starId)) l.Add(q);
+            l.Sort((p, q) => q.To.CompareTo(p.To)); return l;
+        }
+        private StarLayer StarLayerAt(double share)
+        {
+            StarLayer best = null; foreach (var l in StarLayersFor(SystemStarId())) { if (share < l.From || share > l.To) continue; if (best == null || l.To - l.From < best.To - best.From) best = l; }
+            return best;
+        }
+        // the layer of the system's star you are in now, by your share of its radius from its middle; null outside it (or at its very face)
+        private StarLayer StarLayerHere()
+        {
+            if (_system == null || _ground != null || _sysStar < 0) return null;
+            double sd = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz), R = StarRadiusNow; if (R <= 0 || sd >= R * 0.9985) return null;
+            return StarLayerAt(sd / R);
+        }
+        // a layer's temperature and density at a depth: each runs from the layer's top to its bottom (the density on a log scale)
+        private static double LayerTempK(StarLayer l, double share) { double f = Math.Max(0, Math.Min(1, (l.To - share) / Math.Max(1e-9, l.To - l.From))); return l.TLo > 0 && l.THi > 0 ? l.TLo * Math.Pow(l.THi / l.TLo, f) : 6000; }
+        private static double LayerDensity(StarLayer l, double share) { double f = Math.Max(0, Math.Min(1, (l.To - share) / Math.Max(1e-9, l.To - l.From))); return l.DLo > 0 && l.DHi > 0 ? l.DLo * Math.Pow(l.DHi / l.DLo, f) : 2e-7; }
+        private static string DensityWords(double gcc) { return gcc >= 1 ? gcc.ToString(gcc >= 100 ? "N0" : "0.#") + " g/cc" : gcc >= 1e-3 ? (gcc * 1000).ToString("0.#") + " mg/cc" : gcc.ToString("0.#E+0") + " g/cc"; }
+        // the glow inside a star, by its heat: orange at a few thousand K, white-yellow at a star's face, blue-white in the millions
+        private static void StarGlow(double tempK, out float r, out float g, out float b)
+        {
+            double t = Math.Max(0, Math.Min(1, Math.Log10(Math.Max(1000, tempK) / 3000.0) / Math.Log10(1e7 / 3000.0)));
+            r = 1f; g = (float)(0.45 + 0.55 * Math.Min(1, t * 2.2)); b = (float)(0.15 + 0.85 * Math.Min(1, t * 1.6));
+        }
+        // ── the tour's reach: the places it went to against every galaxy, star, world and moon there is ──
+        private int _tourVisited; private double _bodiesPerStar = -1;
+        private double BodiesPerStar()
+        {
+            if (_bodiesPerStar >= 0) return _bodiesPerStar; if (_kinds == null || _kinds.Count == 0) return _bodiesPerStar = 10;
+            double sum = 0; int n = 0;
+            for (int k = 0; k < 24; k++) { try { var sy = SpaceGen.System(_content, _kinds[(k * 7) % _kinds.Count], 0x9E3779B97F4A7C15UL * (ulong)(k + 1)); sum += sy.Bodies.Count; n++; } catch { } }
+            return _bodiesPerStar = n > 0 ? sum / n : 10;
+        }
+        private string SeenWords()
+        {
+            double stars = _uGalaxies * RealStars, places = _uGalaxies + stars + stars * BodiesPerStar();
+            double pct = Math.Max(1, _tourVisited) / places * 100; string pw;
+            if (pct >= 0.01) pw = pct.ToString("0.##");
+            else { int e = (int)Math.Floor(Math.Log10(pct)); pw = pct.ToString("0." + new string('0', Math.Min(60, -e + 1))); }
+            return "You have now been to " + Math.Max(1, _tourVisited) + " of its " + places.ToString("0.#E+0") + " galaxies, stars, worlds and moons: " + pw + "% of the universe";
+        }
         public string Title
         {
             get
@@ -4033,8 +4188,9 @@ namespace Universe.Shell
                     : _ground != null ? "at " + _system.Bodies[_planet].Kind + ", " + Units.Describe(AboveGround()) + " above the ground"
                     : _system != null ? "in the system of a " + _system.StarName + " (" + _system.Bodies.Count + " planets and moons)"
                     : _near >= 0 ? (NearShare() > 0.5 ? "among the stars of " : "near ") + _galaxies[_near].Name : "among the galaxies";
-                double hr = LocalHour(); string when = " · time: " + TimeNames[TimeStep] + (hr >= 0 ? ", " + ((int)hr).ToString("00") + ":" + ((int)(hr % 1 * 60)).ToString("00") + " here" : "") + ClockWords();
+                double hr = LocalHour(); string when = " · time: " + TimeNames[TimeStep] + (hr >= 0 ? ", " + ((int)hr).ToString("00") + ":" + ((int)(hr % 1 * 60)).ToString("00") + " here" : "") + ClockWords() + GravityWords();
                 var lh = LayerHere(); if (lh != null) where = "inside " + (_system != null && _planet >= 0 ? _system.Bodies[_planet].Kind : "the giant") + ", in its " + lh.Name.ToLowerInvariant() + " (" + lh.Says + ")";
+                { var sl = StarLayerHere(); if (sl != null && _spaceScale <= 0) { double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) / Units.Km(1), RK = StarRadiusNow / Units.Km(1); where = "inside the " + _system.StarName + ", " + ScaleHud.Words(RK - sdK) + " below its surface, in its " + sl.Name.ToLowerInvariant() + " (about " + LayerTempK(sl, sdK / RK).ToString("N0") + " K: " + sl.Says + ")"; } }
                 return PreviewText.AppName + " · " + where + when + picked + (_tour != null && _tourAt < _tour.Count ? " · tour: " + _tour[_tourAt].Name : "") + " · " + (_spaceScale > 0 || _matterScale > 0 || _tKind == 5 ? "looking at " + ScaleHud.Words(ViewDistanceKm()) + " away" : "nearest thing " + Units.Describe(NearestDistance()) + " away") + " · wheel: fly in or out toward the mouse · drag: circle the pick or look around · right click: clear the pick · W A S D Q E: fly · H: scale on or off · Esc: close · card " + (int)Math.Round(Window.GpuBusy * 100) + "% busy (GPU use " + (int)Math.Round(Window.GpuUse * 100) + "%)";
             }
         }

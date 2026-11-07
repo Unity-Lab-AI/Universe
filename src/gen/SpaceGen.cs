@@ -136,7 +136,7 @@ namespace Universe.Gen
             }
             for (int k = 0; k < planetary; k++)
             {
-                // planetary nebulae: glowing shells a light-year or so across, puffed off by dying stars like the Sun (in every galaxy)
+                // planetary nebulae: glowing shells a light-year or so across, puffed off by dying stars of about one solar mass (in every galaxy)
                 var c = old(); float r = rng.Range(0.3f, 1.5f) * ly;
                 mix = rng.NextDouble(); float pr, pg, pb; Colour(4, mix, out pr, out pg, out pb);
                 for (int i = 0; i < 4; i++) { var d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized; list.Add(Star(c + d * r, r * 0.8f, pr, pg, pb, 0.06f)); }
@@ -219,7 +219,7 @@ namespace Universe.Gen
             /// <summary>Its kind's template in content/terrain.unt (null for a moon), and whether it is a giant (no ground).</summary>
             public string Terrain; public bool Giant, Rings, Locked;   // Locked: one face always to its star (by its orbit: physics.unt tidal-lock)
             /// <summary>What it is made of, for its card; and how much the tour's director wants to visit it.</summary>
-            public string[] MakeUp, MakeUpDry; public double Interest = 1;
+            public string[] MakeUp, MakeUpDry; public double Interest = 1; public double MassKg;   // its mass (kg) from its size and its kind's density (content/terrain.unt density-g-cc) public double MassKg;   // its mass (kg) from its size and its kind's density (content/terrain.unt density-g-cc) public double MassKg;   // its mass (kg) from its size and its kind's density (content/terrain.unt density-g-cc) public double MassKg;   // its mass (kg) from its size and its kind's density (content/terrain.unt density-g-cc) public double MassKg;   // its mass (kg) from its size and its kind's density (content/terrain.unt density-g-cc) public double MassKg;   // its mass (kg) from its size and its kind's density (content/terrain.unt density-g-cc)
             // its orbit's tilt to the system's plane and where it crosses it (radians): planets lie within a few degrees of one
             // plane (ours: Mercury 7, Pluto 17; around other stars mostly 1 to 3 degrees between planets, some far out of line);
             // close moons in their planet's plane, far captured ones at any tilt, even going round backwards
@@ -266,7 +266,7 @@ namespace Universe.Gen
             foreach (var e in content.OfKind("stars.unt", "star")) if (e.Id == kind.Id) e.TryRange("radius-sol", out rLo, out rHi);
             double radiusSol = rLo > 0 ? rLo + rng.NextDouble() * (rHi - rLo) : Math.Pow(mass, 0.8);
             sys.StarRadius = Units.Km(696000 * radiusSol);
-            // how bright it shines, from its size and surface temperature (the Sun: 1 radius, 5772 K), when both are known
+            // how bright it shines, from its size and surface temperature (one solar radius at 5772 K: one solar luminosity), when both are known
             double tLo = -1, tHi = -1;
             foreach (var e in content.OfKind("stars.unt", "star")) if (e.Id == kind.Id) e.TryRange("temp-k", out tLo, out tHi);
             if (tLo > 0 && rLo > 0) { double tk = tLo + rng.NextDouble() * (tHi - tLo); sys.Luminosity = radiusSol * radiusSol * Math.Pow(tk / 5772, 4); }
@@ -275,7 +275,7 @@ namespace Universe.Gen
             double scale = Math.Sqrt(sys.Luminosity);
             sys.FrostLineAu = frostSun * scale; sys.HabitableAu = hzSun * scale;
 
-            // its layout from the system kinds in content/solar-systems.unt (none named here): the usual one (sun-like) first,
+            // its layout from the system kinds in content/solar-systems.unt (none named here): the usual one (usual) first,
             // then the kind asked for over it, each trait it gives taking the place of the usual one's; planets: how many,
             // first-orbit-au and first-orbit-spread: the first world's orbit, scales-with-star: moved out by the star's
             // brightness, spacing: each orbit over the one before; share-in-universe: how often a system is of that kind
@@ -290,8 +290,8 @@ namespace Universe.Gen
                 if (sp != null || first) step = rng.Range((float)(sp != null ? sp[0] : 1.45), (float)(sp != null ? sp[1] : 1.9));
             };
             count = 0; a = 0; step = 1;
-            layoutOf("sun-like", true);
-            if (layout != null && layout != "sun-like") layoutOf(layout, false);
+            layoutOf("usual", true);
+            if (layout != null && layout != "usual") layoutOf(layout, false);
             var hj = sysT("hot-jupiter", "share-in-universe", 0, 0);
             bool hotJupiter = layout == "hot-jupiter" || (layout == null && rng.NextDouble() < (hj != null ? hj[0] : 0.1));
             // how far out of the system's plane its worlds lie: born in one flat disc they stay within a few degrees, but a
@@ -301,8 +301,8 @@ namespace Universe.Gen
             var stirredShare = sysT("stirred", "share-in-universe", 0, 0);
             ulong sh = (seed ^ 0x5A17UL) * 0x9E3779B97F4A7C15UL; sh ^= sh >> 29;
             bool stirred = layout == "stirred" || (layout == null && stirredShare != null && (sh >> 11) * (1.0 / 9007199254740992.0) < stirredShare[0]);
-            string tiltKind = stirred ? "stirred" : (layout ?? "sun-like");
-            double[] ts = sysT(tiltKind, "tilt-spread", 0, 0) ?? sysT("sun-like", "tilt-spread", 0, 0), ws = sysT(tiltKind, "wild-tilt-share", 0, 0) ?? sysT("sun-like", "wild-tilt-share", 0, 0), wt = sysT(tiltKind, "wild-tilt", 0, 0) ?? sysT("sun-like", "wild-tilt", 0, 0);
+            string tiltKind = stirred ? "stirred" : (layout ?? "usual");
+            double[] ts = sysT(tiltKind, "tilt-spread", 0, 0) ?? sysT("usual", "tilt-spread", 0, 0), ws = sysT(tiltKind, "wild-tilt-share", 0, 0) ?? sysT("usual", "wild-tilt-share", 0, 0), wt = sysT(tiltKind, "wild-tilt", 0, 0) ?? sysT("usual", "wild-tilt", 0, 0);
             double tiltSpread = ts != null ? ts[0] : 1.5, wildShare = ws != null ? ws[0] : 0.06, wildLo = wt != null ? wt[0] : 8, wildHi = wt != null ? wt[1] : 33;
             double lastRocky = 0, firstGiant = 0, outer = 0;
             for (int i = 0; i < count; i++, a *= step)
@@ -315,7 +315,7 @@ namespace Universe.Gen
                 var k = WorldKind(content, giant ? (hotJupiter && i == 0 ? "hot-jupiter" : "giant") : "rocky", a / sys.HabitableAu, a / sys.FrostLineAu, sys.Luminosity, rng);
                 b.Terrain = k.Id; b.Giant = giant; b.Kind = k.Label; b.MakeUp = k.MakeUp; b.MakeUpDry = k.MakeUpDry; b.Interest = k.Interest;
                 b.RadiusUnits = Units.Km(k.SpreadLo != k.SpreadHi ? k.SizeKm * rng.Range((float)k.SpreadLo, (float)k.SpreadHi) : k.SizeKm * k.SpreadLo);
-                b.R = k.Dot[0]; b.G = k.Dot[1]; b.B = k.Dot[2];
+                b.R = k.Dot[0]; b.G = k.Dot[1]; b.B = k.Dot[2]; b.MassKg = MassOf(b.RadiusUnits, k.Density);
                 b.Locked = a < LockAu(content) * Math.Pow(mass, 1 / 3.0);                      // close enough to its star to be tidally locked: its day is its year
                 // rings by its template's chance (rings-chance), from its own place, so the seed's other worlds stay as they were
                 { ulong rh = (seed ^ (ulong)(i + 1) * 0x9E3779B97F4A7C15UL) * 0xBF58476D1CE4E5B9UL; rh ^= rh >> 31; b.Rings = (rh >> 11) * (1.0 / 9007199254740992.0) < k.RingChance; }
@@ -336,7 +336,7 @@ namespace Universe.Gen
                     var mr = new Rng(seed ^ ((ulong)(planetIndex + 1) * 0x9E3779B97F4A7C15UL) ^ ((ulong)(m + 1) * 0xBF58476D1CE4E5B9UL));
                     var mkd = WorldKind(content, "moon", a / sys.HabitableAu, a / sys.FrostLineAu, sys.Luminosity, mr);
                     mo.Kind = mkd.Label; mo.Terrain = mkd.Id; mo.MakeUp = mkd.MakeUp; mo.MakeUpDry = mkd.MakeUpDry; mo.Interest = mkd.Interest * 0.5;
-                    mo.R = mkd.Dot[0]; mo.G = mkd.Dot[1]; mo.B = mkd.Dot[2];
+                    mo.R = mkd.Dot[0]; mo.G = mkd.Dot[1]; mo.B = mkd.Dot[2]; mo.MassKg = MassOf(mo.RadiusUnits, mkd.Density);
                     sys.Bodies.Add(mo);
                 }
             }
@@ -376,7 +376,7 @@ namespace Universe.Gen
                 // 43 arcseconds a century; whole turns each orbit close to a black hole)
                 if (b.Parent < 0)
                 {
-                    double aM = b.OrbitUnits / Units.Km(1) * 1000, gm = Physics.GmSun * sys.MassSol;
+                    double aM = b.OrbitUnits / Units.Km(1) * 1000, gm = Physics.GmSol * sys.MassSol;
                     b.PeriRate = 6 * Math.PI * gm / (Physics.C * Physics.C * aM * Math.Max(1e-9, 1 - b.Ecc * b.Ecc));
                 }
             }
@@ -414,7 +414,7 @@ namespace Universe.Gen
         {
             public string Id, Label, Forms; public double HzLo = -1, HzHi = -1, FrostLo = -1, FrostHi = -1, LumLo = -1, LumHi = -1, Weight = 1, Interest = 1;
             public double SizeKm = 6371, SpreadLo = 1, SpreadHi = 1, RingChance, MoonWeight; public int MoonsLo, MoonsHi; public float[] Dot = { 0.75f, 0.65f, 0.55f };
-            public string[] MakeUp, MakeUpDry;
+            public string[] MakeUp, MakeUpDry; public double Density = 5.5;   // g/cc (content/terrain.unt density-g-cc)
         }
         private static List<WorldKindRule> _kinds;
         private static List<WorldKindRule> Kinds(ContentLibrary content)
@@ -434,6 +434,7 @@ namespace Universe.Gen
                 if (e.TryRange("moon-weight", out lo, out hi)) k.MoonWeight = lo;
                 if (e.TryRange("rings-chance", out lo, out hi)) k.RingChance = lo;
                 if (e.TryRange("size-km", out lo, out hi)) k.SizeKm = lo;
+                if (e.TryRange("density-g-cc", out lo, out hi)) k.Density = lo;
                 if (e.TryRange("size-spread", out lo, out hi)) { k.SpreadLo = lo; k.SpreadHi = hi; }
                 if (e.TryRange("moons", out lo, out hi)) { k.MoonsLo = (int)lo; k.MoonsHi = (int)hi; }
                 var w = e.Get("dot-colour", "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries); float x, y, z;
@@ -445,7 +446,7 @@ namespace Universe.Gen
             _kinds = list; return list;
         }
         /// <summary>The kind of world that forms in a place: <paramref name="forms"/> rocky, giant or hot-jupiter; x the orbit over
-        /// the habitable zone's distance, f over the frost line's, lum the star's brightness (the Sun 1). With
+        /// the habitable zone's distance, f over the frost line's, lum the star's brightness (one solar luminosity 1). With
         /// <paramref name="byId"/>, that kind itself. Only one kind fitting: no chance spent, so a seed's worlds stay its own.</summary>
         public static WorldKindRule WorldKind(ContentLibrary content, string forms, double x, double f, double lum, Rng rng, string byId = null)
         {
@@ -475,10 +476,10 @@ namespace Universe.Gen
             return fallback;
         }
 
-        // how close to a star of the Sun's mass a world is tidally locked (content/physics.unt tidal-lock)
+        // how close to a star of one solar mass a world is tidally locked (content/physics.unt tidal-lock)
         private static double LockAu(ContentLibrary content)
         {
-            foreach (var e in content.OfKind("physics.unt", "law")) { double lo, hi; if (e.Id == "tidal-lock" && e.TryRange("lock-au-sun", out lo, out hi)) return lo; }
+            foreach (var e in content.OfKind("physics.unt", "law")) { double lo, hi; if (e.Id == "tidal-lock" && e.TryRange("lock-au-sol", out lo, out hi)) return lo; }
             return 0.5;
         }
 
@@ -503,6 +504,14 @@ namespace Universe.Gen
             }
         }
 
+        /// <summary>A world's mass (kg) from its radius (units) and its density (g/cc): four thirds pi r cubed rho.</summary>
+        public static double MassOf(double radiusUnits, double densityGcc) { double r = radiusUnits / Units.Km(1) * 1000; return 4.0 / 3 * Math.PI * r * r * r * densityGcc * 1000; }
+        /// <summary>Gravity switched off (content/physics.unt @law gravity-off): the year it went off (NaN: on). From then on every
+        /// body carries straight on at the speed it had on its orbit, and the star swells by <see cref="StarSwell"/>.</summary>
+        public static double GravityOffYear = double.NaN;
+        /// <summary>How much the star has swollen since gravity went off (1: not at all), set by the view each frame.</summary>
+        public static double StarSwell = 1;
+
         /// <summary>
         /// Builds this frame's star, planet and moon billboards. Calm motion: a body whose on-screen turn would be faster
         /// than <paramref name="maxTurnPerSecond"/> is drawn as a soft orbit trail instead of a moving dot.
@@ -522,21 +531,33 @@ namespace Universe.Gen
             int count = sys.Bodies.Count;
             var px = new double[count]; var py = new double[count]; var pz = new double[count];
             double seconds = yearsPerSecond > 0 ? simYears / yearsPerSecond : 0;
-            for (int i = 0; i < count; i++)
+            Action<double, double[], double[], double[], bool> place = (t, qx, qy, qz, calm) =>
             {
-                var b = sys.Bodies[i];
-                double period = Math.Max(1e-4, b.Period);
-                double turn = yearsPerSecond / period * Math.PI * 2;
-                // calm motion: a body that would turn faster than the limit is shown turning at the limit
-                double ang = turn <= maxTurnPerSecond || yearsPerSecond <= 0
-                    ? b.Phase + simYears / period * Math.PI * 2
-                    : b.Phase + seconds * maxTurnPerSecond;
-                double cx = b.Parent >= 0 ? px[b.Parent] : 0, cy = b.Parent >= 0 ? py[b.Parent] : 0, cz = b.Parent >= 0 ? pz[b.Parent] : 0, ox, oy, oz;
-                b.At(ang, out ox, out oy, out oz); px[i] = cx + ox; py[i] = cy + oy; pz[i] = cz + oz;
+                for (int i = 0; i < count; i++)
+                {
+                    var b = sys.Bodies[i];
+                    double period = Math.Max(1e-4, b.Period);
+                    double turn = yearsPerSecond / period * Math.PI * 2;
+                    // calm motion: a body that would turn faster than the limit is shown turning at the limit
+                    double ang = !calm || turn <= maxTurnPerSecond || yearsPerSecond <= 0
+                        ? b.Phase + t / period * Math.PI * 2
+                        : b.Phase + seconds * maxTurnPerSecond;
+                    double cx = b.Parent >= 0 ? qx[b.Parent] : 0, cy = b.Parent >= 0 ? qy[b.Parent] : 0, cz = b.Parent >= 0 ? qz[b.Parent] : 0, ox, oy, oz;
+                    b.At(ang, out ox, out oy, out oz); qx[i] = cx + ox; qy[i] = cy + oy; qz[i] = cz + oz;
+                }
+            };
+            if (double.IsNaN(GravityOffYear) || simYears <= GravityOffYear) place(simYears, px, py, pz, true);
+            else
+            {
+                // gravity off: from the moment it went, every body carries straight on at the speed it had then (its place a
+                // moment later less its place then, over that moment), a moon with its planet's motion and its own
+                double t0 = GravityOffYear, hY = 1e-5; var ax = new double[count]; var ay = new double[count]; var az = new double[count];
+                place(t0, px, py, pz, false); place(t0 + hY, ax, ay, az, false); double k = (simYears - t0) / hY;
+                for (int i = 0; i < count; i++) { px[i] += (ax[i] - px[i]) * k; py[i] += (ay[i] - py[i]) * k; pz[i] += (az[i] - pz[i]) * k; }
             }
             fx = focus >= 0 && focus < count ? px[focus] : 0; fy = focus >= 0 && focus < count ? py[focus] : 0; fz = focus >= 0 && focus < count ? pz[focus] : 0;
             int n = 0;
-            outV[n++] = Star(new Vec3((float)(-fx * scale), (float)(-fy * scale), (float)(-fz * scale)), (float)(sys.StarRadius * scale), sys.SR, sys.SG, sys.SB, 1f);
+            outV[n++] = Star(new Vec3((float)(-fx * scale), (float)(-fy * scale), (float)(-fz * scale)), (float)(sys.StarRadius * StarSwell * scale), sys.SR, sys.SG, sys.SB, 1f);
             for (int i = 0; i < count; i++)
             {
                 var b = sys.Bodies[i];

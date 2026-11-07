@@ -148,7 +148,7 @@ albedo: 0.5
 name: Mercury
 real: yes
 type: sub-earth
-note: smallest planet, closest to the Sun, almost no air, has a magnetic field
+note: smallest planet, closest to our own star, almost no air, has a magnetic field
 
 @example venus
 name: Venus

@@ -115,6 +115,7 @@ ground: 99 0.14 0.13 0.13 tinted
 | Trait | Means |
 |---|---|
 | `size-km`, `size-spread` | Its size: `size-km` times a value in the spread |
+| `density-g-cc` | What a world of this kind weighs for its size (grams a cubic centimetre); its mass follows, and from the mass the pull at its ground, its escape speed and how much it slows clocks |
 | `moons` | How many moons it gets |
 | `day-hours` | One turn of its spin, its day |
 | `label`, `makeup` | What its info card calls it and says it's made of (lines split by `;`) |
@@ -175,6 +176,7 @@ share-of-stars: rare
 | `color` | `blue`, `blue-white`, `white`, `yellow-white`, `yellow`, `orange`, `red` or `magenta-red` |
 | `temp-k` | Surface temperature in kelvin. With `radius-sol`, it sets how bright the star shines, and so where its liquid-water zone and frost line fall |
 | `mass-sol`, `radius-sol` | Mass and size in solar masses and solar radii |
+| `@layer` | A star's layers from its surface to its core (`from-r`, `to-r` as shares of its radius; `temp-k` and `density-g-cc` from the layer's top to its bottom; `makeup` where it differs from the star's; `in`: which kinds of star have it): fly into a star and each is a place, with its own plasma to dive into |
 | `share-of-stars` | How common it is: `most common`, `common`, `uncommon`, `rare` or `rarest` |
 | `remnant: yes` | A dead star (a white dwarf, a neutron star) |
 
@@ -213,7 +215,7 @@ Every number can be a range, and each galaxy of the kind gets its own size, tilt
 
 ## Lay out star systems
 
-The kinds of star system are templates in `content/solar-systems.unt`. The usual one, `sun-like`, is the base, and other kinds give only what differs.
+The kinds of star system are templates in `content/solar-systems.unt`. The usual one, `usual`, is the base, and other kinds give only what differs.
 
 ```
 @system compact
@@ -247,7 +249,7 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 
 | Force | What it does in Universe | Its numbers |
 |---|---|---|
-| **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass), and each body's speed everywhere follows from its orbit (vis-viva). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per solar mass), and the light of stars behind it bends into an **Einstein ring**. **Relativity** turns every orbit's closest point round its star (6πGM/c²a(1−e²) an orbit: Mercury's 43 arcseconds a century, whole turns near a black hole) and slows clocks in a gravity well; the cards say by how much | `@law gravity`: `gm-sun-m3-s2` (G times one solar mass: the pull of a star of one solar mass), `earth-g-m-s2` |
+| **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass), and each body's speed everywhere follows from its orbit (vis-viva). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per solar mass), and the light of stars behind it bends into an **Einstein ring**. **Relativity** turns every orbit's closest point round its star (6πGM/c²a(1−e²) an orbit: Mercury's 43 arcseconds a century, whole turns near a black hole) and slows clocks in a gravity well; the cards say by how much | `@law gravity`: `gm-sol-m3-s2` (G times one solar mass: the pull of a star of one solar mass), `earth-g-m-s2` |
 | **Electromagnetism** | Each atom's **electrons** fill their shells and orbitals in their real order (1s 2s 2p 3s ...). **Bonds** are shared electrons. A star's **colour** comes from its temperature the way a glowing body's does (Planck's law). Inside the nucleus, the **protons push each other apart** | `@law coulomb`: `k-mev-fm` (the push between two protons), `@law light`: `speed-m-s` |
 | **Strong nuclear force** | **Packs the nucleus**: protons and neutrons pull together just beyond a hard core where they push apart, and feel nothing past a few femtometres. It glues the **quarks** in every proton and neutron. A nucleus's **binding energy** comes from the strong pull against the electric push | `@law nuclear-force`: `core-fm`, `spacing-fm`, `range-fm`; `@law mass-formula`: the five terms of the Bethe–Weizsäcker formula |
 | **Weak nuclear force** | Decides **which nuclei are stable** and how the rest decay: too many neutrons and one turns into a proton (beta-minus), too many protons and one turns into a neutron (beta-plus). Past lead, the biggest nuclei throw out alpha particles. Every nucleus's card says which | `@law beta-stability`: `c` (the valley of stability), `alpha-above-z` |
@@ -257,8 +259,10 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 | Law | What it sets |
 |---|---|
 | `@law orbits` | Orbits from speeds, as the laws of motion have it: each body moves at some share of the circular speed where it was placed (`planet-speed-spread`, `wild-share` and `wild-speed` for the share flung into long loops, `moon-close-speed` and `moon-far-speed`), and its ellipse, its period and its speed everywhere follow. Near escape speed a body flies through its closest point ultra-fast and crawls through its farthest |
-| `@law tidal-lock` | How close to a star a world turns once each orbit, one face always toward it (`lock-au-sun`: half an AU for a star of one solar mass, growing with the cube root of the star's mass) |
+| `@law tidal-lock` | How close to a star a world turns once each orbit, one face always toward it (`lock-au-sol`: half an AU for a star of one solar mass, growing with the cube root of the star's mass) |
 | `@law air-density` | How many molecules are in each cubic centimetre of air at about one bar, so you meet the right number going into an air |
+| `@law frame-dragging` | Every black hole's spin (`spin-range`, a share of the most a hole can have): its horizon pulled in, its ergosphere, how fast space is swept round at its horizon, how far in its disc reaches, and the twist of the fall's funnel |
+| `@law gravity-off` | What the Time menu's Gravity switch does: every body straight on at its speed, every star blown apart at about its sound speed (`swell-over-freefall` times its free-fall time to double), a galaxy's stars flung off at the rim speed |
 | `@gas ...` | The atoms in each molecule of each gas, so an air's make-up gives the atoms you find in it |
 | `@law star-plasma` | What a star's surface is made of, and how dense it is |
 | `@force ...`, `@particle ...`, `@atom ...` | What each force, particle and part of an atom is and does, for the cards |
@@ -302,7 +306,7 @@ Below the ground, everything is real matter at its real size.
 
 | File | What it holds |
 |---|---|
-| `content/elements.unt` | All 118 elements: their atoms, shells and most common isotopes |
+| `content/elements.unt` | All 118 elements: their atoms, shells and most common isotopes; for the unstable ones `half-life` and `decays` (alpha, beta-minus, electron-capture, fission), so each decays before your eyes at its own moment |
 | `content/minerals.unt` | Minerals (their crystal from its published unit cell, and their **trace elements**: `trace <host> <element> <share>`, each element standing in for the host atom on that share of its sites, so nickel sits in olivine, strontium in feldspar, gold in pyrite, and the sea's ions among its water) and the **mix** each kind of ground is made of |
 | `content/physics.unt` | The laws of nature, gases and particles (see *The laws of nature* above) |
 

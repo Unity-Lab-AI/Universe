@@ -31,7 +31,7 @@ cbuffer C : register(b0)
     float4 up;      // xyz camera up
     float4 misc;    // x time, y size scale, z style (0 glow, otherwise faceted)
     float4 screen;  // x width, y height (of this tile, in pixels), z minimum size per unit of distance, w maximum (0: none)
-    float4 extra;   // x: how much dimmer (0 full bright, 1 gone), so things fade in and out, never switch
+    float4 extra;   // x: how much dimmer (0 full bright, 1 gone), so things fade in and out, never switch; z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on)
     float4 lensA;   // a black hole's light bending: xy where it is on screen (-1..1), z its Einstein ring (same units, up the screen), w its distance
     float4 lensB;   // x: width over height of the screen; y: 1 = orbital clouds (each record an orbital, its points placed here); z: points per orbital; w: the web's fade distance (0: not the web)
     float4 webA;    // the cosmic web's light, sifted here on the card: xyz where you are (in the points' own frame), w how near round you is left out (the galaxies made in full stand there; it fades in over half again past that, as they fade out)
@@ -57,6 +57,16 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
     uint rec = iid, sub = 0;
     if (lensB.y > 0.5) { uint per = max(1u, (uint)lensB.z); rec = iid / per; sub = iid % per; }
     Star s = stars[rec];
+    if (extra.z != 0)
+    {
+        // gravity switched off: a galaxy's stars fly off on their tangents at the speed they circled at (a disc), or every way
+        // (a round galaxy): each point's own straight line, so far along it by now (extra.z the distance in the galaxy's own
+        // frame, negative for a round galaxy)
+        float dd = abs(extra.z); float3 tv;
+        if (extra.z > 0) { float rr = length(s.pos.xz); tv = rr > 1e-5 ? float3(-s.pos.z, 0, s.pos.x) / rr : float3(0, 0, 0); }
+        else { uint kk = asuint(s.pos.x) ^ (asuint(s.pos.y) * 7919u) ^ (asuint(s.pos.z) * 104729u); tv = normalize(float3(oh01(kk, 1u), oh01(kk, 2u), oh01(kk, 3u)) * 2 - 1); }
+        s.pos += tv * dd;
+    }
     bool webOut = false;
     if (lensB.w > 0)
     {

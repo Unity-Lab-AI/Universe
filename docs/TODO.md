@@ -139,6 +139,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A spot on any small body picked by a click on its stone, the zoom flying down to it:** (built: DNA-AND DESIGN 638; waits on the test) "and should differnt spots on an astroid be selctabble just like all bodies" / "so maqke it so for all bodies"
 
+- [~] **Every small body drawn from its precise offset from its star, never from a billion-light-year double:** (built: DNA-AND DESIGN 639; waits on the test) "that same solar system shit aint fixed i screen shot"
+
 ---
 
 ## Pending

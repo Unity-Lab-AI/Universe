@@ -350,7 +350,7 @@ namespace Universe.Shell
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
         private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8, EatLo = 1, EatHi = 1; public int Shown, Swarm; public float R, G, B; }   // EatLo..EatHi: how many stars a feeding hole tears apart at once   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
-        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; }   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public double OffX, OffY, OffZ, LOffX, LOffY, LOffZ; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; }   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -371,7 +371,7 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (!ex.Hole || ex.Mass <= 0) continue;
-                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz), r = d / Math.Max(1e-300, rs);
+                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz), r = d / Math.Max(1e-300, rs);
                 if (r <= 1.0005) continue;
                 double s2 = 6.75 / (r * r) * Math.Max(0, 1 - 1 / r), th = r >= 1.5 ? Math.Asin(Math.Sqrt(Math.Min(1, s2))) : Math.PI - Math.Asin(Math.Sqrt(Math.Min(1, s2)));
                 if (th < Math.PI / 2 && Math.Tan(th) * h / (2 * Math.Tan(0.45)) < 0.6) continue;   // (smaller than a pixel: nothing to draw)
@@ -567,7 +567,7 @@ namespace Universe.Shell
         {
             if (_spaceScale > 0 && _matter.SpaceKind == 12) return Math.Pow(10, -Math.Max(0, _fallShare) * MatterView.FallTenfolds);
             if (_tKind != 6 || _tIndex < 0 || _tIndex >= _extras.Count || !_extras[_tIndex].Hole || _extras[_tIndex].Mass <= 0) return 0;
-            var ex = _extras[_tIndex]; double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) / rs;
+            var ex = _extras[_tIndex]; double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) / rs;
             return d < 60 ? d : 0;
         }
         // ── supernovae: every galaxy's, from its seed and the game's time (content/physics.unt @law supernova): when, at which of its
@@ -718,7 +718,7 @@ namespace Universe.Shell
             double now = _simYears; var pts = new List<StarVertex>();
             for (int i = 0; i < _galaxies.Count; i++)
             {
-                var g = _galaxies[i]; double gx = (g.X - _ax) - _ox, gy = (g.Y - _ay) - _oy, gz = (g.Z - _az) - _oz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
+                var g = _galaxies[i]; double gx = RelX(g) - _ox, gy = RelY(g) - _oy, gz = RelZ(g) - _oz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
                 if (gd > 400 * g.Scale) continue;
                 bool full = i == _near; var c = Supernovae(g, full); if (c.Events.Count == 0) continue;
                 foreach (var sn in c.Events)
@@ -840,7 +840,7 @@ namespace Universe.Shell
             Sn best = null; double bestAng = 0.035;
             for (int i = 0; i < _galaxies.Count; i++)
             {
-                var g = _galaxies[i]; double gx = (g.X - _ax) - _ox, gy = (g.Y - _ay) - _oy, gz = (g.Z - _az) - _oz; if (gx * gx + gy * gy + gz * gz > Math.Pow(400 * g.Scale, 2)) continue;
+                var g = _galaxies[i]; double gx = RelX(g) - _ox, gy = RelY(g) - _oy, gz = RelZ(g) - _oz; if (gx * gx + gy * gy + gz * gz > Math.Pow(400 * g.Scale, 2)) continue;
                 var c = Supernovae(g, i == _near);
                 foreach (var sn in c.Events)
                 {
@@ -953,7 +953,7 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (!ex.Hole || ex.Mass <= 0) continue;
-                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                 if (rs * 600 / Math.Max(1e-30, d) * h < 2) continue;                      // (too small on screen to show yet)
                 var hp = PartsFor(ex.Pl, ex.Spin);
                 // its frame: tilted its own way, its horizon's radius 1; nothing turns as a plate: every point moves on its own
@@ -989,7 +989,7 @@ namespace Universe.Shell
         private UploadBuffer _cometBuf; private int _cometN;
         private bool ShapeShown(Extra ex, int h)
         {
-            double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+            double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
             double reach = ex.Shape == "comet" ? Units.Km(ex.TailKm) / Math.Max(1e-30, ex.R) : 1;   // (a comet shows by its tail, millions of km long: across its whole system)
             return ex.R * reach / Math.Max(1e-30, d) * h > 3;
         }
@@ -1126,7 +1126,7 @@ namespace Universe.Shell
         private double BodyRadiusToward(Extra ex, double time, double dx, double dy, double dz)
         {
             if (_rockSolid == null) MakeSmallBodies();
-            double bx = ex.X - _ax, by = ex.Y - _ay, bz = ex.Z - _az, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
+            double bx = RelX(ex), by = RelY(ex), bz = RelZ(ex), bl = Math.Sqrt(bx * bx + by * by + bz * bz);
             var xs = bl > 0 ? new Vec3((float)(-bx / bl), (float)(-by / bl), (float)(-bz / bl)) : new Vec3(1, 0, 0);
             var ys = Vec3.Cross(xs, Math.Abs(xs.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var zs = Vec3.Cross(xs, ys).Normalized;
             double spin = BodySpin(ex, time); float c = (float)Math.Cos(spin), sn = (float)Math.Sin(spin);
@@ -1138,13 +1138,20 @@ namespace Universe.Shell
             var p = shape(new[] { lx / ll, ly / ll, lz / ll });
             return ex.R * Math.Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
         }
+        // a small body's place against the anchor (the star you are at), precise: its star's offset from the anchor (nothing, in its
+        // own system) and its own precise offset from its star. Its absolute coordinates are doubles at billions of light-years,
+        // where a double's step is about a million kilometres: taken against the anchor they snapped every asteroid to a
+        // million-kilometre grid, the rows of bodies set out in straight lines seen in every belt
+        private double RelX(Extra ex) { return (ex.OrbCx - _ax) + ex.OffX; }
+        private double RelY(Extra ex) { return (ex.OrbCy - _ay) + ex.OffY; }
+        private double RelZ(Extra ex) { return (ex.OrbCz - _az) + ex.OffZ; }
         private void DrawSmallBodies(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 || !ShapeShown(ex, h)) continue;
                 if (_rockSolid == null) MakeSmallBodies();
-                double bx = ex.X - _ax, by = ex.Y - _ay, bz = ex.Z - _az, dx = bx - _ox, dy = by - _oy, dz = bz - _oz, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
+                double bx = RelX(ex), by = RelY(ex), bz = RelZ(ex), dx = bx - _ox, dy = by - _oy, dz = bz - _oz, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
                 // its frame: +x toward its star (the anchor of the system you are in), spinning about that line
                 var xs = bl > 0 ? new Vec3((float)(-bx / bl), (float)(-by / bl), (float)(-bz / bl)) : new Vec3(1, 0, 0);
                 var ys = Vec3.Cross(xs, Math.Abs(xs.Y) < 0.9f ? new Vec3(0, 1, 0) : new Vec3(1, 0, 0)).Normalized; var zs = Vec3.Cross(xs, ys).Normalized;
@@ -1204,6 +1211,7 @@ namespace Universe.Shell
         private Extra MakeExtra(Place pl, double x, double y, double z)
         {
             var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm * (pl.Shape == "rock" ? Math.Exp(-1.6 + 3.2 * Math.Pow(Math.Abs(Math.Sin(x * 3.1 + y * 5.7 + z * 1.9) * 7919.1) % 1, 2.5)) : 1)), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>(), Pl = pl };
+            ex.OrbCx = _ax; ex.OrbCy = _ay; ex.OrbCz = _az; ex.OffX = x - _ax; ex.OffY = y - _ay; ex.OffZ = z - _az;   // (its place from the anchor; a body on an orbit gets its precise offset below)
             ex.Lines.Add(pl.Name);
             {
                 // its id, as a star's: a code for its kind, then six digits from where it is (the same body, the same id, every time)
@@ -1302,7 +1310,7 @@ namespace Universe.Shell
             // you are at moves you with it, so you stay beside it, or on its ground, as it goes round (at a minute a second an
             // asteroid at three AU would leave you in half a second)
             if (_tKind != 6 || _tExtra == null) _tSpot = null;
-            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && (ex != _tExtra || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra) { _ox += ex.X - ex.LX; _oy += ex.Y - ex.LY; _oz += ex.Z - ex.LZ; } } }   // (a held spin let go once you are off the body)
+            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && (ex != _tExtra || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra) { _ox += ex.OffX - ex.LOffX; _oy += ex.OffY - ex.LOffY; _oz += ex.OffZ - ex.LOffZ; } } }   // (a held spin let go once you are off the body)
             if (key == _extraKey) return; _extraKey = key; _extras.Clear();
             // the compact remnants of this galaxy's past supernovae: a neutron star (from a star of eight to about twenty solar masses) or a
             // stellar black hole (heavier) born at each one's middle, from the blast; the ones near you, picked like any body
@@ -1359,7 +1367,7 @@ namespace Universe.Shell
                         ex.OrbPeriod = Math.Sqrt(Math.Pow(au / (1 - ecc), 3) / Math.Max(0.05, _system.MassSol));
                         { double hx = Math.Cos(ang) * rr, hy = u, hz = Math.Sin(ang) * rr; ex.OrbE1 = new[] { hx, hy, hz }; double sx = -hz, sz = hx, sl = Math.Sqrt(sx * sx + sz * sz); if (sl < 1e-9) { sx = 1; sz = 0; sl = 1; } ex.OrbE2 = new[] { sx / sl, 0, sz / sl }; }   // (e1: from the star to its closest point; e2: along the orbit from there, level with the system)
                         ex.Lines.Add("its orbit: closest " + au.ToString("0.##") + " AU, farthest " + (au * (1 + ecc) / (1 - ecc)).ToString("0.##") + " AU, round the star in " + Years(ex.OrbPeriod));
-                        Orbit(ex); ex.LX = ex.X; ex.LY = ex.Y; ex.LZ = ex.Z; _extras.Add(ex);
+                        Orbit(ex); ex.LX = ex.X; ex.LY = ex.Y; ex.LZ = ex.Z; ex.LOffX = ex.OffX; ex.LOffY = ex.OffY; ex.LOffZ = ex.OffZ; _extras.Add(ex);
                     }
                 }
             }
@@ -1379,14 +1387,15 @@ namespace Universe.Shell
         private void Orbit(Extra ex)
         {
             if (!ex.Orbits || ex.OrbPeriod <= 0) return;
-            ex.LX = ex.X; ex.LY = ex.Y; ex.LZ = ex.Z;
-            double off = SpaceGen.GravityOffYear, t = _simYears;
+            ex.LX = ex.X; ex.LY = ex.Y; ex.LZ = ex.Z; ex.LOffX = ex.OffX; ex.LOffY = ex.OffY; ex.LOffZ = ex.OffZ;
+            double off = SpaceGen.GravityOffYear, t = _simYears, lx, ly, lz;
             if (!double.IsNaN(off) && t > off)
             {
                 double x0, y0, z0, x1, y1, z1; OrbitAt(ex, off - 1e-4, out x0, out y0, out z0); OrbitAt(ex, off, out x1, out y1, out z1);
-                ex.X = x1 + (x1 - x0) / 1e-4 * (t - off); ex.Y = y1 + (y1 - y0) / 1e-4 * (t - off); ex.Z = z1 + (z1 - z0) / 1e-4 * (t - off); return;
+                lx = x1 + (x1 - x0) / 1e-4 * (t - off); ly = y1 + (y1 - y0) / 1e-4 * (t - off); lz = z1 + (z1 - z0) / 1e-4 * (t - off);
             }
-            double x, y, z; OrbitAt(ex, t, out x, out y, out z); ex.X = x; ex.Y = y; ex.Z = z;
+            else OrbitAt(ex, t, out lx, out ly, out lz);
+            ex.OffX = lx; ex.OffY = ly; ex.OffZ = lz; ex.X = ex.OrbCx + lx; ex.Y = ex.OrbCy + ly; ex.Z = ex.OrbCz + lz;   // (the precise offset kept beside the absolute place)
         }
         private static void OrbitAt(Extra ex, double t, out double x, out double y, out double z)
         {
@@ -1394,7 +1403,7 @@ namespace Universe.Shell
             for (int it = 0; it < 12; it++) { double dE = (E - e * Math.Sin(E) - M) / (1 - e * Math.Cos(E)); E -= dE; if (Math.Abs(dE) < 1e-12) break; }
             double nu = 2 * Math.Atan2(Math.Sqrt(1 + e) * Math.Sin(E / 2), Math.Sqrt(1 - e) * Math.Cos(E / 2)), a = ex.OrbQ / (1 - e), r = a * (1 - e * Math.Cos(E));
             double cn = Math.Cos(nu), sn = Math.Sin(nu);
-            x = ex.OrbCx + r * (cn * ex.OrbE1[0] + sn * ex.OrbE2[0]); y = ex.OrbCy + r * (cn * ex.OrbE1[1] + sn * ex.OrbE2[1]); z = ex.OrbCz + r * (cn * ex.OrbE1[2] + sn * ex.OrbE2[2]);
+            x = r * (cn * ex.OrbE1[0] + sn * ex.OrbE2[0]); y = r * (cn * ex.OrbE1[1] + sn * ex.OrbE2[1]); z = r * (cn * ex.OrbE1[2] + sn * ex.OrbE2[2]);   // (its offset from its star, precise)
         }
 
         private void LookAt(double x, double y, double z)
@@ -1439,7 +1448,7 @@ namespace Universe.Shell
             m.M11 = cu * s; m.M12 = 0; m.M13 = su * s;
             m.M21 = -st * su * s; m.M22 = ct * s; m.M23 = st * cu * s;
             m.M31 = -ct * su * s; m.M32 = -st * s; m.M33 = ct * cu * s;
-            m.M41 = (float)((g.X - _ax) - _ox); m.M42 = (float)((g.Y - _ay) - _oy); m.M43 = (float)((g.Z - _az) - _oz);
+            m.M41 = (float)(RelX(g) - _ox); m.M42 = (float)(RelY(g) - _oy); m.M43 = (float)(RelZ(g) - _oz);
             return m;
         }
 
@@ -1452,7 +1461,7 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 && !ex.Hole) continue;
-                double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
+                double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
                 if (d > 0 && d < best) best = d;
             }
             return best;
@@ -2355,7 +2364,7 @@ namespace Universe.Shell
                             var ex = _extras[q]; string nm = ex.Name.ToLowerInvariant();
                             bool fits = what == "black-hole" ? ex.Hole : what == "asteroid" ? ex.Shape == "rock" : ex.Shape == "comet" || nm.Contains("comet");   // (an asteroid: any rocky body here, of a belt, the Kuiper belt or the Oort cloud, as the system has)
                             if (!fits) continue;
-                            double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = dx * dx + dy * dy + dz * dz;
+                            double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = dx * dx + dy * dy + dz * dz;
                             if (what == "black-hole" && d > holeReach * holeReach) { if (d < bd * 1e12) nearestHole = Math.Min(nearestHole, Math.Sqrt(d)); continue; }
                             if (what == "black-hole" && ex.Feeding > 0) d *= 1e-6;
                             if (what == "asteroid" && nm.Contains("asteroid")) d *= 1e-4;          // (the belt's own, before a far icy body)             // (a feeding one, its disc glowing, before a quiet one)
@@ -2539,12 +2548,12 @@ namespace Universe.Shell
                     var g8 = _galaxies[i]; double ex = g8.X - _tx, ey = g8.Y - _ty, ez = g8.Z - _tz;
                     if (ex * ex + ey * ey + ez * ez < Math.Pow(3e6 / Units.LightYearsPerUnit, 2)) { _tKind = 0; _tIndex = i; _tName = g8.Name; break; }
                 }
-            if (_tKind == 0) { var g = _galaxies[_tIndex]; dx = (g.X - _ax) - _ox; dy = (g.Y - _ay) - _oy; dz = (g.Z - _az) - _oz; radius = g.Scale * 0.3; return true; }
+            if (_tKind == 0) { var g = _galaxies[_tIndex]; dx = RelX(g) - _ox; dy = RelY(g) - _oy; dz = RelZ(g) - _oz; radius = g.Scale * 0.3; return true; }
             if (_tKind == 6 && _tSpot != null && _tExtra != null)
             {
                 // the spot picked on the body's stone: the point itself on its drawn surface, a small mark to fly down to
                 double rr = BodyRadiusToward(_tExtra, _lastDrawTime, _tSpot[0], _tSpot[1], _tSpot[2]);
-                dx = (_tExtra.X - _ax) - _ox + _tSpot[0] * rr; dy = (_tExtra.Y - _ay) - _oy + _tSpot[1] * rr; dz = (_tExtra.Z - _az) - _oz + _tSpot[2] * rr; radius = _tExtra.R * 0.05; return true;
+                dx = RelX(_tExtra) - _ox + _tSpot[0] * rr; dy = RelY(_tExtra) - _oy + _tSpot[1] * rr; dz = RelZ(_tExtra) - _oz + _tSpot[2] * rr; radius = _tExtra.R * 0.05; return true;
             }
             if (_tKind == 1 || _tKind == 4 || _tKind == 5 || _tKind == 6 || _tKind == 7 || _tKind == 8) { dx = (_tx - _ax) - _ox; dy = (_ty - _ay) - _oy; dz = (_tz - _az) - _oz; radius = _tRadius; return true; }   // a star, or a spot in a belt
             if (_tKind == 2 && _system != null && _tIndex < _system.Bodies.Count)
@@ -2578,7 +2587,7 @@ namespace Universe.Shell
             // land is met), once it stands a few dozen pixels wide; picked, the zoom flies down to that spot, as to a spot of land
             if (_tKind == 6 && _tExtra != null && _tExtra.Shape.Length > 0 && !_tExtra.Hole && _ground == null)
             {
-                var exs = _tExtra; double cx0 = (exs.X - _ax) - _ox, cy0 = (exs.Y - _ay) - _oy, cz0 = (exs.Z - _az) - _oz, cl0 = Math.Sqrt(cx0 * cx0 + cy0 * cy0 + cz0 * cz0);
+                var exs = _tExtra; double cx0 = RelX(exs) - _ox, cy0 = RelY(exs) - _oy, cz0 = RelZ(exs) - _oz, cl0 = Math.Sqrt(cx0 * cx0 + cy0 * cy0 + cz0 * cz0);
                 if (cl0 > 0 && exs.R / cl0 * _lastH > 40)
                 {
                     Func<double, double> over = t => { double hx = dir.X * t - cx0, hy = dir.Y * t - cy0, hz = dir.Z * t - cz0, hl = Math.Sqrt(hx * hx + hy * hy + hz * hz); return hl - BodyRadiusToward(exs, _lastDrawTime, hx / hl, hy / hl, hz / hl); };
@@ -2595,7 +2604,7 @@ namespace Universe.Shell
             for (int q = 0; q < _extras.Count && _ground == null; q++)
             {
                 // the other bodies round you (black holes, neutron stars, rogue planets, asteroids, comets...): clickable as any star
-                var ex = _extras[q]; double d2 = near((ex.X - _ax) - _ox, (ex.Y - _ay) - _oy, (ex.Z - _az) - _oz);
+                var ex = _extras[q]; double d2 = near(RelX(ex) - _ox, RelY(ex) - _oy, RelZ(ex) - _oz);
                 if (d2 < best) { best = d2; kind = 6; idx = q; tx = ex.X; ty = ex.Y; tz = ex.Z; trad = ex.R; name = ex.Name; }
             }
             if (_tKind == 5 && _near >= 0 && _tGal == _near && _tIndex >= 0 && _tIndex < _features.Count && _ground == null)
@@ -2721,7 +2730,7 @@ namespace Universe.Shell
             if (kind < 0)
                 for (int i = 0; i < _galaxies.Count; i++)
                 {
-                    var g = _galaxies[i]; double dx = (g.X - _ax) - _ox, dy = (g.Y - _ay) - _oy, dz = (g.Z - _az) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                    var g = _galaxies[i]; double dx = RelX(g) - _ox, dy = RelY(g) - _oy, dz = RelZ(g) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     double sizePx = g.Scale / Math.Max(1e-9, l) / Math.Tan(0.45) * _lastH * 0.5;   // its size on screen
                     double d2 = near(dx, dy, dz), allow = Math.Max(reachPx, sizePx);
                     if (d2 < allow * allow && (kind < 0 || d2 < best)) { best = d2; kind = 0; idx = i; name = g.Name; }
@@ -2731,7 +2740,7 @@ namespace Universe.Shell
                 // every point of the web's light far off is a galaxy: a click on one picks it, to fly to; there its galaxies are
                 // made in full and the pick goes on to the one at that spot
                 double gb = reachPx * reachPx; int gq = -1;
-                for (int q = 0; q < _glowShown.Length; q++) { var v = _glowShown[q]; double d2 = near((v.X - _ax) - _ox, (v.Y - _ay) - _oy, (v.Z - _az) - _oz); if (d2 < gb) { gb = d2; gq = q; } }
+                for (int q = 0; q < _glowShown.Length; q++) { var v = _glowShown[q]; double d2 = near(RelX(v) - _ox, RelY(v) - _oy, RelZ(v) - _oz); if (d2 < gb) { gb = d2; gq = q; } }
                 if (gq >= 0)
                 {
                     var v = _glowShown[gq]; double ly = Math.Sqrt(Math.Pow(v.X - _ax - _ox, 2) + Math.Pow(v.Y - _ay - _oy, 2) + Math.Pow(v.Z - _az - _oz, 2)) * Units.LightYearsPerUnit;
@@ -2972,7 +2981,7 @@ namespace Universe.Shell
                     // comes back up the same way, and leaves the dive just outside the horizon
                     double rr = Units.Km(Math.Max(_spaceScale, MatterView.BottomKm) * 0.6);
                     if (_spaceScale <= 0) rr = Units.Km(_spaceTop * 0.6);
-                    _ox = (_fallHole.X - _ax) - _fallAxis.X * rr; _oy = (_fallHole.Y - _ay) - _fallAxis.Y * rr; _oz = (_fallHole.Z - _az) - _fallAxis.Z * rr;
+                    _ox = RelX(_fallHole) - _fallAxis.X * rr; _oy = RelY(_fallHole) - _fallAxis.Y * rr; _oz = RelZ(_fallHole) - _fallAxis.Z * rr;
                     if (_spaceScale <= 0) _fallHole = null;
                 }
                 if (input.WasPressed(0x20)) TogglePause();
@@ -3068,7 +3077,7 @@ namespace Universe.Shell
                 if (TargetFromCamera(out qx, out qy, out qz, out qr) && qr > 0)
                 {
                     double ql = Math.Sqrt(qx * qx + qy * qy + qz * qz);
-                    double cxv = (exd.X - _ax) - _ox, cyv = (exd.Y - _ay) - _oy, czv = (exd.Z - _az) - _oz, cl = Math.Max(1e-300, Math.Sqrt(cxv * cxv + cyv * cyv + czv * czv));   // (from the body's middle: a spot picked on it only steers the way down; the ground is what is under you)
+                    double cxv = RelX(exd) - _ox, cyv = RelY(exd) - _oy, czv = RelZ(exd) - _oz, cl = Math.Max(1e-300, Math.Sqrt(cxv * cxv + cyv * cyv + czv * czv));   // (from the body's middle: a spot picked on it only steers the way down; the ground is what is under you)
                     double qrD = exd.Hole || exd.Shape.Length == 0 ? qr : BodyRadiusToward(exd, _lastDrawTime, -cxv / cl, -cyv / cl, -czv / cl);   // the stone's real surface under you, not its nominal sphere
                     ulong dspot = (ulong)(long)(_ox / Units.Km(1)) * 73856093UL ^ (ulong)(long)(_oy / Units.Km(1)) * 19349663UL ^ (ulong)(long)(_oz / Units.Km(1)) * 83492791UL;
                     if (ql < (exd.Hole && exd.Mass > 0 ? Units.Km(Physics.HorizonKm(exd.Mass)) * 1.25 : double.MaxValue) && (exd.Hole || cl < qrD * 1.3))
@@ -3527,7 +3536,7 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 && !ex.Hole) continue;
-                double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
+                double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) - ex.R * 2;
                 if (d > 0 && d < reach) reach = d;
             }
             Mat4 proj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)(reach * 1e-3), (float)(_uRadius * 2.2));   // out to the far side of the visible universe
@@ -3639,7 +3648,7 @@ namespace Universe.Shell
                 _lens[2] = 0; double bestE = 0;
                 foreach (var ex in _extras)
                 {
-                    if (!ex.Hole) continue; double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                    if (!ex.Hole) continue; double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     double rs = Units.Km(Physics.HorizonKm(ex.Mass)), thE = Math.Sqrt(2 * rs / Math.Max(d, rs)); if (thE < bestE) continue;
                     var cl = new float[4]; float px0 = (float)dx, py0 = (float)dy, pz0 = (float)dz;
                     float cx0 = px0 * vp.M11 + py0 * vp.M21 + pz0 * vp.M31 + vp.M41, cy0 = px0 * vp.M12 + py0 * vp.M22 + pz0 * vp.M32 + vp.M42, cw0 = px0 * vp.M14 + py0 * vp.M24 + pz0 * vp.M34 + vp.M44;
@@ -3654,11 +3663,11 @@ namespace Universe.Shell
                     if (ex.Hole)
                     {
                         // its glow from afar (so it can be found and picked), fading out within a hundred radii as its real disc, shadow and lens take over
-                        double hdx = (ex.X - _ax) - _ox, hdy = (ex.Y - _ay) - _oy, hdz = (ex.Z - _az) - _oz, hrs = ex.Mass > 0 ? Units.Km(Physics.HorizonKm(ex.Mass)) : ex.R / 2.6;
+                        double hdx = RelX(ex) - _ox, hdy = RelY(ex) - _oy, hdz = RelZ(ex) - _oz, hrs = ex.Mass > 0 ? Units.Km(Physics.HorizonKm(ex.Mass)) : ex.R / 2.6;
                         float farF = (float)Math.Max(0, Math.Min(1, (Math.Sqrt(hdx * hdx + hdy * hdy + hdz * hdz) / Math.Max(1e-300, hrs) - 100) / 100)) * (ex.Feeding > 0 ? 0.7f : 0.25f);
                         _extraV[q] = new StarVertex { X = (float)hdx, Y = (float)hdy, Z = (float)hdz, Size = (float)(ex.R * 3), R = ex.Cr * farF, G = ex.Cg * farF, B = ex.Cb * farF, A = 1 }; continue;
                     }
-                    _extraV[q] = new StarVertex { X = (float)((ex.X - _ax) - _ox), Y = (float)((ex.Y - _ay) - _oy), Z = (float)((ex.Z - _az) - _oz), Size = (float)ex.R, R = ex.Cr, G = ex.Cg, B = ex.Cb, A = 1 }; }
+                    _extraV[q] = new StarVertex { X = (float)(RelX(ex) - _ox), Y = (float)(RelY(ex) - _oy), Z = (float)(RelZ(ex) - _oz), Size = (float)ex.R, R = ex.Cr, G = ex.Cg, B = ex.Cb, A = 1 }; }
                 if (_extraBuf == null || _extraBuf.Bytes < (long)_extras.Count * Stride) { if (_extraBuf != null) _extraBuf.Dispose(); _extraBuf = new UploadBuffer(_gpu.Device, (long)(_extras.Count + 256) * Stride); }
                 _extraBuf.Write(_extraV, _extras.Count);
                 DrawPoints(_extraBuf, _extras.Count, vp, right, up, 1f, 0.0024f, w, h, time);
@@ -4260,7 +4269,7 @@ namespace Universe.Shell
             double sum = 0, c2 = Physics.C * Physics.C;
             if (_system != null) { double d = Math.Max(1, DistToSysStar() / Units.Km(1) * 1000); sum += 2 * Physics.GmSol * _system.MassSol / (d * c2); }
             if (_system != null && _planet >= 0 && _planet < _system.Bodies.Count) { double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Max(1, Math.Sqrt(x * x + y * y + z * z) * 1000); sum += 2 * WorldGm(_system.Bodies[_planet]) / (r * c2); }
-            foreach (var ex in _extras) { if (!ex.Hole || ex.Mass <= 0) continue; double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = Math.Max(1, Math.Sqrt(dx * dx + dy * dy + dz * dz) / Units.Km(1) * 1000); sum += 2 * Physics.GmSol * ex.Mass / (d * c2); }
+            foreach (var ex in _extras) { if (!ex.Hole || ex.Mass <= 0) continue; double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Max(1, Math.Sqrt(dx * dx + dy * dy + dz * dz) / Units.Km(1) * 1000); sum += 2 * Physics.GmSol * ex.Mass / (d * c2); }
             return Math.Sqrt(Math.Max(0, 1 - sum));
         }
         // a world's GM from its own mass (its size and its kind's density, content/terrain.unt density-g-cc)

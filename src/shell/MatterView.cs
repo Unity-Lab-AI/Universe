@@ -1826,7 +1826,14 @@ namespace Universe.Shell
                 if (kind == 3) d -= b.I * 1e-40;                                             // (the outer, valence, shell first, among equals)
                 if (d < bd) { bd = d; best = b; }
             }
-            if (best == null) return;
+            if (best == null)
+            {
+                // a spot or a grain where none is laid out to pick (an ice sheet or the sea, which have no grains: a level face), the
+                // spot right under the point you dive into is the pick, as a click there would make it; never nothing, since every
+                // stop below (the crystal, the atom, the nucleus) waits on it
+                if (what == "spot" || what == "grain") { _picked = new Body { Kind = 2, X = _fx, Y = _fy, Z = _fz, Size = _scale * 0.02 }; _tfx = _fx; _tfz = _fz; _tfy = _fy; PickCount++; }
+                return;
+            }
             _picked = best; _tfx = best.X; _tfz = best.Z; _tfy = best.Y; PickCount++;
         }
 

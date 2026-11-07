@@ -70,7 +70,7 @@ Every warning is an error (`/warnaserror+`), so a build that finishes is clean.
 | `--seed N` | Opens the universe of that seed again |
 | `--tour grand-tour` | Flies the guided tour (any tour in `content/tours/`) |
 | `--record clip.mp4` | With `--tour`, films the whole tour as an MP4 |
-| `--shots S` | Saves a PNG of the game every S seconds |
+| `--shots S` | Saves a PNG of the view every S seconds |
 | `--native` | Opens at your screen's full resolution |
 
 The program keeps a short log of its zoom and of the tour's stops and picks at `%TEMP%\universe_zoom.log` (at most 4 MB, then started afresh): what each stop began at, what each pick found or why it found nothing.

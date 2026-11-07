@@ -32,7 +32,7 @@
 
 ![The grand tour: from the cosmic web into a galaxy, to a comet, down to a world, its ground and the face of a grain](docs/img/journey.gif "The grand tour, recorded in the game")
 
-*The grand tour, as the game records it: from the cosmic web into a galaxy, past its stars, to a comet, down to a world, its ground and the face of one grain.*
+*The grand tour, as the program records it: from the cosmic web into a galaxy, past its stars, to a comet, down to a world, its ground and the face of one grain.*
 
 Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and one grows into an island of stars. Keep going.
 
@@ -46,7 +46,7 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 | **On the ground** | Stones, then grains, then the steps of a crystal's face |
 | **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them |
 
-Straight from the grand tour, as the game records it (the frame counter and the card are the game's own):
+Straight from the grand tour, as the program records it (the frame counter and the card are its own):
 
 <table>
 <tr>

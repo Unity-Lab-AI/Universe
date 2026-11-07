@@ -74,7 +74,7 @@ Universe runs on the real laws of nature, with their real numbers (all in `conte
 
 ## A galaxy that fills in round you
 
-A galaxy holds about a hundred billion stars, and the game keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide, every cube within about 60 light-years of you (both are traits of the universe template), so the sky is as deep in stars on every side. Each cube is made from its own position, so they are the same stars whenever you come back, and each star is placed exactly, to a fraction of an AU, however far across the galaxy you are.
+A galaxy holds about a hundred billion stars, and the program keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide, every cube within about 60 light-years of you (both are traits of the universe template), so the sky is as deep in stars on every side. Each cube is made from its own position, so they are the same stars whenever you come back, and each star is placed exactly, to a fraction of an AU, however far across the galaxy you are.
 
 ## A living world, even a dead one
 
@@ -96,7 +96,7 @@ Time runs at the speed you choose, from paused and real time up to ten years a s
 
 ## Your own computer
 
-- The game picks the **strongest graphics card** in the computer.
+- The program picks the **strongest graphics card** in the computer.
 - The ground is built in the background on **every processor core**, with only what is in view in fine detail and what you need most made first.
 - **View > GPU use** sets how much of the card's time it may use, from 10 to 90 per cent. The card's working time is measured every frame and the detail is turned up or down to hold it there.
 - **View > Render scale** trades sharpness for speed.
@@ -108,4 +108,4 @@ There is no engine under this, no library beside it and no art inside it. The wi
 
 ## Still to come
 
-The waveform carrying every field from galaxies to microbes (gas and star fields, the ground itself, clouds, stars' surfaces), then life, gameplay and the interface.
+The waveform carrying every field from galaxies to microbes (gas and star fields, the ground itself, clouds, stars' surfaces); a star's layers down to its core; then life on the worlds, and the larger game the lab builds on this universe.

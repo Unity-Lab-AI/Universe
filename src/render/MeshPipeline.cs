@@ -128,7 +128,7 @@ float woctavesD(double3 p, uint key, float f0, float amp0, float gain, float max
     for (uint k = 0; k < 14u; k++)                                    // (never more than fourteen octaves for a pixel: the twelve stored, two of mode-E)
     {
         float fine = maxF / f; if (fine < 0.5) break;
-        sum += min(1, fine - 0.5) * amp * woctaveD(p * (double)f, key, k);
+        sum += smoothstep(0.5, 2.5, fine) * amp * woctaveD(p * (double)f, key, k);     // (the finest layer eased in over a couple of pixels' worth: at the pixel's own size it drew moire, straight lines in rows)
         amp *= gain; f *= 2;
     }
     return sum;
@@ -160,7 +160,7 @@ float woctaves(float3 p, uint key, float f0, float amp0, float gain, float maxF)
     for (uint k = 0; k < 14u; k++)                                    // (never more than fourteen octaves for a pixel: the twelve stored, two of mode-E)
     {
         float fine = maxF / f; if (fine < 0.5) break;
-        sum += min(1, fine - 0.5) * amp * woctave(p * f, key, k);
+        sum += smoothstep(0.5, 2.5, fine) * amp * woctave(p * f, key, k);
         amp *= gain; f *= 2;
     }
     return sum;
@@ -222,7 +222,7 @@ float4 PS(VO i) : SV_Target
         // where this pixel is on the grain, in its own frame (radius 1), in double precision: the part the camera's place gives
         // (high and low halves) and the pixel's own small offset
         double3 L = (double3)i.wp * (double)detA.w + (double3)detA.xyz + double3(light.w, cam.w, fog.w); uint key = asuint(detB.x);
-        float fw = max(1e-15, length(fwidth(i.wp)) * detA.w), maxF = min(0.5 / fw, 16384);   // this pixel's size on the grain (from the view, exact); never more than about thirteen octaves for any pixel (each past the stored twelve runs mode-E: twenty-eight of them on every pixel of a big screen were seconds of work in one frame, and Windows reset the card). Finer than that the face's detail is its atomic terraces and atoms
+        float fw = max(1e-15, length(fwidth(i.wp)) * detA.w), maxF = min(0.25 / fw, 16384);   // (no layer finer than four pixels across: finer drew moire)   // this pixel's size on the grain (from the view, exact); never more than about thirteen octaves for any pixel (each past the stored twelve runs mode-E: twenty-eight of them on every pixel of a big screen were seconds of work in one frame, and Windows reset the card). Finer than that the face's detail is its atomic terraces and atoms
         float h = woctavesD(L, key, 2.5, 0.16, 0.5, maxF) * detB.y;                    // in view units
         // close in, the face steps in single atomic layers: flat terraces with a step one layer high between them, as on a real
         // crystal face. They come in from about a micrometre across the view (a pixel three layers wide) to a tenth of that,
@@ -280,9 +280,12 @@ float4 PS(VO i) : SV_Target
         if (gw > 0)
         {
             float3 up = float3(light.w, cam.w, fog.w); uint seedW = asuint(detB.w); uint3 base = uint3(asuint(detB.x), asuint(detB.y), asuint(detB.z));
-            float3 q = i.wp * invG + detA.xyz; int3 c0 = (int3)floor(q - 0.5);              // the eight cells nearest this point: a grain is at most half a cell wide, its middle within the middle of its cell, so the one on top here is in one of them (27 cells were three times the work, and on a big screen more than a frame may take)
+            // looked up at the bed's own level (misc.x), never at this pixel's height: close in the ground's pieces are raised under
+            // each grain to its top, and a lookup from up there fell into the cell above and found another grain (a doubled bed);
+            // flat to the bed, every pixel of a grain's dome finds its own grain, and its true rounded normal shades the dome smooth
+            float3 q = i.wp * invG + detA.xyz; q += up * (-misc.x - dot(q, up)); int3 c0 = (int3)floor(q - 0.5);              // the eight cells nearest this point: a grain is at most half a cell wide, its middle within the middle of its cell, so the one on top here is in one of them (27 cells were three times the work, and on a big screen more than a frame may take)
             int pb = GPALB + ((int)(nightCol.a + 0.5) - 1) * GPALS; int nm = (int)wave[pb];
-            float best = -1e9; bool any = false; float3 bc = 0, bn = up;
+            float best = -1e9, bcov = 1; bool any = false; float3 bc = 0, bn = up;
             for (int dz = 0; dz <= 1; dz++) for (int dy = 0; dy <= 1; dy++) for (int dx = 0; dx <= 1; dx++)
             for (uint layer = 0; layer < 2; layer++)
             {
@@ -296,7 +299,7 @@ float4 PS(VO i) : SV_Target
                 float hz = sqrt(rad * rad - d2), ty = hz - depth;
                 if (ty > best)
                 {
-                    best = ty; any = true;
+                    best = ty; any = true; bcov = saturate((rad - sqrt(d2)) / max(pix, 1e-6) + 0.5);   // (its edge eased over a pixel, never a hard ring of dots)
                     float t = g01(key, 6, seedW); int mi = max(0, nm - 1);
                     for (int m = 0; m < GPALM; m++) if (m < nm && t <= wave[pb + 2 + m]) { mi = m; break; }
                     float shd = 0.75 + 0.35 * g01(key, 7, seedW);
@@ -304,7 +307,8 @@ float4 PS(VO i) : SV_Target
                     bn = normalize(ot + up * hz);
                 }
             }
-            baseCol = lerp(i.col.rgb, any ? bc : i.col.rgb * 0.25, gw);
+            float3 gapc = i.col.rgb * 0.5;                                                 // (the gap between grains in shadow: dim, not black, so a bed of pale grains is not a sketch of dark rings)
+            baseCol = lerp(i.col.rgb, any ? lerp(gapc, bc, bcov) : gapc, gw);
             if (any) n = normalize(lerp(n, bn, gw));
         }
     }

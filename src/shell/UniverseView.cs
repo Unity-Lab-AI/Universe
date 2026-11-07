@@ -2273,7 +2273,7 @@ namespace Universe.Shell
             double gal = near == 0 ? (_loadT > 3 ? 1 : 0) : made / (double)near;
             _loadShare = web * 0.65 + gal * 0.35;
             _loadLines = new[] { "Making the universe", web < 1 ? "the cosmic web: " + ((int)(web * 100)) + "% of its light" : "the cosmic web: ready", "the galaxies round you: " + made + " of " + Math.Max(near, made) };
-            if ((web >= 1 && gal >= 1) || _loadT > 60) { _loadDone = true; MenuChanged = true; }
+            if ((web >= 1 && gal >= 1 && _loadT > 1.5) || _loadT > 60) { _loadDone = true; MenuChanged = true; }   // (held a moment and a half at the least: a bar that flashes by on a fast machine is a bar never seen)
         }
         private bool InsideGiant { get { if (_ground == null || _ground.Solid || _planet < 0) return false; double x, y, z; CamFromPlanet(out x, out y, out z); return Math.Sqrt(x * x + y * y + z * z) < _ground.Radius + _ground.CloudKm * 0.9; } }
         private double OverPick() { if (_matterScale <= 0 && _spaceScale <= 0) return 1; double u = Math.Max(0, Math.Min(1, (0.6 - _matter.PickOff) / 0.4)); u = u * u * (3 - 2 * u); return 0.25 + 0.75 * u; }
@@ -2701,7 +2701,7 @@ namespace Universe.Shell
             DrawSmallBodies(vp, right, up, w, h, time);
             DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them
             Render.GpuLog.Pass = "a world's ground";
-            if (_ground != null && _matterScale <= 0)   // (in the matter the grain's own face fills the view: the planet's ground mesh is not drawn behind it, one picture only)
+            if (_ground != null && (_matterScale <= 0 || _matterScale > 1e-7))   // (the ground still drawn behind the matter down to a tenth of a millimetre, so the hand-over to the grains is no cut; below that the grain's own face fills the view)
             {
                 // the planet's real ground, in km around its centre, with the same view turn; near and far follow the height
                 _gpu.ClearDepth();
@@ -2737,7 +2737,7 @@ namespace Universe.Shell
                 _ground.ViewDir[0] = lk.X; _ground.ViewDir[1] = lk.Y; _ground.ViewDir[2] = lk.Z;
                 _ground.ViewHalfAngle = Math.Atan(Math.Tan(0.45) * Math.Sqrt(1 + (w / (double)Math.Max(1, h)) * (w / (double)Math.Max(1, h))));
                 PlanetTerrain.Power = Window.Detail;
-                _ground.SandOnCard = AboveGround() / Units.Km(1) >= MatterView.OverlayKm;   // (below a centimetre the real grains are drawn over the ground: no sand worked out per pixel under them too)
+                _ground.SandOnCard = true;                                                // (the grains worked out per pixel at every height: on the raised pieces close in too, looked up at the bed's level, so their domes shade smooth, never in steps)
                 if (InsideGiant)
                 {
                     // inside a giant, below its cloud tops: no shell to see from in here, only its own gas all round, its air's
@@ -2768,7 +2768,7 @@ namespace Universe.Shell
                 // a centimetre over the ground: its grains begin to show, lying over it, specks that grow as you come down
                 SetMatter(); _gpu.ClearDepth();
                 Mat4 ov = MatterFrame(look);
-                _matter.Draw(ov, Math.Max(MatterView.BottomKm, overAlt / 0.6), w, h, _matterClock, _meshes, true);
+                _matter.Floor = false; _matter.Draw(ov, Math.Max(MatterView.BottomKm, overAlt / 0.6), w, h, _matterClock, _meshes, true);   // (the planet's ground is the floor here)
                 {
                     // a grain picked over the ground: ringed, with its card, as anything picked anywhere
                     _gpu.ClearDepth(); double gqx, gqy, gqr;
@@ -2793,6 +2793,7 @@ namespace Universe.Shell
                 // the matter, in front of everything; above a tenth of a millimetre the ground still shows through behind it
                 _gpu.ClearDepth();
                 Mat4 mview = MatterFrame(look);
+                _matter.Floor = _matterScale <= 1e-7;                                      // (its own floor only once the planet's ground is no longer drawn behind)
                 _matter.Draw(mview, _matterScale, w, h, _matterClock, _meshes, false);
                 _gpu.ClearDepth();                                                     // its ring and card on top of the grains
                 double qx, qy, qr; if (_matter.PickedOnScreen(out qx, out qy, out qr)) _hud.DrawRing(_meshes, qx, qy, Math.Min(qr, h * 0.45), w, h);   // what you picked, ringed

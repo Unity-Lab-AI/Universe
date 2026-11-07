@@ -881,6 +881,8 @@ namespace Universe.Shell
         // the patch of the grain's surface under you, as a fine lit mesh
         private readonly Dictionary<long, double[]> _patchCache = new Dictionary<long, double[]>(); private long _patchGrain = long.MinValue; private int _patchBudget;
                 private readonly List<StarVertex> _stoneMesh = new List<StarVertex>(); private readonly List<double[]> _stones = new List<double[]>(); private StarVertex[] _stoneArr = new StarVertex[0]; private UploadBuffer _stoneBuf;
+        /// <summary>Whether the grain's face gets its own level floor far out all round (not when the planet's ground is drawn behind the matter).</summary>
+        public bool Floor = true;
         private readonly List<StarVertex> _patchMesh = new List<StarVertex>(); private long _patchKey; private double _patchGX, _patchGY, _patchGZ, _patchRad;
         private void GrainPatch(List<StarVertex> mesh, double s)
         {
@@ -888,10 +890,12 @@ namespace Universe.Shell
             _patchKey = gi; _patchGX = gx; _patchGY = gy; _patchGZ = gz; _patchRad = rad;
             var m = GrainMineral(gi, gj); if (m == null) return;
             if (_patchGrain != gi || _patchCache.Count > 600000) { _patchCache.Clear(); _patchGrain = gi; }
+            if (Floor)
             {
-                // a level floor of the face's own colour under its rings, far out all round: never a hole or the dark past its edge
+                // a level floor of the face's own colour under its rings, far out all round, at the bed the grain lies on (never at
+                // its top, which buried the grains round it to their middles): never a hole or the dark past its edge
                 float fr = m.R * FocusShade * 0.85f, fg = m.G * FocusShade * 0.85f, fb = m.B * FocusShade * 0.85f, n0 = PackNormal(0, 1, 0);
-                double fy = (-AtomSpacing * 2 + _yOff - _fy) / s + _ey, big = 400;
+                double fy = (gy - rad * 0.9 + _yOff - _fy) / s + _ey, big = 400;
                 Func<double, double, StarVertex> fv = (x, z) => new StarVertex { X = (float)(x + _ex), Y = (float)fy, Z = (float)(z + _ez), Size = n0, R = fr, G = fg, B = fb, A = m.Lustre };
                 _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, -big)); _patchMesh.Add(fv(big, big)); _patchMesh.Add(fv(-big, big));
             }
@@ -899,7 +903,7 @@ namespace Universe.Shell
             // to the whole grain, each on a grid fixed on the grain (never on the camera, so nothing slides as you zoom and
             // move), each point worked out once; the finest eases between its two sizes so nothing pops
             const int N0 = 40; double want = 4.8 * s / N0, lv = Math.Max(0, Math.Log(want / AtomSpacing, 2)), L = Math.Floor(lv), frac = lv - L;   // never finer than the atoms (they are the face from there)
-            _patchBudget = 12000;                                                          // new points a frame at most: the rest come in over the next frames, the frame never stalls
+            _patchBudget = 36000;                                                          // new points a frame at most: the rest come in over the next frames, the frame never stalls
             double inner = 0;
             for (int ring = 0; ring < 12; ring++)
             {
@@ -947,7 +951,10 @@ namespace Universe.Shell
                 for (int a = 1; a < N; a++)
                     for (int b = 1; b < N; b++)
                     {
-                        bool oa = ((ia0 + a) & 1) != 0, ob = ((ib0 + b) & 1) != 0; if (!oa && !ob) continue;
+                        bool oa = ((ia0 + a) & 1) != 0, ob = ((ib0 + b) & 1) != 0; if (!oa && !ob || !ok[a, b]) continue;
+                        // only from neighbours that are worked out: one not yet (or out of view) stands at zero, and easing toward it
+                        // pulled a point of the face up into a wall (a fence of grey pillars at the edge of what was made)
+                        if (oa && ob ? !(ok[a - 1, b - 1] && ok[a + 1, b - 1] && ok[a - 1, b + 1] && ok[a + 1, b + 1]) : oa ? !(ok[a - 1, b] && ok[a + 1, b]) : !(ok[a, b - 1] && ok[a, b + 1])) continue;
                         double c = oa && ob ? (hy[a - 1, b - 1] + hy[a + 1, b - 1] + hy[a - 1, b + 1] + hy[a + 1, b + 1]) * 0.25 : oa ? (hy[a - 1, b] + hy[a + 1, b]) * 0.5 : (hy[a, b - 1] + hy[a, b + 1]) * 0.5;
                         hm[a, b] = hy[a, b] + (c - hy[a, b]) * ease;
                     }
@@ -960,10 +967,12 @@ namespace Universe.Shell
             for (int a = 0; a <= N; a++)
                 for (int b = 0; b <= N; b++)
                 {
-                    int a0 = Math.Max(0, a - 1), a1 = Math.Min(N, a + 1), b0 = Math.Max(0, b - 1), b1 = Math.Min(N, b + 1);
-                    double dx = atA(a1) - atA(a0), dz = atB(b1) - atB(b0), sx = (hy[a1, b] - hy[a0, b]) / Math.Max(1e-30, dx), sz = (hy[a, b1] - hy[a, b0]) / Math.Max(1e-30, dz);
+                    // its slope and hollow from the neighbours that are worked out (a missing one stands at zero: never from it)
+                    int a0 = a > 0 && ok[a - 1, b] ? a - 1 : a, a1 = a < N && ok[a + 1, b] ? a + 1 : a, b0 = b > 0 && ok[a, b - 1] ? b - 1 : b, b1 = b < N && ok[a, b + 1] ? b + 1 : b;
+                    double dx = atA(a1) - atA(a0), dz = atB(b1) - atB(b0), sx = a1 > a0 ? (hy[a1, b] - hy[a0, b]) / Math.Max(1e-30, dx) : 0, sz = b1 > b0 ? (hy[a, b1] - hy[a, b0]) / Math.Max(1e-30, dz) : 0;
                     nrm[a, b] = PackNormal(-sx, 1, -sz);                                      // each corner's surface direction: shaded smooth
-                    double hollow = (hy[a0, b] + hy[a1, b] + hy[a, b0] + hy[a, b1]) * 0.25 - hy[a, b], span = Math.Max(1e-30, (dx + dz) * 0.5);
+                    bool four = a1 > a0 && b1 > b0 && a1 - a0 == 2 && b1 - b0 == 2;
+                    double hollow = four ? (hy[a0, b] + hy[a1, b] + hy[a, b0] + hy[a, b1]) * 0.25 - hy[a, b] : 0, span = Math.Max(1e-30, (dx + dz) * 0.5);
                     occ[a, b] = (float)Math.Max(0.55, Math.Min(1.08, 1 - hollow / span * 3));   // a hollow sees less of the sky
                 }
             float r = m.R * sh, g = m.G * sh, bl = m.B * sh;

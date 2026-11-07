@@ -106,7 +106,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             // Telescope saw): the disc is always lopsided
             float3 tang = float3(-sin(ang), 0, cos(ang)); float beta = sqrt(0.5 / r);
             float3 toCam = normalize(webA.xyz - p); float gam = 1 / sqrt(1 - beta * beta), dop = 1 / (gam * (1 - beta * dot(tang, toCam)));
-            s.color.rgb *= clamp(dop * dop * dop, 0.45, 2.5);     // (lopsided, as the Event Horizon Telescope saw it, but never a missing half)
+            s.color.rgb *= clamp(dop * dop * dop, 0.25, 4.0);     // (lopsided, as the Event Horizon Telescope saw it, but never a missing half)
             s.pos = p;
         }
         else if (extra.w < 2.5)
@@ -121,7 +121,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             float cp = cos(peri), sp = sin(peri); float x1 = x * cp - z * sp, z1 = x * sp + z * cp;
             float ci = cos(inc), si = sin(inc); float y2 = z1 * si, z2 = z1 * ci;
             float cn = cos(node), sn = sin(node);
-            s.pos = float3(x1 * cn - z2 * sn, y2, x1 * sn + z2 * cn); s.size = 0.3;
+            s.pos = float3(x1 * cn - z2 * sn, y2, x1 * sn + z2 * cn); s.size = 0.9;
         }
         else
         {

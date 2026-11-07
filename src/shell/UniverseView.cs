@@ -398,7 +398,7 @@ namespace Universe.Shell
             double rhoCam = Math.Max(0, Math.Min(1, _spaceScale * 0.6 / Math.Max(1e-300, _matter.HoleRs)));
             Func<double, double> depth = rho => rho >= 1 ? -2 * Math.Sqrt(rho - 1) : 2 * Math.Sqrt(1 - rho);
             double zCam = depth(rhoCam);
-            double S = Units.Km(_spaceScale) * 1.5 / Math.Max(0.03, rhoCam);                 // the well's unit (one horizon radius) in the world: the wall about a view and a half from you
+            double S = 1.5 / Math.Max(1e-30, rhoCam);                                       // the well's unit (one horizon radius) against your own scale: the wall round you about a view and a half off, at every depth of the fall (no clamp: the rings are always round you)
             var pts = new List<StarVertex>();
             Action<double, double, float, float, float, float> put = (u, v, br, cr, cg, cb) =>
             {
@@ -436,7 +436,10 @@ namespace Universe.Shell
             if (_fallBuf == null || _fallCap < pts.Count) { if (_fallBuf != null) _fallBuf.Dispose(); _fallCap = pts.Count + 64; _fallBuf = new UploadBuffer(_gpu.Device, (long)_fallCap * Stride); }
             var arr = pts.ToArray(); _fallBuf.Write(arr, arr.Length);
             float lz = _lens[2]; _lens[2] = 0;                                                  // (a reference, not light: never bent by the hole's lens)
-            DrawPoints(_fallBuf, arr.Length, vp, right, up, 1f, 0.0012f, w, h, time, 0, 1f, 2f);
+            // drawn through the matter's own projection (positions in units of your scale, the near plane a thousandth of it): the
+            // universe's projection cut the grid off at its near plane once the fall was deep
+            var fv = Mat4.LookAt(new Vec3(0, 0, 0), Look, ViewUp()); var fvp = fv * Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), 0.001f, 1e9f);
+            DrawPoints(_fallBuf, arr.Length, fvp, new Vec3(fv.M11, fv.M21, fv.M31), new Vec3(fv.M12, fv.M22, fv.M32), 1f, 0.0012f, w, h, time, 0, 1f, 2f);
             _lens[2] = lz;
         }
         private UploadBuffer _wellBuf; private int _wellN;
@@ -853,7 +856,7 @@ namespace Universe.Shell
                 // two beams from the poles, narrow, fading as they go, blue-violet
                 double y = 3 + Math.Pow(rng.NextDouble(), 1.8) * 600, w = 0.6 + y * 0.03, a = rng.NextDouble() * Math.PI * 2, f = Math.Exp(-y / 300);
                 float br = (float)(0.25 + 0.75 * f); int side = (k & 1) == 0 ? 1 : -1;
-                jets.Add(new StarVertex { X = (float)(Math.Cos(a) * w * rng.NextDouble()), Y = (float)(side * y), Z = (float)(Math.Sin(a) * w * rng.NextDouble()), Size = (float)(0.3 + y * 0.004), R = 0.4f * br, G = 0.45f * br, B = 0.75f * br, A = 1 });
+                jets.Add(new StarVertex { X = (float)(Math.Cos(a) * w * rng.NextDouble()), Y = (float)(side * y), Z = (float)(Math.Sin(a) * w * rng.NextDouble()), Size = (float)(1 + y * 0.01), R = 0.55f * br, G = 0.6f * br, B = 1f * br, A = 1 });
             }
             int nsw = pl != null ? pl.Swarm : 0;
             for (int k = 0; k < nsw; k++)

@@ -1059,7 +1059,7 @@ namespace DnaAnd.Shell
                         if (!there && OffTarget() < 0.07) input.Wheel = sign * Math.Abs(st.Rate) * ease * TourPace * Math.Log(10) / Math.Log(1 / 0.87) * dt;   // only moving where it looks
                         { double lp = LocalPitch(); if (Math.Abs(lp) > 0.9) TourPitchToward(Math.Sign(lp) * 0.9, 1 - Math.Exp(-dt * 0.8)); }
                         TourTurn(st.Turn * Math.PI / 180 * dt * Math.Max(ease, 0.4), 0);
-                        if (st.UntilKm > 0 && Math.Abs(st.Rate) > 0 ? (there && _tourT >= st.Seconds) || _tourT > 240 : _tourT >= st.Seconds) done = true;
+                        if (_tourT >= st.Seconds && (there || st.UntilKm <= 0 || Math.Abs(st.Rate) <= 0 || _tourT >= st.Seconds * 2)) done = true;   // (circling on to its distance for at most twice its seconds: never held there; the next stop carries on)
                     }
                     break;
                 case "fly":

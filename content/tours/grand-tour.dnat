@@ -4,10 +4,10 @@
 # through: yes flies on into the next stop without slowing or pausing; pan: degrees a second a zoom circles what it flies to
 # (turn: degrees a second for the circling stops). There are no pauses: each caption stays on while the flight goes on.
 
-@stop home
+@stop start
 do: pick
-target: home-galaxy
-caption: Home
+target: start-galaxy
+caption: Where we begin
 
 @stop open
 do: arc
@@ -15,7 +15,7 @@ rate: -0.06
 until-km: 2e18
 turn: 16
 seconds: 8
-caption: We begin at home: our galaxy, a hundred billion stars turning in the dark
+caption: We begin inside a galaxy, a hundred billion stars turning in the dark
 
 @stop leave
 do: zoom

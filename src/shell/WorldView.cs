@@ -243,7 +243,7 @@ namespace DnaAnd.Shell
                         for (int q = 0; q < count && q < 40; q++)
                         {
                             double gx = (i + rng.NextDouble()) * R, gy = (j + rng.NextDouble()) * R, gz = (k + rng.NextDouble()) * R;
-                            if (gx * gx + gy * gy + gz * gz < 4) continue;                   // the home galaxy's own space
+                            if (gx * gx + gy * gy + gz * gz < 4) continue;                   // the first galaxy's own space (the one you begin in)
                             int t = rng.Below(_types.Count);
                             float scale = _types[t].StartsWith("dwarf") ? 0.35f : _types[t].StartsWith("giant") ? 1.6f : rng.Range(0.8f, 1.2f);
                             AddGalaxy(t, _seed + (ulong)key * 104729UL + (ulong)q, gx, gy, gz, rng.Range(-1.2f, 1.2f), rng.Range(0, 6.28f), scale);
@@ -1158,9 +1158,9 @@ namespace DnaAnd.Shell
                         if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; }
                     }
                     break;
-                case "home-galaxy":
+                case "start-galaxy":
                     {
-                        // the galaxy you begin in (the nearest), to open on
+                        // the galaxy you begin in (a galaxy of this universe, like any other), to open on
                         int bi = -1; double bd = double.MaxValue;
                         for (int i = 0; i < _galaxies.Count; i++) { var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = dx * dx + dy * dy + dz * dz; if (d < bd) { bd = d; bi = i; } }
                         if (_near >= 0 && _near < _galaxies.Count) bi = _near;                // (the one you are in, whatever else is made round it)

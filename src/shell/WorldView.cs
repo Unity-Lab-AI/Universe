@@ -1172,7 +1172,7 @@ namespace DnaAnd.Shell
                         // frame for up to twenty seconds, never going on with nothing chosen (every later stop would be lost)
                         int k0 = _tKind, i0 = _tIndex, p0 = _matter.PickCount; double x0 = _tx; TourPick(st.Target);
                         bool got = st.Target == "none" || (st.Target == "planet" && _tKind == 2 && _system != null) || (_tKind >= 0 && (_tKind != k0 || _tIndex != i0 || _tx != x0)) || _matter.PickCount != p0;
-                        if (got || _tourT > 20) done = true;
+                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 20)) done = true;   // (a system with none of them: on at once)
                     }
                     break;
                 default: done = true; break;
@@ -1202,10 +1202,11 @@ namespace DnaAnd.Shell
                         for (int q = 0; q < _extras.Count; q++)
                         {
                             var ex = _extras[q]; string nm = ex.Name.ToLowerInvariant();
-                            bool fits = what == "black-hole" ? ex.Hole : what == "asteroid" ? nm.Contains("asteroid") : nm.Contains("comet");
+                            bool fits = what == "black-hole" ? ex.Hole : what == "asteroid" ? ex.Shape == "rock" : ex.Shape == "comet" || nm.Contains("comet");   // (an asteroid: any rocky body here, of a belt, the Kuiper belt or the Oort cloud, as the system has)
                             if (!fits) continue;
                             double dx = (ex.X - _ax) - _ox, dy = (ex.Y - _ay) - _oy, dz = (ex.Z - _az) - _oz, d = dx * dx + dy * dy + dz * dz;
-                            if (what == "black-hole" && ex.Feeding > 0) d *= 1e-6;             // (a feeding one, its disc glowing, before a quiet one)
+                            if (what == "black-hole" && ex.Feeding > 0) d *= 1e-6;
+                            if (what == "asteroid" && nm.Contains("asteroid")) d *= 1e-4;          // (the belt's own, before a far icy body)             // (a feeding one, its disc glowing, before a quiet one)
                             if (d < bd) { bd = d; bi = q; }
                         }
                         if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; }

@@ -1956,10 +1956,11 @@ namespace DnaAnd.Shell
                 // the rest of the universe's galaxies, a glow along the cosmic web (remade without the near ones as you move far)
                 if (double.IsNaN(_glowAtX) || (_glowAll == null && _glowReady != null) || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
                 var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
-                if (within < 0.9)   // (from inside a galaxy, its stars and dust hide the web: it cannot be seen, and it is not drawn)
+                float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);
+                if (webFade > 0.01)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
                 _web[0] = (float)(1.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)(_nearUnits * 1.0);   // (from where the galaxies made in full begin to fade, so the two overlap: no gap)
-                DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f, w, h, time, 0.007f, others, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
+                DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f, w, h, time, 0.007f, others * webFade, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd
             }

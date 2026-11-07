@@ -24,7 +24,13 @@ namespace Universe.Shell
         private UploadBuffer _solidBuf, _glowBuf, _meshBuf; private StarVertex[] _sv = new StarVertex[0], _gv = new StarVertex[0], _mv = new StarVertex[0];
         public const double TopKm = 3e-9;           // where the matter alone is drawn, about 3 micrometres up, on one grain's face (above it the ground itself, its grains its own)
         public const double OverlayKm = 1e-5;       // 1 cm up: the grains begin to show over the ground, as specks that grow as you come down
-        public const double BottomKm = 1e-20;       // 0.01 femtometres: inside a proton or neutron, among its quarks
+        /// <summary>The zoom in has no floor: this is only where a double-precision number gives out, 10^255 times below the
+        /// Planck length. Inside a quark nothing is known to be there, and the picture and the numbers go on down honestly.</summary>
+        public const double BottomKm = 1e-290;
+        /// <summary>The smallest anything is known to be: a quark shows no size down to a ten-thousandth of a femtometre (1e-19 m).</summary>
+        public const double KnownKm = 1e-22;
+        /// <summary>The Planck length (1.6e-35 m), below which length itself is thought to mean nothing.</summary>
+        public const double PlanckKm = 1.6e-38;
         private double Grain = 2e-7;                // a grain's size across (km): from its ground's mix (content: grain-mm)
         private readonly Dictionary<string, double> _grainKm = new Dictionary<string, double>();
         private const double AtomSpacing = 2.5e-13; // about 0.25 nm between atoms in a crystal
@@ -796,6 +802,9 @@ namespace Universe.Shell
             if (s > ar * 3) return "the atoms of " + mn + "; under you " + e.Name.ToLowerInvariant();
             string sh = string.Join(", ", Array.ConvertAll(e.Shells, x => x.ToString()));
             if (s > nr * 40) return "an atom of " + e.Name.ToLowerInvariant() + ": " + e.Z + " electrons in shells of " + sh + ", round a nucleus far below";
+            // below the quark there is no floor: what is there is what is known, which is nothing, said plainly
+            if (s < PlanckKm) return "below the Planck length (1.6e-35 m): as far as anyone knows, length itself means nothing here. Nothing is known to be smaller; the numbers simply go on";
+            if (s < KnownKm) return "inside a quark, past anything measured: a quark shows no size down to a ten-thousandth of a femtometre (1e-19 m), a point. Below here nothing is known, and the zoom goes on";
             if (s < Nucleon * 8) return "the nucleus of " + e.Name.ToLowerInvariant() + ", close in: each of its " + e.Z + " protons and " + (e.A - e.Z) + " neutrons three quarks, held by gluons";
             return "the nucleus of " + e.Name.ToLowerInvariant() + ": " + e.Z + " protons and " + (e.A - e.Z) + " neutrons";
         }
@@ -1472,10 +1481,16 @@ namespace Universe.Shell
                         {
                             double a1 = time * (0.25 + qi * 0.08) + qi * 2.1 + k * 0.77, a2 = time * (0.18 + qi * 0.06) + qi + k * 1.3, qr = Nucleon * (0.35 + 0.2 * Math.Sin(time * 0.15 + qi + k));   // (slowed to be watched)
                             double qx = nx + qr * Math.Sin(a2) * Math.Cos(a1), qy = ny + qr * Math.Cos(a2), qz = nz + qr * Math.Sin(a2) * Math.Sin(a1);
-                            Add(glow, qx, qy, qz, Math.Max(s * 0.003, Nucleon * 0.05), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);
+                            // the quark you picked moves on: the view keeps going to where it is now (as with an electron), and
+                            // once it is all but there it rides with it exactly, so the zoom in goes on into it without end
+                            if (_picked != null && _picked.Kind == 4 && _picked.Key == k + 1 && _picked.I == qi)
+                            {
+                                _tfx = qx; _tfy = qy + _yOff; _tfz = qz; _picked.X = qx; _picked.Y = qy + _yOff; _picked.Z = qz;
+                                double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
+                            }
+                            // a point as far as anyone has measured: its glow fills the view and stays, however far in you go
+                            Add(glow, qx, qy, qz, Math.Min(s * 300, Math.Max(s * 0.003, Nucleon * 0.05)), colour[qi][0] * gf, colour[qi][1] * gf, colour[qi][2] * gf, s);
                             int nb = _bodies.Count; AddBody(4, qi, q[qi] == 'u' ? 1 : 0, qx, qy, qz, Nucleon * 0.3, s); if (_bodies.Count > nb) { _bodies[nb].Sym = q[qi] == 'u' ? "up" : "down"; _bodies[nb].Key = k + 1; }
-                            // the quark you picked moves on: the view keeps going to where it is now (as with an electron)
-                            if (_picked != null && _picked.Kind == 4 && _picked.Key == k + 1 && _picked.I == qi) { _tfx = qx; _tfy = qy + _yOff; _tfz = qz; _picked.X = qx; _picked.Y = qy + _yOff; _picked.Z = qz; }
                         }
                         continue;
                     }
@@ -1521,11 +1536,15 @@ namespace Universe.Shell
                         }
                     double ox, oy, oz; ElectronAt(el, key, ElectronPhase(el, k, time), out ox, out oy, out oz);
                     double exx = x + ox * ar, eyy = y + oy * ar, ezz = z + oz * ar;
+                    // the electron you picked moves on its path: the camera keeps going to where it is now, and once all but
+                    // there rides with it exactly (a point, however far in you go)
+                    if (_picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.J == k)
+                    {
+                        _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz; _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz;
+                        double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(s * 3, 2)) { _fx = _tfx; _fy = _tfy; _fz = _tfz; }
+                    }
                     Add(glow, exx, eyy, ezz, dot, (valence ? 1f : 0.45f) * f, (valence ? 0.8f : 0.75f) * f, (valence ? 0.25f : 1f) * f, s);
                     { int nb = _bodies.Count; AddBody(3, el.N, k, exx, eyy, ezz, ar * 0.05, s); if (_bodies.Count > nb) { _bodies[nb].Sym = "electron:" + e.Symbol + ":" + shells + ":" + el.N + "spdf"[Math.Min(3, el.L)]; _bodies[nb].Key = key; } }   // every atom's electrons can be picked
-                    // the electron you picked moves on its path: the camera keeps going to where it is now
-                    if (_picked != null && _picked.Kind == 3 && _picked.Key == key && _picked.J == k)
-                    { _tfx = exx; _tfy = eyy + _yOff; _tfz = ezz; _picked.X = exx; _picked.Y = eyy + _yOff; _picked.Z = ezz; }
                 }
             }
             { double odx = x - _fx, ody = y + _yOff - _fy, odz = z - _fz; if (odx * odx + ody * ody + odz * odz < Math.Pow(AtomSpacing * 0.6, 2)) Orbitals(glow, e, x, y, z, s, time, key, f); }   // and where its electrons may be, as steady clouds: only for the atom you are at
@@ -1557,7 +1576,8 @@ namespace Universe.Shell
             // an electron moves on its path faster than the view could glide after it: once you are almost at it the view rides with
             // it, so zooming in goes to it, never past
             if (_picked != null && (_picked.Kind == 3 || _picked.Kind == 4)) { double gx = _tfx - _fx, gy = _tfy - _fy, gz = _tfz - _fz; if (gx * gx + gy * gy + gz * gz < Math.Pow(_scale * 3, 2)) k = 1; }
-            _fx += (_tfx - _fx) * k; _fz += (_tfz - _fz) * k; _fy += (_tfy - _fy) * k;
+            if (k >= 1) { _fx = _tfx; _fz = _tfz; _fy = _tfy; }                                 // (exactly: a rounding's width is a whole screen, far enough in)
+            else { _fx += (_tfx - _fx) * k; _fz += (_tfz - _fz) * k; _fy += (_tfy - _fy) * k; }
             var solid = new List<StarVertex>(20000); var glow = new List<StarVertex>(2000); var mesh = pipes != null ? new List<StarVertex>(60000) : null;
             _bodies.Clear();
             _clock = time; Build(scaleKm, time, solid, glow, mesh, overlay);

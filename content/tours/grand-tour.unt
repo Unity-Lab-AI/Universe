@@ -6,7 +6,9 @@
 # through: yes flies on into the next stop without slowing or pausing; pan: degrees a second a zoom circles what it flies to
 # (turn: degrees a second for the circling stops). There are no pauses: each caption stays on while the flight goes on.
 # A caption of {sky} is written from what is really up from where you stand (its star only if it is in view, its moons, the
-# other worlds, the galaxy's stars by night or the day sky by day).
+# other worlds, the galaxy's stars by night or the day sky by day); {hole} from the black hole picked (its jets if it fires
+# them, its disc, or quiet; its horizon's size and its mass). The far-galaxy pick prefers a galaxy whose heart is feeding, and
+# the black-hole pick a feeding one, so the tour flies by a feeding black hole: its disc, the light it bends, its shadow.
 # The film's grammar: an establishing shot; a straight push in or pull back to change scale; a calm circle only round what
 # fills the view; looking round the sky from the ground slow (a few degrees a second at most, the sky turning too); a pan where it stands across what is vast; every move eased; circling 6 to 12 degrees a second; scale changing
 # a third to a half of a tenfold a second; each shot 6 to 10 seconds. The director varies each shot every viewing.
@@ -72,15 +74,43 @@ sweep: 30
 rise: 10
 max-rate: 0.5
 seconds: 8
-caption: Down to the black hole at its heart
+caption: Down to the black hole at its heart, one that is feeding
 
-@stop round-bh
+@stop disc
 do: shot
-to-radii: 25
-sweep: 120
-rise: 25
+to-radii: 10
+sweep: 60
+rise: 40
+max-rate: 0.4
 seconds: 10
-caption: Its pull bends the light of the stars behind it; from inside its horizon nothing escapes
+caption: Its accretion disc: gas spiralling in at a good share of the speed of light, white-hot at the inner edge, red at the rim
+
+@stop lens
+do: shot
+to-radii: 4
+sweep: 90
+rise: -45
+max-rate: 0.4
+seconds: 10
+caption: Edge on, its gravity bends the light of the disc's far side up and over it, and the stars behind it into a ring
+
+@stop horizon
+do: shot
+to-radii: 1.3
+sweep: 50
+rise: 10
+max-rate: 0.35
+seconds: 9
+caption: The shadow, two and a half times the horizon across: light itself is caught here, and nothing inside gets out
+
+@stop hole-back
+do: shot
+to-radii: 200
+sweep: 40
+rise: 25
+max-rate: 0.5
+seconds: 9
+caption: {hole}
 
 @stop choose-star
 do: pick

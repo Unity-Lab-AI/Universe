@@ -10,6 +10,7 @@ namespace Universe
     internal static class Program
     {
         static long _lastFrameT; static double _tuneMs;        // the GPU use: the last frame's time, and time since the detail was last nudged
+        static long _frameT0;                                  // when the frame being made began (the processor's time on it, for the stats on screen)
 
         private static ulong Seed;
         private static UploadBuffer _waveBuf;                // the stored waveforms on the card (kept for the whole run)                 // this launch's universe (new each launch; --seed N plays one again)
@@ -229,10 +230,12 @@ namespace Universe
                 else if (cmd >= Window.CmdGpuBase && cmd < Window.CmdGpuBase + Window.GpuPercents.Length) { Window.GpuUse = Window.GpuPercents[cmd - Window.CmdGpuBase] / 100.0; Settings.Set("gpu-use", Window.GpuPercents[cmd - Window.CmdGpuBase]); menuDirty = true; }
                 else if (cmd >= Window.CmdScaleBase && cmd < Window.CmdScaleBase + Window.ScalePercents.Length) { window.RenderScale = Window.ScalePercents[cmd - Window.CmdScaleBase] / 100.0; menuDirty = true; }
                 // the documents open in their own viewer window, beside the game
-                else if (cmd == Window.CmdAbout) DocViewer.Show(window.Handle, PreviewText.Docs(), 0);
-                else if (cmd == Window.CmdReadme) DocViewer.Show(window.Handle, PreviewText.Docs(), 1);
-                else if (cmd == Window.CmdHowItWorks) DocViewer.Show(window.Handle, PreviewText.Docs(), 2);
-                else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 6);
+                else if (cmd == Window.CmdDocs) DocViewer.Show(window.Handle, PreviewText.Docs(), 0);
+                else if (cmd == Window.CmdAbout) DocViewer.Show(window.Handle, PreviewText.Docs(), 1);
+                else if (cmd == Window.CmdReadme) DocViewer.Show(window.Handle, PreviewText.Docs(), 2);
+                else if (cmd == Window.CmdHowItWorks) DocViewer.Show(window.Handle, PreviewText.Docs(), 3);
+                else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 7);
+                else if (cmd == Window.CmdStats) { Settings.Set("show-stats", !Settings.Get("show-stats", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertX) { Settings.Set("invert-left-right", !Settings.Get("invert-left-right", false)); menuDirty = true; }
                 else if (cmd == Window.CmdShot) wantShot = true;
                 else if (cmd == Window.CmdRecord) wantRecord = true;
@@ -252,6 +255,7 @@ namespace Universe
                 }
                 if (testStall && clock.Total > 0.5) System.Threading.Thread.Sleep(10000);
 
+                _frameT0 = System.Diagnostics.Stopwatch.GetTimestamp();
                 if (window.Resized) { window.Resized = false; gpu.Resize(window.RenderWidth, window.RenderHeight); }
                 if (deep != null && testDeep >= 0 && frames == 2)
                 {
@@ -381,6 +385,7 @@ namespace Universe
                     tourStep++;
                     if (tourStep == tour.Length * 2) smokeMs = (int)(clock.Total * 1000) + 500;
                 }
+                Universe.Platform.Stats.CpuMs = (System.Diagnostics.Stopwatch.GetTimestamp() - _frameT0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;   // (the processor's part of the frame: up to handing it to the card)
                 gpu.EndFrame();
                 // keep the card as busy as the GPU use asks (never over 90%): its working time against the frame's time, the
                 // detail nudged up or down twice a second
@@ -412,6 +417,7 @@ namespace Universe
                     window.SetTitle(lastTitle);
                     Window.Fps = frames / titleTimer; titleTimer = 0; frames = 0;
                 }
+                Universe.Platform.Stats.Frame(gpu.GpuMs, world != null && world.AtGround, world != null ? world.GroundBacklog : 0, gpu.VideoMemory, gpu.AdapterName);   // (the stats on screen, sampled twice a second)
 
                 window.Input.EndFrame();
                 if (smokeMs >= 0 && clock.Total * 1000 >= smokeMs) { window.Close(); smokeMs = -1; }

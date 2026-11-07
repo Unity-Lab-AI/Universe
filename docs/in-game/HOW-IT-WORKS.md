@@ -1,12 +1,16 @@
 # How it works
 
-> One camera, about 42 factors of ten, from the edge of the visible universe to a quark. Nothing is swapped in between.
+> One camera, about 42 factors of ten from the edge of the visible universe to a quark, and on down without a floor. Nothing is swapped in between.
 
 ## One camera, infinite zoom
 
 There are no separate views and no loading screens between scales. One camera flies through one universe that holds every scale: the galaxies, each galaxy's stars, each star's system, each world's ground, and the matter it is made of.
 
 Each roll of the wheel moves the camera **a share of the way to the nearest thing**, so the zoom slows by itself as things come close and never runs out.
+
+### No floor
+
+Inward there is no end. Below the quark, which shows no size down to a ten-thousandth of a femtometre, the zoom keeps going: the scale bar counts down through attometres, zeptometres and yoctometres, past the Planck length, as far as a double-precision number can count (10⁻²⁹⁰ km, which is to say for ever in practice). What is there is what physics knows, which is nothing, and the card says so. Outward you are held inside the visible universe: past its edge there is nothing anyone can see.
 
 ## Precision at every scale
 
@@ -86,6 +90,11 @@ Time runs at the speed you choose, from paused and real time up to ten years a s
 - The ground is built in the background on **every processor core**, with only what is in view in fine detail and what you need most made first.
 - **View > GPU use** sets how much of the card's time it may use, from 10 to 90 per cent. The card's working time is measured every frame and the detail is turned up or down to hold it there.
 - **View > Render scale** trades sharpness for speed.
+- **View > Show GPU and CPU stats** puts the numbers beside the frames a second: the processor's and the card's time on each frame, the processor's share of every core, the memory in use, the card's own memory in use of what it allows, how busy the card is, the detail, and the ground pieces waiting. They are read twice a second from Windows' own counts, so they cost nothing to show. The same tick is on the landing page.
+
+## Built from scratch
+
+There is no engine under this, no library beside it and no art inside it. The window, the input and the menus are direct calls into Windows. The graphics are Direct3D 12, called through its method tables by our own declarations, with our own shaders compiled as the program starts. The maths (vectors, the CDF 9/7 wavelet, mode-E, the physics), the content format and its reader, every generator (galaxies, stars, systems, worlds, ground, grains, atoms), the camera, the tour, the cards and their blocky font, this document viewer, the installer and the icons are all our own code: about 18,000 lines of C# and shader, and 10,000 lines of templates. What it borrows is Windows itself: Direct3D 12 and its shader compiler for the card, Media Foundation to pack a clip as MP4, the framework's Deflate inside a PNG. The compiler is the one inside every copy of Windows. Nothing is downloaded and nothing is installed to build it.
 
 ## Still to come
 

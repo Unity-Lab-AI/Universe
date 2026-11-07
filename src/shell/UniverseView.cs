@@ -1200,7 +1200,23 @@ namespace Universe.Shell
             parts.Add(day ? "the day sky, its star's light through the air" : "the galaxy's stars beyond");
             string w = string.Join(", ", parts.ToArray()); return char.ToUpperInvariant(w[0]) + w.Substring(1);
         }
-        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
+        // whether a galaxy's central black hole is feeding: the same place-hash and share the hole itself is made with (MakeExtra, from
+        // content/bodies.unt), so the tour can choose a galaxy with a feeding heart before it is made
+        private bool HeartFeeds(Galaxy g)
+        {
+            foreach (var pl in _places) if (pl.Where == "galaxy-heart") { double u2 = Math.Abs(Math.Sin(g.X * 3.7 + g.Y * 91.1 + g.Z * 13.3) * 24634.6345) % 1; return u2 < pl.FeedShare; }
+            return false;
+        }
+        // the black hole you picked, for a caption written as "{hole}": its jets if it fires them, its disc, or quiet; its horizon and its mass
+        private string HoleWords()
+        {
+            if (_tKind != 6 || _tIndex < 0 || _tIndex >= _extras.Count || !_extras[_tIndex].Hole) return "A black hole";
+            var ex = _extras[_tIndex]; string rs = ScaleHud.Words(Physics.HorizonKm(ex.Mass) * 2), mass = (ex.Mass >= 1e4 ? ex.Mass.ToString("0.#E+0") : ex.Mass.ToString("0.#")) + " times the Sun's mass";
+            return ex.Feeding == 2 ? "Two jets from its poles, flung out at nearly the speed of light, reach far beyond the galaxy's heart: a horizon " + rs + " across, " + mass
+                 : ex.Feeding == 1 ? "Feeding, without jets: a disc of gas going down into a horizon " + rs + " across, " + mass
+                 : "Quiet: no disc, only its shadow and the light it bends; a horizon " + rs + " across, " + mass;
+        }
+        private string TourCaption { get { int at = _tourAt; while (_tour != null && at < _tour.Count - 1 && _tour[at].Do == "pick") at++; return _tour != null && at < _tour.Count ? _tour[at].Caption.Replace("{sky}", SkyWords()).Replace("{hole}", HoleWords()) + (_tourWaiting ? "   (making what is ahead...)" : "") + "   (the view: " + ScaleHud.Words(ViewDistanceKm()) + ")" : ""; } }   // the scale is what the tour shows
         // one frame of the tour: what the stop asks, given to the controls; on to the next when it is done
         private void TourStep(Input input, double dt, int w, int h)
         {
@@ -1430,6 +1446,7 @@ namespace Universe.Shell
                             if (d < 3 || d > _nearUnits * 1.7) continue;
                             double ahead = (dx * lk.X + dy * lk.Y + dz * lk.Z) / d; if (ahead < 0.5) continue;
                             double score = d * (0.85 + 0.3 * rng.NextDouble()) * (g.Type == _lastGalaxyType ? 0.6 : 1);   // (another kind than the last, where it can)
+                            if (HeartFeeds(g)) score += 1e6;                                       // (one whose heart is feeding, where there is one: the tour flies by its disc)
                             if (score > bs) { bs = score; bi = i; }
                         }
                         if (bi >= 0) { _tKind = 0; _tIndex = bi; _tName = _galaxies[bi].Name; _lastGalaxyType = _galaxies[bi].Type; break; }
@@ -2702,7 +2719,17 @@ namespace Universe.Shell
             }
             if (Loading) { _gpu.ClearDepth(); _hud.DrawLoading(_meshes, w, h, _loadShare, _loadLines ?? new[] { "Making the universe" }); }   // (the start's loading screen over everything)
             if (Settings.Get("show-fps", true))                                       // frames a second, top right (View > Show FPS)
-                _hud.DrawCard(_meshes, new[] { Window.Fps.ToString("0") + " FPS" }, w - 150 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 12 * Math.Max(1, h / 1080.0), w, h);
+            {
+                // and with it, when asked (View > Show GPU and CPU stats): the processor's and the card's time a frame, the
+                // processor's share of every core, the memory, the card's own memory and how busy it is; the card sized to its
+                // longest line and flush with the right edge
+                bool stats = Settings.Get("show-stats", true);
+                var sl = new List<string> { Window.Fps.ToString("0") + " FPS" + (stats && Window.Fps > 0 ? ", " + (1000 / Window.Fps).ToString("0.0") + " ms a frame" : "") };
+                if (stats) sl.AddRange(Stats.Lines);
+                int longest = 0; foreach (var l in sl) longest = Math.Max(longest, l.Length);
+                double spx = Math.Max(1, h / 540.0), scw = longest * 6.6 * spx + 12 * spx;
+                _hud.DrawCard(_meshes, sl, w - scw - 8 * spx, _tour != null ? h * 0.11 : 12 * Math.Max(1, h / 1080.0), w, h);
+            }
             double mdx, mdy, mdz, mrad, msx, msy;
             if (_tKind >= 0 && _matterScale <= 0 && TargetFromCamera(out mdx, out mdy, out mdz, out mrad) && ToScreen(mdx, mdy, mdz, out msx, out msy))
             {

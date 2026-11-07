@@ -53,7 +53,7 @@ namespace Universe.Render
             GpuLog.Enable();                                                             // (Windows' record of what the card does, for the crash log if it is lost)
             if (best == IntPtr.Zero || D3D12.D3D12CreateDevice(best, D3D12.D3D_FEATURE_LEVEL_11_0, ref iid, out _device) < 0)
                 Com.Check(D3D12.D3D12CreateDevice(IntPtr.Zero, D3D12.D3D_FEATURE_LEVEL_11_0, ref iid, out _device), "D3D12CreateDevice");
-            if (best != IntPtr.Zero) Com.Release(ref best);
+            _adapter = best;                                                              // (kept: its memory counts are asked for the stats on screen)
             DeviceForLog = _device;
 
             var qd = new D3D12.CommandQueueDesc { Type = D3D12.COMMAND_LIST_TYPE_DIRECT };
@@ -168,6 +168,33 @@ namespace Universe.Render
             catch { }
             finally { Marshal.FreeHGlobal(desc); }
             return best;
+        }
+
+        // ── the card's own memory, what this program holds of what Windows allows it (IDXGIAdapter3::QueryVideoMemoryInfo), for
+        // the stats on screen ──
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int QueryVideoMemoryInfoFn(IntPtr self, uint node, int group, IntPtr info);   // IDXGIAdapter3, 14
+        private IntPtr _adapter, _adapter3; private bool _noAdapter3;
+        /// <summary>The card's own memory this program holds, and the budget Windows allows it, in MB; null if the card cannot say.</summary>
+        public long[] VideoMemory()
+        {
+            if (_noAdapter3) return null;
+            try
+            {
+                if (_adapter3 == IntPtr.Zero)
+                {
+                    if (_adapter == IntPtr.Zero) { _noAdapter3 = true; return null; }
+                    var iid = new Guid("645967a4-1392-4310-a798-8053ce3e93fd");            // IDXGIAdapter3
+                    if (Com.Method<Com.QueryInterfaceFn>(_adapter, 0)(_adapter, ref iid, out _adapter3) < 0 || _adapter3 == IntPtr.Zero) { _noAdapter3 = true; return null; }
+                }
+                IntPtr info = Marshal.AllocHGlobal(32);
+                try
+                {
+                    if (Com.Method<QueryVideoMemoryInfoFn>(_adapter3, 14)(_adapter3, 0, 0, info) < 0) { _noAdapter3 = true; return null; }   // group 0: the card's own (local) memory
+                    return new[] { Marshal.ReadInt64(info, 8) >> 20, Marshal.ReadInt64(info, 0) >> 20 };   // (CurrentUsage, Budget)
+                }
+                finally { Marshal.FreeHGlobal(info); }
+            }
+            catch { _noAdapter3 = true; return null; }
         }
 
         private IntPtr Rtv(uint i) { return new IntPtr(_rtvStart.ToInt64() + i * _rtvStep); }
@@ -377,6 +404,8 @@ namespace Universe.Render
         {
             if (_queue != IntPtr.Zero && _fence != IntPtr.Zero) WaitForGpu();
             Com.Release(ref _queryRead); Com.Release(ref _queryHeap);
+            if (_adapter3 != IntPtr.Zero) Com.Release(ref _adapter3);
+            if (_adapter != IntPtr.Zero) Com.Release(ref _adapter);
             for (int i = 0; i < FrameCount; i++) Com.Release(ref _backBuffers[i]);
             Com.Release(ref _depth); Com.Release(ref _dsvHeap);
             Com.Release(ref _fence); Com.Release(ref _list); Com.Release(ref _allocator); Com.Release(ref _rtvHeap);

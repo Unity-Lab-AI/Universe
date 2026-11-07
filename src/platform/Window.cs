@@ -62,7 +62,7 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213;
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215;
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
@@ -96,6 +96,7 @@ namespace Universe.Platform
             Win32.AppendMenu(timeMenu, Win32.MF_STRING | 0x1u, IntPtr.Zero, "slower: ,   faster: .");
             Win32.AppendMenu(view, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("show-fps", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdFps, "Show FPS (frames a second)");
+            Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("show-stats", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdStats, "Show GPU and CPU stats (time a frame, cores, memory)");
             Win32.AppendMenu(view, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(view, Win32.MF_STRING | (Touring ? Win32.MF_CHECKED : 0), (IntPtr)CmdTour, "Panoramic tour (galaxies down to the quarks)\tT");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
@@ -105,6 +106,8 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_POPUP, dragMenu, "Drag speed (look and turn)");
             Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("invert-left-right", false) ? Win32.MF_CHECKED : 0), (IntPtr)CmdInvertX, "Invert left-right drag");
             Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("invert-up-down", false) ? Win32.MF_CHECKED : 0), (IntPtr)CmdInvertY, "Invert up-down drag");
+            Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdDocs, "Documents: what's here");
+            Win32.AppendMenu(help, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdReadme, "Readme");
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdHowItWorks, "How it works (waveform, infinite zoom)");
             Win32.AppendMenu(help, Win32.MF_STRING, (IntPtr)CmdCredits, "Credits");

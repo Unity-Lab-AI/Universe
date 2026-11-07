@@ -26,11 +26,13 @@ namespace Universe.Shell
             return "# " + name + "\n\nThis document is not in this copy of the program.";
         }
 
-        /// <summary>Every document for the viewer: About, Readme, How it works, the universe in plain words, the build guide, Credits.</summary>
+        /// <summary>Every document for the viewer: the directory of them all first (what each is made of and when to read it),
+        /// then About, Readme, How it works, the universe in plain words, the builders' guide, the technical guide, Credits.</summary>
         public static System.Collections.Generic.List<Universe.Platform.DocViewer.Doc> Docs()
         {
             return new System.Collections.Generic.List<Universe.Platform.DocViewer.Doc>
             {
+                new Universe.Platform.DocViewer.Doc { Title = "Documents: what's here", Text = Built("docs.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "About", Text = "# " + AppName + "\n\n*Version " + Version + "*\n\n" + Built("about.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "Readme: how to use it", Text = Built("readme.md") },
                 new Universe.Platform.DocViewer.Doc { Title = "How it works", Text = Built("how-it-works.md") },

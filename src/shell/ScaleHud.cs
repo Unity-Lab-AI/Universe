@@ -1,5 +1,5 @@
 // Universe · shell · the scale on screen: a bar of a round length (1, 2 or 5 of a unit) and its label, showing how big things are
-// where you are looking, from light-years down to micrometres. Drawn in screen pixels on top of the picture, in the game's own
+// where you are looking, from billions of light-years down past the Planck length. Drawn in screen pixels on top of the picture, in the game's own
 // blocky letters. It can be turned on and off.
 using System;
 using System.Collections.Generic;
@@ -26,10 +26,14 @@ namespace Universe.Shell
             return (m < 2 ? 1 : m < 5 ? 2 : 5) * p;
         }
 
-        // a length in km written plainly, from micrometres to light-years
+        // a length in km written plainly, from the whole universe down past the Planck length (the zoom in has no floor)
         public static string Words(double km)
         {
             const double ly = 9.4607e12;
+            if (km >= ly * 1e15) return (km / ly).ToString("0.#e+0") + " light-years";
+            if (km >= ly * 1e12 * 0.5) return Num(km / ly / 1e12) + " trillion light-years";
+            if (km >= ly * 1e9 * 0.5) return Num(km / ly / 1e9) + " billion light-years";
+            if (km >= ly * 1e6 * 0.5) return Num(km / ly / 1e6) + " million light-years";
             if (km >= ly * 0.5) return Num(km / ly) + " light-years";
             if (km >= 1.496e8 * 0.5) return Num(km / 1.496e8) + " AU";
             if (km >= 1) return Num(km) + " km";
@@ -38,7 +42,13 @@ namespace Universe.Shell
             if (km >= 1e-9) return Num(km * 1e9) + " micrometres";
             if (km >= 1e-12) return Num(km * 1e12) + " nanometres";
             if (km >= 1e-15) return Num(km * 1e15) + " picometres";
-            return Num(km * 1e18) + " femtometres";
+            if (km >= 1e-18) return Num(km * 1e18) + " femtometres";
+            if (km >= 1e-21) return Num(km * 1e21) + " attometres";
+            if (km >= 1e-24) return Num(km * 1e24) + " zeptometres";
+            if (km >= 1e-27) return Num(km * 1e27) + " yoctometres";
+            if (km >= 1e-30) return Num(km * 1e30) + " rontometres";
+            if (km >= 1e-33) return Num(km * 1e33) + " quectometres";
+            return (km * 1e3).ToString("0.#e-0") + " m";                                  // (past the last named unit, and past the Planck length: the number itself)
         }
 
         private static string Num(double v) { return v >= 1000 ? v.ToString("N0") : v >= 10 ? v.ToString("0") : v.ToString("0.#"); }

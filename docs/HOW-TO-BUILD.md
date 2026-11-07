@@ -18,6 +18,27 @@ For adding kinds of worlds, stars and galaxies without touching code, start with
 
 ---
 
+## Everything above the compiler is ours
+
+What is scratch-made and what comes from Windows, layer by layer. Nothing is downloaded and nothing is installed: no packages, no engine, no libraries, no stored art.
+
+| Layer | Ours | From Windows |
+|---|---|---|
+| **Toolchain** | `build.cmd` and `release.cmd`; every warning an error | `csc.exe`, the C# 5 compiler inside the .NET Framework that ships with Windows |
+| **The window** | `Win32.cs` (our own declarations), `Window` (the window and the menus), `Input` (keys and mouse), `Launcher` (the landing page), `DocViewer` (Markdown rendered to rich text, tables and links included), `Settings`, `Watchdog`, `Stats` | `user32`, `gdi32`, `kernel32`, `psapi`, the RichEdit control |
+| **Graphics** | `D3D12.cs` and `Com.cs` (Direct3D 12 and DXGI called through their COM method tables by hand), `Gpu` (device, swap chain, fences, a frame in flight, timestamps, the DRED crash record in `GpuLog`), `Pipeline` and `MeshPipeline` (root signatures, pipeline states, the HLSL shaders compiled as the program starts), `Draw`, `UploadBuffer` | `d3d12.dll`, `dxgi.dll`, `d3dcompiler_47.dll` |
+| **Maths** | `MathCore`, `Wavelet97` (CDF 9/7), `Waveform`, `ModeE`, `Physics` | nothing |
+| **Content** | The content format and `Content.cs`, its reader; 30 template files | nothing |
+| **Generators** | `GalaxyGen`, `StarGen`, `SpaceGen`, `PlanetGen`, `PlanetTerrain`, `BodyGen`, `GrainField`, `ElementGen`, `IconFont` (the blocky letters on screen) | nothing |
+| **Simulation** | `PlanetCore`, `PlanetPlates`, `PlanetSurface`, `PlanetAir`, `PlanetWeather`, `PlanetImpacts` | nothing |
+| **Views** | `UniverseView` (the camera, the zoom, picking, the cards, time, the tour), `MatterView`, `ScaleHud`, `PreviewText` | nothing |
+| **Captures** | `PngWriter` (chunks, filters, checksums), `GifWriter` (palette and LZW), `Mp4Writer` (each frame handed to a sink writer) | Media Foundation for the H.264 inside an MP4; the framework's Deflate inside a PNG |
+| **Shipping** | `Setup.cs` (the installer wizard, carrying the payload inside itself), `MakeIcons` (the icons drawn by code) | Windows Forms for the wizard's controls |
+
+About 18,000 lines of C# and shader code in 61 files, and about 10,000 lines of templates in 30.
+
+---
+
 ## What you need
 
 | | |
@@ -78,8 +99,9 @@ Change the version at the top of `release.cmd`.
 | `src/gen` | The making: galaxies (`GalaxyGen`), star systems and which kind of world forms where (`SpaceGen`), a world's ground and its own traits from its template (`PlanetTerrain`), bodies in space (`BodyGen`), grains (`GrainField`) |
 | `src/shell` | The universe view (`UniverseView`: camera, zoom, picking, info cards, time, days, the tour), the scale and cards on screen (`ScaleHud`), the matter below the ground (`MatterView`), the Help menu's documents (`PreviewText`) |
 | `src/render` | Direct3D 12: the device, picking the graphics card, timing its work, the point and mesh pipelines and their shaders |
-| `src/platform` | The window, input, menus, the landing page (`Launcher`), settings (`%LOCALAPPDATA%\Universe\settings.txt`), the document viewer (`DocViewer`) |
-| `docs/` | The guides. They're built into the program too, so **Help** shows the same pages |
+| `src/platform` | The window, input, menus, the landing page (`Launcher`), settings (`%LOCALAPPDATA%\Universe\settings.txt`), the document viewer (`DocViewer`), the stats on screen (`Stats`), the watchdog (`Watchdog`) |
+| `docs/` | The guides. They're built into the program too (`build.cmd`'s `/resource` lines), so **Help** shows the same pages; **Help > Documents** is the directory of them all (`docs/in-game/DOCS.md`) |
+| `docs/img/` | The logo, the journey clip the readme shows, and the repo page's share images (`social.png` for the link preview, `avatar.png` for the repo's own picture) |
 | `installer` | Our own installer, and the icons, drawn by our own `MakeIcons.cs` |
 
 ---
@@ -90,7 +112,7 @@ Change the version at the top of `release.cmd`.
 |---|---|
 | **Templates** | Each kind of thing is an entry in `content/` with ranges. A thing made from it takes its own value in each range from its seed (`PlanetTerrain.Instance`), so every world is its own and a seed always gives the same one. Which kind forms where is read from the template too (`SpaceGen.WorldKind`) |
 | **One camera** | `UniverseView` keeps the camera as an anchor (a galaxy's centre, a star, a world) plus an offset, in double precision, so it's exact from light-years to atoms. Nothing switches views |
-| **Zoom** | Each notch of the wheel moves a share of the way to the nearest thing, so it slows by itself and never runs out. W A S D Q E fly at half the distance to the nearest thing a second |
+| **Zoom** | Each notch of the wheel moves a share of the way to the nearest thing, so it slows by itself and never runs out. Inward there is no floor: below the quark, `MatterView` keeps the point you ride (a quark or an electron) exactly at the focus with its glow filling the view, the scale bar names units down to quectometres and then the number itself, and the card says what is known there (nothing; below the Planck length, not even length). `MatterView.BottomKm` is only where double precision gives out. Outward, `HoldInside` keeps you inside the visible universe. W A S D Q E fly at half the distance to the nearest thing a second |
 | **Depth** | Reversed floating-point depth (`Mat4.Perspective`, compare GREATER), so near and far never fight |
 | **The galaxies** | About 100 billion in a sphere 13.4 billion light-years across, made in regions round you along the cosmic web; beyond them, a glow of points along the same web that fades in just where the galaxies made in full fade out |
 | **A galaxy** | One star field: the far view is the first part of the near view, so nothing swaps. Real stars round you are made in 25-light-year cubes at true density, each from its own position |
@@ -99,6 +121,7 @@ Change the version at the top of `release.cmd`.
 | **Detail at every size** | `Waveform`: stored CDF 9/7 waveforms, one per octave, and mode-E past them |
 | **Clouds and patterns** | A world's cloud cover is worked out for each pixel on the card, so cloud edges are soft at any distance; every layer of noise, on the card and on the processor, is turned to its own angle, so no pattern lines up in rows |
 | **The card's time** | Two Direct3D 12 timestamps a frame measure the card's work; the GPU use setting (10 to 90%) holds it there by turning the detail up or down |
+| **The stats** | `Stats` samples twice a second: the processor's time on the frame (from its start to handing it to the card), the card's time (the timestamps), this process's share of every core (`GetProcessTimes`), its working set (`GetProcessMemoryInfo`), the card's memory in use and the budget it allows (`IDXGIAdapter3::QueryVideoMemoryInfo`), the detail and the ground backlog. `UniverseView` draws them under the FPS when `show-stats` is on (the View menu, or the landing page) |
 | **Processor and card at once** | A frame is handed to the card and not waited for until the next frame's commands are recorded (`Gpu.BeginFrame`), so the next frame's game work runs while the card draws; freed buffers are held back eight frames, so the card never reads one let go |
 | **Physics** | `Physics` (`src/core/Physics.cs`) reads gravity and light from `content/physics.unt`: Kepler orbits, pulls, escape speeds, black-hole horizons. `MatterView` reads the strong force, the protons' push, the binding-energy formula and beta stability for every nucleus |
 | **Time** | `UniverseView.TimeSpeeds` sets how many years pass each second; a world's day is one turn of its spin (its template's `day-hours`) |
@@ -125,6 +148,6 @@ Change the version at the top of `release.cmd`.
 
 ---
 
-## License and credits
+## Licence and credits
 
-Made by the **Unity AI Lab**. [unityailab.com](https://unityailab.com)
+**MIT.** Universe is built to be taken: use it, change it, ship it inside your own project, sell what you build with it, no permission needed; keep the licence notice with it. Made by the **Unity AI Lab**. [unityailab.com](https://unityailab.com)

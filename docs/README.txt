@@ -14,6 +14,9 @@
   plain text in the content folder. Change them, add your own, and build
   universes for your own games and simulations.
 
+  Built from nothing: no engine, no libraries, no art, 1.7 MB installed,
+  MIT licensed. Take it for any project that needs a universe.
+
 
 -------------------------------------------------------------------------------
   START
@@ -49,7 +52,8 @@
     Esc ................. close
 
   A click, the wheel or a key pauses the tour, and a note says why.
-  Help, on the menu bar, has every document, beautifully laid out.
+  Help, on the menu bar, has every document, beautifully laid out;
+  Documents: what's here lists them all and what each is for.
 
 
 -------------------------------------------------------------------------------
@@ -59,6 +63,8 @@
     Needs ......... Windows 10 or 11, 64-bit, and a Direct3D 12 graphics card
     Display ....... runs in a window and never changes your display settings
     Captures ...... screenshots and clips go in the captures folder
+    Stats ......... frames a second with GPU and CPU stats on screen: tick
+                    boxes on the landing page, or the View menu
     Updating ...... installing over it offers to delete old clips, screenshots
                     and settings, each on its own
     Uninstall ..... Windows' Apps list, or "Uninstall Universe.exe" here

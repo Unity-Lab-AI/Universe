@@ -53,13 +53,15 @@ Both go in the `captures` folder. On the landing page, tick **Film the tour** to
 |---|---|
 | **H** | Show or hide the scale bar and the info cards (a click that picks something brings them back) |
 | **Info cards** | Whatever you pick gets a card: what it is and its facts (a star's heat and worlds, a world's orbit and year, the ground's height) |
-| **View menu** | Drag speed, invert either drag direction, FPS, render scale (lower is faster, higher is sharper) and GPU use |
+| **View menu** | Drag speed, invert either drag direction, FPS, the GPU and CPU stats (the processor's and the card's time a frame, the processor's share of every core, the memory in use, the card's memory and how busy it is), render scale (lower is faster, higher is sharper) and GPU use |
 | **Start page** | Back to the landing page |
+| **Landing page** | Its tick boxes: frames a second, the GPU and CPU stats, invert up and down, drag speed, film the tour |
+| **Help menu** | Every document, laid out to read. **Documents: what's here** lists them all, what each is made of and when to read it |
 | **Esc** or **Exit** | Close |
 
 ## What you will see
 
-1. **Galaxies**, each of its own kind. Close to one, its own stars fade in, made round you as you go.
+1. **Galaxies**, each of its own kind. Close to one, its own stars fade in, made round you as you go. At its heart a giant black hole, feeding or quiet: the tour flies by a feeding one, round its disc and in to its shadow.
 2. **A star's system**: its worlds, moons, belts and the star itself.
 3. **A world**: its real ground, seas, clouds and air. Plates, volcanoes, quakes, weather, ice ages and impacts run on its own clock.
 4. **Below the ground**: grains, the crystal of their mineral, then atoms, electrons, the nucleus and its quarks.

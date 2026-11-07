@@ -39,7 +39,7 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 | **On the ground** | Stones, then grains, then the steps of a crystal's face |
 | **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them |
 
-> **No loading screens along the way.** One camera across about 42 factors of ten, and you can turn round anywhere and fly all the way back out.
+> **No loading screens along the way.** One camera across about 42 factors of ten, and you can turn round anywhere and fly all the way back out. Below the quark the zoom in simply goes on: there is no floor.
 
 ---
 
@@ -49,6 +49,22 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 |---|---|
 | **A universe to fly through** | Install it, press **T**, and watch the grand tour from the cosmic web to a quark. Then take the controls and go anywhere. |
 | **A toolkit to build universes** | Every galaxy, star and world grows from a **template** in plain text. Add your own kinds and use it for your own **game or simulation**. |
+
+---
+
+## Take it
+
+Universe is built to be taken. It is **MIT licensed**: use it, change it, sell what you build with it, no permission needed. Any project of any kind that needs a universe:
+
+| | |
+|---|---|
+| **A game** | Your worlds, grown from your templates, in your own style: the generators and the camera are yours to keep |
+| **A simulation** | Real orbits, real physics numbers, a universe that is the same every run from one seed |
+| **A film or a screensaver** | Write a tour in plain text and film it in the program |
+| **A classroom** | Fly from the cosmic web to a quark, with a card on everything you click |
+| **A piece of it** | The waveform engine, the galaxy maker, the star systems, the ground, the matter: each is its own folder of plain C#, with no packages to drag along |
+
+Rename it, swap the icon, change the content, and `release.cmd` makes your installer. [Build your own universe](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours") shows the templates; the [Technical guide](docs/HOW-TO-BUILD.md "Build, ship and change the code") shows the code.
 
 ---
 
@@ -74,10 +90,26 @@ That's less than one photo from a phone. It fits because **nothing in it is stor
 
 So the 1.7 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
 
----|---|
-| **One seed makes it all** | No photos, no painted skies, no pre-made maps |
-| **Same seed, same universe** | Fly away from a star and come back: the same star. It was never thrown away, only worked out again |
-| **Made where you are** | No computer could hold a hundred billion stars, so it makes the ones round you, at a real galaxy's density |
+### Against the field
+
+The honest comparison, with each project's own published numbers: every well-known program that makes or shows a universe, and the two tiny pioneers that showed the way. Sizes are what each asks for on disk.
+
+| | On disk | What it holds | How |
+|---|---|---|---|
+| **Universe** | **1.7 MB** | About 10²² stars in about 100 billion galaxies, every world down to its grains, atoms and quarks, in one unbroken zoom | Everything grown from one seed and 0.26 MB of templates; no stored art, no sound |
+| [Noctis IV](https://archive.org/details/msdos_noctis_shareware "Noctis IV on the Internet Archive") (2002) | About 1 to 5 MB | One galaxy of about 78 billion stars, with planets to walk on | Grown from a seed, by one person, for DOS |
+| [Elite](https://www.theregister.com/2024/01/18/elite_game_retro/ "Elite at 40, The Register") (1984) | 22 KB | Eight galaxies of 256 planets | Grown from a seed: the first game to do it |
+| [.kkrieger](https://en.wikipedia.org/wiki/.kkrieger ".kkrieger on Wikipedia") (2004) | 96 KB | One shooter level, about ten minutes of play (not a universe: the famous size benchmark) | Textures, models and music grown at start-up |
+| [SpaceEngine](https://store.steampowered.com/app/314650/SpaceEngine/ "SpaceEngine on Steam") | 4 GB, 50 GB with its HD packs | Billions of galaxies of billions of stars, down to a world's ground; 130,000 real catalogued objects | Grown from position, plus catalogues and textures |
+| [Elite Dangerous](https://www.elitedangerous.com/explore "Elite Dangerous: Explore") | About 25 GB | One galaxy, 400 billion star systems | Stellar Forge grows systems from first principles, plus art and sound |
+| [No Man's Sky](https://www.gamespot.com/articles/no-mans-skys-18-quintillion-planets-take-up-just-6/1100-6441663/ "GameSpot, 2016: 18 quintillion planets in 6 GB") | 6 GB at launch (mostly sound), 10 to 15 GB now | 18 quintillion planets | Grown from a 64-bit seed, plus art and sound |
+| [Universe Sandbox](https://universesandbox.com/faq/ "Universe Sandbox FAQ") | 4 GB | A system of bodies at a time, under gravity | A physics toy, not a universe to fly through |
+| [Celestia](https://en.wikipedia.org/wiki/Celestia "Celestia on Wikipedia") 1.6 | About 36 MB | 118,000 real stars and the known worlds | Catalogues, nothing grown |
+| [Pioneer](https://sourceforge.net/projects/pioneer-space-simulator.mirror/files/20260907/ "Pioneer downloads") | About 550 MB | A galaxy of millions of systems to fly and trade in | Grown from a seed, plus art and sound |
+
+**Where it stands.** Nothing in that table goes from the cosmic web to a quark in one unbroken camera, and nothing but the two tiny pioneers comes near the size. Noctis is the closest in spirit: one person, one galaxy, a few megabytes, twenty years ago. SpaceEngine is the closest in scope, more than two thousand times the size, and it stops at the ground.
+
+**To be fair.** The others carry what Universe doesn't yet: sound, stored art and textures, gameplay, ships, trade, missions, years of polish. Universe is a 0.1 preview with no life on its worlds yet. And the size is small because every pixel is worked out on the graphics card from equations, so it needs a Direct3D 12 card and does its work there; on a card with little memory it starts at a lower render scale by itself.
 
 ---
 
@@ -107,6 +139,22 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **The waveform** | Our own **CDF 9/7 wavelet** engine (the maths family behind JPEG 2000) stores shapes as waves; zooming in adds the next octave |
 | **Mode-E** | Past the stored waves, detail keeps growing (Newton's method on *z³ − K*) and never repeats |
 | **Real steps** | Close in, a grain's face steps in single **atomic layers**, then shows its **atoms**, before the atoms themselves arrive |
+| **No floor** | Past the quark, which shows no size down to 10⁻¹⁹ m, the zoom in keeps going: past the Planck length, as far as a number can count. The scale bar says where you are and the card says what is known there, which is nothing. Outward you are held inside the visible universe, because that is all there is to see |
+
+---
+
+## Built from nothing
+
+| | |
+|---|---|
+| **No engine** | Not Unity, not Unreal, not Godot. The engine is ours: the window, the input, the renderer, the camera, the generators, the physics, the tour, the cards, even the font |
+| **No libraries** | No packages, no downloads, nothing to install to build it. It talks to the graphics card and to Windows directly, through declarations we wrote |
+| **No art** | No pictures, no textures, no models, no sound files. Every galaxy, star, world, cloud, stone, grain and atom is worked out from its seed, every frame |
+| **No build tools** | One command, and the C# compiler that is already inside every copy of Windows. That is the whole toolchain |
+| **Our own formats** | The content format, the wavelet engine, the icon drawer, the installer, the document viewer, the PNG and GIF writers: ours |
+| **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, Media Foundation to pack a clip as MP4, the framework's Deflate inside a PNG. Nothing from anywhere else |
+
+About 18,000 lines of C# and shader code, and 10,000 lines of templates. That is the whole thing.
 
 ---
 
@@ -155,7 +203,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **T · R** | The grand tour: start or carry on · start again |
 | **F12 · F9** | A screenshot · start or stop a clip |
 
-The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS, render scale and GPU use. **Help** has every guide.
+The **Time** menu has **Always day**, on to start with; turn it off for true day and night. **View** has drag speed, FPS with the GPU and CPU stats, render scale and GPU use. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 
 ---
 
@@ -166,6 +214,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | | |
 |---|---|
 | **Shot afresh every time** | Each shot picks its own way round, speed and crane |
+| **A feeding black hole** | It crosses to a galaxy whose heart is feeding, flies down to it, round its accretion disc, edge-on through the light it bends, in to the shadow at its horizon, and back out: with its jets, if it fires them |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
 | **Film it** | Tick **Film the tour** on the landing page; the **Clips** list plays them back |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |
@@ -182,12 +231,15 @@ A bar shows the universe being made, then it opens, whole.
 
 ---
 
-## Make it yours
+## Which guide
 
-| | |
-|---|---|
-| [**Build your own universe**](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours, features") | Add kinds of worlds, stars and galaxies, change the physics, write tours |
-| [**Technical guide**](docs/HOW-TO-BUILD.md "Build, ship and change the code") | Build it, ship it, change the code |
+| | Who it is for | What is in it |
+|---|---|---|
+| **This page**, and the **Help** menu's pages in the program | Anyone, in plain words | What it is, how to fly it, how it works |
+| [**Build your own universe**](docs/GUIDE.md "Templates, worlds, stars, galaxies, physics, tours, features") | Builders: no code needed | Add kinds of worlds, stars and galaxies, change the physics, write tours |
+| [**Technical guide**](docs/HOW-TO-BUILD.md "Build, ship and change the code") | Coders | Build it, ship it, find your way round the code, change it |
+
+**Help > Documents** in the program lists every guide, what each is made of and when to read it.
 
 Plain **C# 5 on Direct3D 12**, built with the compiler that comes with Windows. No packages, no outside libraries, no stored art.
 

@@ -12,7 +12,7 @@
 
 # Build your own universe
 
-> Universe is a **toolkit for making universes**: for games, for simulations, for science, for wondering. Everything in it is grown from **templates** you can read and change in plain text. Add a kind of world, a kind of star, a whole new galaxy shape, and every universe you make from then on is full of them.
+> Universe is a **toolkit for making universes**: for games, for simulations, for science, for wondering. Everything in it is grown from **templates** you can read and change in plain text. Add a kind of world, a kind of star, a whole new galaxy shape, and every universe you make from then on is full of them. It is built to be taken: **MIT licensed**, for any project of any kind that needs a universe.
 
 ---
 
@@ -327,12 +327,12 @@ caption: Across the universe, straight to one far away
 
 | `do:` | What the camera does |
 |---|---|
-| `pick` | Chooses what to look at: `start-galaxy`, `far-galaxy`, `black-hole`, `star`, `planet`, `asteroid`, `comet`, `quark` and more, or `none` |
+| `pick` | Chooses what to look at: `start-galaxy`, `far-galaxy` (a far galaxy ahead; one whose heart is feeding, when there is one), `black-hole` (a feeding one before a quiet one), `star`, `planet`, `asteroid`, `comet`, `quark` and more, or `none` |
 | `shot` | A framed film shot round what is picked: `to-radii` or `to-km` (how far), `sweep` (degrees round), `rise` (degrees up), `max-rate` (how fast the scale may change) |
 | `zoom` | A straight push in or pull out, `until-km` |
 | `orbit`, `look`, `arc`, `fly`, `glide` | Circle, look round, dolly while circling, fly forward, skim over the land |
 
-Every stop has a `caption`, which is shown on screen. A caption of `{sky}` is written on the spot from what is really up from where you stand: its star only if it is in view, its moons, the other worlds, the galaxy's stars by night or the day sky by day.
+Every stop has a `caption`, which is shown on screen. A caption of `{sky}` is written on the spot from what is really up from where you stand: its star only if it is in view, its moons, the other worlds, the galaxy's stars by night or the day sky by day. A caption of `{hole}` is written from the black hole you picked: its jets if it fires them, its disc, or that it is quiet, and how big its horizon is.
 
 ---
 
@@ -360,4 +360,4 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 
 ## Ship it
 
-`release.cmd` builds the program and its installer. Change the name, the icon and the content, and you've made your own universe for your own game. **Build your own (technical)** has the details.
+`release.cmd` builds the program and its installer. Change the name, the icon and the content, and you've made your own universe for your own game. **Build your own (technical)** has the details. The licence is MIT: it is yours to take.

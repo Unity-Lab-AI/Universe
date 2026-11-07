@@ -23,6 +23,22 @@ It fits because nothing is stored. Everything is worked out live from one number
 
 There's no life here yet, but the worlds aren't frozen. Their insides cool, plates drift, volcanoes erupt, ice ages come and go, and rocks from space leave craters.
 
+## Against the field
+
+| | On disk | What it holds |
+|---|---|---|
+| **Universe** | **1.7 MB** | About 10²² stars in 100 billion galaxies, every world down to its atoms and quarks, in one zoom |
+| Noctis IV (2002) | 1 to 5 MB | One galaxy of 78 billion stars, with planets to walk on |
+| SpaceEngine | 4 GB, 50 GB with its HD packs | Billions of galaxies, down to a world's ground |
+| Elite Dangerous | About 25 GB | One galaxy of 400 billion star systems |
+| No Man's Sky | 6 GB at launch, 10 to 15 GB now | 18 quintillion planets |
+
+Nothing in that list goes from the cosmic web to a quark in one camera, and nothing but Noctis comes near the size. To be fair, the others carry sound, stored art, gameplay and years of polish, which Universe doesn't yet. The full table, with sources, is in *The universe, in plain words*.
+
+## Built from nothing, meant to be taken
+
+No engine, no libraries, no art: the window, the renderer, the generators, the physics, the font, the installer and these very pages are all our own code, built with the compiler inside every copy of Windows. It is **MIT licensed**: take it for any project of any kind that needs a universe.
+
 ---
 
 **Next:** *Readme: how to use it* for the controls, or *How it works* for the science and the engine behind the zoom.

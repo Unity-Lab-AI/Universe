@@ -350,8 +350,8 @@ namespace Universe.Shell
         // ── every other kind of body, made round you from content/bodies.unt, drawn and clickable: a supermassive black hole at
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
-        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8, EatLo = 1, EatHi = 1; public int Shown, Swarm; public float R, G, B; }   // EatLo..EatHi: how many stars a feeding hole tears apart at once   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
-        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public double OffX, OffY, OffZ, LOffX, LOffY, LOffZ; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; }   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, SizeLo, SizeHi, SizePow = 1, RoundKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8, EatLo = 1, EatHi = 1; public int Shown, Swarm; public float R, G, B; }   // EatLo..EatHi: how many stars a feeding hole tears apart at once   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public double OffX, OffY, OffZ, LOffX, LOffY, LOffZ; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; public int ShapeIx; }   // ShapeIx: which of the rock shapes is its (by its seed; its band by its size)   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -1023,7 +1023,7 @@ namespace Universe.Shell
         }
         // a solid body: a sphere of triangles (an icosahedron cut four times), pushed in and out by broad lumps and pitted by craters,
         // drawn as lit stone with flat facets (never points of light); its star along +x
-        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private double _lastDrawTime; private int _diveLogTick = -1; private double[] _tSpot;   // _tSpot: a spot picked on the small body you are at (unit, from its middle): the zoom flies to it, as to a spot of a world's land
+        private UploadBuffer _rockSolid, _roundSolid, _nucSolid; private int _rockSolidN, _roundSolidN, _nucSolidN; private Func<double[], double[]> _rockShape, _roundShape, _nucShape; private const int RockBands = 4, RockSeeds = 3; private static readonly double[] RockLumps = { 1.3, 0.9, 0.55, 0.25 }; private Func<double[], double[]>[] _rockShapes; private UploadBuffer[] _rockSolids; private int[] _rockSolidNs; private double _lastDrawTime; private int _diveLogTick = -1; private double[] _tSpot;   // _tSpot: a spot picked on the small body you are at (unit, from its middle): the zoom flies to it, as to a spot of a world's land
         // a small body's shape: its radius and shade along any direction from its middle (its bumps, craters, stretch and grit), the
         // one function the mesh is built from and a dive lands on, so the ground you stand on is the stone that is drawn
         private static Func<double[], double[]> RockShape(Rng rng, double lump)
@@ -1079,6 +1079,15 @@ namespace Universe.Shell
             {
                 _rockShape = RockShape(new Rng(0x5A57E1UL), 1); _roundShape = RockShape(new Rng(0x60BE5UL), 0.08); _nucShape = RockShape(new Rng(0xC0CE7UL), 0.9);   // (the same shapes the meshes are built from, for the dive)
                 var a = SolidRock(new Rng(0x5A57E1UL), 1, 0.52f, 0.47f, 0.42f); _rockSolidN = a.Count; _rockSolid = new UploadBuffer(_gpu.Device, (long)a.Count * Stride); _rockSolid.Write(a.ToArray(), a.Count);
+                // every rock its own shape: four bands of lumpiness (the smallest the most irregular, the largest near round, as gravity
+                // pulls a body round as it grows) by three seeds each; a body's by its size and its own seed, so no two beside each other are alike
+                _rockShapes = new Func<double[], double[]>[RockBands * RockSeeds]; _rockSolids = new UploadBuffer[RockBands * RockSeeds]; _rockSolidNs = new int[RockBands * RockSeeds];
+                for (int bq = 0; bq < RockBands; bq++) for (int sq = 0; sq < RockSeeds; sq++)
+                {
+                    int ix = bq * RockSeeds + sq; ulong seed = 0x5A57E1UL + (ulong)(bq * 7 + sq * 131);
+                    _rockShapes[ix] = RockShape(new Rng(seed), RockLumps[bq]);
+                    var rv = SolidRock(new Rng(seed), RockLumps[bq], 0.52f, 0.47f, 0.42f); _rockSolidNs[ix] = rv.Count; _rockSolids[ix] = new UploadBuffer(_gpu.Device, (long)rv.Count * Stride); _rockSolids[ix].Write(rv.ToArray(), rv.Count);
+                }
                 var b = SolidRock(new Rng(0x60BE5UL), 0.08, 0.55f, 0.52f, 0.5f); _roundSolidN = b.Count; _roundSolid = new UploadBuffer(_gpu.Device, (long)b.Count * Stride); _roundSolid.Write(b.ToArray(), b.Count);
                 var c = SolidRock(new Rng(0xC0CE7UL), 0.9, 0.42f, 0.40f, 0.38f); _nucSolidN = c.Count; _nucSolid = new UploadBuffer(_gpu.Device, (long)c.Count * Stride); _nucSolid.Write(c.ToArray(), c.Count);   // a comet's nucleus: among the darkest bodies there are (albedo 0.04), shown as a camera exposing for it sees it, mid-grey, as Rosetta saw 67P (at its true darkness it was black against the stars) things known
             }
@@ -1136,6 +1145,15 @@ namespace Universe.Shell
         // the body's real surface along a direction from its middle (unit, in the universe's frame): the mesh's own shape in the body's
         // frame at this moment, so a dive lands on the stone that is drawn, not on a sphere kilometres inside or above it (a rock is
         // half again as long as it is wide, with bumps and craters besides: "a metre above it" had been nothing but stars)
+        // which of the rock shapes a body has: its band by its size against the size gravity rounds a body at (its place's, else
+        // 300 km), its seed its own; at or over that size it is the round shape
+        private int RockIx(Extra ex)
+        {
+            double roundKm = ex.Pl != null && ex.Pl.RoundKm > 0 ? ex.Pl.RoundKm : 300, share = ex.R / Units.Km(1) / roundKm;
+            int band = share < 0.08 ? 0 : share < 0.3 ? 1 : share < 0.65 ? 2 : 3;
+            return band * RockSeeds + ((ex.ShapeIx % RockSeeds) + RockSeeds) % RockSeeds;
+        }
+        private bool RockRound(Extra ex) { double roundKm = ex.Pl != null && ex.Pl.RoundKm > 0 ? ex.Pl.RoundKm : 300; return ex.R / Units.Km(1) >= roundKm; }
         private double BodyRadiusToward(Extra ex, double time, double dx, double dy, double dz)
         {
             if (_rockSolid == null) MakeSmallBodies();
@@ -1146,8 +1164,8 @@ namespace Universe.Shell
             var y2 = new Vec3(ys.X * c + zs.X * sn, ys.Y * c + zs.Y * sn, ys.Z * c + zs.Z * sn); var z2 = Vec3.Cross(xs, y2);
             if (ex.Shape == "comet") { y2 = ys; z2 = zs; }
             double lx = dx * xs.X + dy * xs.Y + dz * xs.Z, ly = dx * y2.X + dy * y2.Y + dz * y2.Z, lz = dx * z2.X + dy * z2.Y + dz * z2.Z, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz); if (ll <= 0) return ex.R;
-            bool comet = ex.Shape == "comet", round = !comet && ex.R / Units.Km(1) > 200;
-            var shape = comet ? _nucShape : round ? _roundShape : _rockShape; if (shape == null) return ex.R;
+            bool comet = ex.Shape == "comet", round = !comet && RockRound(ex);
+            var shape = comet ? _nucShape : round ? _roundShape : _rockShapes != null ? _rockShapes[RockIx(ex)] : _rockShape; if (shape == null) return ex.R;
             var p = shape(new[] { lx / ll, ly / ll, lz / ll });
             return ex.R * Math.Sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
         }
@@ -1199,9 +1217,9 @@ namespace Universe.Shell
                     mc[16] = 1; mc[17] = 0; mc[18] = 0;                                           // its star along its own +x
                     double ix = -dx, iy = -dy, iz = -dz;                                           // the camera from the body, into its frame
                     mc[20] = (float)((ix * xs.X + iy * xs.Y + iz * xs.Z) / sc); mc[21] = (float)((ix * y2.X + iy * y2.Y + iz * y2.Z) / sc); mc[22] = (float)((ix * z2.X + iy * z2.Y + iz * z2.Z) / sc);
-                    bool comet = ex.Shape == "comet", round = !comet && ex.R / Units.Km(1) > 200;
+                    bool comet = ex.Shape == "comet", round = !comet && RockRound(ex);
                     _gpu.ClearDepth();
-                    _meshes.Solid.Draw(comet ? _nucSolid : round ? _roundSolid : _rockSolid, comet ? _nucSolidN : round ? _roundSolidN : _rockSolidN, mc, 0, 0, w, h);
+                    _meshes.Solid.Draw(comet ? _nucSolid : round ? _roundSolid : _rockSolids[RockIx(ex)], comet ? _nucSolidN : round ? _roundSolidN : _rockSolidNs[RockIx(ex)], mc, 0, 0, w, h);
                 }
 
             }
@@ -1215,6 +1233,7 @@ namespace Universe.Shell
                 double v; var pl = new Place { Id = e.Id, Name = e.Name, Where = e.Get("where", ""), Entry = e.Get("entry", ""), Says = e.Get("says", ""), Shape = e.Get("shape", "") };
                 { double lo, hi; if (e.TryRange("coma-km", out lo, out hi)) { pl.ComaLo = lo; pl.ComaHi = hi; } if (e.TryRange("tail-km", out lo, out hi)) { pl.TailLo = lo; pl.TailHi = hi; } }   // (a comet's coma and tail at their real sizes)
                 if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; if (double.TryParse(e.Get("size-km", "1000"), fs, ci, out v)) pl.SizeKm = v;
+                { double lo, hi; if (e.TryRange("size-km", out lo, out hi)) { pl.SizeKm = lo; pl.SizeLo = lo; pl.SizeHi = hi; } if (double.TryParse(e.Get("size-power", "1"), fs, ci, out v)) pl.SizePow = Math.Max(0.1, v); if (double.TryParse(e.Get("round-above-km", "0"), fs, ci, out v)) pl.RoundKm = v; }   // (a size range: each body its own size between them, by the power; round-above-km: the size gravity has pulled a body round at)
                 int n; if (int.TryParse(e.Get("shown", "0"), out n)) pl.Shown = n;
                 { double lo, hi; if (e.TryRange("disc-rs", out lo, out hi)) { pl.DiscLo = Math.Max(1.5, lo); pl.DiscHi = Math.Max(pl.DiscLo + 1, hi); } if (e.TryRange("swarm-rs", out lo, out hi)) { pl.SwarmLo = Math.Max(2, lo); pl.SwarmHi = Math.Max(pl.SwarmLo + 1, hi); } }
                 if (int.TryParse(e.Get("swarm-stars", "0"), out n)) pl.Swarm = n; { double lo, hi; if (e.TryRange("eating-stars", out lo, out hi)) { pl.EatLo = Math.Max(1, lo); pl.EatHi = Math.Max(pl.EatLo, hi); } } if (double.TryParse(e.Get("eating-share", "0"), fs, ci, out v)) pl.EatShare = v; if (double.TryParse(e.Get("inner-orbit-seconds", "8"), fs, ci, out v)) pl.OrbitSeconds = Math.Max(0.5, v);
@@ -1222,9 +1241,17 @@ namespace Universe.Shell
                 pl.R = r; pl.G = g; pl.B = b; _places.Add(pl);
             }
         }
+        // a small body's size (km) from its place's range, by a power law on its position's seed: many small, few large (a belt is
+        // mostly boulders, its largest a few hundred km across); a place with one size keeps it (a rock with the old spread round it)
+        private static double SizeOf(Place pl, double x, double y, double z)
+        {
+            double su = Math.Abs(Math.Sin(x * 3.1 + y * 5.7 + z * 1.9) * 7919.1) % 1;
+            if (pl.SizeHi > pl.SizeLo && pl.SizeLo > 0) return Math.Exp(Math.Log(pl.SizeLo) + Math.Pow(su, pl.SizePow) * (Math.Log(pl.SizeHi) - Math.Log(pl.SizeLo)));
+            return pl.SizeKm * (pl.Shape == "rock" ? Math.Exp(-1.6 + 3.2 * Math.Pow(su, 2.5)) : 1);
+        }
         private Extra MakeExtra(Place pl, double x, double y, double z)
         {
-            var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(pl.SizeKm * (pl.Shape == "rock" ? Math.Exp(-1.6 + 3.2 * Math.Pow(Math.Abs(Math.Sin(x * 3.1 + y * 5.7 + z * 1.9) * 7919.1) % 1, 2.5)) : 1)), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>(), Pl = pl };
+            var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(SizeOf(pl, x, y, z)), ShapeIx = (int)(Math.Abs(Math.Sin(x * 9.3 + y * 2.9 + z * 7.7) * 3313.7) % 1 * RockSeeds), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>(), Pl = pl };
             ex.OrbCx = _ax; ex.OrbCy = _ay; ex.OrbCz = _az; ex.OffX = x - _ax; ex.OffY = y - _ay; ex.OffZ = z - _az;   // (its place from the anchor; a body on an orbit gets its precise offset below)
             ex.Lines.Add(pl.Name);
             {
@@ -1745,7 +1772,7 @@ namespace Universe.Shell
                 DropPlanet();
                 if (best == -2)
                 {
-                    _planet = -2; _groundExtra = sb; _spinRef = 0;
+                    _planet = -2; _groundExtra = sb; _spinRef = Spin(-2);
                     uint sbSeed = (uint)(sb.Lines.Count > 1 ? sb.Lines[1].GetHashCode() : sb.Name.GetHashCode());
                     _ground = new PlanetTerrain(_gpu.Device, "asteroid", sb.Name, sbSeed, false, sb.R / Units.Km(1)); _ground.MixId = sb.Mix;   // (its own radius, its own mix of minerals)
                     ZoomLog("GROUND made for " + sb.Name + " (" + ScaleHud.Words(sb.R / Units.Km(1) * 2) + " across, mix " + sb.Mix + "), as a world's");
@@ -1791,7 +1818,7 @@ namespace Universe.Shell
         private bool _hadPos;
         private int _cpBest = -1; private double _cpBd;                         // for the log: the nearest body in its own radii
         private double _spinRef;   // the world's spin when you came to it: its ground is held still and its sky turns by how far it has spun since
-        private double SpunSince { get { return _ground != null && _planet >= 0 ? Spin(_planet) - _spinRef : 0; } }
+        private double SpunSince { get { return _ground != null && (_planet >= 0 || _planet == -2) ? Spin(_planet) - _spinRef : 0; } }   // (a small body's world too: its day of a few hours)
         private void DropPlanet() { if (_ground != null) { _ground.Dispose(); _ground = null; } _planet = -1; _groundExtra = null; }
         // the ground body's name for a card (a world's kind, or a small body's own name)
         private string GroundKind() { return _planet == -2 && _groundExtra != null ? _groundExtra.Name.ToLowerInvariant() : _system != null && _planet >= 0 && _planet < _system.Bodies.Count ? _system.Bodies[_planet].Kind : "the ground"; }
@@ -3607,7 +3634,7 @@ namespace Universe.Shell
             }
             Mat4 proj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)(reach * 1e-3), (float)(_uRadius * 2.2));   // out to the far side of the visible universe
             Mat4 vp = view * proj;
-            if (_ground != null && _planet >= 0)
+            if (_ground != null)
             {
                 // at a world its ground is held still under you and the sky turns round it, by its spin (the same turn as its
                 // starlight on the ground): its star rises and sets, the stars wheel overhead, about the world's middle
@@ -3623,7 +3650,7 @@ namespace Universe.Shell
             // the world you are falling to fills the whole view: everything behind it (the web, the galaxies, their clusters and
             // nebulae, the stars round you) cannot be seen, so none of it is drawn; what lies in front (its moons, its rings) still is
             bool skyHidden = InsideGiant;                                               // (inside a giant's gas nothing past it shows)
-            if (!skyHidden && _ground != null && _planet >= 0)
+            if (!skyHidden && _ground != null)
             {
                 double qx = _px - _ox, qy = _py - _oy, qz = _pz - _oz, qd = Math.Sqrt(qx * qx + qy * qy + qz * qz), pr = _ground.Radius * Units.Km(1) * (_ground.Solid ? 0.999 : 0.97);
                 if (qd > pr)
@@ -3811,7 +3838,7 @@ namespace Universe.Shell
                 // the system's planets and moons fade in as you close in on its star (from 2,000 AU to 500 AU), never all at once
                 double sysFade = Math.Max(0, Math.Min(1, (SystemRange - DistToSysStar()) / (SystemRange * 0.75)));
                 for (int i = 1; i < _bodyCount; i++) { _bodyVerts[i].R *= (float)sysFade; _bodyVerts[i].G *= (float)sysFade; _bodyVerts[i].B *= (float)sysFade; }
-                if (_ground != null && _planet + 1 < _bodyCount)
+                if (_ground != null && _planet >= 0 && _planet + 1 < _bodyCount)   // (a small body's world has no glow among the system's bodies: its slot is not a planet's; indexed at slot minus one it had crashed the first frame its ground was made)
                 {
                     // its glow fades into its real ground as you come in (from 40 to 20 of its widths), never swapped
                     double gx0, gy0, gz0; CamFromPlanet(out gx0, out gy0, out gz0);
@@ -3857,7 +3884,7 @@ namespace Universe.Shell
                 double altSea = Math.Max(alt, Math.Sqrt(x * x + y * y + z * z) - _ground.Radius);   // the horizon goes by the height above sea level
                 double horizon = Math.Sqrt(altSea * (2 * _ground.Radius + altSea)) + Math.Sqrt(2 * _ground.Radius * 30);
                 Mat4 kproj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)Math.Max(alt * 0.15, 1e-9), (float)(horizon * 1.3 + 100));
-                var sd = _system.StarRadius; double lx = -_px, ly = -_py, lz = -_pz, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz);
+                var sd = _system != null ? _system.StarRadius : 0; double lx = -_px, ly = -_py, lz = -_pz, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz);
                 if (ll > 0)
                 {
                     // the starlight's way, turned back by the planet's own spin, so its days pass over the ground
@@ -4112,7 +4139,7 @@ namespace Universe.Shell
         // in the colour of the air's glow and scattered starlight (airless worlds: the starlight alone)
         private void GroundLight()
         {
-            float sr = _system.SR, sg = _system.SG, sb = _system.SB, m = Math.Max(1e-3f, Math.Max(sr, Math.Max(sg, sb)));
+            float sr = _system != null ? _system.SR : 1, sg = _system != null ? _system.SG : 1, sb = _system != null ? _system.SB : 1, m = Math.Max(1e-3f, Math.Max(sr, Math.Max(sg, sb)));   // (a rogue body with no star of its own: lit white, by the galaxy's light)
             sr /= m; sg /= m; sb /= m;
             double air = _ground.AirKm > 0 ? Math.Min(1, _ground.AirKm / 100.0) : 0;
             float ar = _ground.AirR, ag = _ground.AirG, ab = _ground.AirB;

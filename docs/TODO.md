@@ -159,6 +159,9 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The dive's looks, arcs and orbits three to six seconds each, part turns, no pauses, on every body alike:** (built: DNA-AND DESIGN 648; waits on the test) "and make sure the dip into the astroid is not jerky and quicvk but doesnt linger and rotate full orbits views of shit as that takes to long and no pauses"
 
+- [~] **The crash at the first zoom toward the asteroid (the small body's world indexed as a planet's) fixed; its day passes like a planet's:** (built: DNA-AND DESIGN 649; waits on the test) "it crashed at zooming into the astroid" / "like theh first zoom incremment when it wasnt even close to the asteroid crashed it or it crashed trying to get close idk i have tno information on what happened"
+- [~] **Every small body its own size (metres to the width gravity rounds a body at) and shape (lumpier the smaller), by data:** (built: DNA-AND DESIGN 650; waits on the test) "and we properly have diffetn astroid shapes and sizesd right as some are feet across and others can be a 1000 miles or more, any sized bascily before gravity pulls it into a sphere"
+
 ---
 
 ## Pending

@@ -7,6 +7,8 @@
 #   floating, rogue, planets for every star; between galaxies, intracluster stars are about a ten-thousandth as common as in
 #   a galaxy); in a belt or cloud: shown, how many are made round you at a time.
 # entry: the content entry it is (its card); size-km: how big it is drawn (a black hole: its glowing disc); colour.
+# size-km as a range lo..hi: each body its own size between them, by size-power (higher: more of them small); round-above-km: the
+# size (km) gravity has pulled a body round at; smaller bodies are lumpy and stretched, the smallest the most.
 # coma-km and tail-km: a comet's coma and tail at their real sizes (comas 100,000 km to over a million, tails tens of
 #   millions of km), each comet its own in the range: a comet shows by its tail across its whole system.
 # shape: what it is drawn as close in: rock (a lumpy body lit by its star, cratered), comet (a dark nucleus in its coma of
@@ -100,7 +102,9 @@ name: An asteroid
 where: belt
 shown: 400
 entry: asteroid main-belt
-size-km: 30
+size-km: 0.01..800
+size-power: 1.5
+round-above-km: 800
 colour: 0.6 0.55 0.5
 says: left over from the making of the planets, never gathered into a world; its own kind and make-up on its card
 shape: rock
@@ -110,7 +114,9 @@ name: An icy body of the Kuiper belt
 where: kuiper
 shown: 300
 entry: far classical-kbo
-size-km: 100
+size-km: 0.5..1200
+size-power: 1.3
+round-above-km: 800
 colour: 0.75 0.7 0.7
 says: beyond the planets, where the comets of short period come from; its own kind and make-up on its card
 shape: rock
@@ -120,7 +126,8 @@ name: A comet of the Oort cloud
 where: oort
 shown: 300
 entry: comet long-period
-size-km: 10
+size-km: 0.2..40
+size-power: 1.5
 colour: 0.8 0.88 1
 says: an icy nucleus far out in the star's huge spherical cloud; a nudge sends it falling in as a long-period comet
 shape: rock
@@ -130,7 +137,8 @@ name: A comet near its star
 where: inner
 shown: 3
 entry: comet short-period
-size-km: 5
+size-km: 0.1..30
+size-power: 1.5
 colour: 0.85 0.92 1
 shape: comet
 says: a nucleus of ice and dust warmed by its star: gas and dust boil off into its coma and are pushed out into its tail

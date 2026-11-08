@@ -60,3 +60,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the one zoom chain on every body, nothing left out): DNA-AND DESIGN 646.
 - 2026-11-07 (a small body a world: one ground system for every body): DNA-AND DESIGN 647.
 - 2026-11-07 (the dive's arcs and orbits short, no pauses): DNA-AND DESIGN 648.
+- 2026-11-07 (the crash at the asteroid's ground fixed; every small body its own size and shape): DNA-AND DESIGN 649, 650.

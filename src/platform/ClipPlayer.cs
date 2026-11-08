@@ -1,8 +1,10 @@
-// Universe · platform · plays a .cdf97w clip in a window of its own: each frame's wavelet equations rebuilt into its picture
-// (the inverse CDF 9/7, src/core/Wavelet97.cs, on every core) and shown at the time it was filmed. Space pauses, Escape closes.
+// Universe · platform · plays a .cdf97w clip in a window of its own: each frame's wavelet terms (whole, or the change from the
+// frame before added in) rebuilt into its picture by the inverse CDF 9/7 (src/core/Wavelet97.cs, on every core) and shown at
+// the time it was filmed. Space pauses, Escape closes, it loops.
 using System;
 using System.Runtime.InteropServices;
 using Universe.Core;
+using Universe.Render;
 
 namespace Universe.Platform
 {
@@ -18,7 +20,7 @@ namespace Universe.Platform
         [DllImport("gdi32.dll")] private static extern IntPtr CreateSolidBrush(uint color);
         [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int MessageBox(IntPtr h, string text, string caption, uint type);
 
-        private sealed class Frame { public uint Ms; public Wavelet97.Field[] Planes; }
+        private sealed class Frame { public uint Ms; public bool Key; public byte[] Data; }
         private static Win32.WndProc _proc; private static bool _registered, _closed, _paused;
 
         /// <summary>True for a clip only this program plays.</summary>
@@ -27,19 +29,25 @@ namespace Universe.Platform
         /// <summary>Plays <paramref name="path"/> until its window is closed; <paramref name="alive"/> is called while it plays.</summary>
         public static void Play(IntPtr owner, string path, Action alive)
         {
-            int w, h, pw, ph; var frames = new System.Collections.Generic.List<Frame>();
+            int w, h, pw, ph; float[] steps; var frames = new System.Collections.Generic.List<Frame>();
             try
             {
                 using (var r = new System.IO.BinaryReader(System.IO.File.OpenRead(path)))
                 {
-                    if (r.ReadUInt32() != Universe.Render.Cdf97wWriter.Magic) throw new InvalidOperationException("not a .cdf97w clip");
-                    r.ReadUInt16(); w = r.ReadUInt16(); h = r.ReadUInt16(); pw = r.ReadUInt16(); ph = r.ReadUInt16(); int n = r.ReadInt32(); r.ReadSingle(); r.ReadSingle(); r.ReadSingle();
+                    if (r.ReadUInt32() != Cdf97wCodec.Magic) throw new InvalidOperationException("not a .cdf97w clip");
+                    if (r.ReadUInt16() != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)");
+                    w = r.ReadUInt16(); h = r.ReadUInt16(); pw = r.ReadUInt16(); ph = r.ReadUInt16(); r.ReadInt32(); steps = new[] { r.ReadSingle(), r.ReadSingle(), r.ReadSingle() };
                     long len = r.BaseStream.Length;
                     // every frame to the end of the file (a clip cut off before its count was written still plays to where it stops)
-                    while (r.BaseStream.Position + 4 < len) { try { var f = new Frame { Ms = r.ReadUInt32(), Planes = new[] { Wavelet97.Read(r), Wavelet97.Read(r), Wavelet97.Read(r) } }; frames.Add(f); } catch { break; } }
+                    while (r.BaseStream.Position + 9 < len)
+                    {
+                        try { var f = new Frame { Ms = r.ReadUInt32(), Key = r.ReadByte() == 0 }; int n = r.ReadInt32(); f.Data = r.ReadBytes(n); if (f.Data.Length < n) break; frames.Add(f); }
+                        catch { break; }
+                    }
                 }
             }
             catch (Exception ex) { MessageBox(owner, "That clip could not be read: " + ex.Message, Universe.Shell.PreviewText.AppName, 0); return; }
+            while (frames.Count > 0 && !frames[0].Key) frames.RemoveAt(0);
             if (frames.Count == 0) { MessageBox(owner, "That clip has no frames.", Universe.Shell.PreviewText.AppName, 0); return; }
 
             var inst = Win32.GetModuleHandle(null); string cls = Universe.Shell.PreviewText.AppName.Replace("-", "") + "Clip";
@@ -54,7 +62,10 @@ namespace Universe.Platform
             IntPtr wnd = Win32.CreateWindowEx(0, cls, System.IO.Path.GetFileName(path), 0x00CF0000 | 0x10000000, (sw - ww) / 2, (sh - wh) / 2, ww, wh, owner, IntPtr.Zero, inst, IntPtr.Zero);
             _closed = false; _paused = false;
 
-            // the frames rebuilt on a thread of their own, always the one the clock has reached (one that falls behind is skipped)
+            // the frames rebuilt on a thread of their own, always the one the clock has reached (one that falls behind is skipped,
+            // its change still added in, so the terms stay right)
+            var cur = new[] { new short[pw * ph], new short[pw * ph], new short[pw * ph] };
+            var delta = new[] { new short[pw * ph], new short[pw * ph], new short[pw * ph] };
             int[] shown = null; int want = 0, built = -1; var gate = new object(); bool stop = false;
             var decoder = new System.Threading.Thread(() =>
             {
@@ -62,7 +73,17 @@ namespace Universe.Platform
                 {
                     int i; lock (gate) i = want;
                     if (i == built) { System.Threading.Thread.Sleep(2); continue; }
-                    var f = frames[i]; var Y = Wavelet97.Rebuild(f.Planes[0]); var Cb = Wavelet97.Rebuild(f.Planes[1]); var Cr = Wavelet97.Rebuild(f.Planes[2]);
+                    int from;
+                    if (built >= 0 && built < i && !AnyKey(frames, built + 1, i)) from = built + 1;
+                    else { from = i; while (from > 0 && !frames[from].Key) from--; }
+                    for (int j = from; j <= i; j++)
+                    {
+                        if (frames[j].Key) Cdf97wCodec.Unpack(frames[j].Data, cur);
+                        else { Cdf97wCodec.Unpack(frames[j].Data, delta); for (int c = 0; c < 3; c++) { var a = cur[c]; var d = delta[c]; for (int k = 0; k < a.Length; k++) a[k] = unchecked((short)(a[k] + d[k])); } }
+                    }
+                    var pl = new double[3][];
+                    for (int c = 0; c < 3; c++) { var g = pl[c] = new double[pw * ph]; var a = cur[c]; float st = steps[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st); Wavelet97.Inverse(g, pw, ph); }
+                    var Y = pl[0]; var Cb = pl[1]; var Cr = pl[2];
                     var px = new int[w * h];
                     Jobs.For(h, y =>
                     {
@@ -79,7 +100,7 @@ namespace Universe.Platform
             decoder.Start();
 
             var bi = new BitmapInfo { Size = 40, W = w, H = -h, Planes = 1, Bits = 32 };
-            double clock = 0; long lastTick = System.Diagnostics.Stopwatch.GetTimestamp(); int[] drawn = null;
+            double clock = frames[0].Ms; long lastTick = System.Diagnostics.Stopwatch.GetTimestamp(); int[] drawn = null;
             while (!_closed)
             {
                 Win32.MSG msg;
@@ -88,8 +109,7 @@ namespace Universe.Platform
                 long now = System.Diagnostics.Stopwatch.GetTimestamp();
                 if (!_paused) clock += (now - lastTick) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;
                 lastTick = now;
-                double end = frames[frames.Count - 1].Ms + 1000;
-                if (clock >= end) clock = 0;                                                    // (it loops)
+                if (clock >= frames[frames.Count - 1].Ms + 1000) clock = frames[0].Ms;     // (it loops)
                 int idx = 0; while (idx + 1 < frames.Count && frames[idx + 1].Ms <= clock) idx++;
                 int[] pic; lock (gate) { want = idx; pic = shown; }
                 if (pic != null && pic != drawn)
@@ -106,6 +126,7 @@ namespace Universe.Platform
             Win32.DestroyWindow(wnd);
         }
 
+        private static bool AnyKey(System.Collections.Generic.List<Frame> f, int a, int b) { for (int i = a; i <= b; i++) if (f[i].Key) return true; return false; }
         private static int Clamp(double v) { int i = (int)(v * 255 + 0.5); return i < 0 ? 0 : i > 255 ? 255 : i; }
 
         private static IntPtr Proc(IntPtr h, uint msg, IntPtr w, IntPtr l)

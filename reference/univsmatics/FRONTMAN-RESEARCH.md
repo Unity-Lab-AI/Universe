@@ -143,3 +143,21 @@ What it shows:
 - **They still trail the DCT picture at equal size**, by 2 to 6 dB. LZMA is a general-purpose packer that knows nothing about wavelets. JPEG 2000 uses this same CDF 9/7 wavelet with a wavelet-aware entropy coder (bit planes, context modelling) and beats JPEG at equal size. So the gap is the coder, not the equations.
 - **New hypothesis H6:** a wavelet-aware entropy coder for the `.cdf97w` (zerotree or bit-plane coding with contexts, as in JPEG 2000) brings a frame's equations to the size of an H.264 intra frame or below. Combined with H2's inter-frame terms carried over from the last frame, that's the path to a small `.cdf97w` on its own.
 - **For the program now:** the `.cdf97w` writer should drop the per-term Int16 packing for uniform quantisation plus entropy coding. That's the one change these numbers support today.
+
+### Built: the `.cdf97w` version 2 (2026-11-08)
+
+What E1b and E1c support, now in the program (`src/render/ClipWriter.cs`, `src/platform/ClipPlayer.cs`):
+
+- Every wavelet term in a plane is quantised with one step (Y 0.004, Cb and Cr 0.008, a dead zone). There's no per-term keep or Int16 packing anymore.
+- Every 30th written frame is stored whole. Each frame in between is stored as its change from the last, packed with Deflate (built into Windows, so no outside code).
+- The player adds the changes forward from the last whole frame, so a frame it skips still has its change applied and the terms stay exact.
+
+Measured the same way on the tour at 480 wide and 30 a second, with Deflate, the compressor the program uses. Script: `shots/e1d.py`.
+
+| Stretch | Whole frame | As a change from the last |
+|------:|------:|------:|
+| 30 s (galaxies, busy) | 188 KB | 134 KB |
+| 240 s | 90 KB | 47 KB |
+| 480 s | 66 KB | 27 KB |
+
+Against version 1 (400 to 890 KB a frame), that's 10 to 15 times smaller. Against the recorder's MP4 at the same width (about 23 KB a frame), it's still 1.2 to 6 times bigger. What's left to close is H6 (a wavelet-aware entropy coder in place of Deflate, worth about 1.5 to 2 times by E1c's LZMA against Deflate, and more with contexts) and H2 (a change taken after moving by the camera's motion, not just subtracted in place).

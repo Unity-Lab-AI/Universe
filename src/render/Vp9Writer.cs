@@ -178,12 +178,27 @@ namespace Universe.Render
         public bool LastKey { get { return _lastKey; } }
 
         /// <summary>A frame already in this writer's planes (<see cref="Prepare"/>), shown for <paramref name="ms"/>.</summary>
+        // a frame the graphics card coded (CardVp9): its blocks' decisions and coefficients, only written here; or, with none, a frame
+        // repeating the last one (every block skipped, no motion, no loop filter)
+        private CardFrame _card; private bool _repeat;
+        /// <summary>A frame coded on the graphics card (CardVp9.Take), written into the stream as it is; null: the last frame again.</summary>
+        public void AddCard(CardFrame f, uint ms)
+        {
+            _card = f != null && !f.Overflow ? f : null; _repeat = _card == null;   // (over the card's room: the frame repeats the last, and the next is a whole one)
+            try { Encode(ms, _card != null && _card.Key, f != null ? f.Q : _q, _card != null ? _card.Level : 0); }
+            finally { _card = null; _repeat = false; }
+        }
         public void AddPrepared(byte[][] planes, uint ms)
         {
-            _src = planes;
-            _key = _count % KeyEvery == 0; _count++;
+            _src = planes; Encode(ms, _count % KeyEvery == 0, -1, -1);
+        }
+        void Encode(uint ms, bool key, int q, int level)
+        {
+            bool cpu = _card == null && !_repeat;
+            _key = key; _count++;
+            if (q > 0) Quality = q;
             _rec[0] = Y; _rec[1] = Cb; _rec[2] = Cr;
-            if (!_key)
+            if (cpu && !_key)
             {
                 for (int p = 0; p < 3; p++) Buffer.BlockCopy(_rec[p], 0, _prev[p], 0, _rec[p].Length);   // (the reference: the frame before, as the decoder holds it)
                 Quarter(_src[0], _qs); Quarter(_prev[0], _qr);
@@ -194,6 +209,7 @@ namespace Universe.Render
             Buffer.BlockCopy(_mvR, 0, _lastR, 0, _mvR.Length * 2); Buffer.BlockCopy(_mvC, 0, _lastC, 0, _mvC.Length * 2);
             if (_key) { Array.Clear(_lastR, 0, _lastR.Length); Array.Clear(_lastC, 0, _lastC.Length); }
             Array.Clear(_mvR, 0, _mvR.Length); Array.Clear(_mvC, 0, _mvC.Length); Array.Clear(_mode, 0, _mode.Length);
+            if (cpu)
             {
                 var y = _src[0]; int S = Stride, mc = _miCols;
                 Universe.Core.Jobs.For(_miRows, r =>
@@ -218,8 +234,8 @@ namespace Universe.Render
             });
 
             // the loop filter over the whole picture, as the decoder runs it, before it is kept as the next frame's reference
-            _lvl = NoFilterNext ? 0 : FilterLevel >= 0 ? FilterLevel : LevelFor(_q); NoFilterNext = false;
-            LoopFilter();
+            if (cpu) { _lvl = NoFilterNext ? 0 : FilterLevel >= 0 ? FilterLevel : LevelFor(_q); NoFilterNext = false; LoopFilter(); }
+            else _lvl = _repeat ? 0 : level;                                           // (the card ran its own loop filter, at this level)
 
             // the compressed header: transforms up to 32 x 32, each block's its own size, every default odds kept (each "update?" no)
             var ch = new Vp9Bool(); ch.Put(0, 128);
@@ -296,7 +312,7 @@ namespace Universe.Render
         public bool NoFilterNext;
         private int _lvl;
         // the level for a quantiser, measured on filmed frames with this writer (the level giving the picture nearest the frame filmed)
-        static int LevelFor(int q) { return Math.Max(0, Math.Min(63, q * 19 / 40 - 32)); }   // (measured: about 25 at quality 120, the strongest from 200 on; none below about 70)
+        public static int LevelFor(int q) { return Math.Max(0, Math.Min(63, q * 19 / 40 - 32)); }   // (measured: about 25 at quality 120, the strongest from 200 on; none below about 70)
 
         void LoopFilter()
         {
@@ -396,7 +412,7 @@ namespace Universe.Render
                 for (int r = 0; r < _v._miRows; r += 8)
                 {
                     Array.Clear(_leftNz[0], 0, 16); Array.Clear(_leftNz[1], 0, 8); Array.Clear(_leftNz[2], 0, 8); Array.Clear(_leftPart, 0, 8);
-                    for (int c = _c0; c < _c1; c += 8) Partition(r, c, 3);
+                    for (int c = _c0; c < _c1; c += 8) { int sbi = (r >> 3) * _v._sbCols + (c >> 3); if (_v._card != null) _cw = _v._card.Start[sbi]; Partition(r, c, 3); }
                 }
                 return _bc.Finish();
             }
@@ -411,7 +427,14 @@ namespace Universe.Render
                 int boff = 3 - bsl; int ctx = bsl * 4 + (((left & (1 << boff)) > 0) ? 2 : 0) + (((above & (1 << boff)) > 0) ? 1 : 0);
                 var probs = v._key ? Vp9Tables.KfPartitionProbs : Vp9Tables.DefaultPartitionProbs; int pbase = ctx * 3;
                 bool split;
-                if (hasRows && hasCols && bsl > 0 && ((bsl > SplitFloor && Busy(r, c, bsl)) || (bsl == 3 && !v._key && SplitPays(r, c)))) { _bc.Put(1, probs[pbase]); _bc.Put(1, probs[pbase + 1]); _bc.Put(1, probs[pbase + 2]); split = true; }
+                if (v._card != null || v._repeat)
+                {
+                    if (hasRows && hasCols) { split = bsl > 0 && !v._repeat && (v._card.Grid[(r * v._miCols + c) * 2] & 3) < bsl; if (split) { _bc.Put(1, probs[pbase]); _bc.Put(1, probs[pbase + 1]); _bc.Put(1, probs[pbase + 2]); } else _bc.Put(0, probs[pbase]); }
+                    else if (hasCols) { _bc.Put(1, probs[pbase + 1]); split = true; }
+                    else if (hasRows) { _bc.Put(1, probs[pbase + 2]); split = true; }
+                    else split = true;
+                }
+                else if (hasRows && hasCols && bsl > 0 && ((bsl > SplitFloor && Busy(r, c, bsl)) || (bsl == 3 && !v._key && SplitPays(r, c)))) { _bc.Put(1, probs[pbase]); _bc.Put(1, probs[pbase + 1]); _bc.Put(1, probs[pbase + 2]); split = true; }
                 else if (hasRows && hasCols) { _bc.Put(0, probs[pbase]); split = false; }
                 else if (hasCols) { _bc.Put(1, probs[pbase + 1]); split = true; }
                 else if (hasRows) { _bc.Put(1, probs[pbase + 2]); split = true; }
@@ -444,8 +467,29 @@ namespace Universe.Render
                 var v = _v; bool availU = r > 0, availL = c > _c0;
                 int n = 0, eobTotal = 0, at = 0;                                       // (each transform block's coefficients at its own place in the pool)
                 int mode = ZeroMv, mctx = 0; _dy = _dx = 0; _bestR = _bestC = 0;
-                if (!v._key) mode = ChooseMotion(r, c, bsl, out mctx);
-                int maxT = Math.Min(bsl + 1, 3), ytx = Busy(r, c, bsl) ? 0 : maxT;            // (smooth: one transform its size; busy: 4 x 4s)
+                int maxT = Math.Min(bsl + 1, 3), ytx;
+                if (v._card != null || v._repeat)
+                {
+                    // the card's: the block's motion and transform size as it coded them; the mode the cheapest way the format has to
+                    // say that motion (ZEROMV, NEARESTMV, NEARMV, else NEWMV against the best candidate)
+                    ytx = maxT;
+                    if (v._card != null)
+                    {
+                        int g0 = (r * v._miCols + c) * 2; uint info = v._card.Grid[g0], m = v._card.Grid[g0 + 1];
+                        ytx = (int)((info >> 5) & 3); _dy = ((int)m >> 16) / 8; _dx = ((int)(m << 16) >> 16) / 8;
+                    }
+                    if (!v._key)
+                    {
+                        int nr0, nc0, nr1, nc1; FindRefs(r, c, bsl, out nr0, out nc0, out nr1, out nc1, out mctx); _bestR = nr0; _bestC = nc0;
+                        int ry = _dy * 8, rx = _dx * 8;
+                        mode = ry == 0 && rx == 0 ? ZeroMv : ry == nr0 && rx == nc0 ? NearestMv : ry == nr1 && rx == nc1 ? NearMv : NewMv;
+                    }
+                }
+                else
+                {
+                    if (!v._key) mode = ChooseMotion(r, c, bsl, out mctx);
+                    ytx = Busy(r, c, bsl) ? 0 : maxT;                                  // (smooth: one transform its size; busy: 4 x 4s)
+                }
                 for (int p = 0; p < 3; p++)
                 {
                     int sub = p > 0 ? 1 : 0, tsz = p == 0 ? ytx : Math.Min(ytx, bsl), step = 1 << tsz;   // (colour: get_uv_tx_size, the smaller of the luma's and its own block's)
@@ -455,7 +499,9 @@ namespace Universe.Render
                     {
                         int sx = baseX + 4 * x, sy = baseY + 4 * y;
                         _tp[n] = p; _tx[n] = sx; _ty[n] = sy; _tsz[n] = tsz; _in[n] = sx < maxx && sy < maxy; _eob[n] = 0; _off[n] = at; at += 16 << (2 * tsz);
-                        if (_in[n]) { TxBlock(n, availL || x > 0, availU || y > 0); eobTotal += _eob[n]; }
+                        if (v._card != null) { int e = CardTx(n); if (_in[n]) eobTotal += e; else _eob[n] = 0; }
+                        else if (v._repeat) _eob[n] = 0;
+                        else if (_in[n]) { TxBlock(n, availL || x > 0, availU || y > 0); eobTotal += _eob[n]; }
                         n++;
                     }
                 }
@@ -499,6 +545,20 @@ namespace Universe.Render
                     int ax = _tx[k] >> 2, ly = _ty[k] >> 2, lm = (16 >> sub) - 1;
                     for (int i = 0; i < step; i++) { if (ax + i < v._aboveNz[p].Length) v._aboveNz[p][ax + i] = nz; _leftNz[p][(ly + i) & lm] = nz; }
                 }
+            }
+
+            // a transform block's coefficients as the card sent them: the count in the scan, then two to a word, into the pool
+            private int _cw;
+            int CardTx(int k)
+            {
+                var w = _v._card.Words; int eob = (int)w[_cw++], tsz = _tsz[k], NN = 16 << (2 * tsz), co = _off[k]; var scan = Scans[tsz];
+                Array.Clear(_pool, co, NN);
+                for (int i = 0; i < eob; i += 2)
+                {
+                    uint word = w[_cw++]; _pool[co + scan[i]] = (short)(word & 0xFFFF);
+                    if (i + 1 < eob) _pool[co + scan[i + 1]] = (short)(word >> 16);
+                }
+                _eob[k] = eob; return eob;
             }
 
             // tx_size, in its context (section 9.3.2): the sizes above and left (the largest where none is coded), as the decoder works it

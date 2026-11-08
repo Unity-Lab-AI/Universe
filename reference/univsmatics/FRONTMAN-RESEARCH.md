@@ -646,3 +646,12 @@ Block edges are smoothed as the decoder smooths them, and the filtered picture i
 
 Each frame the camera as the universe's equations have it goes with the frame into the encoder. From the camera now and the camera before, the encoder works out where every block was (the view's turn, and its zoom toward what it looks at) and only refines that, instead of searching the pixels. On filmed 4K frames turned and zoomed by known amounts, a change frame came out 8 to 20% smaller. Next: the encoder on the graphics card, so no picture comes back to the processor.
 
+### The front man coded on the graphics card (2026-11-08)
+
+The encoder is part of the program and writes the front man into the .cdf97w; every player already has the decoder. The front man is now coded on the graphics card inside each frame: the planes, the motion from the camera's equations, the blocks and transforms, the whole-number inverse and the loop filter, exactly as a player rebuilds them. Only the decisions and coefficients come back; the processor only writes them into the stream. Checked with Windows' own decoder giving back its planes: every luma sample the same as the card's.
+
+| A 4K frame | On the processor | On the card |
+|---|---|---|
+| A change frame | 250 to 300 ms | 18 to 25 ms on the card, 2 to 13 ms to write |
+| A whole frame (one in sixty) | about 280 ms | 130 to 150 ms on the card |
+

@@ -130,7 +130,7 @@ namespace Universe.Render
     /// the universe's own coordinates (the "dark energy" mesh, 0,0,0 and the clip's time stamp its origin), a point a frame, and every
     /// call that set the matter's scene with its exact arguments; the program makes the universe again from the seed and draws each
     /// point, at any size. Version 9, kind 1; the records packed with Deflate.</summary>
-    internal sealed class UniverseClipWriter : IClipWriter
+    internal sealed class UniverseClipWriter : IClipWriter, ICardRecorder
     {
         private bool _disposed;
         public const ushort Version = 9; public const byte Kind = 1;
@@ -140,6 +140,16 @@ namespace Universe.Render
         public string Path { get; private set; }
         /// <summary>The picture track (our own VP9: what Media Player and a chat app show); null when the clip has none.</summary>
         private readonly Vp9Track _video; private readonly string _part;
+        /// <summary>The picture track coded on the graphics card, inside each frame (the picture never comes back to the processor);
+        /// null: coded here from the frames as pictures (Vp9Track), when the card's path could not start.</summary>
+        private readonly CardTrack _cardTrack;
+        /// <summary>True when the picture track is coded on the card.</summary>
+        public bool OnCard { get { return _cardTrack != null; } }
+        /// <summary>Set each frame: true while the tour waits (paused, or the universe being made): no frame filmed.</summary>
+        public bool Paused;
+        bool ICardRecorder.WantsFrame() { return _cardTrack != null && !Paused && !_disposed; }
+        void ICardRecorder.Record(IntPtr list, IntPtr backBuffer, int width, int height) { if (_cardTrack != null) _cardTrack.Record(list, backBuffer, width, height, (uint)Ms(), Camera); }
+        void ICardRecorder.Collect() { if (_cardTrack != null) _cardTrack.Collect(); }
         /// <summary>True when a frame is wanted for the picture track now (thirty a second at most).</summary>
         public bool WantsFrame { get { return _video != null; } }                       // (every frame: the clip's clock is the game's fixed one)
         /// <summary>The name the clip of the universe itself is carried under inside the .cdf97w's WebM.</summary>
@@ -151,8 +161,17 @@ namespace Universe.Render
         {
             Path = path; Down = 1;
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
-            if (screenW > 0 && screenH > 0) { Down = ClipWriters.Down; _video = new Vp9Track(screenW / Down, screenH / Down, 30, true, Vp9Track.CapBytesPerSecond); }   // (the front man: the size chosen, full by default, every frame, held under the cap)
-            _part = _video != null ? path + ".part" : path;                               // (the records gathered beside it while filming, then carried inside)
+            if (screenW > 0 && screenH > 0)
+            {
+                // the front man: the size chosen, full by default, every frame, held under the cap; coded on the graphics card where
+                // it can be (the picture never coming back), else here from the frames as pictures
+                Down = ClipWriters.Down;
+                if (ClipWriters.Device != IntPtr.Zero)
+                    try { _cardTrack = new CardTrack(ClipWriters.Device, screenW / Down, screenH / Down, 30, Vp9Track.CapBytesPerSecond); Universe.Program.WriteLog("cdf97w: its picture track coded on the graphics card"); }
+                    catch (Exception ex) { Universe.Program.WriteLog("cdf97w: the card's coding could not start (" + ex.Message + "); coded on the processor instead"); _cardTrack = null; }
+                if (_cardTrack == null) _video = new Vp9Track(screenW / Down, screenH / Down, 30, true, Vp9Track.CapBytesPerSecond);
+            }
+            _part = _video != null || _cardTrack != null ? path + ".part" : path;                               // (the records gathered beside it while filming, then carried inside)
             _file = new System.IO.FileStream(_part, System.IO.FileMode.Create, System.IO.FileAccess.Write);
             var h = new System.IO.BinaryWriter(_file);
             h.Write(Cdf97wCodec.Magic); h.Write(Version); h.Write(Kind);
@@ -213,7 +232,13 @@ namespace Universe.Render
             if (_disposed) return; _disposed = true;   // (finished once: a crash and then the watchdog had both finished it)
             if (Universe.Shell.MatterView.Recorded != null) Universe.Shell.MatterView.Recorded = null;
             try { _o.Flush(); _z.Dispose(); _file.Dispose(); } catch { }
-            if (_video == null) return;
+            if (_cardTrack != null)
+            {
+                // the card finishes and stops recording first; its last frames are taken back (on the game's thread, where the card is)
+                if (ClipWriters.BeforeCardRelease != null) { try { ClipWriters.BeforeCardRelease(); } catch { } }
+                try { _cardTrack.Collect(); } catch (Exception ex) { Universe.Program.WriteLog("cdf97w: the card's last frames: " + ex.Message); }
+            }
+            if (_video == null && _cardTrack == null) return;
             // the .cdf97w: our own WebM, the picture track every player shows, the universe's records carried inside as an attached file.
             // Finished off the game's thread: the frames still waiting in the coders take seconds, and the game held for them had been
             // ended by the watchdog part way through the file (a foreground thread: the program never closes before the clip is whole)
@@ -230,11 +255,13 @@ namespace Universe.Render
             try
             {
                 var frames = new System.Collections.Generic.List<byte[]>(); var keys = new System.Collections.Generic.List<bool>(); var times = new System.Collections.Generic.List<uint>();
-                _video.Finish(frames, keys, times);
+                int vw, vh; string how;
+                if (_cardTrack != null) { _cardTrack.Finish(frames, keys, times); vw = _cardTrack.Width; vh = _cardTrack.Height; how = " (coded on the graphics card" + (_cardTrack.Repeated > 0 ? ", " + _cardTrack.Repeated + " repeating the last to hold the cap" : "") + ")"; }
+                else { _video.Finish(frames, keys, times); vw = _video.Width; vh = _video.Height; how = _video.Dropped > 0 ? " (" + _video.Dropped + " let go while the coders were full)" : ""; }
                 var recs = System.IO.File.ReadAllBytes(_part);
-                WebmFile.Write(Path, "V_VP9", null, _video.Width, _video.Height, frames, times, keys, (uint)Ms(), recs, AttachName, "application/x-cdf97w");
+                WebmFile.Write(Path, "V_VP9", null, vw, vh, frames, times, keys, (uint)Ms(), recs, AttachName, "application/x-cdf97w");
                 System.IO.File.Delete(_part);
-                Universe.Program.WriteLog("cdf97w: " + frames.Count + " pictures in its track" + (_video.Dropped > 0 ? " (" + _video.Dropped + " let go while the coders were full)" : "") + ", the universe's records attached");
+                Universe.Program.WriteLog("cdf97w: " + frames.Count + " pictures in its track" + how + ", the universe's records attached");
             }
             catch (Exception ex) { Universe.Program.WriteLog("cdf97w: its picture track could not be written (" + ex.Message + "); the universe's records are kept in " + _part); }
             lock (Finishing) Finishing.Remove(System.Threading.Thread.CurrentThread);

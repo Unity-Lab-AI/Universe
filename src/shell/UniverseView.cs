@@ -3702,7 +3702,7 @@ namespace Universe.Shell
                 _nebUsed[key] = _nebFrame; n = _nebNs[key]; if (n == 0) continue;
                 float fade = (float)Math.Max(0, Math.Min(1, (6 - d / R) / 3));   // (coming in from six of its radii to three; the far marker's points stand for it beyond)
                 var m = Mat4.Identity; m.M11 = (float)R; m.M22 = (float)R; m.M33 = (float)R; m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
-                DrawPoints(buf, n, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade * (fk == 6 ? 0.35f : 0.75f));
+                DrawPoints(buf, n, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade * (fk == 6 ? 0.07f : 0.15f));   // (a cloud's brightness: its thousands of soft points add up, and at the old brightness their middles burnt out to white)
             }
         }
         // a nebula's cloud in its own units (its radius 1): a planetary nebula a thin shell puffed off its dying star (oxygen's green-blue

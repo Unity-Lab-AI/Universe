@@ -194,6 +194,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The nebula clouds only within six radii, the nearest six, built once and kept, two a frame at most (the four frames a second was the processor rebuilding dozens every frame):** (built: DNA-AND DESIGN 668; waits on the test) "check the screen shots i think all those gas neblula u added with glow and shit since ther are 1000s in once galaxies i think its why im only getting 4fps.. so what do you think" / "why is cpu at 2% GPU at 2% but im only doing 4fps...???? ther has to be a way to get the GPU to speed up fps" / "ther has to be a way to get the GPU to speed up fps"
 
+- [~] **The nebula clouds at a fifth of their brightness, no white cores:** (built: DNA-AND DESIGN 669; waits on the test) "asnmd they are too bright white in centers is goona melt a hole in my screen"
+
 ---
 
 ## Pending

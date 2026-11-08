@@ -255,6 +255,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [x] **Three stacked galaxy samples drawn over the universe, see-through and moving with the camera; the views' draw chain put right:** (done: DNA-AND DESIGN 711) "therer are three stacked galaxy samples on ther screen i can see past and moves with how i move"
 - [x] **A filmed tour is always the clip of the universe itself (a few megabytes), and no .cdf97u side file beside it:** (done: DNA-AND DESIGN 712; waits on the test) "the clip got made but looks like we failed its 3 G not 100M" / "yes"
 - [~] **The .cdf97w plays in Media Player: our own WebM, our VP9 picture track, the universe's records attached inside:** (built: DNA-AND DESIGN 713; waits on the test) "okay  why did my cdf79w not open in media player?" / "i only want the cdf79w file to play in media player" / "i thought that was all the encoders and shit we made" / "i thought that was all the encoders we made"
+- [~] **The program closing on its own while a menu was used: the logs now keep the run before, sit beside the exe, and record every way out, every menu and every slow frame:** (built: DNA-AND DESIGN 714; waits on the next time it happens) "the watchdog kicked me again when in menu can u figure that out"
 
 ---
 

@@ -20,7 +20,7 @@ namespace Universe
             // any crash, on any thread, is written to the log with where it happened, before the program goes
             Universe.Platform.Watchdog.BeforeExit = () => { if (OpenClip != null) OpenClip.Dispose(); };   // (a safety exit finishes a clip being filmed first: a clip cut off without its index would not play)
             AppDomain.CurrentDomain.UnhandledException += (o, ev) => { try { if (OpenClip != null) OpenClip.Dispose(); } catch { } try {   // (a clip being filmed is finished first, so what was filmed still plays)
-                                                                                     System.IO.Directory.CreateDirectory("build"); System.IO.File.AppendAllText(System.IO.Path.Combine("build", "last-run.log"), "crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine + (Universe.Render.Gpu.DeviceForLog != IntPtr.Zero ? Universe.Render.GpuLog.Describe(Universe.Render.Gpu.DeviceForLog) + Environment.NewLine : "")); } catch { } };
+                                                                                     WriteLog("crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine + (Universe.Render.Gpu.DeviceForLog != IntPtr.Zero ? Universe.Render.GpuLog.Describe(Universe.Render.Gpu.DeviceForLog) + Environment.NewLine : "")); } catch { } };
             // --smoke <ms>: a timed test run that closes itself after <ms> milliseconds.
             int smokeMs = -1; bool testStall = false; int testDeep = -1; double testZoom = -1; bool testVisit = false, testCore = false; int openSet = 0; bool openEncoders = false; int openLook = 0; double testEvolve = 0; int testPlanet = -1; double clickAt = -1, clickX = 0.5, clickY = 0.5; double wheelFrom = -1, wheelFor = 0, backFrom = -1, backFor = 0; int pressKey = -1; double pressAt = -1; int testDyson = -1; bool testInside = false; int testJumps = 0; bool testFieldView = false; double testAlt = -1; double[] tour = null; int tourStep = 0; string tourName = "tour"; double shotAt = -1; string shotPath = null; int testSpeed = -1; double tryEvery = -1; int wheelEvery = 1; bool aimCentre = false; double journeyAt = -1, deepSince = -1; double clipAt = -1, clipFor = 10; string clipPath = null; Universe.Render.GifWriter clip = null; int clipFrame = 0; bool wantShot = false, wantRecord = false, wantTour = false; Universe.Render.IClipWriter rec = null; double shotsEvery = -1, shotsNext = 0; int shotsN = 0; string shotName = null; string recordTour = null; bool recForTour = false;
             double shotsBelowKm = -1; bool shotsBmp = false;   // --shotsbelow <km>: shots only once the view is narrower than that; --bmp: shots as BMP (fast to write, so a test's frames stay quick)
@@ -198,7 +198,7 @@ namespace Universe
             {
                 gpu.BeginFrame(0.005f, 0.006f, 0.012f); gpu.EndFrame();                 // (the game's window dark behind the page, never a blank white)
                 ulong? chosen; landed = Universe.Platform.Launcher.Run(window.Handle, () => DocViewer.Show(window.Handle, PreviewText.Docs(), 0), () => watchdog.Beat(), out chosen);
-                if (landed == Universe.Platform.Launcher.Choice.Quit) { window.Close(); gpu.Dispose(); return 0; }
+                if (landed == Universe.Platform.Launcher.Choice.Quit) { WriteLog("closed from the start page (Quit, or the window's close while it was up)"); window.Close(); gpu.Dispose(); return 0; }
                 if (chosen.HasValue) { Seed = chosen.Value; WriteLog("universe seed " + Seed + " (chosen on the landing page)"); }
             }
             Universe.Shell.ScaleHud firstHud = null;
@@ -227,6 +227,7 @@ namespace Universe
             while (window.Pump())
             {
                 clock.Tick();
+                if (clock.Delta > 2) WriteLog("a frame took " + clock.Delta.ToString("0.0") + " s" + (rec != null ? " (a clip filming)" : "") + (world != null && world.Touring ? " (the tour on)" : "") + (world != null && world.Loading ? " (the universe still being made)" : ""));   // (a breadcrumb for a run that closes on its own)
                 watchdog.Beat();
 
                 if (deep == null && planet == null && window.Input.WasPressed(Win32.VK_ESCAPE)) window.Close();
@@ -522,14 +523,18 @@ namespace Universe
         // the clip being filmed, if any: a crash finishes it first, so it still plays
         private static Universe.Render.IClipWriter OpenClip;
         private static bool _logStarted;
+        /// <summary>The folder the logs go in: build, in the program's own folder.</summary>
+        internal static string LogDir { get { return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "build"); } }
         internal static void WriteLog(string line)
         {
             try
             {
-                System.IO.Directory.CreateDirectory("build");
-                // every line of this run kept (the first starts the file afresh): an error early on is not wiped by a later line
-                string lf = System.IO.Path.Combine("build", "last-run.log");
-                if (_logStarted) System.IO.File.AppendAllText(lf, line + Environment.NewLine); else { System.IO.File.WriteAllText(lf, line + Environment.NewLine); _logStarted = true; }
+                System.IO.Directory.CreateDirectory(LogDir);
+                // every line of this run kept; the run before kept too, as previous-run.log (a run that closed on its own is then still
+                // there to read after the next start), and always in the program's own folder, whatever folder it was started from
+                string lf = System.IO.Path.Combine(LogDir, "last-run.log");
+                if (!_logStarted) { try { if (System.IO.File.Exists(lf)) System.IO.File.Copy(lf, System.IO.Path.Combine(LogDir, "previous-run.log"), true); } catch { } System.IO.File.WriteAllText(lf, DateTime.Now.ToString("s") + "  " + line + Environment.NewLine); _logStarted = true; }
+                else System.IO.File.AppendAllText(lf, DateTime.Now.ToString("HH:mm:ss") + "  " + line + Environment.NewLine);
             }
             catch { }
         }

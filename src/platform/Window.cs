@@ -162,7 +162,9 @@ namespace Universe.Platform
         }
         public static volatile bool InSizeMove; // the game is held still on purpose: window moved or resized, or a pop-up is open
         public static volatile bool InMenu;     // a menu is open: Windows runs its own loop while it is, and the game's main loop waits (not a hang)
-        public static volatile int ModalIdleTick; // the clock's last tick inside any modal loop of Windows' (a menu, a dialog, a message box): WM_ENTERIDLE comes while one waits
+        public static volatile int ModalIdleTick;
+        /// <summary>When the last menu opened or closed (for the log of a safety exit).</summary>
+        public static volatile string LastMenuNote; // the clock's last tick inside any modal loop of Windows' (a menu, a dialog, a message box): WM_ENTERIDLE comes while one waits
 
         /// <summary><paramref name="quiet"/>: a short automatic check. It opens small in the bottom-right corner and does not
         /// take the keyboard, so it never gets in the way of the window the player is using.</summary>
@@ -241,10 +243,11 @@ namespace Universe.Platform
             if (msg == Win32.WM_COMMAND) { MenuCommand = (int)((long)wParam & 0xFFFF); return IntPtr.Zero; }
             if (msg == Win32.WM_ENTERSIZEMOVE) InSizeMove = true;
             if (msg == Win32.WM_EXITSIZEMOVE) InSizeMove = false;
-            if (msg == 0x211) { InMenu = true; ModalIdleTick = Environment.TickCount; }      // WM_ENTERMENULOOP: a menu held open is not a hang (the watchdog had shut the program down after six seconds of one)
-            if (msg == 0x212) InMenu = false;                                                 // WM_EXITMENULOOP
+            if (msg == 0x211) { InMenu = true; ModalIdleTick = Environment.TickCount; LastMenuNote = "a menu opened at " + DateTime.Now.ToString("HH:mm:ss"); Universe.Program.WriteLog("menu opened"); }      // WM_ENTERMENULOOP: a menu held open is not a hang (the watchdog had shut the program down after six seconds of one)
+            if (msg == 0x212) { InMenu = false; LastMenuNote = "the last menu closed at " + DateTime.Now.ToString("HH:mm:ss"); Universe.Program.WriteLog("menu closed"); }                                                 // WM_EXITMENULOOP
             if (msg == 0x121) ModalIdleTick = Environment.TickCount;                           // WM_ENTERIDLE: inside a menu's, a dialog's or a message box's own loop, waiting on the user
-            if (msg == 0x10 && LandingOpen) { CloseAsked = true; return IntPtr.Zero; }   // the window's own close while the landing page is up: Quit
+            if (msg == 0x10 && LandingOpen) { CloseAsked = true; return IntPtr.Zero; }
+            if (msg == 0x10) Universe.Program.WriteLog("the window was asked to close (its close button, Alt+F4, or Windows)");   // the window's own close while the landing page is up: Quit
             if (msg == Win32.WM_DESTROY)
             {
                 Win32.PostQuitMessage(0);

@@ -73,6 +73,8 @@ Every warning is an error (`/warnaserror+`), so a build that finishes is clean.
 | `--shots S` | Saves a PNG of the view every S seconds |
 | `--native` | Opens at your screen's full resolution |
 
+The program also keeps `build\last-run.log` beside the exe: each line of the run with its time, and how the run ended (closed, the start page's Quit, the watchdog's safety exit, a crash). The run before is kept as `build\previous-run.log`, so a run that closed on its own can still be read after the next start. The watchdog's safety exits are also listed in `build\watchdog.log`.
+
 The program keeps a short log of its zoom and of the tour's stops and picks at `%TEMP%\universe_zoom.log` (at most 4 MB, then started afresh): what each stop began at, what each pick found or why it found nothing. Beside the program, `build\last-run.log` keeps the run's seed, how it closed and, if it crashed, where.
 
 Screenshots (**F12**) and clips (**F9**) go in `captures` beside the program.

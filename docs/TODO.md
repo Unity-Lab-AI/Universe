@@ -238,7 +238,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **H15 step 1: the universe clip recorded (the seed, a camera point each frame, every scene-setting call with its arguments, no pixels):** (built: DNA-AND DESIGN 697; step 2, the replay, next) "go"
 
-- [~] **MP4 for sharing: about 100 MB for ten minutes (1.33 megabits a second average, at most 1920 wide), plays in Discord:** (built: DNA-AND DESIGN 698; waits on the test) "but we still neew out 100mb video clips that can play on discord"
+- [x] (taken back: DNA-AND DESIGN 699) **MP4 for sharing: about 100 MB for ten minutes (1.33 megabits a second average, at most 1920 wide), plays in Discord:** (built: DNA-AND DESIGN 698; waits on the test) "but we still neew out 100mb video clips that can play on discord"
 
 ---
 

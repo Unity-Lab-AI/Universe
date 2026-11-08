@@ -43,8 +43,8 @@ namespace Universe.Render
             catch { return false; }
         }
         /// <summary>The clip format picked (View > Clip format, or the start page): 0 MP4, 1 .cdf97w, 2 an MP4 carrying the .cdf97w (the front man).</summary>
-        public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f >= 1 && f <= 3 ? f : 0; } }   // 0 MP4, 1 the .cdf97w of waveforms, 2 the .cdf97w of the universe itself, 3 MP4 for sharing (about 100 MB for ten minutes)
-        public static string Extension { get { return Format == 1 || Format == 2 ? ".cdf97w" : ".mp4"; } }
+        public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? f : 0; } }   // 0 MP4, 1 the .cdf97w of waveforms, 2 the .cdf97w of the universe itself
+        public static string Extension { get { return Format >= 1 ? ".cdf97w" : ".mp4"; } }
         /// <summary>The graphics card the .cdf97w's wavelet runs on (set once the renderer is made; none: the processor).</summary>
         public static IntPtr Device;
         /// <summary>The universe's seed and the tour being filmed, for a clip's metadata (null: none).</summary>
@@ -57,7 +57,6 @@ namespace Universe.Render
             path = System.IO.Path.ChangeExtension(path, Extension);
             if (Format == 1) return new Cdf97wWriter(path, w, h);                            // the .cdf97w: the waveforms and their metadata, nothing else
             if (Format == 2) return new UniverseClipWriter(path);                            // the .cdf97w of the universe itself: the seed and the camera's track, no pixels
-            if (Format == 3) return new Mp4Writer(path, w, h, 0, true);                       // an MP4 for sharing: an average rate, about 100 MB for ten minutes
             return new Mp4Writer(path, w, h);
         }
     }

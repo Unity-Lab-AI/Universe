@@ -111,7 +111,6 @@ namespace Universe.Platform
                 Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf < 1 ? Win32.MF_CHECKED : 0), (IntPtr)CmdClipFormatBase, "MP4 (H.264 video: plays in any player)");
                 Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w (the clip as CDF 9/7 waveforms and their metadata: plays in this program)");
                 Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 2 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 2), ".cdf97w of the universe itself (the seed and the camera's track, no pixels: plays here at any size)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 3 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 3), "MP4 for sharing (about 100 MB for ten minutes, at most 1920 wide: plays in chat apps)");
                 Win32.AppendMenu(view, Win32.MF_POPUP, fmtMenu, "Clip format");
             }
             {

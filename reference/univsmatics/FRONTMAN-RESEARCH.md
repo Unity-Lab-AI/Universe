@@ -234,3 +234,9 @@ Size: the MP4 plus the `.cdf97w` of the same frames. At 480 wide and 30 a second
 | E5 front man | An MP4 carrying the `.cdf97w` | Yes |
 
 Still open: a wavelet-aware entropy coder in place of Deflate (H6's second half), and a clean rerun of E4 on a tour filmed as a `.cdf97w`.
+
+### The chain as built (2026-11-08)
+
+Media player ← front man (H.264 pictures, what players expect) ← the solving step (each frame's CDF 9/7 terms turned into pixels: dequantise, inverse lifting, YCbCr to RGB) ← the packing step (the `.cdf97w`: the frame's terms quantised, whole or as a change, compressed).
+
+The solving step runs in the program while filming, because no media player runs code from a file. Its pixels are what the MP4 is made of, so any player shows exactly what the equations solve to. The `.cdf97w` rides in the same file for this program's player.

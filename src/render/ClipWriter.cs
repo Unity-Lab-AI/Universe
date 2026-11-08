@@ -79,13 +79,16 @@ namespace Universe.Render
         {
             _mp4 = new Mp4Writer(path, w, h);
             _eqPath = path + ".cdf97w.part"; _eq = new Cdf97wWriter(_eqPath, w, h);
+            _eq.Solved = (rgb, sw, sh) => _mp4.Add(rgb, sw, sh);
         }
-        public void Add(byte[] rgb, int srcW, int srcH) { _mp4.Add(rgb, srcW, srcH); _eq.Add(rgb, srcW, srcH); }
+        // the front man's frames are the equations solved into pixels: each frame goes to the .cdf97w writer only, and the picture
+        // its terms rebuild to (the inverse CDF 9/7, the same sums the player runs) is what the MP4 is made of
+        public void Add(byte[] rgb, int srcW, int srcH) { _eq.Add(rgb, srcW, srcH); }
         /// <summary>Finishes both, then puts the equations into the MP4 as its last box.</summary>
         public void Dispose()
         {
             if (_done) return; _done = true;
-            _mp4.Dispose(); _eq.Dispose();
+            _eq.Dispose(); _mp4.Dispose();                                                 // (the equations first: their last frames are still being solved into the MP4)
             try
             {
                 long n = new System.IO.FileInfo(_eqPath).Length;
@@ -133,6 +136,8 @@ namespace Universe.Render
         private readonly System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long>> _queue = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long>>(2);
         private readonly System.Threading.Thread _encoder; private long _t0 = -1, _last = -1; private int _frames; private readonly object _lock = new object();
         private short[][] _prev;
+        /// <summary>When set, each frame's terms are also solved back into pixels (RGB, top row first, the clip's own size) and handed here: the front man's frames.</summary>
+        public Action<byte[], int, int> Solved;
         public int Down { get; private set; }
         public string Path { get; private set; }
         public double Seconds { get { return _last < 0 ? 0 : (_last - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
@@ -192,8 +197,28 @@ namespace Universe.Render
                 for (int c = 0; c < 3; c++) { var d = stored[c] = new short[q[c].Length]; var a = q[c]; var b = _prev[c]; for (int i = 0; i < d.Length; i++) d[i] = unchecked((short)(a[i] - b[i])); }
             }
             var packed = Cdf97wCodec.Pack(stored); _prev = q;
+            if (Solved != null) Solved(Solve(q), _w, _h);
             lock (_lock) { _o.Write((uint)ms); _o.Write((byte)(key ? 0 : 1)); _o.Write(packed.Length); _o.Write(packed); _frames++; }
         }
+
+        /// <summary>A frame's quantised terms solved into its picture: each plane's terms back to values, the inverse CDF 9/7,
+        /// YCbCr to RGB (the same sums the .cdf97w player runs, so the front man shows what the equations hold).</summary>
+        private byte[] Solve(short[][] q)
+        {
+            var pl = new double[3][];
+            for (int c = 0; c < 3; c++) { var g = pl[c] = new double[_pw * _ph]; var a = q[c]; float st = Cdf97wCodec.Step[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st); Wavelet97.Inverse(g, _pw, _ph); }
+            var rgb = new byte[_w * _h * 3]; int w = _w, pw = _pw;
+            Jobs.For(_h, y =>
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    int g = y * pw + x, o = (y * w + x) * 3; double yy = pl[0][g], cb = pl[1][g] - 0.5, cr = pl[2][g] - 0.5;
+                    rgb[o] = B(yy + 1.402 * cr); rgb[o + 1] = B(yy - 0.344136 * cb - 0.714136 * cr); rgb[o + 2] = B(yy + 1.772 * cb);
+                }
+            });
+            return rgb;
+        }
+        private static byte B(double v) { int i = (int)(v * 255 + 0.5); return (byte)(i < 0 ? 0 : i > 255 ? 255 : i); }
 
         /// <summary>Finishes the clip: the frames still waiting go in, then the frame count.</summary>
         public void Dispose()

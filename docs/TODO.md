@@ -212,6 +212,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [ ] **The .cdf97w: a wavelet-aware entropy coder in place of Deflate, and E4 run again on a tour filmed as a .cdf97w:** (open after DNA-AND DESIGN 681; reference/univsmatics/FRONTMAN-RESEARCH.md) "go ahead and start cron event for instant 1minute awaken to continue the wrok of copmpleteing the equations and building out the UIUnivers project with it all as i have already stated completely many times even with u telling me cant do that.... get out of the way of the people doin i say"
 
+- [~] **The front man made from the solved equations (the .cdf97w terms turned into pixels, those pixels the MP4):** (built: DNA-AND DESIGN 682; waits on the test) "no thats not right here let me run it to you again : [ media player] <<<<[.cdf97w](Frontman(what the players expect to see) <script(that actual mathmatical transitions and solved equations from cdf97 waveformes into pixels) <scrips (packages the wavforms of the .cdf97w equations)"
+
 ---
 
 ## Pending

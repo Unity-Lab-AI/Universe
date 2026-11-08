@@ -365,3 +365,20 @@ At equal size, dyadic is about 7 dB better and keeps more stars. **H9 holds.**
 
 **The waveforms-to-pixels equations, in the file.** The metadata block, about 2 KB of readable lines, now carries everything that turns the waveforms into pixels: the picture size and padding, the layout and its 6 levels, the five lifting constants, the forward and inverse lifting step by step, the subband labels, the three steps and every subband's weight, how a term becomes a coefficient, the colour equations, how frames are kept (whole or as changes) and how they're packed. Then the program, the date, and the seed and tour.
 
+
+## 10. The version 8 clip, and where its bytes go (2026-11-08)
+
+**The clip.** `tour 2026-11-08 04-18-21.cdf97w`, version 8, full 4K, made on the card inside the frame. 9,115 frames over 642 s, so 14.2 frames a second (version 4 managed 4.3), 11.2 GB in all. Whole frames average 1,492 KB, change frames 1,192 KB, and frames are 66 ms apart at the median.
+
+**Where the bytes are.** Change frames: 92 KB at the 10th percentile, 781 KB at the median, 2,993 KB at the 90th. The change frames over 600 KB carry 88 % of the file. By half-minute, change frames average 130 to 490 KB in the calm stretches (5:30 to 6:30, 8:00 to 9:30) and 2.8 MB from 4:00 to 5:30. That's nearly twice a whole frame: the picture there changes almost entirely between frames, as with shimmering clouds or moving particles.
+
+**H11, following the motion (own code, `shots/rt/mc.cs`).** On three pairs of consecutive frames from the clip, a searched whole-frame zoom and pan found none worth taking at 50 to 70 ms apart. Refining each 16 × 16 block by up to 4 pixels saved 1 to 13 % on the change. In the calm pairs the change is already 4 to 5 times smaller than a whole frame. **H11 is no help here:** the motion between frames this close is small, and what costs is content that's new each frame.
+
+**H12, each frame the smaller of change or whole.** Estimated from the clip, using the nearest whole frame as a stand-in: 11.2 → 9.8 GB, 13 %. Worth building, since it's cheap, but it isn't the gap.
+
+**Where that leaves the size.** At 4K a whole frame is about 1.5 MB and the busy stretches change completely every frame, so a 4K clip of this tour weighs several GB whatever the packing. To reach 100 MB for ten minutes at 14 frames a second, a frame has to average 11 KB. The waveforms can reach that only in the calm stretches.
+
+**Hypotheses still open:**
+- **H13, the choice per subband.** Code the coarse subbands, which stay alike from frame to frame, as changes, and the fine ones, which shimmer, whole.
+- **H14, steps that follow what the eye can see in motion.** Coarser fine-subband steps while the picture is changing fast, since fast motion hides fine detail.
+- **H15, the universe as the clip.** The `.cdf97u` is 86 bytes for the whole tour, because the universe itself is the equation. Extending it to free flight means storing the camera's path, a few KB a minute. That's the one route under 100 MB at any size.

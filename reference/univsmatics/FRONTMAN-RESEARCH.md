@@ -161,3 +161,12 @@ Measured the same way on the tour at 480 wide and 30 a second, with Deflate, the
 | 480 s | 66 KB | 27 KB |
 
 Against version 1 (400 to 890 KB a frame), that's 10 to 15 times smaller. Against the recorder's MP4 at the same width (about 23 KB a frame), it's still 1.2 to 6 times bigger. What's left to close is H6 (a wavelet-aware entropy coder in place of Deflate, worth about 1.5 to 2 times by E1c's LZMA against Deflate, and more with contexts) and H2 (a change taken after moving by the camera's motion, not just subtracted in place).
+
+### E2 — H1, block DCT straight from the wavelet terms (2026-11-08)
+
+Setup: the tour frame at 240 s, 480 wide, the 20,000 strongest Y terms. Script: `shots/e2.py`.
+
+- **Linearity holds.** The block DCT of the whole rebuilt picture matched the sum of the block DCTs of two halves of the terms to within 4.4 × 10⁻¹⁵, which is rounding.
+- **The direct path is the slow one.** Rebuilding the picture and then taking the block DCT took 14 ms for the frame. Doing it term by term was about 225 s with whole-frame footprints. Even with each term reduced to its footprint, every term still pays for an inverse of its own, while the full inverse is linear time over the whole frame.
+
+H1 is true and useless. The front man is fastest made by rebuilding the picture from the equations, which the player already does, and handing that to the H.264 encoder. No new code is needed for this. E3 is next.

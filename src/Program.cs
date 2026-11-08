@@ -381,13 +381,13 @@ namespace Universe
                 }
                 gpu.BeginFrame(0.005f, 0.006f, 0.012f);
                 if (world != null && !showElements) world.Draw(gpu.Width, gpu.Height, clock.Total);
-                if (frontman != null && frontman.On && world != null && !showElements && rec == null) frontman.Draw(meshes, window.Input, gpu.Width, gpu.Height);   // (over the universe, never into a clip)
                 else if (style != null) style.Draw(gpu, gpu.Width, gpu.Height, clock.Total);
                 else if (microbes != null) microbes.Draw(gpu, gpu.Width, gpu.Height, clock.Total);
                 else if (elements != null) elements.Draw(gpu, gpu.Width, gpu.Height, clock.Total);
                 else if (planet != null) planet.Draw(gpu, gpu.Width, gpu.Height);
                 else if (deep == null && universe != null) universe.Draw(gpu.Width, gpu.Height, clock.Total);
                 else if (deep == null) viewer.Draw(gpu.Width, gpu.Height, clock.Total); else deep.Draw(gpu.Width, gpu.Height, clock.Total);
+                if (frontman != null && frontman.On && world != null && !showElements && rec == null) frontman.Draw(meshes, window.Input, gpu.Width, gpu.Height);   // (the encoders' sample over the universe, never into a clip; after the views' own chain, so the chain stays the universe's)
                 if (shotPath != null && clock.Total >= shotAt) { gpu.CaptureNext = shotPath; shotPath = null; }
                 // screenshots (F12) and clips (F9), from any view: the finished frame copied back from the card; the panoramic
                 // tour on and off (T); with --record, the whole tour filmed and the clip finished when it ends

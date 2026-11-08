@@ -1578,6 +1578,19 @@ namespace Universe.Shell
                             float gf = (float)Fade(s, _gasSpacing * 10, _gasSpacing * 4);       // fading in as you come within about ten spacings
                             Add(glow, i * a + jx, k * a + jy, j * a + jz, s * 0.002, ge.R * 0.6f * gf, ge.G * 0.6f * gf, ge.B * 0.6f * gf, s);
                         }
+                // the atom you dive at, the one ahead of you: a speck like the rest until you are within eight widths of it, where
+                // its inside view takes over (it had been drawn only from there: from a micrometre down to a nanometre the card
+                // named it and the screen was black), and a body at every size, so it can be picked: an atom in a gas, a bare
+                // nucleus in a plasma, and so the way down to it on any body (a nebula's gas, a star's or a neutron star's plasma) begins
+                {
+                    var g0 = GasAtom(0, 0, 0);
+                    if (g0 != null && s >= Math.Max(AtomRadius(g0), AtomSpacing) * 8)
+                    {
+                        float gf0 = (float)Math.Max(0.35, Fade(s, _gasSpacing * 10, _gasSpacing * 4));
+                        Add(glow, 0, 0, 0, s * 0.0025, g0.R * 0.8f * gf0, g0.G * 0.8f * gf0, g0.B * 0.8f * gf0, s);
+                        int nb = _bodies.Count; AddBody(_plasma ? 7 : 1, 0, 0, 0, 0, 0, Math.Max(AtomRadius(g0), s * 0.01), s); if (_bodies.Count > nb) _bodies[nb].Sym = g0.Symbol;
+                    }
+                }
             }
             // grains: lumpy stones, each its own mineral from the mix, scattered (not on a grid) in two layers, the top one
             // resting with its tops at the level you dive into; near ones are lit 3D stones, far ones specks of their colour

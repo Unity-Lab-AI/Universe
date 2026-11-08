@@ -2408,7 +2408,8 @@ namespace Universe.Shell
                         // while it looks (what it wants still being made round you, or none there at all) it never sits still: it looks
                         // round slowly, eased in, and goes on after a few seconds at most
                         if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
-                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 2 : 2.5))   // (a pick that has not come in a couple of seconds is not coming: no five-second waits)
+                        bool matterPick = st.Target == "grain" || st.Target == "spot" || st.Target == "atom" || st.Target == "bonded-atom" || st.Target == "electron" || st.Target == "nucleus" || st.Target == "proton" || st.Target == "quark";
+                        if (got || _tourT > (matterPick ? 0.6 : st.Target == "asteroid" || st.Target == "comet" ? 2 : 2.5))   // (a pick that has not come in a couple of seconds is not coming: no five-second waits; a matter pick is answered at once from what is drawn, so one that is not there (a bond in a gas, an electron in a plasma) is given up in under a second)
                         {
                             done = true; _pickFailed = !got && st.Target != "none"; if (got) _tourVisited++;
                             ZoomLog("TOUR pick " + st.Target + (got ? ": " + _tName + " (kind " + _tKind + ")" : " FAILED after " + _tourT.ToString("0.0") + " s: " + _extras.Count + " bodies round you, " + _localCount + " stars, system " + (_system != null ? "open" : "none") + ", galaxy " + _near + "; its stops are skipped"));
@@ -4568,7 +4569,7 @@ namespace Universe.Shell
             get
             {
                 double pdx, pdy, pdz, prad; string picked = _tKind >= 0 && TargetFromCamera(out pdx, out pdy, out pdz, out prad) ? " · going to " + _tName + ", " + Units.Describe(Math.Max(0, Math.Sqrt(pdx * pdx + pdy * pdy + pdz * pdz) - prad)) + " away" : " · click something to go to it";
-                string where = _spaceScale > 0 ? "in " + _tName + ", " + ScaleHud.Words(_spaceScale * 0.6) + " from the point you dive into: " + _matter.Stage(_spaceScale)
+                string where = _spaceScale > 0 ? "in " + (_tName.Length > 0 ? _tName : "the matter") + ", " + ScaleHud.Words(_spaceScale * 0.6) + " from the point you dive into: " + _matter.Stage(_spaceScale)
                     : _matterScale > 0 ? "at " + GroundKind() + ", " + ScaleHud.Words(_matterScale * 0.6) + " above the ground: " + _matter.Stage(_matterScale)
                     : _ground != null ? "at " + GroundKind() + ", " + Units.Describe(AboveGround()) + " above the ground"
                     : _system != null ? "in the system of a " + _system.StarName + " (" + _system.Bodies.Count + " planets and moons)"

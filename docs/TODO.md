@@ -175,6 +175,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The public pages read in full and mended: sizes, counts, the tour's bodies, the small bodies as worlds, the cloud, "sunlight", the decay note, the picks, the crash log, the doubled note:** (built: DNA-AND DESIGN 658; waits on the test) "full document push and update and check for stale or light wrong words used in the public facing documents i see things are minute ly not worded correctly in  some places im sure u can find them"
 
+- [~] **The atom you dive at drawn and pickable at every size in a gas or a plasma, so the nebula's, the star's and the neutron star's chains go down; matter picks that find nothing given up at once:** (built: DNA-AND DESIGN 659; waits on the test) "wtf are these screen shots probelms its saying things that arent on screen"
+
 ---
 
 ## Pending

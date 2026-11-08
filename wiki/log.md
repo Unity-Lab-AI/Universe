@@ -114,3 +114,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the front man compared, side by side): DNA-AND DESIGN 703.
 - 2026-11-08 (the universe clip played back and handed over): DNA-AND DESIGN 704.
 - 2026-11-08 (VP9 and AV1 specs may be read for our own encoders): DNA-AND DESIGN 705.
+- 2026-11-08 (our own VP9 front man from the specification, key and change frames, our WebM): DNA-AND DESIGN 706.

@@ -33,12 +33,11 @@ namespace Universe.Render
 
     /// <summary>The .cdf97w's sums, shared by the writer and the player. Version 2: every wavelet term of a plane quantised by one
     /// step (a dead zone, so most become zero), a frame stored whole (a key, every 30th) or as its change from the last frame,
-    /// and compressed. Measured on the tour (reference/univsmatics/FRONTMAN-RESEARCH.md, E1c): five to ten times smaller than
-    /// the per-term packing of version 1, the size of a DCT picture.</summary>
+    /// and packed by the wavelet coder (version 3; version 2 used Deflate).</summary>
     internal static class Cdf97wCodec
     {
         public const uint Magic = 0x57373943;                // 'C97W'
-        public const ushort Version = 2;
+        public const ushort Version = 3;
         /// <summary>The quantising step of each plane: Y, Cb, Cr (about 40 dB on the tour's frames).</summary>
         public static readonly float[] Step = { 0.004f, 0.008f, 0.008f };
         public const int KeyEvery = 30;
@@ -46,23 +45,9 @@ namespace Universe.Render
         public static short Quantise(double v, float step) { double q = v / step; q = q < 0 ? Math.Ceiling(q) : Math.Floor(q); return (short)Math.Max(-32767, Math.Min(32767, q)); }
         public static double Value(short q, float step) { return q == 0 ? 0 : (q + (q > 0 ? 0.5 : -0.5)) * step; }
 
-        public static byte[] Pack(short[][] planes)
-        {
-            var ms = new System.IO.MemoryStream();
-            using (var z = new System.IO.Compression.DeflateStream(ms, System.IO.Compression.CompressionMode.Compress, true))
-                foreach (var p in planes) { var b = new byte[p.Length * 2]; Buffer.BlockCopy(p, 0, b, 0, b.Length); z.Write(b, 0, b.Length); }
-            return ms.ToArray();
-        }
-        public static void Unpack(byte[] data, short[][] into)
-        {
-            using (var z = new System.IO.Compression.DeflateStream(new System.IO.MemoryStream(data), System.IO.Compression.CompressionMode.Decompress))
-                foreach (var p in into)
-                {
-                    var b = new byte[p.Length * 2]; int got = 0;
-                    while (got < b.Length) { int n = z.Read(b, got, b.Length - got); if (n <= 0) break; got += n; }
-                    Buffer.BlockCopy(b, 0, p, 0, b.Length);
-                }
-        }
+        // version 3: the terms packed by the wavelet coder (src/render/WaveletCoder.cs), 1.4 to 1.75 times smaller than Deflate was
+        public static byte[] Pack(short[][] planes, int pw, int ph) { return WaveletCoder.Pack(planes, pw, ph); }
+        public static void Unpack(byte[] data, short[][] into, int pw, int ph) { WaveletCoder.Unpack(data, into, pw, ph); }
     }
 
     /// <summary>The front man: an MP4 every player plays, carrying the .cdf97w of the same frames in a private top-level box
@@ -196,7 +181,7 @@ namespace Universe.Render
                 stored = new short[3][];
                 for (int c = 0; c < 3; c++) { var d = stored[c] = new short[q[c].Length]; var a = q[c]; var b = _prev[c]; for (int i = 0; i < d.Length; i++) d[i] = unchecked((short)(a[i] - b[i])); }
             }
-            var packed = Cdf97wCodec.Pack(stored); _prev = q;
+            var packed = Cdf97wCodec.Pack(stored, _pw, _ph); _prev = q;
             if (Solved != null) Solved(Solve(q), _w, _h);
             lock (_lock) { _o.Write((uint)ms); _o.Write((byte)(key ? 0 : 1)); _o.Write(packed.Length); _o.Write(packed); _frames++; }
         }

@@ -86,8 +86,8 @@ namespace Universe.Platform
                     else { from = i; while (from > 0 && !frames[from].Key) from--; }
                     for (int j = from; j <= i; j++)
                     {
-                        if (frames[j].Key) Cdf97wCodec.Unpack(frames[j].Data, cur);
-                        else { Cdf97wCodec.Unpack(frames[j].Data, delta); for (int c = 0; c < 3; c++) { var a = cur[c]; var d = delta[c]; for (int k = 0; k < a.Length; k++) a[k] = unchecked((short)(a[k] + d[k])); } }
+                        if (frames[j].Key) Cdf97wCodec.Unpack(frames[j].Data, cur, pw, ph);
+                        else { Cdf97wCodec.Unpack(frames[j].Data, delta, pw, ph); for (int c = 0; c < 3; c++) { var a = cur[c]; var d = delta[c]; for (int k = 0; k < a.Length; k++) a[k] = unchecked((short)(a[k] + d[k])); } }
                     }
                     var pl = new double[3][];
                     for (int c = 0; c < 3; c++) { var g = pl[c] = new double[pw * ph]; var a = cur[c]; float st = steps[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st); Wavelet97.Inverse(g, pw, ph); }

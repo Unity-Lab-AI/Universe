@@ -240,3 +240,15 @@ Still open: a wavelet-aware entropy coder in place of Deflate (H6's second half)
 Media player ← front man (H.264 pictures, what players expect) ← the solving step (each frame's CDF 9/7 terms turned into pixels: dequantise, inverse lifting, YCbCr to RGB) ← the packing step (the `.cdf97w`: the frame's terms quantised, whole or as a change, compressed).
 
 The solving step runs in the program while filming, because no media player runs code from a file. Its pixels are what the MP4 is made of, so any player shows exactly what the equations solve to. The `.cdf97w` rides in the same file for this program's player.
+
+### H6 — a wavelet-aware coder in place of Deflate (2026-11-08)
+
+The coder: an adaptive binary range coder, the same arithmetic as LZMA's. Each quantised term is coded as three parts. First, whether it's nonzero, with the odds learned separately for every wavelet level and for how many of its left and upper neighbours are nonzero. Then its sign. Then its size, as a learned unary count up to 15 for each level, then Exp-Golomb. Script: `shots/e6.py`. Same frames as before, 480 wide.
+
+| Place | Whole frame, Deflate → coder | Change, Deflate → coder |
+|------:|------:|------:|
+| 240 s | 89.5 → 59.7 KB (1.50×) | 49.3 → 30.6 KB (1.61×) |
+| 480 s | 78.2 → 51.3 KB (1.52×) | 22.4 → 12.8 KB (1.75×) |
+| 30 s | 193.1 → 140.7 KB (1.37×) | 145.4 → 101.4 KB (1.43×) |
+
+Built as the `.cdf97w` version 3 (`src/render/WaveletCoder.cs`). A one-off round-trip check outside the program (four sets of 491,520 terms, up to ±32,767) gave back every term exactly. Against the recorder's MP4 at 480 wide, about 23 KB a frame, a change frame now runs 13 to 101 KB.

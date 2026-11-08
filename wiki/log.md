@@ -93,3 +93,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the front man made from the solved equations): DNA-AND DESIGN 682.
 - 2026-11-08 (the review's HIGH item and the quick fixes): DNA-AND DESIGN 683.
 - 2026-11-08 (the review's MEDIUM and LOW items): DNA-AND DESIGN 684.
+- 2026-11-08 (the .cdf97w version 3, the wavelet coder): DNA-AND DESIGN 685.

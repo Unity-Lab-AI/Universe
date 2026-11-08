@@ -169,6 +169,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The small body's ground centred where the body is now, after the orbital ride, so it no longer shakes and the landing comes:** (built: DNA-AND DESIGN 654; waits on the test) "something is uup, the astroid is shaking violently i tried to picture it shaking but without video its hard to capture but i tried to take pics u can see these were consectuve back to back pics and you can see the great variation in where it is at any one momment the astroid is just shaking violently and wmoving back and forth not keeping focus and the tour froze, i left it open if u can get anything from thew app, its still shaking"
 
+- [~] **A spot picked on the face at height nothing, so the camera is on the face and the crystal, lattice, atom, electrons and nucleus show, and the way out too, on every body:** (built: DNA-AND DESIGN 656; waits on the test) "major problems and everyone of my pics documents one read the text and look at whats in focus and the zoom in was all funky and the zoom out was nothing but blackness all the way to the surface" / "ik dont know whats so hard about matching code we already have working" / "akay dont jsut fix it for astroids" / "fix it for all bodies,, you know what that means right?"
+
 ---
 
 ## Pending

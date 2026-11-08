@@ -2067,7 +2067,7 @@ namespace Universe.Shell
                     _picked = new Body { Kind = 2, X = _tfx, Y = _tfy, Z = _tfz, Size = _scale * 0.02 }; return true;
                 }
             }
-            _picked = pick; _tfx = pick.X; _tfz = pick.Z; _tfy = pick.Kind == 0 ? 0 : pick.Y;
+            _picked = pick; _tfx = pick.X; _tfz = pick.Z; _tfy = pick.Kind == 0 || pick.Kind == 2 ? 0 : pick.Y;   // (a grain: to its top; a spot on the face: on the face, which is height nothing at the focus wherever the focus is. Its stored height is against the face at the focus of the moment it was picked, and as the focus eases over to it the face's reference moves and that height does not: the camera ended a residual height off the face, on a slope a hundred and eighty nanometres, thirty views at six nanometres over a lattice three deep, floating in the solid with nothing round it: black from the crystal to the nucleus, and on the way out until above it)
             return true;   // whatever you pick is gone to, in any layer (a grain: to its top)   // grains and atoms are flown to; electrons, nucleons and quarks are only named
         }
 
@@ -2142,10 +2142,10 @@ namespace Universe.Shell
                 // a spot or a grain where none is laid out to pick (an ice sheet or the sea, which have no grains: a level face), the
                 // spot right under the point you dive into is the pick, as a click there would make it; never nothing, since every
                 // stop below (the crystal, the atom, the nucleus) waits on it
-                if (what == "spot" || what == "grain") { _picked = new Body { Kind = 2, X = _fx, Y = _fy, Z = _fz, Size = _scale * 0.02 }; _tfx = _fx; _tfz = _fz; _tfy = _fy; PickCount++; }
+                if (what == "spot" || what == "grain") { _picked = new Body { Kind = 2, X = _fx, Y = _fy, Z = _fz, Size = _scale * 0.02 }; _tfx = _fx; _tfz = _fz; _tfy = 0; PickCount++; }   // (on the face: height nothing)
                 return;
             }
-            _picked = best; _tfx = best.X; _tfz = best.Z; _tfy = best.Y; PickCount++;
+            _picked = best; _tfx = best.X; _tfz = best.Z; _tfy = best.Kind == 0 || best.Kind == 2 ? 0 : best.Y; PickCount++;   // (a grain or a spot on the face: on the face, height nothing at the focus; an atom, an electron, a nucleus: its own height in the lattice)
         }
 
         public bool PickedOnScreen(out double sx, out double sy, out double rpx)

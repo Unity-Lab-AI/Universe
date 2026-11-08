@@ -383,5 +383,6 @@ life: no
 rivers: no
 volcano-count: 0
 day-hours: 6..30
+# (grains below: the ground's make-up only until the body's own mix replaces it; every rock has one of its own, so in practice it is never read)
 grains: asteroid-s
 

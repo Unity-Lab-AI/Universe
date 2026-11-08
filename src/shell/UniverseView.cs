@@ -1077,8 +1077,7 @@ namespace Universe.Shell
         private void MakeSmallBodies()
         {
             {
-                _rockShape = RockShape(new Rng(0x5A57E1UL), 1); _roundShape = RockShape(new Rng(0x60BE5UL), 0.08); _nucShape = RockShape(new Rng(0xC0CE7UL), 0.9);   // (the same shapes the meshes are built from, for the dive)
-                var a = SolidRock(new Rng(0x5A57E1UL), 1, 0.52f, 0.47f, 0.42f); _rockSolidN = a.Count; _rockSolid = new UploadBuffer(_gpu.Device, (long)a.Count * Stride); _rockSolid.Write(a.ToArray(), a.Count);
+                _roundShape = RockShape(new Rng(0x60BE5UL), 0.08); _nucShape = RockShape(new Rng(0xC0CE7UL), 0.9);   // (the same shapes the meshes are built from, for the dive)
                 // every rock its own shape: four bands of lumpiness (the smallest the most irregular, the largest near round, as gravity
                 // pulls a body round as it grows) by three seeds each; a body's by its size and its own seed, so no two beside each other are alike
                 _rockShapes = new Func<double[], double[]>[RockBands * RockSeeds]; _rockSolids = new UploadBuffer[RockBands * RockSeeds]; _rockSolidNs = new int[RockBands * RockSeeds];
@@ -1088,6 +1087,7 @@ namespace Universe.Shell
                     _rockShapes[ix] = RockShape(new Rng(seed), RockLumps[bq]);
                     var rv = SolidRock(new Rng(seed), RockLumps[bq], 0.52f, 0.47f, 0.42f); _rockSolidNs[ix] = rv.Count; _rockSolids[ix] = new UploadBuffer(_gpu.Device, (long)rv.Count * Stride); _rockSolids[ix].Write(rv.ToArray(), rv.Count);
                 }
+                _rockSolid = _rockSolids[0]; _rockSolidN = _rockSolidNs[0]; _rockShape = _rockShapes[0];   // (the fallback rock is the first of the twelve, never a mesh of its own)
                 var b = SolidRock(new Rng(0x60BE5UL), 0.08, 0.55f, 0.52f, 0.5f); _roundSolidN = b.Count; _roundSolid = new UploadBuffer(_gpu.Device, (long)b.Count * Stride); _roundSolid.Write(b.ToArray(), b.Count);
                 var c = SolidRock(new Rng(0xC0CE7UL), 0.9, 0.42f, 0.40f, 0.38f); _nucSolidN = c.Count; _nucSolid = new UploadBuffer(_gpu.Device, (long)c.Count * Stride); _nucSolid.Write(c.ToArray(), c.Count);   // a comet's nucleus: among the darkest bodies there are (albedo 0.04), shown as a camera exposing for it sees it, mid-grey, as Rosetta saw 67P (at its true darkness it was black against the stars) things known
             }
@@ -1232,7 +1232,7 @@ namespace Universe.Shell
             {
                 double v; var pl = new Place { Id = e.Id, Name = e.Name, Where = e.Get("where", ""), Entry = e.Get("entry", ""), Says = e.Get("says", ""), Shape = e.Get("shape", "") };
                 { double lo, hi; if (e.TryRange("coma-km", out lo, out hi)) { pl.ComaLo = lo; pl.ComaHi = hi; } if (e.TryRange("tail-km", out lo, out hi)) { pl.TailLo = lo; pl.TailHi = hi; } }   // (a comet's coma and tail at their real sizes)
-                if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; if (double.TryParse(e.Get("size-km", "1000"), fs, ci, out v)) pl.SizeKm = v;
+                if (double.TryParse(e.Get("per-cubic-ly", "0"), fs, ci, out v)) pl.PerLy3 = v; if (double.TryParse(e.Get("feeding-share", "0"), fs, ci, out v)) pl.FeedShare = v; if (double.TryParse(e.Get("jets-share", "0"), fs, ci, out v)) pl.JetShare = v; pl.SizeKm = 1000;
                 { double lo, hi; if (e.TryRange("size-km", out lo, out hi)) { pl.SizeKm = lo; pl.SizeLo = lo; pl.SizeHi = hi; } if (double.TryParse(e.Get("size-power", "1"), fs, ci, out v)) pl.SizePow = Math.Max(0.1, v); if (double.TryParse(e.Get("round-above-km", "0"), fs, ci, out v)) pl.RoundKm = v; }   // (a size range: each body its own size between them, by the power; round-above-km: the size gravity has pulled a body round at)
                 int n; if (int.TryParse(e.Get("shown", "0"), out n)) pl.Shown = n;
                 { double lo, hi; if (e.TryRange("disc-rs", out lo, out hi)) { pl.DiscLo = Math.Max(1.5, lo); pl.DiscHi = Math.Max(pl.DiscLo + 1, hi); } if (e.TryRange("swarm-rs", out lo, out hi)) { pl.SwarmLo = Math.Max(2, lo); pl.SwarmHi = Math.Max(pl.SwarmLo + 1, hi); } }
@@ -1311,9 +1311,10 @@ namespace Universe.Shell
                 }
                 if (e.Kind == "star" && e.Id == "neutron-star" && ex.Mass > 0)
                 {
-                    // a neutron star is an atom's nucleus the size of a city: its mass in a ball about 10 km across its middle, as dense
-                    // as nuclear matter (about 2.3e17 kg a cubic metre), made almost all of neutrons pressed together
-                    double rm = pl.SizeKm * 500, kg = ex.Mass * 1.989e30, rho = kg / (4.0 / 3 * Math.PI * rm * rm * rm);
+                    // a neutron star is an atom's nucleus the size of a city: its mass in a ball about 11 km in radius, as dense as
+                    // nuclear matter (about 2.3e17 kg a cubic metre), made almost all of neutrons pressed together (size-km is the radius,
+                    // as every body's size is: the same number the body is drawn at)
+                    double rm = pl.SizeKm * 1000, kg = ex.Mass * 1.989e30, rho = kg / (4.0 / 3 * Math.PI * rm * rm * rm);
                     ex.Lines.Add("density: " + rho.ToString("0.#E+0") + " kg a cubic metre, " + (rho / 2.3e17).ToString("0.#") + " times an atom's nucleus");
                     ex.Lines.Add("made of: neutrons pressed together, as in a nucleus; a teaspoon would weigh " + (rho * 5e-6 / 1e12).ToString("0.#") + " billion tonnes");
                 }
@@ -1436,14 +1437,15 @@ namespace Universe.Shell
                 for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex == _tExtra || (Math.Abs(ex.X - _tExtra.X) <= 1e-9 * Math.Max(1, Math.Abs(ex.X)) && Math.Abs(ex.Y - _tExtra.Y) <= 1e-9 * Math.Max(1, Math.Abs(ex.Y)) && Math.Abs(ex.Z - _tExtra.Z) <= 1e-9 * Math.Max(1, Math.Abs(ex.Z)) && ex.Hole == _tExtra.Hole)) { found = q; break; } }
                 if (found < 0) { _extras.Add(_tExtra); found = _extras.Count - 1; }
                 _tIndex = found; _tExtra = _extras[found];
-                if (_groundExtra != null && !_extras.Contains(_groundExtra))
-                {
-                    // the body whose ground you are on, in the list made afresh: the same body (its name and make-up, the nearest of them),
-                    // so its ground rides on with it; else the ground is let go by distance, as a planet's is
-                    Extra gb = null; double gd = double.MaxValue; double gx = RelX(_groundExtra), gy = RelY(_groundExtra), gz = RelZ(_groundExtra);
-                    foreach (var ex in _extras) { if (ex.Name != _groundExtra.Name || ex.Mix != _groundExtra.Mix) continue; double dx = RelX(ex) - gx, dy = RelY(ex) - gy, dz = RelZ(ex) - gz, d = dx * dx + dy * dy + dz * dz; if (d < gd) { gd = d; gb = ex; } }
-                    if (gb != null) _groundExtra = gb;
-                }
+            }
+            // the body whose ground you are on, in the list made afresh: the same body (its name and make-up, the nearest of them),
+            // so its ground rides on with it; else the ground is let go by distance, as a planet's is. On every remake, picked or not
+            // (it had run only while a body was picked, and with the pick cleared the ground was left behind as its body went on)
+            if (_groundExtra != null && !_extras.Contains(_groundExtra))
+            {
+                Extra gb = null; double gd = double.MaxValue; double gx = RelX(_groundExtra), gy = RelY(_groundExtra), gz = RelZ(_groundExtra);
+                foreach (var ex in _extras) { if (ex.Name != _groundExtra.Name || ex.Mix != _groundExtra.Mix) continue; double dx = RelX(ex) - gx, dy = RelY(ex) - gy, dz = RelZ(ex) - gz, d = dx * dx + dy * dy + dz * dz; if (d < gd) { gd = d; gb = ex; } }
+                if (gb != null) _groundExtra = gb;
             }
         }
 
@@ -1808,7 +1810,8 @@ namespace Universe.Shell
         // the camera rides along with the planet or moon you picked (or are at) as it goes round its star
         private void FollowBody()
         {
-            int follow = _tKind == 2 && _system != null && _tIndex < _system.Bodies.Count ? _tIndex : _tKind == 6 ? -1 : _planet;   // (an asteroid, comet or black hole picked: they do not move, and riding with the planet you left shifted the camera off them every frame)
+            int follow = _tKind == 2 && _system != null && _tIndex < _system.Bodies.Count ? _tIndex : _tKind == 6 ? -1 : _planet;
+            if (_planet == -2) return;                                                       // (on a small body's ground the ride is that body's own, in UpdateExtras: riding with the nearest planet too moved the camera twice a frame, off the stone)   // (an asteroid, comet or black hole picked: they do not move, and riding with the planet you left shifted the camera off them every frame)
             if (follow < 0 && _system != null)
             {
                 // nothing picked: the nearest planet or moon is matched once you are within about 300 of its radii
@@ -2477,7 +2480,7 @@ namespace Universe.Shell
                             var g = _galaxies[_near]; double tol = g.Scale * 0.02;
                             for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (!ex.Hole) continue; double hx = ex.X - g.X, hy = ex.Y - g.Y, hz = ex.Z - g.Z; if (hx * hx + hy * hy + hz * hz < tol * tol) { bi = q; break; } }
                             if (bi < 0 && _places != null) foreach (var pl in _places) if (pl.Where == "galaxy-heart") { _extras.Add(MakeExtra(pl, g.X, g.Y, g.Z)); bi = _extras.Count - 1; ZoomLog("TOUR the heart of " + g.Name + " made for the pick (it was not among the " + (_extras.Count - 1) + " bodies round you)"); break; }
-                            if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; break; }
+                            if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; _tSpot = null; break; }
                         }
                         for (int q = 0; q < _extras.Count; q++)
                         {
@@ -2490,7 +2493,7 @@ namespace Universe.Shell
                             if (what == "asteroid" && nm.Contains("asteroid")) d *= 1e-4;          // (the belt's own, before a far icy body)             // (a feeding one, its disc glowing, before a quiet one)
                             if (d < bd) { bd = d; bi = q; }
                         }
-                        if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; }
+                        if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; _tSpot = null; }
                         else if (what == "black-hole") ZoomLog("TOUR no black hole within " + Units.Describe(holeReach) + " (the nearest " + (nearestHole < double.MaxValue ? Units.Describe(nearestHole) : "none") + " away; galaxy " + _near + " scale " + (_near >= 0 && _near < _galaxies.Count ? Units.Describe(_galaxies[_near].Scale) : "-") + ")");
                     }
                     break;
@@ -2521,7 +2524,7 @@ namespace Universe.Shell
                             if (!(id.Contains("neutron") || id.Contains("pulsar") || id.Contains("magnetar"))) continue;
                             double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = dx * dx + dy * dy + dz * dz; if (d < bd) { bd = d; bi = q; }
                         }
-                        if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; }
+                        if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; _tSpot = null; }
                         else ZoomLog("TOUR no neutron star among the " + _extras.Count + " bodies round you");
                     }
                     break;
@@ -2666,7 +2669,9 @@ namespace Universe.Shell
         /// <summary>The scale in the matter (km), or 0 above it: for the test runs, so a wheel can end on the last landmark.</summary>
         public double MatterKm { get { return _matterScale > 0 ? _matterScale : _spaceScale > 0 ? _spaceScale : 0; } }
         /// <summary>How many ground pieces are waiting (0 when not at a planet).</summary>
-        public int GroundBacklog { get { return _ground != null ? _ground.Backlog : 0; } } private double _autoLogT;
+        public int GroundBacklog { get { return _ground != null ? _ground.Backlog : 0; } } private double _autoLogT; private DateTime _wheelLogAt;
+        // the zoom log's wheel line twice a second at most (a line a frame filled the file in a minute and lost what came before a crash)
+        private bool WheelLogDue() { if ((DateTime.Now - _wheelLogAt).TotalSeconds < 0.5) return false; _wheelLogAt = DateTime.Now; return true; }
         // ── what you clicked: the camera turns to face it and the wheel flies to it ──
         private Extra _tExtra;                   // the body picked (kind 6): the body itself, found again by its place whenever the bodies round you are made again
         private int _tKind = -1;                 // 0 a galaxy, 1 a star, 2 a planet or moon, 3 a spot on the planet's ground
@@ -3225,7 +3230,7 @@ namespace Universe.Shell
                     return true;
                 }
             }
-            if (_system != null && _ground == null && input.Wheel > 0 && _spaceScale <= 0 && Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) < StarRadiusNow * 1.002 && Math.Abs(_ax) + Math.Abs(_ay) + Math.Abs(_az) >= 0)
+            if (_system != null && _ground == null && input.Wheel > 0 && _spaceScale <= 0 && Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) < StarRadiusNow * 1.002)
             {
                 // into the star's surface: its plasma, the same zoom carrying on
                 ulong sspot = (ulong)(long)(_ox / Units.Km(1e3)) * 73856093UL ^ (ulong)(long)(_oy / Units.Km(1e3)) * 19349663UL ^ (ulong)(long)(_oz / Units.Km(1e3)) * 83492791UL;
@@ -3343,7 +3348,7 @@ namespace Universe.Shell
                 }
                 else { _farScale *= Math.Pow(0.87, input.Wheel); if (_farScale < reach) _farScale = 0; }
                 double altBefore = _ground != null ? AboveGround() / Units.Km(1) : 0;
-                ZoomLog("wheel " + input.Wheel.ToString("0") + " step " + Units.Describe(Math.Abs(step)) + " reach " + Units.Describe(reach) + " pick " + _tKind + ":" + _tIndex + " planet " + _planet + " nearest-body " + _cpBest + " at " + _cpBd.ToString("0.##") + " radii follow " + _followBody + (_ground != null ? " ground-ready " + (_ground.ReadyStep < 1e30 ? ScaleHud.Words(_ground.ReadyStep) : "none") + " height " + ScaleHud.Words(AboveGround() / Units.Km(1)) + " base " + BaseHeightWords() + " piece " + (_ground.CamPieceEdge > 0 ? ScaleHud.Words(_ground.CamPieceEdge) + " L" + _ground.CamPieceLevel : "none") + " [" + _ground.BuildStats + "; " + _ground.FrameStats + "]" : ""));
+                                if (WheelLogDue()) ZoomLog("wheel " + input.Wheel.ToString("0") + " step " + Units.Describe(Math.Abs(step)) + " reach " + Units.Describe(reach) + " pick " + _tKind + ":" + _tIndex + " planet " + _planet + " nearest-body " + _cpBest + " at " + _cpBd.ToString("0.##") + " radii follow " + _followBody + (_ground != null ? " ground-ready " + (_ground.ReadyStep < 1e30 ? ScaleHud.Words(_ground.ReadyStep) : "none") + " height " + ScaleHud.Words(AboveGround() / Units.Km(1)) + " base " + BaseHeightWords() + " piece " + (_ground.CamPieceEdge > 0 ? ScaleHud.Words(_ground.CamPieceEdge) + " L" + _ground.CamPieceLevel : "none") + " [" + _ground.BuildStats + "; " + _ground.FrameStats + "]" : ""));
                 _ox += dir.X * step; _oy += dir.Y * step; _oz += dir.Z * step;
                 if (_ground != null)
                 {
@@ -4066,7 +4071,7 @@ namespace Universe.Shell
                 double altSea = Math.Max(alt, Math.Sqrt(x * x + y * y + z * z) - _ground.Radius);   // the horizon goes by the height above sea level
                 double horizon = Math.Sqrt(altSea * (2 * _ground.Radius + altSea)) + Math.Sqrt(2 * _ground.Radius * 30);
                 Mat4 kproj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)Math.Max(alt * 0.15, 1e-9), (float)(horizon * 1.3 + 100));
-                var sd = _system != null ? _system.StarRadius : 0; double lx = -_px, ly = -_py, lz = -_pz, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz);
+                double lx = -_px, ly = -_py, lz = -_pz, ll = Math.Sqrt(lx * lx + ly * ly + lz * lz);
                 if (ll > 0)
                 {
                     // the starlight's way, turned back by the planet's own spin, so its days pass over the ground

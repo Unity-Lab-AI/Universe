@@ -41,7 +41,7 @@ namespace Universe.Platform
                 Thread.Sleep(250);
                 double now = _clock.Total;
                 double last = BitConverter.Int64BitsToDouble(Interlocked.Read(ref _lastBeat));
-                if (Window.InSizeMove) { Beat(); continue; } // not a stall: the player is moving the window
+                if (Window.InSizeMove || Window.InMenu || Environment.TickCount - Window.ModalIdleTick < 2000) { Beat(); continue; } // not a stall: the player is moving the window, holding a menu open, or in a dialog or message box (Windows runs its own loop for those and the game's waits: it had been shut down as hung after six seconds of a menu held open)
                 double limit = _running ? _stallSeconds : StartupLimitSeconds;
                 if (now - last > limit) Bail((_running ? "main loop stalled for " : "start-up took longer than ") + (now - last).ToString("0.0") + " s");
                 if (_hardLimitSeconds >= 0 && now > _hardLimitSeconds + (_running ? 0 : StartupLimitSeconds)) Bail("test run passed its hard limit of " + _hardLimitSeconds + " s");

@@ -198,6 +198,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The things on the face bounded and far molecules each atom's cloud, so the crystal, the atoms and the electrons are drawn on the way out of a living world (they had met the frame's glow ceiling first, and the climb out was black):** (built: DNA-AND DESIGN 670; waits on the test) "the rise out of planet view skipped all the atoms and electrons and white black layers and shit and jsut poped out skipping it all on reverse zoom out of the planet from qwerk level it was all black till a couple layers of white black lattuses finally poped into from the blackness but the fucking zsoom out is holdsing face scale"
 
+- [~] **A menu held open, a dialog or a message box no longer taken for a hang by the watchdog (it had shut the program down after six seconds):** (built: DNA-AND DESIGN 671; waits on the test) "it crashed whhen i open the menu and try to open docs and periodic table of elemets , its like just clicking on the menu or holding open a drop down menu crashes the game as its running not zooming or moving cam around"
+
 ---
 
 ## Pending

@@ -312,6 +312,18 @@ internal static class Setup
                     k.SetValue("NoModify", 1); k.SetValue("NoRepair", 1); k.SetValue("EstimatedSize", (int)(DirSize(dir) / 1024));
                 }
                 using (var c = Registry.CurrentUser.CreateSubKey(ChoiceKey)) c.SetValue("InstallDir", dir);   // (offered again next time)
+                // the .cdf97w is a video to Windows: an MP4 outside (the equations solved into pictures), the equations in its box. Marked a
+                // video of the MP4 kind and opened by whatever opens an MP4 here, so a media player plays it and Explorer shows it as video
+                try
+                {
+                    string mp4 = null; using (var m = Registry.ClassesRoot.OpenSubKey(".mp4")) if (m != null) mp4 = m.GetValue("") as string;
+                    using (var e = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.cdf97w"))
+                    {
+                        e.SetValue("Content Type", "video/mp4"); e.SetValue("PerceivedType", "video");
+                        if (!string.IsNullOrEmpty(mp4)) { e.SetValue("", mp4); using (var o = e.CreateSubKey("OpenWithProgids")) o.SetValue(mp4, new byte[0], RegistryValueKind.None); }
+                    }
+                }
+                catch { }
                 _bar.Value = _bar.Maximum; _installed = true; _installedDir = dir;
                 foreach (Control c in _pages[8].Controls) if (c.Name == "body") c.Text = c.Text.Replace("{dir}", dir);
                 Show(8);
@@ -336,6 +348,7 @@ internal static class Setup
         if (!quiet) CloseRunning(null);
         foreach (var l in new[] { StartMenuLink, DesktopLink }) try { if (File.Exists(l)) File.Delete(l); } catch { }
         Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, false);
+        try { Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\.cdf97w", false); } catch { }
         if (all) try { if (Directory.Exists(SettingsDir)) Directory.Delete(SettingsDir, true); } catch { }
         // the game goes now; this running uninstaller, and the folder if it is left empty, a moment after it closes
         string self = Assembly.GetExecutingAssembly().Location;

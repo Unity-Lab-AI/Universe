@@ -222,6 +222,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] (version 1 for tours built: DNA-AND DESIGN 689; free flight waits on the universe loading in the same order every time) **The clip as the universe itself: the seed, the camera's path and the clock, replayed live in the program:** (next, after DNA-AND DESIGN 688) "yeah wtf? we just need the recorder to tie directly inot the universe so ther is no back build and side car recorder" / "i like both and number 2 is very very important"
 
+- [~] **The .cdf97w as one media file: equations made on the card, solved back to pixels on the card, the H.264 video of the solved pixels outside and the equations in its box; .cdf97w registered as video:** (built: DNA-AND DESIGN 690; waits on the test) "do i need to fucking design the proper pathing for the (GPU)cdf>pixelequations>(GPU)hard write to file reverse solved equation cdf97q to pixel>>>>(output)= cdf97w+reverse solved pixil equation//meta data as media file[.cdf97w]" / "and we need to make sure sending the file in discord and other serves like face book the equations properly meta data them as media player files"
+
 ---
 
 ## Pending

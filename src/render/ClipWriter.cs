@@ -43,7 +43,7 @@ namespace Universe.Render
             catch { return false; }
         }
         /// <summary>The clip format picked (View > Clip format, or the start page): 0 MP4, 1 .cdf97w, 2 an MP4 carrying the .cdf97w (the front man).</summary>
-        public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? f : 0; } }
+        public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? 1 : 0; } }   // (2, the separate front-man format, is the .cdf97w now)
         public static string Extension { get { return Format == 1 ? ".cdf97w" : ".mp4"; } }
         /// <summary>The graphics card the .cdf97w's wavelet runs on (set once the renderer is made; none: the processor).</summary>
         public static IntPtr Device;
@@ -53,8 +53,7 @@ namespace Universe.Render
         public static IClipWriter Open(string path, int w, int h)
         {
             path = System.IO.Path.ChangeExtension(path, Extension);
-            if (Format == 1) return new Cdf97wWriter(path, w, h);
-            if (Format == 2) return new FrontmanWriter(path, w, h);
+            if (Format == 1) return new FrontmanWriter(path, w, h);                          // the .cdf97w: its equations, and a video of them solved, in one file
             return new Mp4Writer(path, w, h);
         }
     }
@@ -109,22 +108,26 @@ namespace Universe.Render
     {
         /// <summary>The box's own id: the .cdf97w inside an MP4.</summary>
         public static readonly byte[] BoxId = { 0x43, 0x39, 0x37, 0x57, 0x2D, 0x55, 0x6E, 0x69, 0x56, 0x73, 0x4D, 0x61, 0x74, 0x69, 0x63, 0x73 };   // "C97W-UniVsMatics"
-        private readonly Mp4Writer _mp4; private readonly Cdf97wWriter _eq; private readonly string _eqPath; private bool _done; private byte[] _lastRgb; private int _lastW, _lastH;
+        private readonly Mp4Writer _mp4; private readonly Cdf97wWriter _eq; private readonly string _eqPath; private bool _done;
         public int Down { get { return _eq.Down; } }
         public double Seconds { get { return _eq.Seconds; } }
         public bool OnCard { get { return _eq.OnCard; } }
         public bool WantsFrame() { return _eq.WantsFrame(); }
         public void Record(IntPtr list, IntPtr backBuffer, int width, int height) { _eq.Record(list, backBuffer, width, height); }
         public void Collect() { _eq.Collect(); }
-        public string Path { get { return _mp4.Path; } }
+        private readonly string _final;
+        public string Path { get { return _final; } }
         public FrontmanWriter(string path, int w, int h)
         {
-            _mp4 = new Mp4Writer(path, w, h, 4);                                         // the front man is only what a player needs to know the file: a quarter-size picture now and then, never the clip itself
-            _eqPath = path + ".cdf97w.part"; _eq = new Cdf97wWriter(_eqPath, w, h);
+            // the .cdf97w: the equations (made on the card from each frame), and the video media players play, made of those same
+            // equations solved back into pixels on the card in the same frame (never the frame drawn): an MP4 inside, the equations in
+            // its private box. Media Foundation picks its container by the name, so the MP4 is written under a name of its own first
+            _final = path; _eqPath = path + ".equations.part";
+            _eq = new Cdf97wWriter(_eqPath, w, h, true);
+            _mp4 = new Mp4Writer(path + ".video.mp4", _eq.ClipW, _eq.ClipH, 1);
             // the front man: the first solved picture, then one every ten seconds (a player shows the clip's length and a picture; the
             // clip itself is the .cdf97w in the box, played here); the last one shown is held to the end
-            _eq.SolveEvery = 10;                                                             // (solved into pixels only when the front man needs a picture: never every frame)
-            _eq.Solved = (rgb, sw, sh) => { _mp4.Add(rgb, sw, sh); _lastRgb = rgb; _lastW = sw; _lastH = sh; };
+            _eq.Solved = (rgb, sw, sh) => _mp4.Add(rgb, sw, sh);                             // (every frame: the video is the equations solved)
         }
         // the front man's frames are the equations solved into pixels: each frame goes to the .cdf97w writer only, and the picture
         // its terms rebuild to (the inverse CDF 9/7, the same sums the player runs) is what the MP4 is made of
@@ -133,7 +136,7 @@ namespace Universe.Render
         public void Dispose()
         {
             if (_done) return; _done = true;
-            _eq.Dispose(); if (_lastRgb != null) _mp4.Add(_lastRgb, _lastW, _lastH); _mp4.Dispose();                                                 // (the equations first: their last frames are still being solved into the MP4)
+            _eq.Dispose(); _mp4.Dispose();                                                 // (the equations first: their last frames are still being solved into the MP4)
             try
             {
                 long n = new System.IO.FileInfo(_eqPath).Length;
@@ -150,6 +153,7 @@ namespace Universe.Render
             }
             catch { }
             try { System.IO.File.Delete(_eqPath); } catch { }
+            try { if (System.IO.File.Exists(_final)) System.IO.File.Delete(_final); System.IO.File.Move(_mp4.Path, _final); } catch { }   // (the MP4 with its equations, under the .cdf97w's name)
         }
         /// <summary>Where the .cdf97w starts and ends inside an MP4 (-1: it carries none).</summary>
         public static long Find(System.IO.Stream s, out long end)
@@ -185,17 +189,21 @@ namespace Universe.Render
         public Action<byte[], int, int> Solved;
         private GpuWavelet _gw;                                                         // the wavelet on the graphics card (null: on the processor)
         private CardClip _card;                                                         // the whole frame worked out on the card, inside the frame (null: the frames come here as pictures)
-        private readonly System.Collections.Concurrent.BlockingCollection<Tuple<short[][], long>> _terms = new System.Collections.Concurrent.BlockingCollection<Tuple<short[][], long>>(4);
+        private readonly System.Collections.Concurrent.BlockingCollection<Tuple<short[][], long, byte[]>> _terms = new System.Collections.Concurrent.BlockingCollection<Tuple<short[][], long, byte[]>>(4);
         /// <summary>How often (seconds) the terms are solved back into a picture for <see cref="Solved"/> (0: every frame).</summary>
-        public double SolveEvery; private long _solvedAt = -1;
+        public double SolveEvery = 0; private long _solvedAt = -1;
         /// <summary>True when the frames are worked out on the card inside each frame (the renderer then never copies the picture back).</summary>
         public bool OnCard { get { return _card != null; } }
         public int Down { get; private set; }
         public string Path { get; private set; }
         public double Seconds { get { return _last < 0 ? 0 : (_last - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
 
-        public Cdf97wWriter(string path, int w, int h)
+        public int ClipW { get { return _w; } }
+        public int ClipH { get { return _h; } }
+        private readonly bool _solveOnCard;
+        public Cdf97wWriter(string path, int w, int h, bool solveOnCard = false)
         {
+            _solveOnCard = solveOnCard;
             int want = Universe.Platform.Settings.Get("clip-down", 0);
             Path = path; Down = want > 0 ? want : (w > 1920 ? 2 : 1);
             _w = Math.Max(2, w / Down); _h = Math.Max(2, h / Down); _pw = Wavelet97.PadSide(_w); _ph = Wavelet97.PadSide(_h);
@@ -206,14 +214,14 @@ namespace Universe.Render
             foreach (float st in Cdf97wCodec.Step) _o.Write(st);
             if (ClipWriters.Device != IntPtr.Zero)
             {
-                try { _card = new CardClip(ClipWriters.Device, _w, _h, Down, Cdf97wCodec.Step); }
+                try { _card = new CardClip(ClipWriters.Device, _w, _h, Down, Cdf97wCodec.Step, _solveOnCard); }
                 catch (Exception ex) { _card = null; Universe.Program.WriteLog("cdf97w: the frame could not be worked out on the card (" + ex.Message + "); its picture comes to the processor"); }
                 if (_card == null) { try { _gw = new GpuWavelet(ClipWriters.Device); } catch (Exception ex) { _gw = null; Universe.Program.WriteLog("cdf97w: the card's wavelet could not be set up (" + ex.Message + "); the processor does it"); } }
             }
             // the packing, the one part on the processor: the card's terms (or, without the card, the pictures) in the order they came
             _encoder = new System.Threading.Thread(() =>
             {
-                if (_card != null) { foreach (var f in _terms.GetConsumingEnumerable()) { try { Store(f.Item1, f.Item2); } catch { } } }
+                if (_card != null) { foreach (var f in _terms.GetConsumingEnumerable()) { try { Store(f.Item1, f.Item2, f.Item3); } catch { } } }
                 else foreach (var f in _queue.GetConsumingEnumerable()) { try { Encode(f.Item1, f.Item2, f.Item3, f.Item4); } catch { } }
             }) { IsBackground = true, Name = "cdf97w packer" };
             _encoder.Start();
@@ -241,7 +249,7 @@ namespace Universe.Render
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
             if (_card.Record(list, backBuffer, width, height, (now - _t0) * 1000L / System.Diagnostics.Stopwatch.Frequency)) _last = now;
         }
-        public void Collect() { if (_card != null) _card.Collect((q, ms) => _terms.TryAdd(Tuple.Create(q, ms))); }   // (the packer behind: that frame let go, the clip keeps its timing)
+        public void Collect() { if (_card != null) _card.Collect((q, ms, rgb) => _terms.TryAdd(Tuple.Create(q, ms, rgb))); }   // (the packer behind: that frame let go, the clip keeps its timing)
 
         private void Encode(byte[] rgb, int srcW, int srcH, long ms)
         {
@@ -266,11 +274,11 @@ namespace Universe.Render
                 if (Card(planes[c], true)) { var co = _f; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
                 else { Wavelet97.Forward(planes[c], _pw, _ph); var co = planes[c]; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
             }
-            Store(q, ms);
+            Store(q, ms, null);
         }
 
         // a frame's terms into the clip: whole, or as the change from the last, packed; solved into a picture when one is wanted
-        private void Store(short[][] q, long ms)
+        private void Store(short[][] q, long ms, byte[] solvedOnCard)
         {
             bool key = _prev == null || _frames % Cdf97wCodec.KeyEvery == 0;
             short[][] stored = q;
@@ -284,7 +292,7 @@ namespace Universe.Render
             if (Solved != null)
             {
                 long now = System.Diagnostics.Stopwatch.GetTimestamp();
-                if (SolveEvery <= 0 || _solvedAt < 0 || (now - _solvedAt) >= System.Diagnostics.Stopwatch.Frequency * SolveEvery) { _solvedAt = now; Solved(Solve(q), _w, _h); }
+                if (SolveEvery <= 0 || _solvedAt < 0 || (now - _solvedAt) >= System.Diagnostics.Stopwatch.Frequency * SolveEvery) { _solvedAt = now; Solved(solvedOnCard ?? Solve(q), _w, _h); }   // (solved on the card in the frame, or here without a card)
             }
             lock (_lock) { _o.Write((uint)ms); _o.Write((byte)(key ? 0 : 1)); _o.Write(packed.Length); _o.Write(packed); _frames++; }
         }

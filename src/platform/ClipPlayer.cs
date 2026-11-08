@@ -41,7 +41,7 @@ namespace Universe.Platform
                 using (var r = new System.IO.BinaryReader(System.IO.File.OpenRead(path)))
                 {
                     long start = 0, len = r.BaseStream.Length;
-                    if (path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) { long e; start = FrontmanWriter.Find(r.BaseStream, out e); if (start < 0) throw new InvalidOperationException("this MP4 carries no equations"); len = e; }
+                    if (r.ReadUInt32() != Cdf97wCodec.Magic) { long e; start = FrontmanWriter.Find(r.BaseStream, out e); if (start < 0) throw new InvalidOperationException("this file carries no equations"); len = e; }   // (an MP4 outside, the equations in its box)
                     r.BaseStream.Position = start;
                     if (r.ReadUInt32() != Cdf97wCodec.Magic) throw new InvalidOperationException("not a .cdf97w clip");
                     if (r.ReadUInt16() != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)");

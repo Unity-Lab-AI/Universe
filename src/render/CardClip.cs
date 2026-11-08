@@ -87,6 +87,50 @@ void FWD(uint3 id : SV_DispatchThreadID)
     }
 }
 [numthreads(256, 1, 1)]
+void DEQ(uint3 id : SV_DispatchThreadID)
+{
+    uint N = pw * ph; if (id.x >= N) return;
+    int v = (int)x[base0 + id.x];
+    a[base0 + id.x] = v == 0 ? 0 : (v + (v > 0 ? 0.5 : -0.5)) * asfloat(stepBits) * lw[id.x];
+}
+[numthreads(64, 1, 1)]
+void INV(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= lines) return;
+    uint b = base0 + id.x * across;
+    uint smallest = n;
+    [loop] while (smallest >= 4 && (smallest & 1) == 0) smallest /= 2;
+    uint size = smallest * 2;
+    [loop] while (size <= n && size >= 4)
+    {
+        uint i, hs = size / 2;
+        [loop] for (i = 0; i < hs; i++) { t[b + 2 * i * along] = a[b + i * along]; t[b + (2 * i + 1) * along] = a[b + (hs + i) * along]; }
+        [loop] for (i = 0; i < size; i++) a[b + i * along] = t[b + i * along];
+        [loop] for (i = 0; i < size; i += 2) a[b + i * along] *= K;
+        [loop] for (i = 1; i < size; i += 2) a[b + i * along] /= K;
+        a[b] -= 2 * D * a[b + along];
+        [loop] for (i = 2; i < size; i += 2) a[b + i * along] -= D * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
+        [loop] for (i = 1; i < size - 1; i += 2) a[b + i * along] -= G * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
+        a[b + (size - 1) * along] -= 2 * G * a[b + (size - 2) * along];
+        a[b] -= 2 * B * a[b + along];
+        [loop] for (i = 2; i < size; i += 2) a[b + i * along] -= B * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
+        [loop] for (i = 1; i < size - 1; i += 2) a[b + i * along] -= A * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
+        a[b + (size - 1) * along] -= 2 * A * a[b + (size - 2) * along];
+        size *= 2;
+    }
+}
+[numthreads(256, 1, 1)]
+void RGB(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= w * h) return;
+    uint yy = id.x / w, xx = id.x - yy * w, g = yy * pw + xx, N = pw * ph;
+    float Y = a[g], cb = a[N + g] - 0.5, cr = a[2 * N + g] - 0.5;
+    uint R = (uint)(clamp(Y + 1.402 * cr, 0.0, 1.0) * 255 + 0.5);
+    uint Gc = (uint)(clamp(Y - 0.344136 * cb - 0.714136 * cr, 0.0, 1.0) * 255 + 0.5);
+    uint Bc = (uint)(clamp(Y + 1.772 * cb, 0.0, 1.0) * 255 + 0.5);
+    x[id.x] = R | (Gc << 8) | (Bc << 16) | (255u << 24);
+}
+[numthreads(256, 1, 1)]
 void QUANT(uint3 id : SV_DispatchThreadID)
 {
     uint N = pw * ph; if (id.x >= N) return;
@@ -95,12 +139,16 @@ void QUANT(uint3 id : SV_DispatchThreadID)
 }
 ";
         private readonly IntPtr _device; private IntPtr _rs, _prep, _fwd, _quant, _src, _a, _t, _q, _lw, _lwUp;
+        private readonly IntPtr[] _pic = new IntPtr[2]; private IntPtr _deq, _inv, _rgb; private readonly bool _solve;
         private readonly IntPtr[] _down = new IntPtr[2]; private readonly long[] _downMs = { -1, -1 }; private int _slot;
         private readonly int _w, _h, _pw, _ph, _down0; private readonly float[] _step; private int _srcW, _srcH; private uint _srow;
         public readonly int Width, Height;
 
-        public CardClip(IntPtr device, int clipW, int clipH, int down, float[] step)
+        /// <param name="solve">The terms also solved straight back into the picture they hold, in the same frame (the inverse CDF 9/7,
+        /// colour back to RGB), for a video made of them: what the equations solve to, never the frame drawn.</param>
+        public CardClip(IntPtr device, int clipW, int clipH, int down, float[] step, bool solve)
         {
+            _solve = solve;
             _device = device; _w = clipW; _h = clipH; _pw = Universe.Core.Wavelet97.PadSide(clipW); _ph = Universe.Core.Wavelet97.PadSide(clipH); _down0 = down; _step = step;
             Width = clipW; Height = clipH;
             IntPtr parms = Marshal.AllocHGlobal(32 * 5), desc = Marshal.AllocHGlobal(40);
@@ -119,10 +167,12 @@ void QUANT(uint3 id : SV_DispatchThreadID)
             }
             finally { Marshal.FreeHGlobal(parms); Marshal.FreeHGlobal(desc); }
             _prep = Pso("PREP"); _fwd = Pso("FWD"); _quant = Pso("QUANT");
+            if (_solve) { _deq = Pso("DEQ"); _inv = Pso("INV"); _rgb = Pso("RGB"); }
             long N = (long)_pw * _ph;
             _a = Buffer(1, N * 3 * 4, 4, 0x8); _t = Buffer(1, N * 3 * 4, 4, 0x8); _q = Buffer(1, N * 3 * 4, 4, 0x8);
             _lw = Buffer(1, N * 4, 4, 0x400); _lwUp = Buffer(2, N * 4, 0, 0xAC3);
             for (int i = 0; i < 2; i++) _down[i] = Buffer(3, N * 3 * 4, 0, 0x400);
+            if (_solve) for (int i = 0; i < 2; i++) _pic[i] = Buffer(3, (long)_w * _h * 4, 0, 0x400);
             var lw = Cdf97wCodec.LevelWeights(_pw, _ph); IntPtr p;
             Com.Check(Com.Method<MapFn>(_lwUp, 8)(_lwUp, 0, IntPtr.Zero, out p), "Map(weights)"); Marshal.Copy(lw, 0, p, lw.Length); Com.Method<UnmapFn>(_lwUp, 9)(_lwUp, 0, IntPtr.Zero);
             _lwFresh = true;
@@ -192,6 +242,25 @@ void QUANT(uint3 id : SV_DispatchThreadID)
             b = Turn(_q, 0x8, 0x800); barrier(list, 1, ref b);
             Com.Method<CopyBufferRegionFn>(list, 15)(list, _down[_slot], 0, _q, 0, (ulong)N * 3 * 4);
             b = Turn(_q, 0x800, 0x8); barrier(list, 1, ref b);
+            if (_solve)
+            {
+                // the terms just made, solved back: each to its value (by its step and level), the inverse lifting (columns, then rows),
+                // the colour back to RGB, into a buffer the size of the clip
+                pso(list, _deq);
+                for (int pl = 0; pl < 3; pl++) { c[4] = N * (uint)pl; c[5] = BitConverter.ToUInt32(BitConverter.GetBytes(_step[pl]), 0); setC(list, 0, NC, c, 0); dispatch(list, (N + 255) / 256, 1, 1); }
+                Uav(barrier, list, _a);
+                pso(list, _inv);
+                for (int pl = 0; pl < 3; pl++)
+                {
+                    c[4] = N * (uint)pl;
+                    c[0] = (uint)_ph; c[1] = (uint)_pw; c[2] = (uint)_pw; c[3] = 1; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_pw + 63) / 64, 1, 1); Uav(barrier, list, _a);   // columns
+                    c[0] = (uint)_pw; c[1] = (uint)_ph; c[2] = 1; c[3] = (uint)_pw; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_ph + 63) / 64, 1, 1); Uav(barrier, list, _a);   // rows
+                }
+                pso(list, _rgb); c[4] = 0; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_w * _h + 255) / 256, 1, 1);
+                b = Turn(_q, 0x8, 0x800); barrier(list, 1, ref b);
+                Com.Method<CopyBufferRegionFn>(list, 15)(list, _pic[_slot], 0, _q, 0, (ulong)_w * (ulong)_h * 4);
+                b = Turn(_q, 0x800, 0x8); barrier(list, 1, ref b);
+            }
             b = Turn(_src, 0x8, 0x400); barrier(list, 1, ref b);
             b = Turn(_lw, 0x8, 0x400); barrier(list, 1, ref b);
             _downMs[_slot] = ms; _slot ^= 1;
@@ -202,7 +271,7 @@ void QUANT(uint3 id : SV_DispatchThreadID)
 
         /// <summary>The terms of every frame the card has finished (call after its fence: the frame before the one being recorded),
         /// handed on with their times.</summary>
-        public void Collect(Action<short[][], long> take)
+        public void Collect(Action<short[][], long, byte[]> take)
         {
             for (int k = 0; k < 2; k++)
             {
@@ -216,7 +285,15 @@ void QUANT(uint3 id : SV_DispatchThreadID)
                     for (int pl = 0; pl < 3; pl++) { var a = q[pl] = new short[N]; int o = pl * N; for (int i = 0; i < N; i++) a[i] = (short)raw[o + i]; }
                 }
                 finally { Com.Method<UnmapFn>(_down[s], 9)(_down[s], 0, IntPtr.Zero); }
-                long ms = _downMs[s]; _downMs[s] = -1; take(q, ms);
+                byte[] rgb = null;
+                if (_solve)
+                {
+                    // the solved picture, as RGB (three bytes a pixel, top row first), for the video made of it
+                    Com.Check(Com.Method<MapFn>(_pic[s], 8)(_pic[s], 0, IntPtr.Zero, out p), "Map(clip picture)");
+                    try { var px = new int[_w * _h]; Marshal.Copy(p, px, 0, px.Length); rgb = new byte[_w * _h * 3]; for (int i = 0; i < px.Length; i++) { int v = px[i]; rgb[i * 3] = (byte)v; rgb[i * 3 + 1] = (byte)(v >> 8); rgb[i * 3 + 2] = (byte)(v >> 16); } }
+                    finally { Com.Method<UnmapFn>(_pic[s], 9)(_pic[s], 0, IntPtr.Zero); }
+                }
+                long ms = _downMs[s]; _downMs[s] = -1; take(q, ms, rgb);
             }
         }
 
@@ -227,7 +304,8 @@ void QUANT(uint3 id : SV_DispatchThreadID)
         public void Dispose()
         {
             Com.Release(ref _src); Com.Release(ref _a); Com.Release(ref _t); Com.Release(ref _q); Com.Release(ref _lw); Com.Release(ref _lwUp);
-            for (int i = 0; i < 2; i++) Com.Release(ref _down[i]);
+            for (int i = 0; i < 2; i++) { Com.Release(ref _down[i]); Com.Release(ref _pic[i]); }
+            Com.Release(ref _deq); Com.Release(ref _inv); Com.Release(ref _rgb);
             Com.Release(ref _prep); Com.Release(ref _fwd); Com.Release(ref _quant); Com.Release(ref _rs);
         }
     }

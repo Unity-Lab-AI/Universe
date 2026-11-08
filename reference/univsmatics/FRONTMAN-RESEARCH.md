@@ -91,3 +91,24 @@ E3 and E4 need us to write H.264 ourselves, at least the macroblock layer, CAVLC
 - The front man plays everywhere only because it's real H.264. That part is settled.
 - How small it gets is open. H2 and H4 are the real chances to beat a normal MP4, but neither is measured yet.
 - H5 sets a hard floor. Nothing here gets a whole tour into a few kilobytes.
+
+## 7. Results
+
+### E1 — the correction box (2026-11-08)
+
+Setup: five frames of the recorded tour (30, 120, 240, 360 and 480 s), at 480 wide. The equations use the `.cdf97w` writer's tolerances (0.006, 0.012, 0.012). A DCT-coded copy stands in for what an H.264 player shows: JPEG at qualities 95, 85 and 70, the same 8 × 8 DCT family as H.264 intra. A term counts as wrong in the shown copy if it is off by more than 64 quantisation steps. Script: `shots/e1.py` in the working folder.
+
+| Frame | Front man (q85) | PSNR | Full equations | Correction box |
+|------:|---------------:|-----:|---------------:|---------------:|
+| 30 s | 43 KB | 32.4 dB | 888 KB | 795 KB (90 %) |
+| 120 s | 19 KB | 37.9 dB | 446 KB | 337 KB (76 %) |
+| 240 s | 20 KB | 37.5 dB | 452 KB | 317 KB (70 %) |
+| 360 s | 20 KB | 35.8 dB | 796 KB | 608 KB (76 %) |
+| 480 s | 17 KB | 38.1 dB | 400 KB | 289 KB (72 %) |
+
+What it shows:
+
+- **H4 fails as a size win.** The correction is 63 to 92 % of the full equations at every quality tried. The terms a DCT copy loses are mostly the fine ones, and those make up most of the field.
+- **The equations themselves are the size problem.** At these tolerances, one frame's equations are 10 to 30 times bigger than a DCT picture of the same frame. A full-size `.cdf97w` recorded at these tolerances is very large.
+- **So the smallest file is the front man alone, with an empty box (H4's limit).** The program rebuilds the equations from the picture when it loads it. They're then the equations of what was shown, not the exact ones. Carrying the exact ones costs 10 to 30 times the picture.
+- **Next:** measure how the equation size falls as the tolerance loosens (Uni Vs Matics' defaults are 0.015, 0.022, 0.022), and the PSNR at each step, against a DCT copy of the same size. Then E2.

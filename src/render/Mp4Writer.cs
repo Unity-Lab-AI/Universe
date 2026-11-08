@@ -36,6 +36,7 @@ namespace Universe.Render
         private static Guid HardwareOk = new Guid("a634a91c-822b-41b9-a494-4de4643612b0");
         // the encoder's own knobs (ICodecAPI, through the sink writer): rate control by quality, so bits go only where the picture has
         // detail (black space costs nothing, a star field what it needs), never a fixed flood of them a second
+        private static Guid MeanBitrate = new Guid("f7222374-2144-4815-b550-a37f8e12ee52");   // CODECAPI_AVEncCommonMeanBitRate
         private static Guid IidCodecApi = new Guid("901db4c7-31ce-41a2-85dc-8fa0bf41b8da"), RateMode = new Guid("1c0608e9-370c-4710-8a58-cb6181c42423"), QualityKnob = new Guid("fcbf57a3-7ea5-4bf1-a7a0-ac4ad1f8e8d2");
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int GetServiceFn(IntPtr self, uint stream, ref Guid service, ref Guid riid, out IntPtr ppv);   // IMFSinkWriter 12
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int SetValueFn(IntPtr self, ref Guid api, IntPtr variant);                               // ICodecAPI 9
@@ -59,8 +60,12 @@ namespace Universe.Render
 
         /// <summary>Starts a clip at <paramref name="path"/>, <paramref name="w"/> by <paramref name="h"/> pixels (made even), 30 frames a second: every
         /// other frame of the game's sixty, at a bit rate a clip needs (about 6 megabits a second at 1080p: a minute is about 45 MB, not 90).</summary>
-        public Mp4Writer(string path, int w, int h, int down = 0)
+        /// <summary>For sharing: an average of 1.33 megabits a second (ten minutes about 100 MB, the size a chat app takes), at most 1920 wide.</summary>
+        public const uint ShareBitrate = 1330000;
+        private readonly bool _share;
+        public Mp4Writer(string path, int w, int h, int down = 0, bool share = false)
         {
+            _share = share; if (share && down == 0 && w > 1920) down = (w + 1919) / 1920;
             int want = down > 0 ? down : Universe.Platform.Settings.Get("clip-down", 0);                      // View > Clip size: 0 auto (full up to 1920 wide, half above), 1 full, 2 half, 4 quarter
             Path = path; Down = want > 0 ? want : (w > 1920 ? 2 : 1); _w = Math.Max(2, (w / Down) & ~1); _h = Math.Max(2, (h / Down) & ~1);
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
@@ -79,7 +84,7 @@ namespace Universe.Render
             {
                 Com.Method<SetGuidFn>(outType, 24)(outType, ref MajorType, ref Video);
                 Com.Method<SetGuidFn>(outType, 24)(outType, ref SubType, ref H264);
-                Com.Method<SetU32Fn>(outType, 21)(outType, ref Bitrate, (uint)Math.Min(16000000L, Math.Max(2500000L, (long)_w * _h * 3)));   // (six megabits a second at 1080p: stars stay sharp, a minute weighs about 45 MB; it was twice that at sixty frames)
+                Com.Method<SetU32Fn>(outType, 21)(outType, ref Bitrate, _share ? ShareBitrate : (uint)Math.Min(16000000L, Math.Max(2500000L, (long)_w * _h * 3)));   // (six megabits a second at 1080p: stars stay sharp, a minute weighs about 45 MB; it was twice that at sixty frames)
                 Com.Method<SetU32Fn>(outType, 21)(outType, ref Interlace, 2);           // progressive
                 Com.Method<SetU64Fn>(outType, 22)(outType, ref FrameSize, size);
                 Com.Method<SetU64Fn>(outType, 22)(outType, ref FrameRate, rate);
@@ -108,7 +113,7 @@ namespace Universe.Render
                 IntPtr codec; Guid none = Guid.Empty, iid = IidCodecApi;
                 if (Com.Method<GetServiceFn>(_writer, 12)(_writer, _stream, ref none, ref iid, out codec) >= 0 && codec != IntPtr.Zero)
                 {
-                    try { SetKnob(codec, RateMode, 3); SetKnob(codec, QualityKnob, 70); } finally { Com.Release(ref codec); }
+                    try { if (_share) { SetKnob(codec, RateMode, 2); SetKnob(codec, MeanBitrate, ShareBitrate); } else { SetKnob(codec, RateMode, 3); SetKnob(codec, QualityKnob, 70); } } finally { Com.Release(ref codec); }   // (for sharing: an average rate, so the size is known ahead: about 100 MB for ten minutes)
                 }
             }
             catch { }

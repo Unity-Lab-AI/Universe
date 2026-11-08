@@ -106,3 +106,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (every doc re-measured: sizes, counts, captures; GpuWavelet removed): DNA-AND DESIGN 695.
 - 2026-11-08 (H15 designed: the clip as the universe's own equations): DNA-AND DESIGN 696.
 - 2026-11-08 (H15 step 1: the universe clip recorded): DNA-AND DESIGN 697.
+- 2026-11-08 (MP4 for sharing, about 100 MB for ten minutes): DNA-AND DESIGN 698.

@@ -192,6 +192,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A zoom aimed below the hand-over into the matter never ends until you are in the matter, so the chain below the face is not skipped:** (built: DNA-AND DESIGN 667; waits on the test) "wtf the tour eneded at 200 nanmeters where is my crystal my latusses my atoms and all of it i workded so damn hard building all that and u just gut it on a whime? look were video clip ends"
 
+- [~] **The nebula clouds only within six radii, the nearest six, built once and kept, two a frame at most (the four frames a second was the processor rebuilding dozens every frame):** (built: DNA-AND DESIGN 668; waits on the test) "check the screen shots i think all those gas neblula u added with glow and shit since ther are 1000s in once galaxies i think its why im only getting 4fps.. so what do you think" / "why is cpu at 2% GPU at 2% but im only doing 4fps...???? ther has to be a way to get the GPU to speed up fps" / "ther has to be a way to get the GPU to speed up fps"
+
 ---
 
 ## Pending

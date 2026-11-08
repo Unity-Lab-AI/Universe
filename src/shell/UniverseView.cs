@@ -3662,26 +3662,45 @@ namespace Universe.Shell
         // outside), so flown to, or dived into, there was nothing on the screen; each kind is a cloud of its own gas now, in the colours of
         // what it is made of (its make-up, the same its card and its far marker use), made once when you come within forty of its radii
         private readonly Dictionary<long, UploadBuffer> _nebBufs = new Dictionary<long, UploadBuffer>(); private readonly Dictionary<long, int> _nebNs = new Dictionary<long, int>();
+        private readonly Dictionary<long, int> _nebUsed = new Dictionary<long, int>(); private int _nebFrame;
         private void DrawNebulae(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
+            // only the nebulae you are at: within six of their radii (an emission nebula is hundreds of light-years across, and at a
+            // galaxy's scale hundreds lay within forty), the nearest six of those, a cloud built once and kept (the cache had held twelve
+            // and, with more in reach, thrown them all away and built them again every frame: three thousand points each, dozens a frame,
+            // three hundred milliseconds on the processor and the card idle at four frames a second), at most two new ones a frame
             if (_near < 0 || _near >= _galaxies.Count || _features == null) return;
-            var g = _galaxies[_near];
+            var g = _galaxies[_near]; _nebFrame++;
+            var near = new List<KeyValuePair<double, int>>(); var at = new Dictionary<int, double[]>();
             for (int q = 0; q < _features.Count; q++)
             {
                 var fq = _features[q]; int fk = (int)fq[4]; if (fk < 2 || fk > 6) continue;
                 double ux, uy, uz; ToUniverse(g, fq[0], fq[1], fq[2], out ux, out uy, out uz);
                 double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, R = fq[3] * g.Scale, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-                if (R <= 0 || d > R * 40) continue;
+                if (R <= 0 || d > R * 6) continue;
+                near.Add(new KeyValuePair<double, int>(d / R, q)); at[q] = new[] { dx, dy, dz, R, d };
+            }
+            if (near.Count == 0) return;
+            near.Sort((p0, p1) => p0.Key.CompareTo(p1.Key)); int built = 0;
+            for (int i = 0; i < near.Count && i < 6; i++)
+            {
+                int q = near[i].Value; var fq = _features[q]; int fk = (int)fq[4]; var v = at[q]; double dx = v[0], dy = v[1], dz = v[2], R = v[3], d = v[4];
                 long key = (long)(g.Seed % 1000003UL) * 100003L + q; UploadBuffer buf; int n;
                 if (!_nebBufs.TryGetValue(key, out buf))
                 {
-                    if (_nebBufs.Count >= 12) { foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear(); _nebNs.Clear(); }   // (a few at a time: the ones round you)
+                    if (built >= 2) continue; built++;
+                    if (_nebBufs.Count >= 48)
+                    {
+                        // the one unused longest let go, never all at once
+                        long old = -1; int oldest = int.MaxValue; foreach (var kv in _nebUsed) if (kv.Value < oldest) { oldest = kv.Value; old = kv.Key; }
+                        if (old >= 0) { _nebBufs[old].Dispose(); _nebBufs.Remove(old); _nebNs.Remove(old); _nebUsed.Remove(old); }
+                    }
                     var cloud = NebulaCloud(fk, fq.Length > 5 ? fq[5] : 0.5, g.Seed ^ (ulong)(q * 2654435761L));
                     n = cloud.Count; buf = new UploadBuffer(_gpu.Device, (long)Math.Max(1, n) * Stride); if (n > 0) buf.Write(cloud.ToArray(), n);
                     _nebBufs[key] = buf; _nebNs[key] = n;
                 }
-                n = _nebNs[key]; if (n == 0) continue;
-                float fade = (float)Math.Max(0, Math.Min(1, (40 - d / R) / 20));   // (coming in from forty of its radii to twenty; the far marker's points stand for it beyond)
+                _nebUsed[key] = _nebFrame; n = _nebNs[key]; if (n == 0) continue;
+                float fade = (float)Math.Max(0, Math.Min(1, (6 - d / R) / 3));   // (coming in from six of its radii to three; the far marker's points stand for it beyond)
                 var m = Mat4.Identity; m.M11 = (float)R; m.M22 = (float)R; m.M33 = (float)R; m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
                 DrawPoints(buf, n, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade * (fk == 6 ? 0.35f : 0.75f));
             }
@@ -4684,7 +4703,7 @@ namespace Universe.Shell
         public void Dispose()
         {
             foreach (var g in _galaxies) if (g.Far != null) g.Far.Dispose(); if (_glowBuf != null) _glowBuf.Dispose();
-            if (_nearBuf != null) _nearBuf.Dispose(); foreach (var g in _galaxies) if (g.Struct != null) g.Struct.Dispose(); foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear();
+            if (_nearBuf != null) _nearBuf.Dispose(); foreach (var g in _galaxies) if (g.Struct != null) g.Struct.Dispose(); foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear(); _nebNs.Clear(); _nebUsed.Clear();
             CloseSystem();
             DropPlanet();
             _hud.Dispose(); _matter.Dispose();

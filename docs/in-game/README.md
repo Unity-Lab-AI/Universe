@@ -43,9 +43,9 @@ A **click**, the **wheel** or a **key** pauses the tour, and a note on screen sa
 | Control | What it does |
 |---|---|
 | **F12** | A screenshot (PNG) |
-| **F9** | Start or stop recording a clip. Every clip is a `.cdf97w`; its kind is chosen under View > Clip format. **The universe itself** (the start): a picture track any video player plays (our own VP9, in our own WebM layout), with the universe inside it, its seed, the camera's track and the scene; opened in this program the universe is made again and the clip flown through it. **Waveforms:** the pictures as CDF 9/7 equations and their metadata, worked out on the graphics card as each frame is drawn, played in this program. While it records a red REC with the clip's length blinks at the top of the screen, as on a camcorder; it stays out of the clip |
+| **F9** | Start or stop recording a clip: a `.cdf97w` in the captures folder. Its **front man** plays in any video player: each frame's CDF 9/7 equations, worked out on the graphics card as the frame is drawn, are solved back into pixels and coded by our own VP9 writer, at the screen's full size, thirty frames a second, every frame kept (while it films, the game waits for the clip, so it may run slower than real time). The **equations** and their metadata ride inside the same file, and this program plays them. While it records a red REC with the clip's length blinks at the top of the screen, as on a camcorder; it stays out of the clip |
 
-Both go in the `captures` folder. On the landing page, tick **Film the tour** to record the whole tour. The clip is a `.cdf97w` that Media Player and other video players play as pictures. Inside it is the universe itself: its seed, the camera's track and the scene. Opened in this program, the universe is made again and the tour flown through it. The **Clips** list plays what you have filmed, and **Open folder** shows where it is.
+Both go in the `captures` folder. On the landing page, tick **Film the tour** to record the whole tour as the same kind of `.cdf97w`. The **Clips** list plays what you have filmed, and **Open folder** shows where it is.
 
 ## On screen
 

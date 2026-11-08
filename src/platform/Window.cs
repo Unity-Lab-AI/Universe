@@ -62,7 +62,7 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220, CmdClipFormatBase = 225;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230;
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
@@ -104,22 +104,7 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING | (Touring ? Win32.MF_CHECKED : 0), (IntPtr)CmdTour, "Panoramic tour (galaxies down to the quarks)\tT");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdElements, "The periodic table (all 118 elements, each as it really is; Escape comes back)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
-            Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (in captures, in the clip format below)\tF9");
-            {
-                // the clip's format: both a .cdf97w; the universe itself (its picture track any video player plays, the universe inside),
-                // or its waveforms (the pictures as CDF 9/7 equations, played by this program)
-                IntPtr fmtMenu = Win32.CreatePopupMenu(); int cf = Universe.Render.ClipWriters.Format;
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 2 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 2), ".cdf97w of the universe itself (its pictures play in any video player; the universe inside plays here)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w of waveforms (the pictures as CDF 9/7 equations: plays in this program)");
-                Win32.AppendMenu(view, Win32.MF_POPUP, fmtMenu, "Clip format");
-            }
-            {
-                // the clip's size against the screen: smaller clips for sharing (a quarter of the pixels is about a quarter of the file)
-                IntPtr clipMenu = Win32.CreatePopupMenu(); int cd = Settings.Get("clip-down", 0);
-                int[] downs = { 0, 1, 2, 4 }; string[] names = { "Auto (full size up to 1920 wide, half above that)", "Full (the screen's size)", "Half (half the width and height: about a quarter of the file)", "Quarter (about a sixteenth of the file)" };
-                for (int i = 0; i < downs.Length; i++) Win32.AppendMenu(clipMenu, Win32.MF_STRING | (cd == downs[i] ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipBase + downs[i]), names[i]);
-                Win32.AppendMenu(view, Win32.MF_POPUP, clipMenu, "Clip size");
-            }
+            Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (a .cdf97w in captures: its front man plays in any video player, its equations inside)	F9");
             IntPtr dragMenu = Win32.CreatePopupMenu();
             for (int i = 1; i <= 10; i++) Win32.AppendMenu(dragMenu, Win32.MF_STRING | (DragSpeed == i ? Win32.MF_CHECKED : 0), (IntPtr)(CmdDragBase + i), i + "x" + (i == 1 ? " (the view moves with the mouse exactly)" : i == 4 ? " (the usual)" : ""));
             Win32.AppendMenu(view, Win32.MF_POPUP, dragMenu, "Drag speed (look and turn)");

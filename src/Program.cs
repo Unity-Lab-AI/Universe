@@ -226,6 +226,7 @@ namespace Universe
             if (testDeep >= 0) deep = new DeepView(gpu, pipeline, content, viewer.TypeOf(testDeep), viewer.NameOf(testDeep), Seed + (ulong)testDeep * 7919UL);
             while (window.Pump())
             {
+                { var fm = rec as Universe.Render.Cdf97wWriter; clock.FixedStep = fm != null && fm.FrontMan ? 1.0 / 30 : 0; if (fm != null && fm.FrontMan) fm.WaitForSlot(() => watchdog.Beat()); }   // (filming: every frame into the clip, the game's clock at a fixed thirty a second)
                 clock.Tick();
                 if (clock.Delta > 2) WriteLog("a frame took " + clock.Delta.ToString("0.0") + " s" + (rec != null ? " (a clip filming)" : "") + (world != null && world.Touring ? " (the tour on)" : "") + (world != null && world.Loading ? " (the universe still being made)" : ""));   // (a breadcrumb for a run that closes on its own)
                 watchdog.Beat();
@@ -285,8 +286,6 @@ namespace Universe
                 else if (cmd == Window.CmdGravity && world != null) { world.ToggleGravity(); menuDirty = true; }
                 else if (cmd == Window.CmdAlwaysDay) { Settings.Set("always-day", !Settings.Get("always-day", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertY) { Settings.Set("invert-up-down", !Settings.Get("invert-up-down", false)); menuDirty = true; }
-                else if (cmd >= Window.CmdClipFormatBase + 1 && cmd <= Window.CmdClipFormatBase + 2) { Settings.Set("clip-format", cmd - Window.CmdClipFormatBase); menuDirty = true; }   // the clip's format: the .cdf97w of the universe itself or of waveforms (takes effect on the next clip)
-                else if (cmd >= Window.CmdClipBase && cmd <= Window.CmdClipBase + 4) { Settings.Set("clip-down", cmd - Window.CmdClipBase); menuDirty = true; }   // the clip's size (takes effect on the next clip)
                 else if (cmd == Window.CmdScaleHud && world != null) { world.ScaleOn = !world.ScaleOn; menuDirty = true; }
                 else if (cmd == Window.CmdClearMarks) { viewer.ClearMarks(); menuDirty = true; }
                 else if (cmd >= Window.CmdKeeperBase && cmd < Window.CmdKeeperBase + 9) { if (style != null) style.ToggleMark(cmd - Window.CmdKeeperBase); else viewer.ToggleMark(cmd - Window.CmdKeeperBase); menuDirty = true; }
@@ -317,7 +316,7 @@ namespace Universe
                 if (clickAt >= 0 && clock.Total >= clickAt) { window.Input.MouseX = (int)(clickX * gpu.Width); window.Input.MouseY = (int)(clickY * gpu.Height); window.Input.LeftClicked = true; clickAt = -1; }
                 window.Input.Glide(clock.Delta, window.Input.IsDown(0x11));      // the wheel glides in smoothly; hold Ctrl: eight times as fast, in every view
                 if (showElements && window.Input.WasPressed(0x1B)) showElements = false;   // Escape: back from the periodic table to the universe, where you were
-                if (world != null && !showElements) { if (clipPlayer != null) { clipPlayer.Before(world, clock.Delta); world.ClipNote = clipPlayer.Note; } if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); if (clipPlayer != null) { clipPlayer.After(world); world.ClipNote = clipPlayer.Note; if (clipPlayer.Finished) { WriteLog("universe clip played to its end (" + clipPlayer.Mismatches + " frames whose scene was not the one recorded)"); clipPlayer = null; world.ClipNote = null; } } var uc = rec as Universe.Render.UniverseClipWriter; if (uc != null && !(recForTour && (world.TourPaused || world.Loading))) uc.Point(world); }   // (the universe clip: the camera's point each frame, no pixels)
+                if (world != null && !showElements) { if (clipPlayer != null) { clipPlayer.Before(world, clock.Delta); world.ClipNote = clipPlayer.Note; } if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); if (clipPlayer != null) { clipPlayer.After(world); world.ClipNote = clipPlayer.Note; if (clipPlayer.Finished) { WriteLog("universe clip played to its end (" + clipPlayer.Mismatches + " frames whose scene was not the one recorded)"); clipPlayer = null; world.ClipNote = null; } } }   // (the universe clip: the camera's point each frame, no pixels)
                 else if (style != null) style.Update(window.Input, clock.Delta, gpu.Width, gpu.Height);
                 else if (microbes != null) microbes.Update(window.Input, clock.Delta);
                 else if (elements != null) elements.Update(window.Input, clock.Delta);
@@ -403,7 +402,7 @@ namespace Universe
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
                     if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
-                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { Universe.Render.ClipWriters.Seed = Seed; Universe.Render.ClipWriters.Tour = "grand-tour"; rec = OpenClip = new Universe.Render.UniverseClipWriter(System.IO.Path.ChangeExtension(recordTour, ".cdf97w"), gpu.Width, gpu.Height); recForTour = true; /* (a filmed tour is always the clip of the universe itself: the seed, the track, the scene; a few megabytes, never pictures; nothing written beside it) */ } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
+                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { Universe.Render.ClipWriters.Seed = Seed; Universe.Render.ClipWriters.Tour = "grand-tour"; rec = OpenClip = Universe.Render.ClipWriters.Open(recordTour, gpu.Width, gpu.Height); recForTour = true; } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
                     if (recForTour && world != null && !world.Touring && !(world.TourPaused && !world.TourFinished)) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
                     if (wantRecord)
                     {
@@ -421,7 +420,7 @@ namespace Universe
                     }
                     { var cr = rec as Universe.Render.ICardRecorder; bool onCard = cr != null && (rec is Universe.Render.Cdf97wWriter && ((Universe.Render.Cdf97wWriter)rec).OnCard); gpu.Recorder = onCard ? cr : null;   // (a .cdf97w worked out on the card inside the frame: the picture is never copied back for it)
                     if (frontman != null && rec == null && !wantShot && frontman.Wants(clock.Total) && !frontWanted) { frontWanted = true; gpu.GrabNext = true; gpu.GrabDown = frontman.Down(gpu.Width); }
-                    if (wantShot || (rec != null && !onCard && (!(rec is Universe.Render.UniverseClipWriter) || ((Universe.Render.UniverseClipWriter)rec).WantsFrame))) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
+                    if (wantShot || (rec != null && !onCard)) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
                     // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
                     gpu.CaptureHere();
                     if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);

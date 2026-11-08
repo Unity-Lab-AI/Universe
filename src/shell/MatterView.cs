@@ -46,9 +46,8 @@ namespace Universe.Shell
         private ulong _seed; private bool _noGrains;
         // in space (a nebula's or cluster's gas) instead of a ground: its kind (0 globular cluster, 1 open cluster, 2 emission
         // nebula, 3 reflection nebula) and how far apart its atoms are (km)
-        /// <summary>Every call that sets the matter's scene, as it is made (the outermost only: a call made inside another is rebuilt
-        /// by replaying that one), with its exact arguments: the universe clip records them (src/render/ClipWriter.cs).</summary>
-        public static Action<string, object[]> Recorded; private static int _recDepth;
+        // (the outermost scene call only: a call made inside another is rebuilt by replaying that one)
+        private static int _recDepth;
         /// <summary>The calls that built the scene now shown, in order (a new ground, gas, plasma, crust or fall starts it afresh): a
         /// clip begun mid-dive starts with these.</summary>
         public static readonly List<KeyValuePair<string, object[]>> Scene = new List<KeyValuePair<string, object[]>>();
@@ -57,7 +56,6 @@ namespace Universe.Shell
             if (_recDepth > 0) return;
             if (root) Scene.Clear();
             Scene.Add(new KeyValuePair<string, object[]>(name, args));
-            if (Recorded != null) Recorded(name, args);
         }
         /// <summary>The matter view's own camera: where it looks (its focus) and where that focus is going.</summary>
         public void WriteFocus(System.IO.BinaryWriter o) { o.Write(_fx); o.Write(_fy); o.Write(_fz); o.Write(_tfx); o.Write(_tfy); o.Write(_tfz); }

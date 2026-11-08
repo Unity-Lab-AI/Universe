@@ -33,7 +33,7 @@ namespace Universe.Platform
         private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14, IdSeed = 15, IdClipFormat = 16;
 
         private static Win32.WndProc _proc; private static bool _registered;
-        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _clipFormat, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
+        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
         private static Choice? _done; private static Action _guide, _alive;
         /// <summary>The tour is to be filmed (a .cdf97w into the captures folder): ticked on the page.</summary>
         public static bool RecordTour;
@@ -73,17 +73,6 @@ namespace Universe.Platform
             Child("BUTTON", "Begin", BS_DEFPUSHBUTTON | WS_TABSTOP, IdBegin, x, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font);
             Child("BUTTON", "Take the tour", WS_TABSTOP, IdTour, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font); y += (int)(48 * s) + (int)(8 * s);
             _record = Child("BUTTON", "Film the tour (a clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small);
-            // the clip's size against the screen (the same choice as View > Clip size in flight): auto, full, half or a quarter
-            Child("STATIC", "Clip size", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
-            _clipSize = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipSize, x + (int)(74 * s), y, (cw - (int)(12 * s)) / 2 - (int)(74 * s), (int)(300 * s), _small);
-            foreach (var nm in new[] { "Auto (full up to 1920 wide, half above)", "Full (the screen's size)", "Half (about a quarter of the file)", "Quarter (about a sixteenth)" }) SendMessage(_clipSize, CB_ADDSTRING, IntPtr.Zero, nm);
-            { int cd = Settings.Get("clip-down", 0); SendMessage(_clipSize, CB_SETCURSEL, (IntPtr)(cd == 1 ? 1 : cd == 2 ? 2 : cd == 4 ? 3 : 0), IntPtr.Zero); }
-            y += row + (int)(10 * s);
-            // the clip's format: both a .cdf97w; the universe itself (its picture track, the seed and the camera's track inside), or its waveforms
-            Child("STATIC", "Clip format", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
-            _clipFormat = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipFormat, x + (int)(74 * s), y, cw - (int)(74 * s), (int)(300 * s), _small);
-            foreach (var nm in new[] { ".cdf97w of the universe itself (its pictures play in any video player; the universe inside plays here)", ".cdf97w of waveforms (the pictures as CDF 9/7 equations: plays here)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
-            SendMessage(_clipFormat, CB_SETCURSEL, (IntPtr)(Universe.Render.ClipWriters.Format == 1 ? 1 : 0), IntPtr.Zero);
             y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
@@ -133,8 +122,6 @@ namespace Universe.Platform
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
             RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
-            Settings.Set("clip-format", (int)SendMessage(_clipFormat, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) == 1 ? 1 : 2);
-            { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 1 : ci == 2 ? 2 : ci == 3 ? 4 : 0); }
             Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;
         }

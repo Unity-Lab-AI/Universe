@@ -259,6 +259,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The tour stuck at 1.5 km over the ground: every zoom off course now turns toward what it flies to and goes on:** (built: DNA-AND DESIGN 715; waits on the test) "it got stuck at 500M i took a screenshot"
 - [x] **MP4 taken out of the program and its docs: every clip a .cdf97w:** (done: DNA-AND DESIGN 716) "thats not our cdf97w file that was suppose to play in any media file and what the fuck is MP4 doing in my shit we dont use other peoples creations this is the 4th time telling you"
 - [ ] **The .cdf97w that plays in any media player: what it is to be:** (asked: DNA-AND DESIGN 716) "thats not our cdf97w file that was suppose to play in any media file and what the fuck is MP4 doing in my shit we dont use other peoples creations this is the 4th time telling you"
+- [~] **The .cdf97w as designed: the equations feed our VP9 encoder, the front man (full 4K, every frame) plays in any player, the equations and metadata inside:** (built: DNA-AND DESIGN 717; waits on the test) "okay now is the correct file name with the correct encoder and frontman and metadata now properly saves clips that can be played on any media player" / "ive already told you the encoder hands the front man what the player needs while the equations feed into the encoder" / "Keep the quality" / "Full 4K" / "2 no drop just make encoder and front man correct this time" / "No"
 
 ---
 

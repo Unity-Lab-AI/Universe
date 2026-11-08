@@ -101,6 +101,9 @@ namespace Universe.Platform
     {
         private readonly long _freq; private long _last; private readonly long _start;
         public double Delta { get; private set; }   // seconds since last Tick
+        /// <summary>When above 0, every Tick moves the game on exactly this much (a clip being filmed: thirty frames a second, every
+        /// one of them in the clip, however long each takes to draw and code).</summary>
+        public double FixedStep;
         public double Total { get { long n; Win32.QueryPerformanceCounter(out n); return (n - _start) / (double)_freq; } }
 
         public Clock()
@@ -112,7 +115,7 @@ namespace Universe.Platform
         public void Tick()
         {
             long now; Win32.QueryPerformanceCounter(out now);
-            Delta = Math.Min(0.25, (now - _last) / (double)_freq);
+            Delta = FixedStep > 0 ? FixedStep : Math.Min(0.25, (now - _last) / (double)_freq);
             _last = now;
         }
     }

@@ -574,3 +574,17 @@ The title shows the clip's progress.
 | The test's pictures | about 14 KB a frame |
 | 10 minutes at 1080p, at that rate | about 250 MB |
 
+### The .cdf97w as designed: the equations feed the encoder, the encoder hands the front man to the player (2026-11-08)
+
+- **One kind of clip.** Each frame's CDF 9/7 equations are worked out on the graphics card as the frame is drawn, then solved back into pixels on the card in the same frame. Our own VP9 writer codes those pixels into the front man, the picture track any video player plays. The equations and their metadata ride inside the same file, our own WebM, as an attached file.
+- **No frame let go.** While a clip films, the game's clock moves a fixed thirty frames a second, and the game waits for the clip when the card or the coders are behind.
+- **VP9 writer, version 2:** each frame is cut into as many tile columns as VP9 allows, and each is coded on its own core. The forward transform is separable, and nothing is made anew per block.
+
+| VP9 writer | A frame |
+|---|---|
+| 1080p, version 1 | about 150 ms |
+| 1080p, version 2 | about 17 ms |
+| 4K, version 2 | about 40 ms |
+
+- **Checked:** 120 frames filmed. Inside were 120 frames of equations and 120 pictures in the front man. Windows read all 120, the last at 3966 ms.
+

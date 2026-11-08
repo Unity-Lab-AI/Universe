@@ -213,9 +213,9 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
-| **F12 · F9** | A screenshot · start or stop a clip. Every clip is a `.cdf97w` (Clip format on the landing page or under View): the universe itself, a picture track any video player plays with the universe inside it, flown again here; or its waveforms, the pictures as CDF 9/7 equations, played here |
+| **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w` whose front man plays in any video player (the equations solved back into pixels and coded by our own VP9 writer, full size, every frame), with the CDF 9/7 equations and their metadata inside, played here |
 
-A `.cdf97w` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`. A waveform clip plays as its pictures. A clip of the universe itself plays as its camera track and scene, and the program flies it in full.
+A `.cdf97w` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`: its front man as video.
 
 The **Time** menu has **Always day**, on to start with; turn it off for true day and night. It also has **Gravity**: turn it off and every body goes straight on at its speed, every star is blown apart by its own pressure, and a galaxy's stars fly off on their tangents. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, the clip's size, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 
@@ -233,7 +233,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
 | **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark, and back out; a star's system with an asteroid of its belt and a comet seen close on the way; about a quarter of an hour in all |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
-| **Film it** | Tick **Film the tour** on the landing page. The clip is a `.cdf97w` that Media Player plays as pictures, with the universe itself inside (its seed, the camera's track and the scene); the **Clips** list flies it again |
+| **Film it** | Tick **Film the tour** on the landing page: the clip is a `.cdf97w` whose front man plays in any video player, its equations inside; the **Clips** list plays them here |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |
 
 ---

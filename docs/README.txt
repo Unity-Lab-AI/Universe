@@ -27,7 +27,7 @@
     Seed ............ type one, press Random, or leave it blank for a new one
     Begin ........... fly it yourself
     Take the tour ... a film of the whole journey
-    Film the tour ... tick it to save the tour as a .cdf97w clip (its pictures play in any video player)
+    Film the tour ... tick it to save the tour as a .cdf97w clip (its front man plays in any video player)
     Clips ........... play what you've filmed, or Open folder to find them
 
   Start page, on the menu bar, brings the landing page back.
@@ -48,7 +48,7 @@
     T ................... the tour; carries a paused tour on
     R ................... starts a paused tour again
     F12 ................. a screenshot (PNG)
-    F9 .................. start or stop a clip (.cdf97w; View > Clip format)
+    F9 .................. start or stop a clip (.cdf97w: its front man plays in any video player)
     Esc ................. close
 
   A click, the wheel or a key pauses the tour, and a note says why.

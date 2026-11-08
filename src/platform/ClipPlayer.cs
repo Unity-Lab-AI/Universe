@@ -23,7 +23,7 @@ namespace Universe.Platform
         private sealed class Frame { public uint Ms; public bool Key; public byte[] Data; }
         private static Win32.WndProc _proc; private static bool _registered, _closed, _paused;
 
-        /// <summary>True for a clip this program plays itself: a .cdf97w.</summary>
+        /// <summary>True for a clip this program plays itself: a .cdf97w (its equations, plain or inside its front man's WebM).</summary>
         public static bool Plays(string path) { return path != null && path.EndsWith(".cdf97w", StringComparison.OrdinalIgnoreCase); }
 
         /// <summary>Plays <paramref name="path"/> until its window is closed; <paramref name="alive"/> is called while it plays.</summary>
@@ -35,6 +35,8 @@ namespace Universe.Platform
                 using (var r = new System.IO.BinaryReader(System.IO.File.OpenRead(path)))
                 {
                     long start = 0, len = r.BaseStream.Length;
+                    // the .cdf97w as our own WebM (its front man any player shows): the equations are the file attached inside it
+                    { var b4 = r.ReadBytes(4); r.BaseStream.Position = 0; if (b4.Length == 4 && b4[0] == 0x1A && b4[1] == 0x45 && b4[2] == 0xDF && b4[3] == 0xA3) { long n; start = WebmFile.FindAttachment(r.BaseStream, Cdf97wWriter.AttachName, out n); if (start < 0) throw new InvalidOperationException("no equations inside this clip"); len = start + n; } }
                     r.BaseStream.Position = start;
                     if (r.ReadUInt32() != Cdf97wCodec.Magic) throw new InvalidOperationException("not a .cdf97w clip");
                     { int ver = r.ReadUInt16(); if (ver == Universe.Render.UniverseClipWriter.Version) throw new InvalidOperationException("this is a clip of the universe itself: play it from the start page's Play, which makes the universe again and flies the clip through it"); if (ver != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)"); }

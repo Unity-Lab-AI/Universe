@@ -305,6 +305,8 @@ void QUANT(uint3 id : SV_DispatchThreadID)
         }
         /// <summary>Lets a ready slot go unread (the packer was behind: that frame is let go, the clip keeps its timing).</summary>
         public void Release(int s) { lock (_downMs) { _downMs[s] = -1; _handed[s] = false; } }
+        /// <summary>True when the next frame has a slot to be worked out into (the one two frames back has been read).</summary>
+        public bool SlotFree { get { lock (_downMs) return _downMs[_slot] < 0; } }
 
         private static IntPtr BlobPtr(IntPtr b) { return Com.Method<BlobPtrFn>(b, 3)(b); }
         private static UIntPtr BlobSize(IntPtr b) { return Com.Method<BlobSizeFn>(b, 4)(b); }

@@ -19,7 +19,7 @@ namespace Universe.Render
         /// times in milliseconds and which are whole, and the clip's length; <paramref name="attachment"/> (null: none) carried as an
         /// attached file named <paramref name="attachName"/> (players pass it by; our own program reads it). The file is written as
         /// it goes, cluster by cluster, the segment's size set at the end.</summary>
-        public static void Write(string path, string codec, byte[] codecPrivate, int w, int h, IList<byte[]> frames, IList<uint> times, IList<bool> keys, uint lengthMs, byte[] attachment = null, string attachName = null, string attachMime = null)
+        public static void Write(string path, string codec, byte[] codecPrivate, int w, int h, IList<byte[]> frames, IList<uint> times, IList<bool> keys, uint lengthMs, byte[] attachment = null, string attachName = null, string attachMime = null, string attachPath = null)
         {
             var ebml = new List<byte>(); UInt(ebml, 0x4286, 1); UInt(ebml, 0x42F7, 1); UInt(ebml, 0x42F2, 4); UInt(ebml, 0x42F3, 8); Str(ebml, 0x4282, "webm"); UInt(ebml, 0x4287, 2); UInt(ebml, 0x4285, 2);
             var head = new List<byte>(); El(head, 0x1A45DFA3, ebml);
@@ -35,14 +35,17 @@ namespace Universe.Render
                 put(head);
                 var sh = new List<byte>(); Id(sh, 0x18538067); put(sh); long sizeAt = f.Position; put(new List<byte>(new byte[8])); long body = f.Position;
                 var top = new List<byte>(); El(top, 0x1549A966, info); El(top, 0x1654AE6B, tracks); put(top);
-                if (attachment != null)
+                if (attachment != null || attachPath != null)
                 {
+                    long attLen = attachment != null ? attachment.Length : new System.IO.FileInfo(attachPath).Length;
                     // the attached file's header, then its bytes straight from the array (a clip's records can be megabytes)
                     var fh = new List<byte>(); Str(fh, 0x466E, attachName ?? "clip"); Str(fh, 0x4660, attachMime ?? "application/octet-stream"); UInt(fh, 0x46AE, 1);
-                    var dataHead = new List<byte>(); Id(dataHead, 0x465C); Size8(dataHead, attachment.Length);
-                    long fileLen = fh.Count + dataHead.Count + attachment.Length;
+                    var dataHead = new List<byte>(); Id(dataHead, 0x465C); Size8(dataHead, attLen);
+                    long fileLen = fh.Count + dataHead.Count + attLen;
                     var ah = new List<byte>(); Id(ah, 0x1941A469); Size8(ah, 2 + 8 + fileLen); Id(ah, 0x61A7); Size8(ah, fileLen); ah.AddRange(fh); ah.AddRange(dataHead);
-                    put(ah); f.Write(attachment, 0, attachment.Length);
+                    put(ah);
+                    if (attachment != null) f.Write(attachment, 0, attachment.Length);
+                    else using (var a = System.IO.File.OpenRead(attachPath)) a.CopyTo(f, 1 << 20);
                 }
                 var cues = new List<byte>();
                 int i0 = 0;

@@ -186,6 +186,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A star whose system is open is the target at its real place and radius, so the zoom ends at its face and the dive comes:** (built: DNA-AND DESIGN 664; waits on the test) "i took some pics when it failed and had nothing in view talking about shit that wasnt happening in view"
 
+- [~] **The tour back to what it was: every chain added without being asked for (the comet's, the giant's, the star's, the neutron star's) out:** (built: DNA-AND DESIGN 665; waits on the test) "okay wtf !!! now u r zooming into the comet, wtf STOP FUCKING DOING SHIT I NEVER FUCKING TOLD YOU TO DO"
+
 ---
 
 ## Pending

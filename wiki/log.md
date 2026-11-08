@@ -73,3 +73,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (nebulae close up as clouds of their own gas): DNA-AND DESIGN 662.
 - 2026-11-07 (the tour: the asteroid seen not dived into, the nebula out): DNA-AND DESIGN 663.
 - 2026-11-07 (a star whose system is open is the target at its real place): DNA-AND DESIGN 664.
+- 2026-11-07 (the tour back to what it was, the unasked chains out): DNA-AND DESIGN 665.

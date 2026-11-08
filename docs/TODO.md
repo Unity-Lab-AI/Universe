@@ -157,6 +157,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A small body a world: its ground made by the same ground system a planet's is, nothing special for rocks:** (built: DNA-AND DESIGN 647; waits on the test) "start it then !!! FUCK!!!!!!!!!! YOU!!!!!!! YOU ARRE WASTING MY TIME!!!!!!! FUCKING DO IT!!!! HJESUS FUCKING CHRIST ALMIGHTY WHAT THE FUCK DO I HAVE TO DO TO GET YOUR ASS CODING"
 
+- [~] **The dive's looks, arcs and orbits three to six seconds each, part turns, no pauses, on every body alike:** (built: DNA-AND DESIGN 648; waits on the test) "and make sure the dip into the astroid is not jerky and quicvk but doesnt linger and rotate full orbits views of shit as that takes to long and no pauses"
+
 ---
 
 ## Pending

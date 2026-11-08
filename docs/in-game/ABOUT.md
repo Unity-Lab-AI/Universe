@@ -15,7 +15,7 @@ A whole universe you can fly through, in one unbroken zoom:
 
 ## A whole universe in under 2 MB
 
-About 100 billion galaxies of about 100 billion stars each, every star with its worlds, every world down to its atoms, and all of it installed in **1.4 MB**: less than one photo from a phone.
+About 100 billion galaxies of about 100 billion stars each, every star with its worlds, every world down to its atoms, and all of it installed in **1.5 MB**: less than one photo from a phone.
 
 It fits because nothing is stored. Everything is worked out live from one number, the **seed**, and a few hundred kilobytes of **templates** (the rules for each kind of galaxy, star and world), only where you are looking. The same seed always gives the same universe, so nothing ever needs saving.
 

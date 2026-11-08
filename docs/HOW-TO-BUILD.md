@@ -39,7 +39,7 @@ What is scratch-made and what comes from Windows, layer by layer. Nothing is dow
 | **Captures** | `PngWriter` (chunks, filters, checksums), `GifWriter` (palette and LZW), `Mp4Writer` (every other frame handed to a sink writer, 30 a second, the encoder set to rate control by quality through its own knobs, so bits go only where the picture has detail; 6 megabits a second the ceiling at 1080p; the clip's size against the screen from View > Clip size: auto, full, half or quarter) | Media Foundation for the H.264 inside an MP4; the framework's Deflate inside a PNG |
 | **Shipping** | `Setup.cs` (the installer wizard, carrying the payload inside itself), `MakeIcons` (the icons drawn by code) | Windows Forms for the wizard's controls |
 
-About 19,600 lines of C# and shader code in 61 files, and about 10,900 lines of templates in 30.
+About 20,500 lines of C# and shader code in 61 files, and about 12,400 lines of templates in 30.
 
 ---
 
@@ -73,7 +73,7 @@ Every warning is an error (`/warnaserror+`), so a build that finishes is clean.
 | `--shots S` | Saves a PNG of the view every S seconds |
 | `--native` | Opens at your screen's full resolution |
 
-The program keeps a short log of its zoom and of the tour's stops and picks at `%TEMP%\universe_zoom.log` (at most 4 MB, then started afresh): what each stop began at, what each pick found or why it found nothing.
+The program keeps a short log of its zoom and of the tour's stops and picks at `%TEMP%\universe_zoom.log` (at most 4 MB, then started afresh): what each stop began at, what each pick found or why it found nothing. Beside the program, `build\last-run.log` keeps the run's seed, how it closed and, if it crashed, where.
 
 Screenshots (**F12**) and clips (**F9**) go in `captures` beside the program.
 
@@ -142,8 +142,8 @@ Be warned before you open it: the code is **dense**. It is readable, but not the
 
 | | |
 |---|---|
-| **What it is like** | About 16,500 lines of code in 61 files. Most lines are ordinary (the middle line is 57 characters), but the hot paths are packed: one line in ten carries three or more statements, one in fourteen runs past 160 characters (the longest past a thousand), names are short, and the three big files are long (`UniverseView` 4,000 lines, `MatterView` 2,100, `PlanetTerrain` 1,560) |
-| **How to read it** | By its comments. Nearly a fifth of all lines are plain English (2,200 comment lines and 1,300 trailing ones): every block says in words what it is about to do and why, with the physics and the numbers. Read the comment, then the statement under it, and the long lines unpack |
+| **What it is like** | About 20,500 lines in 61 files. Most lines are ordinary (the middle line is 57 characters), but the hot paths are packed: one line in ten carries three or more statements, one in fourteen runs past 160 characters (the longest past a thousand), names are short, and the three big files are long (`UniverseView` 4,600 lines, `MatterView` 2,300, `PlanetTerrain` 1,570) |
+| **How to read it** | By its comments. Nearly a fifth of all lines are plain English (2,400 comment lines and 1,400 trailing ones): every block says in words what it is about to do and why, with the physics and the numbers. Read the comment, then the statement under it, and the long lines unpack |
 | **Where it is densest** | The per-pixel and per-frame work: the shaders (HLSL inside `Pipeline.cs` and `MeshPipeline.cs`), the camera and tour (`UniverseView`), the matter at its real sizes (`MatterView`), the ground (`PlanetTerrain`) |
 | **Where it is easiest** | The content (`content/`: every template is a few plain lines), the generators' entries, `Physics`, `Stats`, `Settings`, the writers (`PngWriter`, `GifWriter`) |
 | **The rule it follows** | Everything is said once, in English, next to the code that does it. Nothing is left for a reader to guess at; but nothing is spread out either |

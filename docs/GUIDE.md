@@ -280,7 +280,7 @@ range-fm: 2.6
 
 Make the strong force reach further and nuclei pack differently. Change gravity's pull and every escape speed, pull and black-hole horizon follows. These are the same numbers physics textbooks use; changing them is how you build a universe where the laws are different.
 
-> **Still to come:** gravity shaping orbits moment by moment (today orbits follow Kepler's law exactly), decay happening before your eyes (today each nucleus says how it would decay), and the fields particles are waves in.
+> **Still to come:** gravity shaping orbits moment by moment (today orbits follow Kepler's law exactly), and the fields particles are waves in.
 
 ---
 
@@ -319,6 +319,8 @@ Add a mineral, then put it in a ground's mix, and its grains appear on every wor
 
 An asteroid's kind lives in `content/small-bodies.unt` (`@asteroid` with `mix`, `makeup`, `density`, `albedo` and `belt-share`; its mix's `vary` in `content/minerals.unt` gives each body its own shares of the kind's minerals, scattered by its seed, its share at the belt's inner edge .. outer edge; the belt draws each asteroid's kind by these at its place), a Kuiper body's and a comet's in the same file, a rogue planet's in `content/planets.unt`. Each `mix` is a ground in `content/minerals.unt` (`@mix`), and the card works the elements and traces out from the minerals' own atoms and `trace` lines. A star's `makeup` (`content/stars.unt`, by count of atoms) is what its card gives and what its plasma is made of when you dive into it; `makeup-note` is what the card says of it.
 
+Where each kind of small body lives and how many are made is `content/bodies.unt` (`@place`). Its `size-km` as a range `lo..hi` gives each body its own size, drawn by `size-power` (higher: more of them small), and `round-above-km` is the size gravity has pulled a body round at; below it a body is lumpy and stretched, the smallest the most. Every small body is a world like any: within forty of its radii its ground is made as a planet's is, with its own relief, minerals and grains (`@terrain asteroid` in `content/terrain.unt`, its `relief-of-radius`), and it is landed on and zoomed into the same way.
+
 ### Supernovae
 
 `content/physics.unt` `@law supernova` holds the rate (per century, for a galaxy of a hundred billion stars), the free-expansion years, the remnant years and the neutron-star mass limit; each `@supernova` kind has its `share`, `peak-sol`, `rise-days`, `plateau-days`, `halving-days`, `tail-share`, `peak-k`, `ejecta-km-s`, `colour` and what it `leaves` (`core`, `nothing` or `magnetar`). Every galaxy's supernovae follow from these, its seed and the game's clock.
@@ -346,7 +348,7 @@ caption: Across the universe, straight to one far away
 
 | `do:` | What the camera does |
 |---|---|
-| `pick` | Chooses what to look at: `start-galaxy`; `far-galaxy` (with `far-ly: 1e9..5e9`, a true crossing: a galaxy that far ahead, made from its own region before you set off, one whose heart is feeding when there is one); `black-hole` (a feeding one before a quiet one); `star`; `planet` (never a world that is all sea); `land` (a spot of dry land under you, to come down on); `asteroid`, `comet`, `supernova`, `grain`, `spot`, `atom`, `bonded-atom`, `electron`, `nucleus`, `proton`, `quark` and more, or `none`. A pick looks for a few seconds; if it finds nothing (a system with no belt, say) every stop up to the next pick is skipped, so a caption never tells of what is not in view |
+| `pick` | Chooses what to look at: `start-galaxy`; `far-galaxy` (with `far-ly: 1e9..5e9`, a true crossing: a galaxy that far ahead, made from its own region before you set off, one whose heart is feeding when there is one); `black-hole` (a feeding one before a quiet one); `star`; `planet` (never a world that is all sea); `land` (a spot of dry land under you, to come down on); `asteroid`, `comet`, `giant` (a gas or ice giant of the system), `neutron` (the nearest neutron star), `nebula` (the nearest nebula of the galaxy), `supernova`, `grain`, `spot`, `atom`, `bonded-atom`, `electron`, `nucleus`, `proton`, `quark` and more, or `none`. A pick looks for a few seconds; if it finds nothing (a system with no belt, say) every stop up to the next pick is skipped, so a caption never tells of what is not in view |
 | `shot` | A framed film shot round what is picked (a small body is framed from its lit side: the sweep carries the camera round to it; at a black hole the frame is the disc's own plane): `to-radii` or `to-km` (how far), `sweep` (degrees round), `rise` (degrees up), `max-rate` (how fast the scale may change, tenfolds a second: on the way in to the subject, and on the way out from whatever was in view where the shot began, so an asteroid you were beside pulls away smoothly on the way to a comet, never left in a frame) |
 | `zoom` | A straight push in or pull out, `until-km`; `through: yes` flies on through without slowing into the next stop; `pan` turns slowly round what it flies to as it goes; `out: yes` for a pull out that ends once back out of the matter (a body's ground, a black hole) into space |
 | `orbit`, `look`, `arc`, `fly`, `glide` | Circle, look round, dolly while circling, fly forward, skim over the land |

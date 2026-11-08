@@ -10,9 +10,9 @@
   <a href="https://git.unityailab.com/GFourteen/Universe/releases" title="The same release on Unity AI Lab Git"><b>Unity AI Lab Git</b></a>
 </p>
 
-> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.7 MB, from GitHub")** (0.7 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.4 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
+> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.7 MB, from GitHub")** (0.7 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.5 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
 
-<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.4 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
+<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.5 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
 <p align="center">
   <a href="docs/COMPARED.md" title="Size, scope and performance against the other universe programs">Against the field</a>
@@ -44,7 +44,7 @@ Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and o
 | **Over a world** | Seas, mountains, clouds, ice caps, volcanoes, rings |
 | **Under the sea** | Down through the water, the light dying with depth, to the bed and its silt |
 | **On the ground** | Stones, then grains, then the steps of a crystal's face |
-| **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them; a star's layers from its photosphere down to its core, each its own plasma |
+| **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them; a star's layers from its photosphere down to its core, each its own plasma; a giant's core, a neutron star's crust, a nebula's gas |
 
 Straight from the grand tour, as the program records it (the frame counter and the card are its own):
 
@@ -99,10 +99,10 @@ Rename it, swap the icon, change the content, and `release.cmd` makes your insta
 
 | | |
 |---|---|
-| **Download** | 0.68 MB installer |
-| **The program** | 1.07 MB |
-| **Every template** | 0.29 MB of plain text |
-| **Everything installed** | 1.4 MB (2.1 MB with the uninstaller) |
+| **Download** | 0.72 MB installer |
+| **The program** | 1.14 MB |
+| **Every template** | 0.32 MB of plain text |
+| **Everything installed** | 1.5 MB (2.3 MB with the uninstaller) |
 | **What it holds** | About 100 billion galaxies of about 100 billion stars each: some 10²² stars, every one with its own worlds, and every world down to its grains and their atoms |
 
 That's less than one photo from a phone. It fits because **nothing in it is stored. Everything is grown.**
@@ -115,7 +115,7 @@ That's less than one photo from a phone. It fits because **nothing in it is stor
 | **Only what you can see** | Galaxies are made in the regions round you, stars in the cubes round you, ground in pieces finer the closer you are, atoms round the point you dive into. What you leave behind is let go, and made again if you return |
 | **The graphics card does the work** | The fine detail, the stars' colours, the web of galaxies' light are worked out on the card for each pixel, every frame, instead of being loaded from disk |
 
-So the 1.4 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
+So the 1.5 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
 
 ### Against the field
 
@@ -164,7 +164,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **Our own formats** | The content format, the wavelet engine, the icon drawer, the installer, the document viewer, the PNG and GIF writers: ours |
 | **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, Media Foundation to pack a clip as MP4, the framework's Deflate inside a PNG. Nothing from anywhere else |
 
-About 19,600 lines of C# and shader code in 61 files, and about 10,900 lines of templates in 30. That is the whole thing.
+About 20,500 lines of C# and shader code in 61 files, and about 12,400 lines of templates in 30. That is the whole thing.
 
 ---
 
@@ -189,10 +189,10 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **Worlds of every kind** | Temperate, ocean, desert, lava and ice worlds, gas giants, ice giants and hot Jupiters. Some have **rings**. Those that orbit close to their star are **tidally locked**: one face always toward it, a day as long as a year |
 | **Moons** | Worlds in their own right: mostly airless rock or ice, now and then an ocean, a lava world or one with air |
 | **Orbits** | Never perfect circles: every orbit an ellipse, most gently oval, some long and wild, each body fastest at its closest point |
-| **Comets** | A dark nucleus a few km across in a glowing coma up to a million km wide, an ion tail straight from the star and a curved dust tail, tens of millions of km long: seen right across their system |
-| **Asteroids** | Lumpy, cratered rock in a star's belts, every one on its own orbit round its star by Kepler's law (the comets on long ellipses, sweeping in close and far out; the belts' haze turning at its own rate), each of a real kind by its place in the belt (stony, carbon-rich, metal, enstatite, basalt, dark and icy), and each body's own shares of its kind's minerals, no two the same; its card gives its minerals, its elements down to the traces, and where each element was forged (the big bang, dying stars, exploding massive stars and white dwarfs, merging neutron stars); all of it under the zoom |
+| **Comets** | A dark nucleus from a hundred metres to tens of km across in a glowing coma up to a million km wide, an ion tail straight from the star and a curved dust tail, tens of millions of km long: seen right across their system |
+| **Asteroids** | Lumpy, cratered rock in a star's belts, every one its own size, from tens of metres to hundreds of km across, and its own shape (the smaller the lumpier, round only once gravity has pulled it so), every one on its own orbit round its star by Kepler's law (the comets on long ellipses, sweeping in close and far out; the belts' haze turning at its own rate), each of a real kind by its place in the belt (stony, carbon-rich, metal, enstatite, basalt, dark and icy), and each body's own shares of its kind's minerals, no two the same; its card gives its minerals, its elements down to the traces, and where each element was forged (the big bang, dying stars, exploding massive stars and white dwarfs, merging neutron stars); and each is a world like any: landed on, its ground, grains and atoms zoomed into the same way |
 | **Wanderers** | Neutron stars and rogue planets drifting between the stars, a neutron star's crust of iron nuclei dived into |
-| **Supernovae** | Every galaxy's own, two to five a century, of every real kind and in every stage, as bright as physics says from where you are: up close a fireball ten billion km across in the colour of its heat, then a shell standing for a hundred thousand years with the neutron star, black hole or magnetar born at its middle; the star that died is gone with its worlds, and its neighbours are scorched |
+| **Supernovae** | Every galaxy's own, two to five a century, of every real kind and in every stage, as bright as physics says from where you are: up close a fireball ten billion km across in the colour of its heat inside the ballooning cloud of its flung matter, then a shell standing for a hundred thousand years with the neutron star, black hole or magnetar born at its middle; the star that died is gone with its worlds, and its neighbours are scorched |
 
 **Dead, but alive.** There's no life yet, but every world runs on its own clock: plates drift, volcanoes erupt, ice ages come and go, and rocks from space leave craters.
 
@@ -228,7 +228,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | **A true crossing** | Billions of light-years, straight to one far galaxy, made from its own place before you set off |
 | **A feeding black hole** | It crosses to a galaxy whose heart is feeding, flies down to it, round its accretion disc and skims it in its own plane, edge-on through the light it bends, in to the shadow at its horizon, and through it: the fall in black down the gravity well itself, looking back at the horizon, on the law's own clock to the singularity at the quarks' size, and back out: with its jets, if it fires them. The disc is gas on its own orbits, the inner ones round fastest, brighter on the side coming at you; stars are swept round the hole on tight ellipses; and a star that came too close is torn into a stream and swallowed |
 | **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
-| **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark; about a quarter of an hour in all |
+| **Every body, down to its quarks** | A nebula's gas, a star's plasma, an asteroid, a comet, a giant down through its clouds to its core, a world's seas, land and ground, and a neutron star's crust: each on down through its grains or its gas, the crystal's lattice, one atom, its electrons, its nucleus and a quark, and back out; about half an hour in all |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
 | **Film it** | Tick **Film the tour** on the landing page; the **Clips** list plays them back |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |

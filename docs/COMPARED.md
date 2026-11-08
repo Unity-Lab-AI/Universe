@@ -24,7 +24,7 @@
 
 | | On disk | What it holds | How |
 |---|---|---|---|
-| **Universe** | **1.4 MB** installed (0.58 MB zipped; 0.68 MB installer) | About 10²² stars in about 100 billion galaxies, every world down to its grains, atoms and quarks, and on below them, in one unbroken zoom | Everything grown from one seed and 0.29 MB of templates; no stored art, no sound |
+| **Universe** | **1.5 MB** installed (0.61 MB zipped; 0.72 MB installer) | About 10²² stars in about 100 billion galaxies, every world down to its grains, atoms and quarks, and on below them, in one unbroken zoom | Everything grown from one seed and 0.32 MB of templates; no stored art, no sound |
 | [Noctis IV](https://archive.org/details/msdos_noctis_shareware "Noctis IV on the Internet Archive") (2002) | About 1 to 5 MB | One galaxy of about 78 billion stars, with planets to walk on | Grown from a seed, by one person, for DOS |
 | [Elite](https://www.theregister.com/2024/01/18/elite_game_retro/ "Elite at 40, The Register") (1984) | 22 KB | Eight galaxies of 256 planets | Grown from a seed: the first game to do it |
 | [.kkrieger](https://en.wikipedia.org/wiki/.kkrieger ".kkrieger on Wikipedia") (2004) | 96 KB | One shooter level, about ten minutes of play (not a universe: the famous size benchmark) | Textures, models and music grown at start-up |
@@ -61,7 +61,7 @@ Universe has every row. Where another has it too, its tick says so; where it has
 | Templates: change the worlds, stars and laws without code | ✓ | ✓ addons | — | — | — | ✓ catalogues | ✓ Lua | ✓ source | — |
 | Everything grown from one seed: no stored art | ✓ | — | — | — | — | — | — | ✓ | ✓ |
 | Open source, free | ✓ MIT | — | — | — | — | ✓ | ✓ | ✓ source released | — |
-| An installer under 1 MB | ✓ 0.68 MB | — | — | — | — | — | — | ✓ | ✓ |
+| An installer under 1 MB | ✓ 0.72 MB | — | — | — | — | — | — | ✓ | ✓ |
 
 ---
 
@@ -88,7 +88,7 @@ What they carry that Universe does not, yet.
 
 | | Needs | Notes |
 |---|---|---|
-| **Universe** | Windows 10 or 11, any Direct3D 12 card (on Linux through Wine, with the script in the zip). No install size to speak of (1.4 MB), no download beyond the 0.68 MB installer | Every pixel is worked out on the card from equations, so the card does the work; a card with little memory starts at a lower render scale by itself, and **View > GPU use** holds the card at the share you choose |
+| **Universe** | Windows 10 or 11, any Direct3D 12 card (on Linux through Wine, with the script in the zip). No install size to speak of (1.5 MB), no download beyond the 0.72 MB installer | Every pixel is worked out on the card from equations, so the card does the work; a card with little memory starts at a lower render scale by itself, and **View > GPU use** holds the card at the share you choose |
 | [SpaceEngine](https://store.steampowered.com/app/314650/SpaceEngine/ "SpaceEngine on Steam") | GTX 1050 Ti or RX 460 with 3 GB of card memory, 6 GB of RAM, 4 GB of disk (recommended: GTX 1060, 8 GB, 50 GB) | The nearest in scope: galaxies to a world's ground, with textures for the real worlds |
 | [Universe Sandbox](https://universesandbox.com/faq/ "Universe Sandbox FAQ") | A Direct3D 12 card with 4 GB of card memory, 4 GB of RAM, 4 GB of disk | Simulates a few hundred bodies at once, not a universe |
 | [Elite Dangerous](https://www.pcgamesn.com/elite-dangerous/system-requirements "Elite Dangerous system requirements, PCGamesN") | GTX 470 or R7 240, 6 GB of RAM, 25 GB of disk; Odyssey: GTX 780 with 3 GB, 8 GB of RAM, 75 GB | A full game with ships, trade, missions and sound |

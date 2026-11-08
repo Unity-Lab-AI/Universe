@@ -14,7 +14,7 @@
   plain text in the content folder. Change them, add your own, and build
   universes for your own games and simulations.
 
-  Built from nothing: no engine, no libraries, no art, 1.4 MB installed,
+  Built from nothing: no engine, no libraries, no art, 1.5 MB installed,
   MIT licensed. Take it for any project that needs a universe.
 
 
@@ -40,7 +40,7 @@
     Mouse wheel ......... fly toward what the mouse points at
     Ctrl + wheel ........ eight times as fast
     W A S D, Q / E ...... fly; hold Shift for four times as fast
-    Left click .......... pick a galaxy, star, world, grain or atom
+    Left click .......... pick a galaxy, star, world, spot, grain or atom
     Right click ......... let go of what you picked
     Left drag ........... circle round what you picked, or look around
     Space ............... pause time         , and .   slower and faster

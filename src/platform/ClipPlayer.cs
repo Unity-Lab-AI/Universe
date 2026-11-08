@@ -23,8 +23,8 @@ namespace Universe.Platform
         private sealed class Frame { public uint Ms; public bool Key; public byte[] Data; }
         private static Win32.WndProc _proc; private static bool _registered, _closed, _paused;
 
-        /// <summary>True for a clip this program plays itself: a .cdf97w (its equations, plain or inside its front man's WebM).</summary>
-        public static bool Plays(string path) { return path != null && path.EndsWith(".cdf97w", StringComparison.OrdinalIgnoreCase); }
+        /// <summary>True for a clip this program plays itself: a .cdf97w or .cdf97w.webm (its equations, plain or inside its front man's WebM).</summary>
+        public static bool Plays(string path) { return path != null && (path.EndsWith(".cdf97w", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".cdf97w.webm", StringComparison.OrdinalIgnoreCase)); }
 
         /// <summary>Plays <paramref name="path"/> until its window is closed; <paramref name="alive"/> is called while it plays.</summary>
         public static void Play(IntPtr owner, string path, Action alive)

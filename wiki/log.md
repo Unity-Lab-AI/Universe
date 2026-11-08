@@ -132,3 +132,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the clip held under 850 MB): DNA-AND DESIGN 722.
 - 2026-11-08 (the tour's zooms fly along the view): DNA-AND DESIGN 723.
 - 2026-11-08 (the pull-out looks down): DNA-AND DESIGN 724.
+- 2026-11-08 (clips named name.cdf97w.webm, shown as video in Discord and every player): DESIGN 725.

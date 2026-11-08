@@ -144,7 +144,7 @@ namespace Universe.Platform
             {
                 if (System.IO.Directory.Exists(Captures))
                 {
-                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.cdf97w"), System.IO.Directory.GetFiles(Captures, "*.cdf97u"))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
+                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.Linq.Enumerable.Where(System.IO.Directory.GetFiles(Captures, "*.cdf97w*"), Universe.Platform.ClipPlayer.Plays), System.IO.Directory.GetFiles(Captures, "*.cdf97u"))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
                 }
             }
             catch { }

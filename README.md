@@ -213,7 +213,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
-| **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w` whose front man plays in any video player (Clip size: Full, 4K on a 4K screen, or Half or Quarter; under 850 MB for ten minutes at 4K), with the universe's own equations inside (the seed, the camera's track, the scene), flown again here |
+| **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w.webm` whose front man plays in any video player (Clip size: Full, 4K on a 4K screen, or Half or Quarter; under 850 MB for ten minutes at 4K), with the universe's own equations inside (the seed, the camera's track, the scene), flown again here |
 
 A `.cdf97w` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`: its front man as video.
 
@@ -233,7 +233,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
 | **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark, and back out; a star's system with an asteroid of its belt and a comet seen close on the way; about a quarter of an hour in all |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
-| **Film it** | Tick **Film the tour** on the landing page: the clip is a `.cdf97w` whose front man plays in any video player, the universe's equations inside; the **Clips** list flies it again here |
+| **Film it** | Tick **Film the tour** on the landing page: the clip is a `.cdf97w.webm` whose front man plays in any video player, the universe's equations inside; the **Clips** list flies it again here |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |
 
 ---

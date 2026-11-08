@@ -34,7 +34,7 @@ namespace Universe.Render
         /// <summary>The clip's size against the screen (View > Clip size, or the start page): 1 full (4K on a 4K screen), 2 half, 4 a quarter.</summary>
         public static int Down { get { int d = Universe.Platform.Settings.Get("clip-down", 1); return d == 2 || d == 4 ? d : 1; } }
         /// <summary>Every clip is a .cdf97w: its front man any video player plays, the universe's own equations inside.</summary>
-        public static string Extension { get { return ".cdf97w"; } }
+        public static string Extension { get { return ".cdf97w.webm"; } }   // (.webm last: Discord, browsers and every player show it as video; our program still flies it from the equations inside)
         /// <summary>The graphics card the .cdf97w's wavelet runs on (set once the renderer is made; none: the processor).</summary>
         public static IntPtr Device;
         /// <summary>The universe's seed and the tour being filmed, for a clip's metadata (null: none).</summary>

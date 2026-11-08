@@ -312,3 +312,4 @@ Reviewed: today's changes in `src/shell/UniverseView.cs`, `src/shell/MatterView.
 ## TOMBSTONES
 
 _(none)_
+- [~] **Clips named name.cdf97w.webm: shown as video in Discord and every player, still flown again here from the equations inside; the cap kept at 850 MB, under Discord's 1 GB:** (built: DESIGN 725; waits on the test) "the following file extension cdf97w is not recognized by windows media player legacy" / "but how does listing it get it to display on discrod when sharing clips" / asked how clips should be named: "name.cdf97w.webm (Recommended)" / asked which size a shared clip should fit: "discord posts are 1g now"

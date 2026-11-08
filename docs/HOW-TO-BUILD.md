@@ -69,7 +69,7 @@ Every warning is an error (`/warnaserror+`), so a build that finishes is clean.
 | *(none)* | Opens on the landing page: the seed, Begin, the tour, the settings, the guide |
 | `--seed N` | Opens the universe of that seed again |
 | `--tour grand-tour` | Flies the guided tour (any tour in `content/tours/`) |
-| `--record clip.cdf97w` | With `--tour`, films the whole tour as a `.cdf97w` |
+| `--record clip.cdf97w` | With `--tour`, films the whole tour as a `.cdf97w.webm` |
 | `--shots S` | Saves a PNG of the view every S seconds |
 | `--native` | Opens at your screen's full resolution |
 

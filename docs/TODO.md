@@ -263,6 +263,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The front man's stars blocky (quality 120): now at 30, the stars points of light:** (built: DNA-AND DESIGN 718; waits on the test) "i dont know what u did to my application but its shit now and is all blocky and pixellly like its runing in 100x100" / "i cant see stars its just pixels now not points of light i thiink u got rid of my 4k option"
 - [~] **The .cdf97w: the front man under 850 MB for 10 minutes at 4K, the universe's own equations inside:** (built: DNA-AND DESIGN 719; waits on the test) "wtf are we going in reverse it used to be like 500mb for 10min 4k now its fucking maxing itout weell over 1Gb wher 850 was set max" / "Yes, universe equations (Recommended)"
 - [x] **The simulation running inside a player: probed (needs a machine-wide plug-in, administrator rights); not built, the front man kept:** (decided: DNA-AND DESIGN 720) "can we just make the simulation run in a player or not possible" / "do it" / "No, keep the front man"
+- [~] **The clip size dropdown back: Full (4K on a 4K screen), Half, Quarter:** (built: DNA-AND DESIGN 721; waits on the test) "still no 4k option dropdown wi"
 
 ---
 

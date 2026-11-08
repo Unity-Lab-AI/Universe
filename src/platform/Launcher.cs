@@ -33,7 +33,7 @@ namespace Universe.Platform
         private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14, IdSeed = 15, IdClipFormat = 16;
 
         private static Win32.WndProc _proc; private static bool _registered;
-        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
+        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
         private static Choice? _done; private static Action _guide, _alive;
         /// <summary>The tour is to be filmed (a .cdf97w into the captures folder): ticked on the page.</summary>
         public static bool RecordTour;
@@ -73,6 +73,11 @@ namespace Universe.Platform
             Child("BUTTON", "Begin", BS_DEFPUSHBUTTON | WS_TABSTOP, IdBegin, x, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font);
             Child("BUTTON", "Take the tour", WS_TABSTOP, IdTour, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font); y += (int)(48 * s) + (int)(8 * s);
             _record = Child("BUTTON", "Film the tour (a clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small);
+            // the clip's size against the screen (the same choice as View > Clip size in flight): full (4K on a 4K screen), half or a quarter
+            Child("STATIC", "Clip size", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
+            _clipSize = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipSize, x + (int)(74 * s), y, (cw - (int)(12 * s)) / 2 - (int)(74 * s), (int)(300 * s), _small);
+            foreach (var nm in new[] { "Full: the screen's size (4K on a 4K screen)", "Half: half the width and height (about a quarter of the pixels)", "Quarter: a quarter each way (about a sixteenth)" }) SendMessage(_clipSize, CB_ADDSTRING, IntPtr.Zero, nm);
+            { int cd = Universe.Render.ClipWriters.Down; SendMessage(_clipSize, CB_SETCURSEL, (IntPtr)(cd == 2 ? 1 : cd == 4 ? 2 : 0), IntPtr.Zero); }
             y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
@@ -121,7 +126,7 @@ namespace Universe.Platform
             Settings.Set("show-stats", SendMessage(_stats, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
-            RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
+            RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour); { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 2 : ci == 2 ? 4 : 1); }
             Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;
         }

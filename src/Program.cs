@@ -286,6 +286,7 @@ namespace Universe
                 else if (cmd == Window.CmdGravity && world != null) { world.ToggleGravity(); menuDirty = true; }
                 else if (cmd == Window.CmdAlwaysDay) { Settings.Set("always-day", !Settings.Get("always-day", true)); menuDirty = true; }
                 else if (cmd == Window.CmdInvertY) { Settings.Set("invert-up-down", !Settings.Get("invert-up-down", false)); menuDirty = true; }
+                else if (cmd >= Window.CmdClipBase + 1 && cmd <= Window.CmdClipBase + 4) { Settings.Set("clip-down", cmd - Window.CmdClipBase); menuDirty = true; }   // the clip's size (takes effect on the next clip)
                 else if (cmd == Window.CmdScaleHud && world != null) { world.ScaleOn = !world.ScaleOn; menuDirty = true; }
                 else if (cmd == Window.CmdClearMarks) { viewer.ClearMarks(); menuDirty = true; }
                 else if (cmd >= Window.CmdKeeperBase && cmd < Window.CmdKeeperBase + 9) { if (style != null) style.ToggleMark(cmd - Window.CmdKeeperBase); else viewer.ToggleMark(cmd - Window.CmdKeeperBase); menuDirty = true; }

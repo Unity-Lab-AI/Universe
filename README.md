@@ -213,7 +213,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
-| **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w` whose front man plays in any video player (under 850 MB for ten minutes at 4K), with the universe's own equations inside (the seed, the camera's track, the scene), flown again here |
+| **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w` whose front man plays in any video player (Clip size: Full, 4K on a 4K screen, or Half or Quarter; under 850 MB for ten minutes at 4K), with the universe's own equations inside (the seed, the camera's track, the scene), flown again here |
 
 A `.cdf97w` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`: its front man as video.
 

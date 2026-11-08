@@ -31,6 +31,8 @@ namespace Universe.Render
             }
             catch { return false; }
         }
+        /// <summary>The clip's size against the screen (View > Clip size, or the start page): 1 full (4K on a 4K screen), 2 half, 4 a quarter.</summary>
+        public static int Down { get { int d = Universe.Platform.Settings.Get("clip-down", 1); return d == 2 || d == 4 ? d : 1; } }
         /// <summary>Every clip is a .cdf97w: its front man any video player plays, the universe's own equations inside.</summary>
         public static string Extension { get { return ".cdf97w"; } }
         /// <summary>The graphics card the .cdf97w's wavelet runs on (set once the renderer is made; none: the processor).</summary>
@@ -148,7 +150,7 @@ namespace Universe.Render
         {
             Path = path; Down = 1;
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
-            if (screenW > 0 && screenH > 0) _video = new Vp9Track(screenW, screenH, 30, true, Vp9Track.CapBytesPerSecond);   // (the front man: the screen's full size, every frame, held under the cap)
+            if (screenW > 0 && screenH > 0) { Down = ClipWriters.Down; _video = new Vp9Track(screenW / Down, screenH / Down, 30, true, Vp9Track.CapBytesPerSecond); }   // (the front man: the size chosen, full by default, every frame, held under the cap)
             _part = _video != null ? path + ".part" : path;                               // (the records gathered beside it while filming, then carried inside)
             _file = new System.IO.FileStream(_part, System.IO.FileMode.Create, System.IO.FileAccess.Write);
             var h = new System.IO.BinaryWriter(_file);

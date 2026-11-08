@@ -62,7 +62,7 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230;
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220;   // clip size d (1 full, 2 half, 4 quarter) is CmdClipBase + d
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
@@ -105,6 +105,13 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdElements, "The periodic table (all 118 elements, each as it really is; Escape comes back)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
             Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (a .cdf97w in captures: its front man plays in any video player, its equations inside)	F9");
+            {
+                // the clip's size against the screen: full (4K on a 4K screen), half or a quarter (a quarter of the pixels, about a quarter of the file)
+                IntPtr clipMenu = Win32.CreatePopupMenu(); int cd = Universe.Render.ClipWriters.Down;
+                int[] downs = { 1, 2, 4 }; string[] names = new[] { "Full: the screen's size (4K on a 4K screen)", "Half: half the width and height (about a quarter of the pixels)", "Quarter: a quarter each way (about a sixteenth)" };
+                for (int i = 0; i < downs.Length; i++) Win32.AppendMenu(clipMenu, Win32.MF_STRING | (cd == downs[i] ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipBase + downs[i]), names[i]);
+                Win32.AppendMenu(view, Win32.MF_POPUP, clipMenu, "Clip size");
+            }
             IntPtr dragMenu = Win32.CreatePopupMenu();
             for (int i = 1; i <= 10; i++) Win32.AppendMenu(dragMenu, Win32.MF_STRING | (DragSpeed == i ? Win32.MF_CHECKED : 0), (IntPtr)(CmdDragBase + i), i + "x" + (i == 1 ? " (the view moves with the mouse exactly)" : i == 4 ? " (the usual)" : ""));
             Win32.AppendMenu(view, Win32.MF_POPUP, dragMenu, "Drag speed (look and turn)");

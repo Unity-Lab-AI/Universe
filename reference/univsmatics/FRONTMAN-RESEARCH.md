@@ -541,3 +541,10 @@ The title shows the clip's progress.
 | Our AV1 | 429 KB |
 | Our H.264 | 576 KB |
 
+### The player for the web and a Discord Activity (2026-11-08)
+
+- **Our own page** (`web/index.html`, `web/player.js`) plays a `.cdf97w` in a browser, or inside a Discord call as an Activity.
+- **A waveform clip** plays as its pictures. A worker thread unpacks the terms with the program's own range decoder and odds. The graphics card (WebGL 2) turns them into values, runs the inverse dyadic CDF 9/7 and converts the colour. The weights come from the clip's metadata.
+- **Checked against our C# decode** on a clip the program's own coder made from the filmed frames. Every term of all 8 frames was identical. The last frame, rebuilt in the page's pass order, was identical pixel for pixel.
+- **A clip of the universe itself** holds no pixels. The page plays its track: the camera's path, its scale, the scene and the calls. The universe itself is made again from the seed by the program.
+

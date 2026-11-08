@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- DNA-AND · web · our own .cdf97w player, every line ours: a page that plays a clip of the universe's equations in a browser or
+     as a Discord Activity (the page Discord shows in a call). A waveform clip is solved back into its pictures here (its terms
+     decoded on the processor, the inverse CDF 9/7 and the colour on the graphics card through WebGL 2). A clip of the universe
+     itself is the seed, the camera's track and the scene's calls: the page plays the track; the universe is made again from the
+     seed by the program itself. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DNA-AND · .cdf97w player</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05060a; color: #d8dbe6; font: 14px/1.4 system-ui, sans-serif; }
+  #bar { position: fixed; left: 0; right: 0; top: 0; padding: 8px 12px; background: rgba(10, 12, 20, 0.85); display: flex; gap: 12px; align-items: center; z-index: 2; }
+  #bar button, #bar label { background: #1b2033; color: #d8dbe6; border: 1px solid #333a55; border-radius: 4px; padding: 4px 10px; cursor: pointer; }
+  #bar input[type=file] { display: none; }
+  #note { opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  #view { position: fixed; left: 0; right: 0; top: 44px; bottom: 34px; display: flex; align-items: center; justify-content: center; }
+  canvas { max-width: 100%; max-height: 100%; image-rendering: auto; }
+  #seek { position: fixed; left: 12px; right: 12px; bottom: 8px; }
+  #drop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(40, 60, 120, 0.35); font-size: 22px; z-index: 3; }
+  #info { position: fixed; right: 12px; top: 54px; max-width: 420px; max-height: 60%; overflow: auto; background: rgba(10, 12, 20, 0.8); padding: 8px 10px; border-radius: 6px; font-size: 12px; white-space: pre-wrap; display: none; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <label>Open a clip<input id="file" type="file" accept=".cdf97w"></label>
+  <button id="play">Pause</button>
+  <button id="meta">What the clip holds</button>
+  <span id="note">Drop a .cdf97w here, or open one.</span>
+</div>
+<div id="view"><canvas id="pic" width="960" height="540"></canvas></div>
+<input id="seek" type="range" min="0" max="1000" value="0">
+<div id="drop">Let go to play it</div>
+<div id="info"></div>
+<script src="player.js"></script>
+</body>
+</html>

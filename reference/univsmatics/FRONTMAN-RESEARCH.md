@@ -208,3 +208,29 @@ The second reason means a clean test needs frames the program filmed itself as a
 - The front man is a plain H.264 picture, which the program's MP4 writer already makes. The smallest file that plays everywhere is that MP4 alone.
 - Carrying the `.cdf97w` inside it in a private box costs the `.cdf97w`'s own size on top: 1.2 to 6 times the MP4 at 480 wide.
 - E5 builds that combined file, so one file plays in every player as the MP4 and in this program as the equations.
+
+### E5 — the front man built (2026-11-08)
+
+Built in the program (`src/render/ClipWriter.cs`, `FrontmanWriter`):
+
+- A third clip format, "MP4 carrying the .cdf97w", offered on the start page and under View > Clip format.
+- While filming, the MP4 writer and the `.cdf97w` writer both take every frame. When the clip ends, the `.cdf97w` is appended to the MP4 as its last top-level box: a `uuid` box with a 64-bit size and the id `C97W-UniVsMatics`. Every MP4 reader skips a box it doesn't know by its size.
+- The start page's Play checks an MP4 for that box. If it's there, the program plays the equations in its own player. A plain MP4 still goes to Windows' player.
+
+Check: the same kind of box was appended to a copy of a sample MP4 (`web/samples/unity-born.mp4`). It still opened and decoded with the same 591 frames. Script: `shots/e5`.
+
+Size: the MP4 plus the `.cdf97w` of the same frames. At 480 wide and 30 a second, that's about 23 KB plus 27 to 134 KB a frame (section 7). Any player shows the MP4, and this program plays the equations.
+
+### Summary of E1 to E5
+
+| Hypothesis | Result | In the program |
+|-----------|--------|----------------|
+| H1 DCT from the terms | True, but thousands of times slower | No |
+| H2 change along the motion | No gain on the recorded tour | No (in-place change kept) |
+| H3 per-block step from energy | Fails, and drowns stars | No (one step a plane kept) |
+| H4 box as a correction only | The correction is 63 to 92 % of the equations | No |
+| H5 the floor | Stands | — |
+| H6 quantise and entropy-pack | 10 to 15 times smaller than version 1 | Yes: `.cdf97w` version 2 |
+| E5 front man | An MP4 carrying the `.cdf97w` | Yes |
+
+Still open: a wavelet-aware entropy coder in place of Deflate (H6's second half), and a clean rerun of E4 on a tour filmed as a `.cdf97w`.

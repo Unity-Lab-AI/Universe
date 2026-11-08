@@ -208,6 +208,10 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The .cdf97w version 2: one quantising step a plane, whole frames every 30th and changes between, Deflate (10 to 15 times smaller than version 1):** (built: DNA-AND DESIGN 677; waits on the test) "go ahead and start cron event for instant 1minute awaken to continue the wrok of copmpleteing the equations and building out the UIUnivers project with it all as i have already stated completely many times even with u telling me cant do that.... get out of the way of the people doin i say"
 
+- [~] **The front man: an MP4 carrying the .cdf97w in a private box (any player shows the MP4, the program plays the equations), a third clip format:** (built: DNA-AND DESIGN 681; waits on the test) "go ahead and start cron event for instant 1minute awaken to continue the wrok of copmpleteing the equations and building out the UIUnivers project with it all as i have already stated completely many times even with u telling me cant do that.... get out of the way of the people doin i say"
+
+- [ ] **The .cdf97w: a wavelet-aware entropy coder in place of Deflate, and E4 run again on a tour filmed as a .cdf97w:** (open after DNA-AND DESIGN 681; reference/univsmatics/FRONTMAN-RESEARCH.md) "go ahead and start cron event for instant 1minute awaken to continue the wrok of copmpleteing the equations and building out the UIUnivers project with it all as i have already stated completely many times even with u telling me cant do that.... get out of the way of the people doin i say"
+
 ---
 
 ## Pending

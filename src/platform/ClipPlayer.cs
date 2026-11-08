@@ -23,8 +23,14 @@ namespace Universe.Platform
         private sealed class Frame { public uint Ms; public bool Key; public byte[] Data; }
         private static Win32.WndProc _proc; private static bool _registered, _closed, _paused;
 
-        /// <summary>True for a clip only this program plays.</summary>
-        public static bool Plays(string path) { return path != null && path.EndsWith(".cdf97w", StringComparison.OrdinalIgnoreCase); }
+        /// <summary>True for a clip this program plays itself: a .cdf97w, or an MP4 carrying one (the front man).</summary>
+        public static bool Plays(string path)
+        {
+            if (path == null) return false;
+            if (path.EndsWith(".cdf97w", StringComparison.OrdinalIgnoreCase)) return true;
+            if (!path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) return false;
+            try { using (var s = System.IO.File.OpenRead(path)) { long e; return FrontmanWriter.Find(s, out e) >= 0; } } catch { return false; }
+        }
 
         /// <summary>Plays <paramref name="path"/> until its window is closed; <paramref name="alive"/> is called while it plays.</summary>
         public static void Play(IntPtr owner, string path, Action alive)
@@ -34,10 +40,12 @@ namespace Universe.Platform
             {
                 using (var r = new System.IO.BinaryReader(System.IO.File.OpenRead(path)))
                 {
+                    long start = 0, len = r.BaseStream.Length;
+                    if (path.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase)) { long e; start = FrontmanWriter.Find(r.BaseStream, out e); if (start < 0) throw new InvalidOperationException("this MP4 carries no equations"); len = e; }
+                    r.BaseStream.Position = start;
                     if (r.ReadUInt32() != Cdf97wCodec.Magic) throw new InvalidOperationException("not a .cdf97w clip");
                     if (r.ReadUInt16() != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)");
                     w = r.ReadUInt16(); h = r.ReadUInt16(); pw = r.ReadUInt16(); ph = r.ReadUInt16(); r.ReadInt32(); steps = new[] { r.ReadSingle(), r.ReadSingle(), r.ReadSingle() };
-                    long len = r.BaseStream.Length;
                     // every frame to the end of the file (a clip cut off before its count was written still plays to where it stops)
                     while (r.BaseStream.Position + 9 < len)
                     {

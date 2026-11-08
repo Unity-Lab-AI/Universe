@@ -205,7 +205,9 @@ namespace Universe.Render
             _o.Write((byte)1); _o.Write((uint)Ms()); world.WritePoint(_o); _points++;
         }
         /// <summary>A frame as filmed, for the picture track (the universe's own records need no pixels: it draws them again).</summary>
-        public void Add(byte[] rgb, int srcW, int srcH) { if (_video == null) return; _video.Add(rgb, srcW, srcH, (uint)Ms()); }
+        /// <summary>The camera of the frame about to be added (UniverseView.CameraNow): the encoder's motion from the equations.</summary>
+        public double[] Camera;
+        public void Add(byte[] rgb, int srcW, int srcH) { if (_video == null) return; _video.Add(rgb, srcW, srcH, (uint)Ms(), Camera); }
         public void Dispose()
         {
             if (_disposed) return; _disposed = true;   // (finished once: a crash and then the watchdog had both finished it)

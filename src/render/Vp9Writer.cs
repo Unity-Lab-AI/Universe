@@ -118,6 +118,26 @@ namespace Universe.Render
         private readonly float[] _busy; private readonly byte[] _txs, _msz;              // (and each 8 x 8's transform size, for the next block's context)
         /// <summary>A block is split where an 8 x 8 in it varies by more than this many of the quantiser's steps (its standard deviation).</summary>
         public static double BusySteps = 0.5;
+        /// <summary>The camera of the frame about to be added, from the universe's own equations (UniverseView.CameraNow: right, up,
+        /// forward, the distance looked at); null: none, the motion only searched for.</summary>
+        public double[] Camera;
+        private double[] _camPrev; private bool _flow; private double _zoom;
+        const double TanHalf = 0.4830550656165784;                                   // tan(0.45): the picture's half height, its field of view 0.9 radians
+        // where the picture at (px, py) was in the frame before, worked out from the two cameras (the turn of the view, and the zoom
+        // toward what it looks at, about the middle of the picture): the motion of a block from the equations, never searched for
+        bool FlowAt(double px, double py, out int dy, out int dx)
+        {
+            dy = dx = 0; if (!_flow) return false;
+            double asp = _w / (double)_h, nx = (px / _w * 2 - 1) / _zoom, ny = (1 - py / _h * 2) / _zoom;
+            var c = Camera; var q = _camPrev;
+            double rx = nx * TanHalf * asp, ry = ny * TanHalf;
+            double wx = c[0] * rx + c[3] * ry + c[6], wy = c[1] * rx + c[4] * ry + c[7], wz = c[2] * rx + c[5] * ry + c[8];   // the ray, in the universe
+            double a = wx * q[0] + wy * q[1] + wz * q[2], b = wx * q[3] + wy * q[4] + wz * q[5], f = wx * q[6] + wy * q[7] + wz * q[8];
+            if (f <= 1e-6) return false;                                             // (behind the camera before: nothing there to take)
+            double ox = (a / f / (TanHalf * asp) * 0.5 + 0.5) * _w, oy = (0.5 - b / f / TanHalf * 0.5) * _h;
+            double ddx = ox - px, ddy = oy - py; if (Math.Abs(ddx) > 255 || Math.Abs(ddy) > 255) return false;
+            dx = (int)Math.Round(ddx / 2) * 2; dy = (int)Math.Round(ddy / 2) * 2; return true;   // (whole pairs of pixels, as every motion here)
+        }
         /// <summary>Blocks are split for being busy down to this size (bsl: 0 is 8 x 8, 1 is 16 x 16); a busy block of it or smaller
         /// keeps its size and codes its picture in 4 x 4 transforms.</summary>
         public static int SplitFloor = 1;
@@ -168,6 +188,9 @@ namespace Universe.Render
                 for (int p = 0; p < 3; p++) Buffer.BlockCopy(_rec[p], 0, _prev[p], 0, _rec[p].Length);   // (the reference: the frame before, as the decoder holds it)
                 Quarter(_src[0], _qs); Quarter(_prev[0], _qr);
             }
+            // the motion from the equations: the camera now against the camera of the frame before
+            _flow = !_key && Camera != null && _camPrev != null && Camera.Length >= 10 && _camPrev.Length >= 10 && Camera[9] > 0 && _camPrev[9] > 0;
+            _zoom = _flow ? Math.Max(0.25, Math.Min(4, _camPrev[9] / Camera[9])) : 1;   // (closer now: things bigger by this)
             Buffer.BlockCopy(_mvR, 0, _lastR, 0, _mvR.Length * 2); Buffer.BlockCopy(_mvC, 0, _lastC, 0, _mvC.Length * 2);
             if (_key) { Array.Clear(_lastR, 0, _lastR.Length); Array.Clear(_lastC, 0, _lastC.Length); }
             Array.Clear(_mvR, 0, _mvR.Length); Array.Clear(_mvC, 0, _mvC.Length); Array.Clear(_mode, 0, _mode.Length);
@@ -244,7 +267,7 @@ namespace Universe.Render
                 if (k < nt - 1) { int n = tiles[k].Length; f[at++] = (byte)(n >> 24); f[at++] = (byte)(n >> 16); f[at++] = (byte)(n >> 8); f[at++] = (byte)n; }
                 Array.Copy(tiles[k], 0, f, at, tiles[k].Length); at += tiles[k].Length;
             }
-            _last = f; _lastKey = _key;
+            _last = f; _lastKey = _key; _camPrev = Camera; Camera = null;
             if (KeepFrames) { _frames.Add(f); _times.Add(_t); _keys.Add(_key); }
             _t += Math.Max(1u, ms);
         }
@@ -614,7 +637,8 @@ namespace Universe.Render
                 else
                 {
                     int g = r * v._miCols + c;
-                    Search(x, y, n, new[] { 0, 0, nr0 / 8, nc0 / 8, nr1 / 8, nc1 / 8, v._lastR[g] / 8, v._lastC[g] / 8 }, out sdy, out sdx);
+                    int fy, fx; v.FlowAt(x + n * 0.5, y + n * 0.5, out fy, out fx);
+                    Search(x, y, n, new[] { fy, fx, 0, 0, nr0 / 8, nc0 / 8, nr1 / 8, nc1 / 8, v._lastR[g] / 8, v._lastC[g] / 8 }, out sdy, out sdx);
                 }
                 long best = long.MaxValue; int mode = ZeroMv;
                 Try(ref best, ref mode, ZeroMv, 0, 0, x, y, n, lam * 1L);
@@ -640,12 +664,14 @@ namespace Universe.Render
                 var v = _v; int x = c * 8, y = r * 8, lam = Math.Max(1, v._acq / 8);
                 int g = r * v._miCols + c;
                 int nr0, nc0, nr1, nc1, ctx; FindRefs(r, c, 3, out nr0, out nc0, out nr1, out nc1, out ctx);
-                int dy, dx; long whole = Search(x, y, 64, new[] { 0, 0, nr0 / 8, nc0 / 8, nr1 / 8, nc1 / 8, v._lastR[g] / 8, v._lastC[g] / 8 }, out dy, out dx);
+                int fy, fx; v.FlowAt(x + 32, y + 32, out fy, out fx);
+                int dy, dx; long whole = Search(x, y, 64, new[] { fy, fx, 0, 0, nr0 / 8, nc0 / 8, nr1 / 8, nc1 / 8, v._lastR[g] / 8, v._lastC[g] / 8 }, out dy, out dx);
                 long parts = 0;
                 for (int q = 0; q < 4; q++)
                 {
                     int qx = x + (q & 1) * 32, qy = y + (q >> 1) * 32, gq = (qy >> 3) * v._miCols + (qx >> 3);
-                    parts += Search(qx, qy, 32, new[] { dy, dx, 0, 0, v._lastR[gq] / 8, v._lastC[gq] / 8 }, out _tgtDy[q], out _tgtDx[q]);
+                    int qfy, qfx; v.FlowAt(qx + 16, qy + 16, out qfy, out qfx);
+                    parts += Search(qx, qy, 32, new[] { qfy, qfx, dy, dx, 0, 0, v._lastR[gq] / 8, v._lastC[gq] / 8 }, out _tgtDy[q], out _tgtDx[q]);
                 }
                 bool split = parts + lam * 40L < whole;
                 if (split) { _tgtR = r; _tgtC = c; } else _tgtR = -1;
@@ -682,7 +708,8 @@ namespace Universe.Render
                 return sum;
             }
 
-            const int Range = 256;                                                     // (the farthest a block is looked for, in pixels)
+            const int Range = 256;
+            const double CoarseAbove = 2.0;                                            // (the guess's difference a pixel above which the coarse look runs)                                                     // (the farthest a block is looked for, in pixels)
             // the block's motion: the best of the starting guesses, then (big blocks) a coarse look on the quarter-size planes, then a
             // fine one in steps of 8, 4 and 2 pixels; whole pairs of pixels only, the block moved kept within the frame before
             long Search(int x, int y, int n, int[] starts, out int bdy, out int bdx)
@@ -695,7 +722,8 @@ namespace Universe.Render
                     int sy = Clip(starts[k], minY, maxY) & ~1, sx = Clip(starts[k + 1], minX, maxX) & ~1;
                     long cst = Sad(x, y, n, sy, sx, 2, best); if (cst < best) { best = cst; bdy = sy; bdx = sx; }
                 }
-                if (n >= 32)
+                // the coarse look only where no guess fits (the camera's motion from the equations fits all but what moves of itself)
+                if (n >= 32 && best > (long)w * h * CoarseAbove)
                 {
                     // coarse: a quarter each way, from the best guess, in steps of 8, 4, 2 and 1 there (32, 16, 8 and 4 pixels here)
                     int qx = x / 4, qy = y / 4, qn = n / 4, cy = bdy / 4, cx = bdx / 4; long qb = QSad(qx, qy, qn, cy, cx, long.MaxValue);

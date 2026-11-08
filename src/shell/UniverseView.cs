@@ -2984,6 +2984,14 @@ namespace Universe.Shell
         /// <summary>One camera point of the universe clip: the plot location (the anchor and the offset from it), the facing, the four
         /// scales (out to the cosmic web, the space round a body, the matter's depth), the universe's clock, the matter view's own
         /// camera, and, as a check, which galaxy, star system and ground were made round it.</summary>
+        /// <summary>The camera as it is this frame, from the universe's own equations: its right, up and forward (the view's own axes,
+        /// as the picture is drawn with them) and how far away what it looks at is (km). The clip's encoder works out from two of
+        /// these where every block of the picture came from.</summary>
+        public double[] CameraNow()
+        {
+            var f = Look.Normalized; var u = ViewUp(); var x = Vec3.Cross(u, f).Normalized; var y = Vec3.Cross(f, x);
+            return new double[] { x.X, x.Y, x.Z, y.X, y.Y, y.Z, f.X, f.Y, f.Z, ViewDistanceKm() };
+        }
         public void WritePoint(System.IO.BinaryWriter o)
         {
             o.Write(_ax); o.Write(_ay); o.Write(_az); o.Write(_ox); o.Write(_oy); o.Write(_oz);

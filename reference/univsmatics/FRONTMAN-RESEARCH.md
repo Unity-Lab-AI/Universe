@@ -642,3 +642,7 @@ Block edges are smoothed as the decoder smooths them, and the filtered picture i
 | Space | 47.0 dB, change frames 28 to 30 KB | 47.7 dB, 24 to 27 KB |
 | The busiest | 39.5 dB | 40.0 dB |
 
+### The front man's motion from the equations (2026-11-08)
+
+Each frame the camera as the universe's equations have it goes with the frame into the encoder. From the camera now and the camera before, the encoder works out where every block was (the view's turn, and its zoom toward what it looks at) and only refines that, instead of searching the pixels. On filmed 4K frames turned and zoomed by known amounts, a change frame came out 8 to 20% smaller. Next: the encoder on the graphics card, so no picture comes back to the processor.
+

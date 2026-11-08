@@ -11,10 +11,10 @@ namespace Universe.Render
     internal sealed class Vp9Track
     {
         public const int Run = 60;
-        private sealed class Gop { public readonly List<byte[]> Frames = new List<byte[]>(); public readonly List<bool> Keys = new List<bool>(); public readonly List<uint> Times = new List<uint>(); public System.Collections.Concurrent.BlockingCollection<Tuple<byte[][], uint>> In = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[][], uint>>(); public Thread Worker; public int Count; }
+        private sealed class Gop { public readonly List<byte[]> Frames = new List<byte[]>(); public readonly List<bool> Keys = new List<bool>(); public readonly List<uint> Times = new List<uint>(); public System.Collections.Concurrent.BlockingCollection<Tuple<byte[][], uint, double[]>> In = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[][], uint, double[]>>(); public Thread Worker; public int Count; }
         private readonly int _w, _h, _q; private readonly Vp9Writer _shape;
         private readonly List<Gop> _gops = new List<Gop>(); private Gop _cur;
-        private readonly System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, uint>> _intake = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, uint>>(2);
+        private readonly System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, uint, double[]>> _intake = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, uint, double[]>>(2);
         private readonly Thread _intaker; private int _waiting; private readonly int _maxWaiting;
         public int Width { get { return _w; } }
         public int Height { get { return _h; } }
@@ -42,7 +42,7 @@ namespace Universe.Render
                     else if (Interlocked.CompareExchange(ref _waiting, 0, 0) >= _maxWaiting) { Dropped++; continue; }
                     var planes = _shape.Prepare(f.Item1, f.Item2, f.Item3);
                     if (_cur == null || _cur.Count == Run) StartRun();
-                    Interlocked.Increment(ref _waiting); _cur.Count++; _cur.In.Add(Tuple.Create(planes, f.Item4));
+                    Interlocked.Increment(ref _waiting); _cur.Count++; _cur.In.Add(Tuple.Create(planes, f.Item4, f.Item5));
                 }
                 if (_cur != null) _cur.In.CompleteAdding();
             }) { IsBackground = true, Name = "front man intake" };
@@ -62,7 +62,7 @@ namespace Universe.Render
                     // still over the whole clip's budget at the coarsest quality: this frame repeats the one before (all its blocks
                     // skipped, a few bytes), so the cap holds whatever the picture does; the time of every frame is kept
                     if (_capPerFrame > 0 && !(g.Frames.Count == 0) && v.Quality >= 255 && OverFrames() > 30) { planes = v.Recon(); v.NoFilterNext = true; }   // (unfiltered: the same picture exactly)
-                    v.AddPrepared(planes, 33); g.Frames.Add(v.LastFrame); g.Keys.Add(v.LastKey); g.Times.Add(f.Item2); Interlocked.Decrement(ref _waiting);
+                    v.Camera = f.Item3; v.AddPrepared(planes, 33); g.Frames.Add(v.LastFrame); g.Keys.Add(v.LastKey); g.Times.Add(f.Item2); Interlocked.Decrement(ref _waiting);
                     if (_capPerFrame > 0)
                     {
                         // the rate control: the whole clip's bytes against its budget (every run's, one account); over by more than two
@@ -81,7 +81,7 @@ namespace Universe.Render
             g.Worker.Start();
         }
         /// <summary>A frame (RGB, top row first) filmed at <paramref name="ms"/>; let go when the intake is busy.</summary>
-        public void Add(byte[] rgb, int srcW, int srcH, uint ms) { if (_noDrop) _intake.Add(Tuple.Create(rgb, srcW, srcH, ms)); else if (!_intake.TryAdd(Tuple.Create(rgb, srcW, srcH, ms))) Dropped++; }
+        public void Add(byte[] rgb, int srcW, int srcH, uint ms, double[] camera = null) { var t = Tuple.Create(rgb, srcW, srcH, ms, camera); if (_noDrop) _intake.Add(t); else if (!_intake.TryAdd(t)) Dropped++; }
         /// <summary>Every frame coded, in order: their bytes, whether each is whole, their times.</summary>
         public void Finish(List<byte[]> frames, List<bool> keys, List<uint> times)
         {

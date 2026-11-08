@@ -87,3 +87,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (E1b and E1c: the packing, not the wavelet, is the size): DNA-AND DESIGN 676.
 - 2026-11-08 (the .cdf97w version 2: quantised, whole frames and changes, Deflate): DNA-AND DESIGN 677.
 - 2026-11-08 (E2: H1 true, no use): DNA-AND DESIGN 678.
+- 2026-11-08 (E3: H3 fails): DNA-AND DESIGN 679.

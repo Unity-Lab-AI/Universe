@@ -170,3 +170,17 @@ Setup: the tour frame at 240 s, 480 wide, the 20,000 strongest Y terms. Script: 
 - **The direct path is the slow one.** Rebuilding the picture and then taking the block DCT took 14 ms for the frame. Doing it term by term was about 225 s with whole-frame footprints. Even with each term reduced to its footprint, every term still pays for an inverse of its own, while the full inverse is linear time over the whole frame.
 
 H1 is true and useless. The front man is fastest made by rebuilding the picture from the equations, which the player already does, and handing that to the H.264 encoder. No new code is needed for this. E3 is next.
+
+### E3 — H3, a quantising step per block from the wavelet energy (2026-11-08)
+
+Setup: frames at 120, 240 and 480 s, 480 wide, luma only. Each frame is cut into 16 × 16 blocks with 8 × 8 DCTs inside, as in H.264, and packed with Deflate. One run uses a single step for every block. The other sets each block's step from its wavelet detail energy (step ∝ energy^−¼), searched until both files come out the same size. Stars are counted as single pixels brighter than all eight neighbours by 40 levels, and checked for survival. Script: `shots/e3.py`.
+
+| Frame | One step for all | Energy-set steps, same size |
+|------:|------:|------:|
+| 120 s, 20 KB | 39.7 dB, 75 % of 157 stars | 39.6 dB, 79 % |
+| 240 s, 22 KB | 39.0 dB, 83 % of 253 stars | 38.4 dB, 71 % |
+| 480 s, 18 KB | 40.1 dB, 82 % of 131 stars | 40.3 dB, 78 % |
+
+Across all 15 runs, the energy-set steps were never better than one step by more than 0.2 dB. They were up to 2 dB worse, with a few more stars kept at 120 s and fewer at 240 s.
+
+**H3 fails.** A star is a strong detail term, so energy-set steps give its block a coarse step, and that drowns the star. A single step already treats every block alike. Nothing to build. The steps stay uniform per plane, as in the `.cdf97w` version 2. E4 is next. It needs the camera recorded per frame while filming.

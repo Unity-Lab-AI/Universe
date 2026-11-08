@@ -153,6 +153,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The asteroid's and comet's descents in the world's own layers, the atom's long chain once on the world, the way out at the pace of the way in, less waiting and circling:** (built: DNA-AND DESIGN 645; waits on the test) "i tolkk lots of pics it never made it to ground level and whole zomme levels were zommed into well not on the surface and a bunch of layer zooms are are missing like grains and all their layers and even the atom level after 2nanometers i just see white dots at 2um and i dont remember seeing that on the planet zoom in" / "and we dont need the whole hour long atom waits when we have to do it all again on the planet" / "too mauch waiting around and pauses and too many orbits of objects" / "look at the pics i just took the whole zoom out skipped everything even tho the zoom in skipped it all too"
 
+- [~] **The one zoom chain on every body, the world's own stops from a person's height to the quark and back, nothing left out on the asteroid or the comet:** (built: DNA-AND DESIGN 646; waits on the test) "what the fuck do u not undersatnad anbout unifying the zoom ins for all bodies" / "i dont believe you this is the 23rd time weve tried to fix it!"
+
 ---
 
 ## Pending

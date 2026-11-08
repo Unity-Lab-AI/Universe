@@ -404,3 +404,40 @@ At equal size, dyadic is about 7 dB better and keeps more stars. **H9 holds.**
 **H18 fails.** A single-pixel star is almost all finest-level energy, and the coarser levels hold only a faint smudge of it. Any fill, lifting or fractal (Uni Vs Matics' cubic included), spreads what the coarser levels hold or invents new detail in its place. It can't put back a star that wasn't stored. Across the levels the children's signs don't follow the parent's, so the least-squares scale comes out near zero.
 
 **Where the lab stands.** Every pixel equation tested leaves a busy 4K frame at 1 to 3 MB, and the stars force the finest level to be stored. The stars are themselves exact equations in the universe, made from the seed. So the one route to 4K with every star in 100 to 900 MB for ten minutes is H15: the file stores the seed and the camera's path, and plays back by making the universe again. That's one file, the `.cdf97w` itself, under 1 MB.
+
+## 11. H15 — the clip as the universe's own equations ("dark energy") (design, 2026-11-08)
+
+The creator's words: "we have no resoluation and no fucking pixiles that means all kinds of possibilities... we could do this 100mb for 10 minutes easily as draws and infinate zoom only have to tep out side the visuals and work the data of the equations we already can solve out all variables by arithmatic and can build the front man and its handler script for the cdf97w file to properlyspan patternized fractual universal "lets call it ;dark energy;" that is the universal mesh with fill calculous for the cordinateal syatem for plot location and 0,0,0Time stamp will be loaded in of the of cam at 500mm scale".
+
+**The idea.** No pixels are stored. The universe already solves every galaxy, star, world, grain and atom from its seed. A clip is the seed plus the camera's track through the universe's own coordinates (the "dark energy" mesh), with 0,0,0 and the time stamp as its origin. The handler is our program, which makes the universe from the seed and draws each recorded camera point. It has no resolution: played at any size, every star is exact. It's one file, the `.cdf97w`, with no waveform clip beside it.
+
+**One camera point** (from the program's own state, `UniverseView`):
+
+| Part | Fields | Bytes |
+|---|---|---:|
+| Plot location | the anchor (`_ax, _ay, _az`) and the offset from it (`_ox, _oy, _oz`), doubles | 48 |
+| Facing | forward (`_fx, _fy, _fz`) and up (`_camUp`) | 24 (as floats) |
+| Scale | `_farScale`, `_spaceScale`, `_spaceTop`, `_matterScale` (the depth in the matter: 500 mm and below) | 32 |
+| Time | the universe's clock (`_simYears`) and the frame's own time | 16 |
+
+About 120 bytes a point. At 30 a second for ten minutes that's 2.2 MB raw. Each point stored as its change from the last and packed, a few hundred KB.
+
+**Scene events.** These are what the camera's position alone doesn't settle. Each one is stored with its frame and its exact arguments:
+- the star system opened or closed (its index)
+- the world or small body whose ground is made
+- every matter setting: a ground's mineral and spot, a gas, a plasma, a black hole's fall, a neutron crust, with the arguments the call was given
+- the matter view's own camera (its focus and scale)
+
+**Replay.** The program makes the universe from the seed, then for each frame:
+1. It applies the frame's scene events with their recorded arguments.
+2. It sets the camera to the recorded point.
+3. It draws.
+
+The universe's pieces load at their own pace, so replay waits for each event's scene to be ready before drawing that frame. Playback time is the recorded time, held while the loading catches up, so replay can't drift.
+
+**The handler checks itself.** Each event's scene is identified by what it made (the system's star kind, the ground's mineral, the matter's make-up), recorded beside the event. A replay whose scene doesn't match says so instead of showing a different place.
+
+**Build order:**
+1. Capture: the camera point and the scene events, written to a `.cdf97w` (format: `universe`).
+2. Replay: the handler, with events, camera, waiting on loading, and the self-check.
+3. Then the start page's Play and the menu, and the docs.

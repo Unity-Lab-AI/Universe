@@ -104,3 +104,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (C1 rejected: no other people's code, formats or software): DNA-AND DESIGN 693.
 - 2026-11-08 (the .cdf97w version 8: dyadic layout, Full at 0.016, the full equations in the metadata): DNA-AND DESIGN 694.
 - 2026-11-08 (every doc re-measured: sizes, counts, captures; GpuWavelet removed): DNA-AND DESIGN 695.
+- 2026-11-08 (H15 designed: the clip as the universe's own equations): DNA-AND DESIGN 696.

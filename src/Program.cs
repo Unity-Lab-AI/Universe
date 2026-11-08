@@ -117,7 +117,7 @@ namespace Universe
             { int sci = Array.IndexOf(args, "--scale"); int pct; if (sci >= 0 && sci + 1 < args.Length && int.TryParse(args[sci + 1], out pct)) { window.RenderScale = pct / 100.0; window.Resized = false; } }   // --scale <percent>: render scale
             window.Input.IgnoreReal = smokeMs >= 0;          // timed checks never take the person's keyboard or mouse
             Gpu gpu;
-            try { gpu = new Gpu(window.Handle, window.RenderWidth, window.RenderHeight); }
+            try { gpu = new Gpu(window.Handle, window.RenderWidth, window.RenderHeight); Universe.Render.ClipWriters.Device = gpu.Device; }   // (the .cdf97w's wavelet runs on the same card)
             catch (Exception ex) { WriteLog("gpu error · " + ex.Message); window.Close(); return 2; }
             // the default sharpness from the graphics card: cards with little video memory of their own start softer, so they stay smooth
             if (Array.IndexOf(args, "--scale") < 0 && gpu.AdapterMemoryMB > 0 && gpu.AdapterMemoryMB < 3000)
@@ -507,7 +507,7 @@ namespace Universe
         // the clip being filmed, if any: a crash finishes it first, so it still plays
         private static Universe.Render.IClipWriter OpenClip;
         private static bool _logStarted;
-        private static void WriteLog(string line)
+        internal static void WriteLog(string line)
         {
             try
             {

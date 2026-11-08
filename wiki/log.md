@@ -94,3 +94,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the review's HIGH item and the quick fixes): DNA-AND DESIGN 683.
 - 2026-11-08 (the review's MEDIUM and LOW items): DNA-AND DESIGN 684.
 - 2026-11-08 (the .cdf97w version 3, the wavelet coder): DNA-AND DESIGN 685.
+- 2026-11-08 (the .cdf97w on the card, version 4 packing on every core): DNA-AND DESIGN 686.

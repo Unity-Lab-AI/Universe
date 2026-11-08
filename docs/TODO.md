@@ -214,6 +214,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The front man made from the solved equations (the .cdf97w terms turned into pixels, those pixels the MP4):** (built: DNA-AND DESIGN 682; waits on the test) "no thats not right here let me run it to you again : [ media player] <<<<[.cdf97w](Frontman(what the players expect to see) <script(that actual mathmatical transitions and solved equations from cdf97 waveformes into pixels) <scrips (packages the wavforms of the .cdf97w equations)"
 
+- [~] **The .cdf97w on the graphics card (the wavelet in a compute shader) and its packing on every core (version 4):** (built: DNA-AND DESIGN 686; waits on the test) "1-5 all are a go lets get to em"
+
 ---
 
 ## Pending

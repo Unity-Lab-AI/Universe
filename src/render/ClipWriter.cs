@@ -21,6 +21,8 @@ namespace Universe.Render
         /// <summary>The clip format picked (View > Clip format, or the start page): 0 MP4, 1 .cdf97w, 2 an MP4 carrying the .cdf97w (the front man).</summary>
         public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? f : 0; } }
         public static string Extension { get { return Format == 1 ? ".cdf97w" : ".mp4"; } }
+        /// <summary>The graphics card the .cdf97w's wavelet runs on (set once the renderer is made; none: the processor).</summary>
+        public static IntPtr Device;
         /// <summary>Opens a clip at <paramref name="path"/> (its extension set to the format picked).</summary>
         public static IClipWriter Open(string path, int w, int h)
         {
@@ -33,11 +35,11 @@ namespace Universe.Render
 
     /// <summary>The .cdf97w's sums, shared by the writer and the player. Version 2: every wavelet term of a plane quantised by one
     /// step (a dead zone, so most become zero), a frame stored whole (a key, every 30th) or as its change from the last frame,
-    /// and packed by the wavelet coder (version 3; version 2 used Deflate).</summary>
+    /// and packed by the wavelet coder, strip by strip on every core (version 4; 3 was one stream, 2 used Deflate).</summary>
     internal static class Cdf97wCodec
     {
         public const uint Magic = 0x57373943;                // 'C97W'
-        public const ushort Version = 3;
+        public const ushort Version = 4;
         /// <summary>The quantising step of each plane: Y, Cb, Cr (about 40 dB on the tour's frames).</summary>
         public static readonly float[] Step = { 0.004f, 0.008f, 0.008f };
         public const int KeyEvery = 30;
@@ -123,6 +125,7 @@ namespace Universe.Render
         private short[][] _prev;
         /// <summary>When set, each frame's terms are also solved back into pixels (RGB, top row first, the clip's own size) and handed here: the front man's frames.</summary>
         public Action<byte[], int, int> Solved;
+        private GpuWavelet _gw;                                                         // the wavelet on the graphics card (null: on the processor)
         public int Down { get; private set; }
         public string Path { get; private set; }
         public double Seconds { get { return _last < 0 ? 0 : (_last - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
@@ -137,6 +140,7 @@ namespace Universe.Render
             _o.Write(Magic); _o.Write(Cdf97wCodec.Version); _o.Write((ushort)_w); _o.Write((ushort)_h); _o.Write((ushort)_pw); _o.Write((ushort)_ph);
             _o.Write(0);                                                                   // the frame count (byte 14), filled in when the clip ends
             foreach (float st in Cdf97wCodec.Step) _o.Write(st);
+            if (ClipWriters.Device != IntPtr.Zero) { try { _gw = new GpuWavelet(ClipWriters.Device); } catch (Exception ex) { _gw = null; Universe.Program.WriteLog("cdf97w: the card's wavelet could not be set up (" + ex.Message + "); the processor does it"); } }
             _encoder = new System.Threading.Thread(() => { foreach (var f in _queue.GetConsumingEnumerable()) { try { Encode(f.Item1, f.Item2, f.Item3, f.Item4); } catch { } } }) { IsBackground = true, Name = "cdf97w encoder" };
             _encoder.Start();
         }
@@ -170,8 +174,9 @@ namespace Universe.Render
             var q = new short[3][];
             for (int c = 0; c < 3; c++)
             {
-                Wavelet97.Forward(planes[c], _pw, _ph); var co = planes[c]; var qc = q[c] = new short[co.Length]; float st = Cdf97wCodec.Step[c]; int pw = _pw;
-                Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st); });
+                var qc = q[c] = new short[planes[c].Length]; float st = Cdf97wCodec.Step[c]; int pw = _pw;
+                if (Card(planes[c], true)) { var co = _f; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st); }); }
+                else { Wavelet97.Forward(planes[c], _pw, _ph); var co = planes[c]; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st); }); }
             }
             bool key = _prev == null || _frames % Cdf97wCodec.KeyEvery == 0;
             short[][] stored = q;
@@ -191,7 +196,11 @@ namespace Universe.Render
         private byte[] Solve(short[][] q)
         {
             var pl = new double[3][];
-            for (int c = 0; c < 3; c++) { var g = pl[c] = new double[_pw * _ph]; var a = q[c]; float st = Cdf97wCodec.Step[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st); Wavelet97.Inverse(g, _pw, _ph); }
+            for (int c = 0; c < 3; c++)
+            {
+                var g = pl[c] = new double[_pw * _ph]; var a = q[c]; float st = Cdf97wCodec.Step[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st);
+                if (Card(g, false)) { var f = _f; for (int k = 0; k < g.Length; k++) g[k] = f[k]; } else Wavelet97.Inverse(g, _pw, _ph);
+            }
             var rgb = new byte[_w * _h * 3]; int w = _w, pw = _pw;
             Jobs.For(_h, y =>
             {
@@ -203,6 +212,20 @@ namespace Universe.Render
             });
             return rgb;
         }
+        // a plane through the card's wavelet, its result in _f; false (the processor to do it) when there is no card's, or it failed
+        // (a failure lets the card's go for the rest of the clip, noted once)
+        private float[] _f;
+        private bool Card(double[] plane, bool forward)
+        {
+            if (_gw == null) return false;
+            try
+            {
+                if (_f == null || _f.Length != plane.Length) _f = new float[plane.Length];
+                for (int i = 0; i < plane.Length; i++) _f[i] = (float)plane[i];
+                _gw.Run(_f, _pw, _ph, forward); return true;
+            }
+            catch (Exception ex) { Universe.Program.WriteLog("cdf97w: the card's wavelet failed (" + ex.Message + "); the processor does the rest"); try { _gw.Dispose(); } catch { } _gw = null; return false; }
+        }
         private static byte B(double v) { int i = (int)(v * 255 + 0.5); return (byte)(i < 0 ? 0 : i > 255 ? 255 : i); }
 
         /// <summary>Finishes the clip: the frames still waiting go in, then the frame count.</summary>
@@ -210,6 +233,7 @@ namespace Universe.Render
         {
             if (_queue.IsAddingCompleted) return;
             _queue.CompleteAdding(); _encoder.Join(30000);
+            if (_gw != null) { try { _gw.Dispose(); } catch { } _gw = null; }
             lock (_lock) { try { _o.Flush(); _file.Seek(14, System.IO.SeekOrigin.Begin); _o.Write(_frames); _o.Flush(); } catch { } try { _o.Close(); } catch { } }
         }
     }

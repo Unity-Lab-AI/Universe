@@ -252,3 +252,10 @@ The coder: an adaptive binary range coder, the same arithmetic as LZMA's. Each q
 | 30 s | 193.1 → 140.7 KB (1.37×) | 145.4 → 101.4 KB (1.43×) |
 
 Built as the `.cdf97w` version 3 (`src/render/WaveletCoder.cs`). A one-off round-trip check outside the program (four sets of 491,520 terms, up to ±32,767) gave back every term exactly. Against the recorder's MP4 at 480 wide, about 23 KB a frame, a change frame now runs 13 to 101 KB.
+
+### The `.cdf97w` on the graphics card, and its packing on every core (2026-11-08)
+
+- **The wavelet on the card** (`src/render/GpuWavelet.cs`): the same lifting as `Wavelet97`, in a compute shader on a queue of its own, one line of a plane to a thread. A standalone check outside the game, with no window, compared it with the processor's transform. The largest difference was 1.2 × 10⁻⁶ on terms up to 1.3. A full forward and back on the card returned the plane to within 2.2 × 10⁻⁶. Both are far below the quantising step of 0.004. The writer uses it for the forward transform and, for the front man, the inverse. If the card refuses any part, the writer falls back to the processor and says so in the run log.
+- **Where a frame's time went** (1080p, measured outside the game): building the planes 9 ms, forward 30 ms on the processor (about 10 on the card), quantising 10 ms, packing 130 ms on one core, and the inverse for the front man 67 ms on the processor (about 10 on the card). So the packing was the bottleneck, not the transform.
+- **The packing on every core (version 4):** each plane is cut into 4 strips of rows, and each strip is coded on its own. All 12 strips run at once. That cut packing from 130 ms to 27 ms, at a cost of about half a percent more bytes. The round-trip check still gives back every term exactly.
+- A full 1080p frame now takes about 70 ms, roughly 14 a second. A Half-size clip has a quarter of the pixels, so it keeps up with 30.

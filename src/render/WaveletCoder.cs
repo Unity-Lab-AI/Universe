@@ -2,7 +2,7 @@
 // adaptive binary range coder (the same arithmetic as LZMA's), each term as: is it nonzero (its odds learned separately for every
 // level of the wavelet and for how many of its left and upper neighbours are nonzero), its sign, and its size (a learned unary up
 // to 15 for each level, then Exp-Golomb). Measured on the tour (reference/univsmatics/FRONTMAN-RESEARCH.md, H6): 1.4 to 1.75
-// times smaller than Deflate on the same terms.
+// times smaller than Deflate on the same terms. Each plane is cut into strips of rows, each its own stream, all coded at once.
 using System;
 using System.Collections.Generic;
 
@@ -76,58 +76,74 @@ namespace Universe.Render
             }
         }
 
-        /// <summary>Packs the planes' quantised terms (each <paramref name="pw"/> × <paramref name="ph"/>), one model a plane.</summary>
+        /// <summary>How many strips of rows each plane is cut into: each strip coded on its own, every strip of every plane at once on
+        /// the processor's cores (one stream had taken 130 ms a 1080p frame on one core; a strip starts its learning afresh, which costs
+        /// about a percent).</summary>
+        public const int Strips = 4;
+
+        /// <summary>Packs the planes' quantised terms (each <paramref name="pw"/> × <paramref name="ph"/>): a count of streams, each stream's
+        /// length, then the streams, one for each strip of each plane.</summary>
         public static byte[] Pack(short[][] planes, int pw, int ph)
         {
-            var L = LevelMap(pw, ph); var e = new Encoder();
-            foreach (var q in planes)
-            {
-                var m = new Model();
-                for (int y = 0; y < ph; y++)
-                    for (int x = 0; x < pw; x++)
+            var L = LevelMap(pw, ph); int n = planes.Length * Strips; var parts = new byte[n][];
+            Universe.Core.Jobs.For(n, k => parts[k] = PackStrip(planes[k / Strips], L, pw, Row(k % Strips, ph), Row(k % Strips + 1, ph)));
+            var o = new System.IO.MemoryStream(); var w = new System.IO.BinaryWriter(o);
+            w.Write((byte)n); foreach (var b in parts) w.Write(b.Length); foreach (var b in parts) w.Write(b);
+            return o.ToArray();
+        }
+        private static int Row(int strip, int ph) { return (int)((long)ph * strip / Strips); }
+
+        private static byte[] PackStrip(short[] q, byte[] L, int pw, int y0, int y1)
+        {
+            var e = new Encoder(); var m = new Model();
+            for (int y = y0; y < y1; y++)
+                for (int x = 0; x < pw; x++)
+                {
+                    int i = y * pw + x, v = q[i], c = (x > 0 && q[i - 1] != 0 ? 1 : 0) + (y > y0 && q[i - pw] != 0 ? 1 : 0), lv = L[i];
+                    e.Bit(ref m.Sig[lv * 3 + c], v != 0 ? 1 : 0);
+                    if (v == 0) continue;
+                    e.Bit(ref m.Sign, v < 0 ? 1 : 0);
+                    int a = Math.Abs(v) - 1, k = 0;
+                    while (k < Unary) { int b = a > k ? 1 : 0; e.Bit(ref m.Mag[lv * Unary + k], b); if (b == 0) break; k++; }
+                    if (k == Unary)
                     {
-                        int i = y * pw + x, v = q[i], c = (x > 0 && q[i - 1] != 0 ? 1 : 0) + (y > 0 && q[i - pw] != 0 ? 1 : 0), lv = L[i];
-                        e.Bit(ref m.Sig[lv * 3 + c], v != 0 ? 1 : 0);
-                        if (v == 0) continue;
-                        e.Bit(ref m.Sign, v < 0 ? 1 : 0);
-                        int a = Math.Abs(v) - 1, k = 0;
-                        while (k < Unary) { int b = a > k ? 1 : 0; e.Bit(ref m.Mag[lv * Unary + k], b); if (b == 0) break; k++; }
-                        if (k == Unary)
-                        {
-                            int r = a - Unary, nb = 0; while ((r >> nb) != 0) nb++;
-                            for (int j = 0; j < nb; j++) e.Bit(ref m.Pre[j], 1);
-                            e.Bit(ref m.Pre[nb], 0);
-                            for (int j = nb - 1; j >= 0; j--) e.Direct((r >> j) & 1);
-                        }
+                        int r = a - Unary, nb = 0; while ((r >> nb) != 0) nb++;
+                        for (int j = 0; j < nb; j++) e.Bit(ref m.Pre[j], 1);
+                        e.Bit(ref m.Pre[nb], 0);
+                        for (int j = nb - 1; j >= 0; j--) e.Direct((r >> j) & 1);
                     }
-            }
+                }
             e.Flush(); return e.Out.ToArray();
         }
 
-        /// <summary>The exact reverse of <see cref="Pack"/>: the terms back into <paramref name="into"/>.</summary>
+        /// <summary>The exact reverse of <see cref="Pack"/>: the terms back into <paramref name="into"/>, every strip at once.</summary>
         public static void Unpack(byte[] data, short[][] into, int pw, int ph)
         {
-            var L = LevelMap(pw, ph); var d = new Decoder(data);
-            foreach (var q in into)
-            {
-                var m = new Model();
-                for (int y = 0; y < ph; y++)
-                    for (int x = 0; x < pw; x++)
+            var L = LevelMap(pw, ph); var r = new System.IO.BinaryReader(new System.IO.MemoryStream(data));
+            int n = r.ReadByte(); var len = new int[n]; for (int k = 0; k < n; k++) len[k] = r.ReadInt32();
+            var parts = new byte[n][]; for (int k = 0; k < n; k++) parts[k] = r.ReadBytes(len[k]);
+            Universe.Core.Jobs.For(Math.Min(n, into.Length * Strips), k => UnpackStrip(parts[k], into[k / Strips], L, pw, Row(k % Strips, ph), Row(k % Strips + 1, ph)));
+        }
+
+        private static void UnpackStrip(byte[] data, short[] q, byte[] L, int pw, int y0, int y1)
+        {
+            var d = new Decoder(data); var m = new Model();
+            for (int y = y0; y < y1; y++)
+                for (int x = 0; x < pw; x++)
+                {
+                    int i = y * pw + x, c = (x > 0 && q[i - 1] != 0 ? 1 : 0) + (y > y0 && q[i - pw] != 0 ? 1 : 0), lv = L[i];
+                    if (d.Bit(ref m.Sig[lv * 3 + c]) == 0) { q[i] = 0; continue; }
+                    bool neg = d.Bit(ref m.Sign) == 1;
+                    int k = 0; while (k < Unary && d.Bit(ref m.Mag[lv * Unary + k]) == 1) k++;
+                    int a = k;
+                    if (k == Unary)
                     {
-                        int i = y * pw + x, c = (x > 0 && q[i - 1] != 0 ? 1 : 0) + (y > 0 && q[i - pw] != 0 ? 1 : 0), lv = L[i];
-                        if (d.Bit(ref m.Sig[lv * 3 + c]) == 0) { q[i] = 0; continue; }
-                        bool neg = d.Bit(ref m.Sign) == 1;
-                        int k = 0; while (k < Unary && d.Bit(ref m.Mag[lv * Unary + k]) == 1) k++;
-                        int a = k;
-                        if (k == Unary)
-                        {
-                            int nb = 0; while (nb < Golomb - 1 && d.Bit(ref m.Pre[nb]) == 1) nb++;
-                            int r = 0; for (int j = 0; j < nb; j++) r = (r << 1) | d.Direct();
-                            a = Unary + r;
-                        }
-                        int v = a + 1; q[i] = (short)(neg ? -v : v);
+                        int nb = 0; while (nb < Golomb - 1 && d.Bit(ref m.Pre[nb]) == 1) nb++;
+                        int r = 0; for (int j = 0; j < nb; j++) r = (r << 1) | d.Direct();
+                        a = Unary + r;
                     }
-            }
+                    int v = a + 1; q[i] = (short)(neg ? -v : v);
+                }
         }
     }
 }

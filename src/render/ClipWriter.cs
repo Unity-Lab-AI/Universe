@@ -44,7 +44,7 @@ namespace Universe.Render
         /// <summary>Opens a clip at <paramref name="path"/> (its extension set to the format picked).</summary>
         public static IClipWriter Open(string path, int w, int h)
         {
-            path = System.IO.Path.ChangeExtension(path, Extension);
+            if (!path.EndsWith(Extension, StringComparison.OrdinalIgnoreCase)) path = System.IO.Path.ChangeExtension(path, Extension);   // (a name already ending .cdf97w.webm kept: changing ".webm" had made it .cdf97w.cdf97w.webm)
             return new UniverseClipWriter(path, w, h);                                       // the .cdf97w: its front man, the universe's own equations inside
         }
     }
@@ -212,7 +212,19 @@ namespace Universe.Render
             if (Universe.Shell.MatterView.Recorded != null) Universe.Shell.MatterView.Recorded = null;
             try { _o.Flush(); _z.Dispose(); _file.Dispose(); } catch { }
             if (_video == null) return;
-            // the .cdf97w: our own WebM, the picture track every player shows, the universe's records carried inside as an attached file
+            // the .cdf97w: our own WebM, the picture track every player shows, the universe's records carried inside as an attached file.
+            // Finished off the game's thread: the frames still waiting in the coders take seconds, and the game held for them had been
+            // ended by the watchdog part way through the file (a foreground thread: the program never closes before the clip is whole)
+            var t = new System.Threading.Thread(Finish) { IsBackground = false, Name = "clip finishing" };
+            lock (Finishing) Finishing.Add(t);
+            t.Start();
+        }
+        /// <summary>The clips still being finished.</summary>
+        public static readonly System.Collections.Generic.List<System.Threading.Thread> Finishing = new System.Collections.Generic.List<System.Threading.Thread>();
+        /// <summary>Waits until every clip being finished is whole (before a safety exit).</summary>
+        public static void WaitFinishing() { System.Threading.Thread[] a; lock (Finishing) a = Finishing.ToArray(); foreach (var t in a) t.Join(); }
+        private void Finish()
+        {
             try
             {
                 var frames = new System.Collections.Generic.List<byte[]>(); var keys = new System.Collections.Generic.List<bool>(); var times = new System.Collections.Generic.List<uint>();
@@ -223,6 +235,7 @@ namespace Universe.Render
                 Universe.Program.WriteLog("cdf97w: " + frames.Count + " pictures in its track" + (_video.Dropped > 0 ? " (" + _video.Dropped + " let go while the coders were full)" : "") + ", the universe's records attached");
             }
             catch (Exception ex) { Universe.Program.WriteLog("cdf97w: its picture track could not be written (" + ex.Message + "); the universe's records are kept in " + _part); }
+            lock (Finishing) Finishing.Remove(System.Threading.Thread.CurrentThread);
         }
     }
 

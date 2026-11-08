@@ -22,7 +22,7 @@ last-verified: 1591b7f
 ## Where it lives
 
 - git.unityailab.com/GFourteen/Universe (origin, over HTTPS) and github.com/Unity-Lab-AI/Universe (github); both public, `.claude/` included; `main` and `develop` moved together on every release and pushed to both; the 0.1.0 release's four assets replaced on both pages on every ship (`gh release upload --clobber` and the Forgejo API).
-- Made from the DNA-AND tree by `universe-sync.cmd`: `src/`, `content/` renamed `.unt` with its headers reworded, `installer/`, `linux/run.sh`, the public pages from `docs/release/`; the program's own name throughout (`installer/universe-names.ps1`). The sync never touches this project's `.claude/`, `wiki/`, workflow docs or `.gitignore`.
+- Made from the DNA-AND tree by `universe-sync.cmd`: `src/`, `content/` renamed `.unt` with its headers reworded, `installer/`, `reference/` (the Uni Vs Matics equations and builders the `.c97` clip is ported from), `linux/run.sh`, the public pages from `docs/release/`; the program's own name throughout (`installer/universe-names.ps1`). The sync never touches this project's `.claude/`, `wiki/`, workflow docs or `.gitignore`.
 
 ## Linux
 

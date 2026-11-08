@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs &amp; Wiki — Uni Vs Matics</title>
+  <meta name="description" content="Full docs and wiki - the pipeline, every variable and equation, provenance and attribution, and exactly what plays vs what converts. Equations, not images: a true back-and-forth sound to image to sound (and image to sound to image) through one shared equation, carried by the .uvme equational file. Classical CV + signal processing (CDF 9/7 wavelets), NOT AI. Needs a desktop GPU - phones cannot run the engines.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Uni Vs Matics">
+  <meta property="og:title" content="Docs & Wiki — Uni Vs Matics">
+  <meta property="og:description" content="Full docs and wiki - the pipeline, every variable and equation, provenance and attribution, and exactly what plays vs what converts. Equations, not images: a true back-and-forth sound to image to sound (and image to sound to image) through one shared equation, carried by the .uvme equational file. Classical CV + signal processing (CDF 9/7 wavelets), NOT AI. Needs a desktop GPU - phones cannot run the engines.">
+  <meta property="og:url" content="https://univsmatics.git.unityailab.com/docs.html">
+  <meta property="og:image" content="https://univsmatics.git.unityailab.com/social/docs.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Docs & Wiki — Uni Vs Matics">
+  <meta name="twitter:image" content="https://univsmatics.git.unityailab.com/social/docs.png">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <main class="doc">
+    <h1>Documentation &amp; Wiki</h1>
+    <p class="muted">Everything about the Uni Vs Matics engine and this site &mdash;
+    the pipeline, the reject ladder, the template schema, how to run it, and a glossary.</p>
+
+    <div class="note" style="border-left:3px solid #6cf;padding-left:.7rem;margin:.6rem 0 1.2rem">
+      <b>New here?</b> Read the <a href="#quickguide">Quick guide (in plain English)</a> first &mdash; it
+      explains everything the site does with no maths. Then the <a href="#uvme">🧠 .uvme file type</a> section
+      explains our equational file (shorthand + full deep-dive), and the <a href="#reference">complete reference</a>
+      further down defines <b>every variable, equation and formula</b>.
+    </div>
+
+    <h2 id="quickguide">Quick guide &mdash; in plain English (the &ldquo;for dummies&rdquo; version)</h2>
+    <p><b>What is this site, in one sentence?</b> An artist drew hundreds of pictures by hand; we turned each
+    picture into <b>pure mathematics</b> (a recipe of numbers), and your browser uses that recipe to
+    <b>redraw the picture, animate a world from it, and even play it as music</b>. No actual picture files are
+    stored &mdash; only the maths.</p>
+
+    <ol class="doc">
+      <li><b>Where the art comes from.</b> Every piece is by one artist &mdash; a person with
+      <b>schizophrenia and a photographic memory</b> who remembered the visions they saw and drew them by
+      hand. This site captures the hidden mathematics inside those drawings.</li>
+
+      <li><b>&ldquo;Equations, not images&rdquo; &mdash; what that actually means.</b> A normal gallery saves
+      photos (JPEG/PNG &mdash; grids of coloured dots). We save <b>none</b> of that. Instead each picture is
+      stored as a long list of simple <b>waves</b> (called <i>wavelets</i>): each wave has a size, a place,
+      and a strength. Add all the waves together and the picture appears. Think of it like a recipe instead of
+      a finished cake &mdash; we ship the recipe, and your browser bakes the cake every time you look.</li>
+
+      <li><b>The viewer (rebuild the actual picture).</b> Open any piece and your browser solves its recipe to
+      draw the <b>real artwork</b> at full quality. A <b>&ldquo;deviation&rdquo; slider</b> lets you throw away
+      the weakest waves and watch the picture get rougher &mdash; proof there's no stored photo, just maths.
+      You can also <b>download the whole equation</b> as a text file, and step through every piece with the
+      &larr;/&rarr; keys.</li>
+
+      <li><b>The world engine (a living, morphing world).</b> The <a href="video.html">video page</a> takes each
+      picture's maths, splits it into <b>layers</b> (the base picture plus its glow, structure, colours, edges
+      and fine detail), stacks them, and slowly <b>melts one piece into the next</b> forever &mdash; not a
+      slideshow. Sliders let you remix the colours, blend modes and motion, save your favourite settings, and
+      record the result as a video or GIF.</li>
+
+      <li><b>Zoom in &amp; the equation fractalizes.</b> Scroll to zoom into a piece on the viewer <i>or the world
+      engine</i> (on the world engine it holds the morph while you zoom) &mdash; it stays
+      the real image until you pass its native detail, then it <b>fractalizes</b>: the piece's own
+      equation (Newton z³ + the cubic x³−2y³=3, with sine/cosine navigators) grows new self-similar detail that
+      <b>propagates out of the image's own edges and vectors</b> &mdash; in the picture's own palette colours,
+      <b>infinitely &mdash; it never bottoms out</b>. The detail grows along the structure, not a wash over the top.</li>
+
+      <li><b>The music (every picture becomes a song).</b> The same numbers that draw a picture also
+      <b>play as music</b>. Big, coarse shapes become low/bass notes; tiny details become high notes. Nothing
+      is a pre-made tune &mdash; the song <i>is</i> the picture's own maths. Each piece sounds different, and
+      you can shape the instrument (guitar, violin, bell&hellip;), tempo and bass, then <b>save the music as an
+      audio file</b>.</li>
+
+      <li><b>Make your own.</b> On <a href="uploads.html">Your equations</a> you can drop in <b>any</b> image and
+      it becomes its own equation <b>entirely inside your browser</b> &mdash; nothing is uploaded anywhere &mdash;
+      saved on your device to replay, morph and hear.</li>
+
+      <li><b>Two heads-ups.</b> (1) Because there's no stored picture, <b>right-click &ldquo;save image&rdquo;
+      is switched off</b> &mdash; the real thing to take away is the equation. (2) All of this is <b>heavy maths
+      that needs a real computer with a graphics chip (GPU)</b>; <b>phones can't run the engines</b>, so on a
+      phone you'll see all the writing but not the live picture/world/music.</li>
+    </ol>
+    <p class="muted">That's the whole site in plain words. Everything below is the deeper, technical version &mdash;
+    and the <a href="#reference">complete reference</a> defines every symbol used in every formula.</p>
+
+    <h2 id="flightportal">The home-page flight portal &mdash; image &rarr; 3D equation, live</h2>
+    <p>On the <a href="index.html">home page</a> the <b>flight portal</b> is the site's headline demo: it takes
+    <i>Unity Born</i> (<span class="mono">samples/unity-born.mp4</span>), <b>equationalizes it in your browser on
+    click-to-enter</b> (the same forward CDF&nbsp;9/7 maths as <a href="uploads.html">Your equations</a>), and shows the
+    result as <b>one equation plane inside a real <span class="mono">preserve-3d</span> 3D frame</b> &mdash; a working,
+    pilotable demo of <b>image &rarr; 3D-equation render + &infin; zoom-fractalize</b>. Nothing auto-downloads: the
+    clip is <span class="mono">preload="none"</span> and only loads when you click <b>Enter the equation</b>.</p>
+    <ul class="doc">
+      <li><b>Leave it alone &mdash; it's a screensaver.</b> The camera gently <b>3D-tilt-bounces</b> over the equation
+      plane and <b>auto-dives into the equation's fractal depth</b> (dive &rarr; <b>hover</b> when it fills &rarr;
+      <b>re-fall</b> &rarr; dive again), forever. Once you zoom past the image's native detail it <b>fractalizes</b> &mdash;
+      the same Newton&rarr;N³ zoom-fractalize as the viewer (section C2), growing self-similar detail in the piece's own
+      palette out of its edges/vectors.</li>
+      <li><b>Take over any time.</b> <b>Scroll = dive</b> in/out; <b>drag / W&middot;S&middot;A&middot;D&middot;Q&middot;E
+      = spin</b> the plane in 3D (<b>full 360, no plane/gimbal lock</b>); <b>R / double-click / &#10227; reset</b> snaps the view home.
+      Let go and the screensaver resumes.</li>
+      <li><b>Mobile fallback.</b> The 3D equation-dive needs a desktop GPU, so on a phone (no engine) the portal
+      <b>falls back to flat playback</b> of the clip &mdash; tap to just play it.</li>
+    </ul>
+    <p class="note">Same maths everywhere: the portal reuses the live equationalizer and the
+    <a href="#reference">zoom-fractalize (mode E)</a> engine &mdash; it is the home page's compact, hands-on version of
+    what the <a href="viewer.html">viewer</a> and <a href="video.html">world engine</a> do.</p>
+
+    <h2 id="uvme">🧠 The <span class="mono">.uvme</span> file &mdash; the equational file type</h2>
+
+    <div class="note" style="border-left:3px solid #6cf;padding-left:.8rem;margin:.5rem 0 1.1rem">
+      <b>Shorthand (the whole thing in 30 seconds).</b>
+      <ul class="doc" style="margin:.4rem 0 .2rem">
+        <li><b>What it is:</b> a <span class="mono">.uvme</span> is a <b>real, standard WAV audio file</b> that
+        <b>plays in any media player</b> &mdash; with the artwork's full <b>equation</b> (the shared wavelet
+        coefficient field <span class="mono">C</span>) tucked inside it as data. <b>One file = the sound AND the
+        equation.</b></li>
+        <li><b>What it does:</b> from that one equation, our code <b>regenerates the picture, the music, and the
+        fractal</b> &mdash; it is a <b>Rosetta Stone</b>. One master call reads it out as
+        <span class="mono">equation · image · png · jpg · webp · wav · sound · eqsound · fractal</span>.</li>
+        <li><b>How you use it:</b> <b>play it</b> anywhere like any <span class="mono">.wav</span> (rename to
+        <span class="mono">.wav</span> if an app is fussy); <b>rebuild the image</b> by dropping it on the
+        <a href="audio.html">Combiner</a> in a desktop browser. Make one from any image or sound on the Combiner /
+        <a href="uploads.html">Your equations</a>.</li>
+        <li><b>The honest catch:</b> a file's first bytes can only declare <i>one</i> format, so on disk it opens
+        natively as a <span class="mono">.wav</span> &mdash; the true &ldquo;plays-everything&rdquo; polyglot is the
+        <b>equation&nbsp;+&nbsp;code</b>, not the container. The exact full image rides as data; the <i>audible</i>
+        music alone isn't reversible (see below).</li>
+      </ul>
+      Full ins-and-outs follow; the symbol-level maths is in the <a href="#reference">complete reference</a>, and
+      the areas where it <b>out-competes a stored image</b> (lossless, multi-modal, resolution-free) are on the
+      <a href="robustness.html">Proven</a> page.
+    </div>
+
+    <h3>What's actually in the file (anatomy)</h3>
+    <p>A <span class="mono">.uvme</span> is a bog-standard <b>RIFF/WAVE</b> container &mdash; the same format as any
+    <span class="mono">.wav</span> &mdash; carrying:</p>
+    <ul class="doc">
+      <li><b>The audible audio</b> (the <span class="mono">fmt&nbsp;</span> + <span class="mono">data</span> chunks):
+      the pleasant sonification of the piece (the <a href="#reference">master music equation</a>), real PCM you can
+      listen to in any player.</li>
+      <li><b>A custom <span class="mono">UVME</span> chunk:</b> the serialized coefficient field
+      <span class="mono">C = {(r<sub>k</sub>,c<sub>k</sub>,v<sub>k</sub>)}</span> + palette + dimensions, the
+      complete equation. It is <b>CRC-32 checked</b>, stamped with a <b>schema version</b>
+      (<span class="mono">uvm-combiner@1</span>), and carries a <span class="mono">produces</span> manifest listing
+      every representation it can become. Audio players <b>skip unknown chunks</b> (exactly how broadcast WAV
+      carries its <span class="mono">bext</span> metadata), so the equation rides along invisibly while the file
+      still plays.</li>
+    </ul>
+    <p>Why the branded <span class="mono">.uvme</span> extension over a bare <span class="mono">.wav</span> /
+    <span class="mono">.uvm</span>: fewer apps grab it by file association, so it survives as a combiner file. It is
+    byte-identical to the <span class="mono">.wav</span> we export &mdash; rename either way freely. Legacy
+    <span class="mono">.uvm</span> and plain <span class="mono">.wav</span> still decode.</p>
+
+    <h3>Ins &mdash; what you can put IN (one converter, every input)</h3>
+    <p>A single entry point, <span class="mono">FT_COMBINER.fromAnyFile(file)</span>, takes <b>an image OR any
+    sound</b> and returns the same field <span class="mono">C</span>, auto-routing by what you dropped:</p>
+    <table class="tbl">
+      <tr><th>you drop&hellip;</th><th>how the equation is obtained</th><th>fidelity</th></tr>
+      <tr><td><b>an image</b> (png/jpg/webp)</td><td>forward CDF&nbsp;9/7 transform &rarr; a fresh field <span class="mono">C</span> (the same maths as <a href="uploads.html">Your equations</a>)</td><td><b>new exact equation</b> of that image</td></tr>
+      <tr><td><b>a <span class="mono">.uvme</span> / <span class="mono">.wav</span></b> (with the chunk)</td><td>read the exact <span class="mono">C</span> straight out of the <span class="mono">UVME</span> chunk (CRC-checked)</td><td><b>byte-exact</b> dense image</td></tr>
+      <tr><td><b>a <span class="mono">.eqtxt</span></b> (plain text)</td><td>read the exact field <span class="mono">C</span> straight from the JSON text &mdash; the same <span class="mono">C</span>, text-encoded (base64 coeffs) instead of binary</td><td><b>byte-exact</b> image / sound / 3D</td></tr>
+      <tr><td><b>an equational sound</b></td><td>Goertzel demodulate the MFSK tones &mdash; the waveform <i>is</i> the equation</td><td><b>exact to the compact field</b> it carries</td></tr>
+      <tr><td><b>any plain sound you found</b></td><td>additive loader: STFT the sound's own spectrum into a 2D field, forward-transform to <span class="mono">C</span></td><td><b>generated</b> from the sound (not the original image)</td></tr>
+    </table>
+
+    <h3>Outs &mdash; what you can get OUT (the Rosetta extract)</h3>
+    <p>Once you hold the field <span class="mono">C</span>, one master function
+    <span class="mono">FT_COMBINER.extract(file, kind)</span> (and <span class="mono">produce(rec, kind)</span>)
+    <b>solves the equation for whichever representation you ask</b> &mdash; nothing is a stored duplicate, each
+    output is derived live from <span class="mono">C</span> by its master map
+    (Φ<sub>img</sub> / Φ<sub>snd</sub> / Φ<sub>frc</sub>):</p>
+    <table class="tbl">
+      <tr><th>kind</th><th>what comes out</th></tr>
+      <tr><td><span class="mono">equation</span></td><td>the field <span class="mono">C</span> itself (the downloadable terms / template)</td></tr>
+      <tr><td><span class="mono">image</span></td><td>the reconstructed picture (ImageData), at native resolution</td></tr>
+      <tr><td><span class="mono">png</span> · <span class="mono">jpg</span> · <span class="mono">webp</span></td><td>that picture as an image file. The <b><span class="mono">.png</span> also carries the equation</b> in a hidden <span class="mono">tEXt</span> chunk &mdash; it shows as a normal picture in any viewer AND re-imports here to rebuild the <b>exact</b> image. (<span class="mono">jpg</span>/<span class="mono">webp</span> are plain pixels &rarr; re-equationalized fresh on re-import.)</td></tr>
+      <tr><td><span class="mono">wav</span></td><td>the listenable sonification (with the <span class="mono">UVME</span> chunk &mdash; a fresh <span class="mono">.uvme</span>)</td></tr>
+      <tr><td><span class="mono">sound</span></td><td>raw PCM of that sonification</td></tr>
+      <tr><td><span class="mono">eqsound</span></td><td>the <b>equational sound</b> &mdash; MFSK tones that <i>are</i> the compact <span class="mono">C</span></td></tr>
+      <tr><td><span class="mono">fractal</span></td><td>the generative IFS / zoom-fractalize parameters grown from <span class="mono">C</span></td></tr>
+      <tr><td><span class="mono">eqtxt</span></td><td>the field <span class="mono">C</span> as a <b>plain-text</b> file (base64 coeffs in JSON) &mdash; human-portable, diff-able, version-controllable, and re-imports to rebuild the <b>exact</b> image, sound and 3D</td></tr>
+    </table>
+    <p><b>So the chain is:</b> <span class="mono">anything → C → anything</span>. Drop a sound, get the image; drop
+    an image, get the sound or the fractal; feed the rebuilt image straight into the viewer's
+    <b>&infin; zoom-fractalize</b> or the world compositor. One field, one converter, every direction.</p>
+
+    <p class="note"><b>What each file carries &mdash; the full combination.</b> Every file made on this site carries
+    <b>both faces</b> of whatever you put in, so any one file pulls the lot back: an exported <span class="mono">.png</span>
+    shows your <b>original image</b> as its visible pixels <i>and</i> carries the <b>equation</b> in a hidden
+    <span class="mono">tEXt</span> chunk; an image-source <span class="mono">.uvme</span> embeds the <b>original image</b>
+    alongside the equation; a sound-source <span class="mono">.uvme</span>/<span class="mono">.wav</span> holds your
+    <b>original audio</b> in its data chunk alongside the equation. So on the Combiner, Your-equations and the Viewer
+    you get two live toggles &mdash; <b>image: original / equation</b> and <b>sound: original / equation</b> &mdash;
+    and ∞ zoom works on whichever picture you're showing. The only hard limit is physics: a <span class="mono">.png</span>
+    is an image so it can't <b>play</b> on its own (use the <span class="mono">.uvme</span>/<span class="mono">.wav</span> for that),
+    and an image-source file has no original sound to toggle to (only the equation's music), just as a sound-source file
+    has no original picture (only the equation render). Gallery pieces ship as <b>equations only</b> (no original scan) &mdash;
+    there the toggle shows equation-only.</p>
+
+    <h3>The two flavours of &ldquo;equation in a sound&rdquo; (and why both exist)</h3>
+    <ul class="doc">
+      <li><b>Music <span class="mono">.uvme</span> (exact, data-carried):</b> a listenable song with the
+      <b>byte-exact dense field</b> in the <span class="mono">UVME</span> chunk. Rebuilds the original image
+      <b>exactly</b>. The audible music itself is <i>not</i> reversible &mdash; it's a lossy artistic projection;
+      the exact equation rides as data alongside it.</li>
+      <li><b>Equational sound (the waveform IS the equation):</b> a 16-tone <b>MFSK</b> modem encodes the
+      <b>compact</b> field (dims + palette + strongest coefficients) as pure tones a <b>Goertzel</b> demodulator
+      reads straight back &mdash; <b>no data chunk</b>. Deterministic + CRC-checked over lossless PCM. Rebuilds an
+      <b>exact-to-the-compact-field</b> image (a real, slightly-abstracted version of the dense original).</li>
+    </ul>
+    <p class="note"><b>Why not one file that's both exact and short?</b> A byte-exact dense field is <b>megabytes</b>;
+    encoding that &ldquo;as listenable sound&rdquo; of any sane length is information-theoretically impossible (it'd
+    be hours of audio or raw-data screech). So the split is honest, not a limitation we hid: <b>exact</b> &rarr; the
+    data-carried music <span class="mono">.uvme</span>; <b>compact-but-self-carrying</b> &rarr; the equational sound.</p>
+
+    <h3>Motion &mdash; the <span class="mono">.uvmv</span> sibling, and <span class="mono">.gif</span> / <span class="mono">.mp4</span> as equations</h3>
+    <p>The same idea extends to motion on the <a href="videocombiner.html">Equational Video</a> page: a clip becomes a
+    <b>sequence of per-frame equations</b> <span class="mono">{C<sub>t</sub>}</span> + its audio + fps, packed into a
+    <span class="mono">.uvmv</span> container. It reconstructs &amp; <b>plays from the maths</b> and exports a
+    <span class="mono">.webm</span>, an <span class="mono">.mp4</span>, or an animated <span class="mono">.gif</span>.</p>
+    <p><b><span class="mono">.gif</span> and <span class="mono">.mp4</span> are first-class equational citizens, all
+    directions</b> (sound&harr;gif&harr;mp4&harr;image). An <b>animated GIF</b> decodes to per-frame equations (and
+    re-exports as one); an <b>mp4/webm</b> the same; an <b>image</b> or <b>sound</b> blooms into an equational
+    <b>zoom-dive</b> video (the infinite Newton/N³ fractalize, baked frame-by-frame) &mdash; for a sound you pick the
+    track: the <b>equation-music</b>, the <b>original</b>, or <b>none</b>. From any motion file you can also pull the
+    four <b>answers</b>: a still <b>image</b> (carrying its equation), the <b>original sound</b> (if the clip had one
+    &mdash; a gif doesn&rsquo;t), the <b>music of the equation</b>, and the <b>equational images</b>. Beyond Eq Video,
+    you can drop your own gif/mp4/image/sound straight onto the <b>world engine</b> to morph it in the compositor, and
+    the Combiner / Your-equations / Viewer <b>play</b> a dropped animated gif/video instead of freezing to one frame.</p>
+    <p class="muted" style="font-size:.85rem">Honest scope: v1 keeps a compact field per frame (inter-frame delta is a
+    documented next step). In-browser <span class="mono">.mp4</span> uses the browser&rsquo;s H.264 recorder (Chrome
+    126+/Edge/Safari) &mdash; elsewhere export <span class="mono">.webm</span> or use the desktop Converter (Rust
+    ffmpeg) for a guaranteed <span class="mono">.mp4</span>. The <span class="mono">.webm</span>/<span class="mono">.gif</span>
+    play everywhere; the <span class="mono">.uvmv</span> is the exact-equation file.</p>
+
+    <h3>Making one &amp; reading one back (workflow)</h3>
+    <ul class="doc">
+      <li><b>Make:</b> on the <a href="audio.html">Combiner</a> drop an image or a sound &rarr; save the result as a
+      <span class="mono">.uvme</span> (or <span class="mono">.wav</span> / equational sound / <span class="mono">.png</span>).
+      On <a href="uploads.html">Your equations</a> any image you drop becomes its own equation in-browser (nothing
+      uploaded) and can be exported the same way.</li>
+      <li><b>Play:</b> open the <span class="mono">.uvme</span> in any media player on any OS (rename to
+      <span class="mono">.wav</span> if an app won't take the extension). <b>VLC plays it everywhere.</b></li>
+      <li><b>Rebuild the image / run the engines:</b> drop the <span class="mono">.uvme</span> on the
+      <a href="audio.html">Combiner</a> in a <b>desktop browser with a GPU</b> &mdash; a media player only plays the
+      audible side; rebuilding the picture and running zoom-fractalize / the world engine is GPU/CPU-heavy and
+      <b>phones can't do it</b>. (Per-platform table under <a href="#reference">the reference</a>.)</li>
+    </ul>
+
+    <h3>Built to grow (extensible &amp; versioned)</h3>
+    <p>The stone is meant to expand: new <b>combiner equations</b> (more transforms of <span class="mono">C</span> &mdash;
+    new things to discover) become new <span class="mono">produces</span> entries + a <span class="mono">produce()</span>
+    branch, and any algorithm update rides the <span class="mono">uvm-combiner@N</span> schema version stamped in the
+    chunk &mdash; bump the version, teach the decoder the new one, and <b>every older <span class="mono">.uvme</span>
+    still decodes</b>. Forward-compatible by design. The byte-level container layout, the three sound paths, the
+    plays-where matrix and every symbol are detailed in the <a href="#reference">complete reference</a>.</p>
+
+    <h2>These are equations, not images</h2>
+    <p><b>Plain version.</b> A normal gallery stores pictures — JPGs or PNGs, grids of saved pixels.
+    This one stores none. Every artwork has been converted into a <b>recipe of mathematics</b>: a long
+    list of waves (wavelets), each with a strength and a place, plus colour rules. When you open a piece,
+    your browser <i>solves that recipe</i> and draws the picture from scratch. Turn the deviation dial and
+    you literally add or remove equation terms and watch the image rebuild; download the full equation and
+    you get every term as text. The picture is an <i>output of the maths</i>, not a stored file.</p>
+    <p><b>Technical version.</b> Each template is a sparse, multi-level <b>separable CDF 9/7 biorthogonal
+    wavelet expansion</b> (the JPEG2000 wavelet) per YCbCr channel:
+    <span class="mono">channel(x,y) = Σ_k c_k · ψ_k(x,y)</span>, where each ψ is a 9/7 basis function at a
+    given scale and position and c_k is its coefficient. The analyzer (OpenCV/NumPy) forward-transforms each
+    image at <b>true native resolution</b> (the source long edge, padded to a multiple of 64 — not a power
+    of two, which keeps the grid tight), then keeps the coefficients needed to hit a per-channel L2 fidelity
+    target. Because that target is an <b>energy threshold, not a fixed cap</b>, a complex image carries a
+    genuinely different term count than a simple one (here from ~0.4M for the sparsest piece up to ~5M for the
+    densest, with most pieces in the millions) — every image is its own equation, not a fixed-length list. Coefficients ship compactly:
+    <b>LEB128 delta-varint positions</b> (sorted, so deltas pack to ~1 byte) + <b>Int16 quantized values</b>
+    × a per-channel scale, base64 — never pixels. The browser runs the matching 9/7 inverse transform
+    (verified byte-for-byte identical to the analyzer) to reconstruct at native resolution and aspect.
+    Colour is carried exactly in YCbCr; the title caption is inpainted out before analysis so no equation
+    encodes text. Reconstruction fidelity is reported per image as PSNR.</p>
+    <div class="note"><b>TL;DR:</b> no image files exist here — each picture is a live solution of its own
+    equations (thousands of wavelet terms + colour formulas), reconstructed in your browser.</div>
+
+    <h2>Overview</h2>
+    <p>Uni Vs Matics scans a corpus of fractal art and reduces each qualifying image to a
+    <b>mathematical template</b>. A template carries three forms of the same image's math:
+    a structured numeric attribute record, a set of human-readable symbolic equations, and a
+    generative IFS that regenerates a fractal in the source's family. Images that don't yield
+    useful, unique equations &mdash; fog/blur, TV-snow static, text/emoji-dominant frames, or
+    near-duplicates &mdash; are filtered out automatically.</p>
+
+    <h2>About the source art</h2>
+    <p>The corpus is a single artist's body of work: a <b>schizophrenic artist with photographic
+    memory</b> who <b>recalled the hallucinations they experienced and drew them, by hand</b>, exactly as
+    they saw them. These are not procedurally-generated fractals — they are remembered visions, hand-rendered
+    from perfect recall. Uni Vs Matics exists to capture the underlying mathematics of those recalled forms,
+    so the structures can be studied, browsed, reconstructed, morphed, and even heard.</p>
+    <p>Source: <a href="https://www.deviantart.com/gfourteen/gallery" target="_blank" rel="noopener">the original hand-drawn gallery — GFourteen on DeviantArt</a>.</p>
+    <div class="note">Every template traces back to one of these recalled works. The reject
+    ladder is tuned to honour them &mdash; a small title caption never disqualifies a piece, and
+    only genuine fog, static, or text-dominant frames are set aside.</div>
+
+    <h2>The pipeline</h2>
+    <ol class="doc">
+      <li><b>Load &amp; guard</b> &mdash; raster only; animated gif/apng/webp and non-images are skipped. Images are analyzed at a bounded resolution (default 1024 px on the long edge).</li>
+      <li><b>Fog / blur reject</b> &mdash; Laplacian variance, Canny edge density, and high-frequency spectral energy. Smooth, foggy, vector-less images are dropped.</li>
+      <li><b>TV-snow static reject</b> &mdash; luminance entropy, spectral flatness, and lag-1 autocorrelation. White-noise-like "snow" is dropped.</li>
+      <li><b>Vector extraction</b> &mdash; unsharp mask &rarr; Canny &rarr; probabilistic Hough &rarr; colinear "same-trajectory" decimation, plus a structure-tensor orientation field. The long-line count becomes a structure score.</li>
+      <li><b>Text / emoji reject</b> &mdash; MSER glyph-row analysis with uniformity, spacing-regularity and a <b>dominance gate</b>: only a text-<i>filled</i> frame is rejected. Strong line-vector structure vetoes the reject, so a small title caption never disqualifies vectored art.</li>
+      <li><b>Colour, lumen, waveform</b> &mdash; palette + per-channel GMMs; luminance field, density aggregation, degradation-propagation field, morph-allotment gradients; radial/angular FFT spectra + power-law &beta;.</li>
+      <li><b>Generative IFS</b> &mdash; self-similarity collage fit &rarr; affine maps + weights + variation tag + box-counting dimension.</li>
+      <li><b>Quality gate</b> &mdash; an intricacy score (vector richness, edge density, spectral structure, luminance range) must clear a floor.</li>
+      <li><b>Corpus uniqueness</b> &mdash; feature-vector cosine dedup; near-duplicate equation signatures are dropped, highest-intricacy representative kept.</li>
+    </ol>
+
+    <div class="note">The reject ladder is deliberately conservative about text: this gallery's
+    fractals all carry one/two-word title captions, so a localized caption is <b>ignored</b> and
+    the engine grabs the main focal fractal.</div>
+
+    <h2>Template schema</h2>
+    <pre class="eq mono" style="white-space:pre-wrap">{
+  "schema": "fractal_templater/template@1",
+  "id", "title", "source_file", "original_shape", "quality_intricacy",
+  "filters": { text_emoji, fog_blur, static_noise },   // every gate metric (audit)
+  "attributes": {
+    "vectors":  { lines[], orientation_field, decimation_ratio, edge_density },
+    "color":    { palette[], channel_gmm{r,g,b}, hsv_gradient },
+    "lumen":    { density_aggregation, degradation_propagation_field, morph_allotment_gradients },
+    "waveform": { radial_spectrum[], angular_spectrum[], power_law_beta }
+  },
+  "generative": { affine_maps[], variation, fractal_dimension },   // regeneration
+  "symbolic_equations": [ ... ]                                    // human-readable
+}</pre>
+
+    <h2>Running the engine (CLI)</h2>
+    <pre class="eq mono" style="white-space:pre-wrap"># from the repo root
+python run.py --input ../downloads/deviantart --output ./out_full --workers 14
+python run.py --input ../downloads/deviantart --output ./out --limit 30 --no-mp   # smoke
+
+# then export the static-site data bundle
+python build_web.py --templates ./out_full --web ./web</pre>
+    <p>Outputs: <code>out_full/templates/*.json</code> + <code>*.eq.txt</code>,
+    <code>out_full/rejected.json</code> (every dropped image + reason), and
+    <code>out_full/summary.json</code>.</p>
+
+    <h2>Running the website</h2>
+    <p>The site is pure static (HTML/CSS/JS + JSON). It must be served over HTTP because it
+    <code>fetch()</code>es the data bundle &mdash; <code>file://</code> won't work.</p>
+    <div class="note" style="border-left:3px solid #c93;padding-left:.7rem;margin:.5rem 0">
+      <b>18+ gate.</b> The site shows a <b>site-wide age + Terms-of-Service / Privacy gate</b> on first visit (18+
+      confirmation, birthdate, then ToS/Privacy acceptance). It's injected automatically on every page from
+      <span class="mono">assets/common.js</span> (via <span class="mono">assets/age-verification.js</span>), recorded in
+      <span class="mono">localStorage</span> so it only shows <b>once per browser</b>; the legal links point to
+      <a href="https://www.unityailab.com/terms" target="_blank" rel="noopener">unityailab.com/terms</a> and
+      <a href="https://www.unityailab.com/privacy" target="_blank" rel="noopener">/privacy</a>.
+    </div>
+    <pre class="eq mono" style="white-space:pre-wrap"># local preview — start.sh / start.bat pick a random free port and open the browser
+./start.sh            # or: start.bat on Windows
+# (or manually:  cd web &amp;&amp; python -m http.server &lt;port&gt; )
+
+# lab deploy: this is a pure-static site → rsync web/ to the pages host
+# (*.git.unityailab.com) per the lab /deploy mechanism.</pre>
+
+    <h2>Two engines</h2>
+    <p>The same mathematics drives two completely different experiences. <b>Neither is a slideshow and
+    neither stores pixels.</b></p>
+
+    <h3>1 &middot; Exact-copy engine (the <a href="viewer.html">viewer</a>)</h3>
+    <p><b>Plain version.</b> Open any piece and your browser rebuilds the <i>actual</i> artwork from its
+    equations at full native resolution — drag to pan, scroll to zoom, turn the deviation dial to add or
+    drop equation terms and watch the picture rebuild, or download every term as text. <b>Prev/next
+    buttons and the ←/→ keys scroll through every reconstruction in the corpus</b>, in-place, without
+    leaving the viewer.</p>
+    <p><b>Math-layer still.</b> Alongside the 2D reconstruction the viewer shows a <b>math-layer still</b> of
+    the piece &mdash; the same flat layered compositor as the world engine, pinned to this one piece. Its math
+    layers (the reconstruction plus glow, structure, colour field, edges and fine detail) are stacked and
+    blended flat, geometry locked to the frame (portrait turned on its side). Open the <a href="video.html">video
+    page</a> for the full live, morphing version.</p>
+    <p><b>Live morph &mdash; the "3D universe" inside the viewer.</b> Hit <b>live morph</b> (or <b>play</b>)
+    and the viewer builds a ladder of real reconstructions across the equation's term-set and continuously
+    cross-fades through them, so the <b>main image equation visibly morphs</b> as its active terms emerge
+    and dissolve. When you <b>play the equation as music</b>, the morph follows the music's progress — the
+    <b>full equation plays out in picture and sound together</b>.</p>
+    <p><b>&infin; Zoom-fractalize.</b> Scroll to zoom into the reconstruction &mdash; it stays the real image until
+    you pass its native detail, then it <b>fractalizes</b>: the piece's own equation (complex Newton
+    z³−K + the cubic x³−2y³=3, with sine/cosine navigators warping all axes) grows new self-similar detail in the
+    piece's <b>palette colours</b>, <b>propagating out of the image's own edges and vectors</b> (Sobel-masked + additively
+    composited, so the filigree grows ALONG the structure &mdash; not a fade pasted over the top). The micro-detail
+    frequency rides the zoom, so it <b>refines forever and never bottoms out</b>, drifting into fresh equational
+    territory as you go deeper. All solved live from the maths &mdash; never a stored or tiled image.</p>
+    <p><b>The equation as music (the master music equation, not a drone).</b> The sound is a <b>pure function
+    of the image's own wavelet coefficients</b> &mdash; <b>no scale, key, melody or rhythm is added ahead of
+    time</b> (that would be a gimmick). Each coefficient's <b>wavelet band</b> sets its octave, so coarse
+    structure plays as bass and fine detail as treble &mdash; a <b>wide register straight from the maths</b>
+    (~40&nbsp;Hz to ~3&nbsp;kHz). The strongest few coefficients <b>per band</b> are voiced (so every octave
+    speaks and each image sounds different), magnitude sets loudness, and they're read out in a
+    <b>stride-rotated round-robin across the bands</b> so the melody <b>leaps</b> across octaves rather than
+    climbing a low&rarr;high scale (that ascending sweep sounded like a strobe). Every note is a real pluck/pad with harmonics + envelope
+    &mdash; never a buzz. In the world engine a <b>continuous scheduler</b> crossfades one piece's note-set
+    into the next by the live morph amount, so the music morphs and merges <b>without pauses</b>. The exact
+    formulas are on the <a href="equations.html">equations page</a> (form&nbsp;9) so anyone can recreate the
+    same music from a template. One plug-in turns <i>any</i> equation (gallery or your own upload) into music.</p>
+
+    <h3>2 &middot; World engine (the <a href="video.html">video page</a>)</h3>
+    <p><b>Plain version.</b> A living world built <i>from</i> the equations — not the pictures, and not a
+    camera flying around a 3D image. Each piece is split into its <b>math layers</b> and those layers are
+    stacked flat, blended, and slowly merged <b>into the next piece</b>. The maths of the image is what's on
+    screen; portrait pieces are turned on their side to fill the frame.</p>
+    <p><b>Technical version.</b> A flat <b>layered math compositor</b>. From each piece's equation we
+    decompose seven math layers — <b>recon</b> (the full faithful reconstruction, the base), <b>base</b>
+    (coarse glow), <b>mid</b> (mid-frequency structure), <b>colour</b> (the spatial colour-field wash),
+    <b>lumen</b> (luminance density), <b>edges</b> (Canny line structure) and <b>spark</b> (high-frequency
+    filament detail) — all at native resolution. The engine draws the reconstruction as the base, then stacks
+    the enriching layers on top with their own blend modes (<code>screen</code> / <code>lighter</code> /
+    <code>overlay</code> / <code>soft-light</code>) and filters, with the geometry <b>locked to the frame
+    edges</b> (no drift, no sway, no camera). Whole composites cross-fade piece→piece for the evolving,
+    merging world. "3D" in the compositor is the depth of the compositing stack, not perspective. (The viewer's
+    <b>&infin; zoom-fractalize</b> &mdash; mode E &mdash; solves the equation across three axes; see section C2.)</p>
+    <ul class="doc">
+      <li><b>Merge</b> &mdash; whole-composite cross-fade builds one piece's math layers into the next; nothing is a slideshow.</li>
+      <li><b>Fill the screen, locked</b> &mdash; exact cover-fit pinned to the frame edges for every piece; portrait pieces rotated 90° (width→height) and cover-cropped; fullscreen-able.</li>
+      <li><b>Transport</b> &mdash; play / pause, speed, morph length, layer enrichment, plus a playlist (48 / 120 / all) with loop &amp; shuffle.</li>
+      <li><b>Full effects palette</b> &mdash; every blend mode (with a global override), the CSS filter set (hue-rotate, blur, brightness, saturation, contrast, sepia, invert, grayscale), per-layer on/off toggles, and an <b>evolve</b> control that makes the layers build, collapse and merge (and the hue drift) over time &mdash; all without moving the locked geometry.</li>
+      <li><b>&#10227; reset view</b> &mdash; returns the playlist to the start. (Zoom-into-the-image &amp; fractalize lives on the <a href="viewer.html">viewer</a>, where a single still can be zoomed into infinitely.)</li>
+      <li><b>Native detail</b> &mdash; layers scanned at native resolution; rendered up to 1920px — no shit-res math capture.</li>
+      <li><b>Capture</b> &mdash; PNG or JPG of the exact hi-res frame; record the live world to <code>.webm</code>.</li>
+      <li><b>GIF (512&sup2;)</b> &mdash; the last few seconds from a rolling buffer, with an optional seamless boomerang loop. Encoded in a Web Worker so playback never stutters.</li>
+      <li><b>Silent saves</b> &mdash; pick a folder once (File System Access API) and every PNG/JPG/GIF/webm writes there with no Save-As prompt.</li>
+    </ul>
+
+    <h3>3 &middot; Your own equations (in-browser, on <a href="uploads.html">Your equations</a>)</h3>
+    <p><b>Plain version.</b> Upload any image and it is turned into <i>its own</i> equation right in
+    your browser &mdash; the exact same CDF 9/7 maths as the gallery. Nothing is sent to a server.
+    Your equations are saved <b>in your browser</b> (so they persist between visits), and you can
+    reconstruct, deviation-dial, live-morph and sonify them just like a gallery piece.</p>
+    <p><b>Technical version.</b> <code>assets/equationalize.js</code> runs the <b>forward</b> CDF 9/7
+    lifting transform (a verified machine-exact inverse-pair of the shipped decoder), selects
+    coefficients to an energy target so each image gets its own honest term count, quantises to Int16
+    and packs positions with the same LEB128 delta-varint scheme the corpus uses &mdash; producing a
+    reconstruction object byte-compatible with the viewer. Persisted to <b>IndexedDB</b>; entirely
+    client-side, no upload, no dependency.</p>
+
+    <h2>These are equations &mdash; not images (so the engine won't behave like one)</h2>
+    <p>Because every picture is a live solution of its equations, the rendering engines (viewer,
+    world engine, your-equations) <b>block right-click &ldquo;Save image as&rdquo; / copy and
+    drag-to-save</b> on purpose &mdash; there is no stored image to grab, only the maths. The real,
+    intended exports are the <b>equation</b> itself (<i>download full equation</i> in the viewer) and
+    explicitly-rendered <b>PNG / JPG / 512&sup2; GIF / webm</b> from the world engine's capture
+    buttons. Those go through deliberate handlers, not the image context-menu.</p>
+
+    <h2 id="reference">Complete reference &mdash; every variable, equation &amp; formula</h2>
+    <p class="muted">Every formula the engine uses, with <b>every symbol defined</b>. The same forms are
+    rendered as typeset maths on the <a href="equations.html">equations page</a>; here each is spelled out in
+    full so nothing is left implicit. (Notation: <span class="mono">&Sigma;</span> = sum,
+    <span class="mono">&lfloor;&middot;&rfloor;</span> = floor/round-down, <span class="mono">|&middot;|</span>
+    = absolute value, <span class="mono">&radic;</span> = square root.)</p>
+
+    <h3>The combiner &mdash; one shared variable space (the master of masters)</h3>
+    <p>Every transform below reads ONE shared state &mdash; the wavelet <b>coefficient field</b>. The image,
+    the sound and the fractal are all functions of the SAME <span class="mono">C</span>, which is what makes
+    them inter-convertible (&ldquo;equatable between master equations&rdquo;) and what lets the reverse
+    features run.</p>
+    <p class="eq mono" style="white-space:pre-wrap">C = { (r<sub>k</sub>, c<sub>k</sub>, v<sub>k</sub>) : k = 1..N }     (+ palette P, dims W&times;H)
+&Phi;<sub>img</sub>(C) = &Sigma; v<sub>k</sub> &middot; &psi;(r<sub>k</sub>,c<sub>k</sub>)              (&rarr; the image)
+&Phi;<sub>snd</sub>(C) = ( &ell;<sub>k</sub>, f<sub>k</sub>, a<sub>k</sub>, t<sub>k</sub> )               (&rarr; the sound)
+&Phi;<sub>frc</sub>(C) = { A<sub>k</sub>, t<sub>k</sub>, w<sub>k</sub> } ; grow = iterate x&sup3;&minus;2y&sup3;=3   (&rarr; the fractal)</p>
+    <table class="tbl">
+      <tr><th>symbol</th><th>what it is</th></tr>
+      <tr><td><span class="mono">C = {(r<sub>k</sub>,c<sub>k</sub>,v<sub>k</sub>)}</span></td><td>The <b>coefficient field</b> &mdash; the one shared variable space. Each term's row, column/band and value. Everything is computed from it.</td></tr>
+      <tr><td><span class="mono">&Phi;<sub>img</sub>, &Phi;<sub>snd</sub>, &Phi;<sub>frc</sub></span></td><td>The three master maps OUT of <span class="mono">C</span> &mdash; to the picture (A), to the music (B), to the fractal (C). Spelled out in full below.</td></tr>
+      <tr><td><span class="mono">&Phi;<sub>snd</sub><sup>&minus;1</sup></span></td><td>The <b>inverse</b> (sound&rarr;image). Exists ONLY when a note encodes position (pitch&rarr;band, pan&rarr;column, duration&rarr;row, amplitude&rarr;<span class="mono">|v|</span>). Then <span class="mono">C</span> is recovered and <span class="mono">&Phi;<sub>img</sub></span> repaints the image. The everyday playback discards position, so it is not invertible.</td></tr>
+    </table>
+
+    <h3>Sound &harr; image, both ways &mdash; the three round-trip paths (the <a href="audio.html">Combiner</a> page)</h3>
+    <p>The field <span class="mono">C</span> is a two-way bridge. An image is forward-transformed to <span class="mono">C</span>;
+    a sound can carry <span class="mono">C</span> back. There are <b>three</b> honest paths, tried in this order when you drop a sound:</p>
+    <table class="tbl">
+      <tr><th>path</th><th>how the equation travels</th><th>result</th></tr>
+      <tr><td><b>.uvme / .wav</b> (music + data chunk)</td><td>A normal WAV (pleasant sonification you can listen to) with the EXACT field <span class="mono">C</span> stored in a custom <span class="mono">UVME</span> RIFF chunk (CRC-checked). The audible tones are for listening; the exact equation rides as data alongside them.</td><td><b>Byte-exact</b> dense image.</td></tr>
+      <tr><td><b>equational sound</b> (the waveform IS the equation)</td><td>A 16-tone <b>MFSK</b> modem encodes the <b>compact</b> field (dims + palette + strongest coefficients) as pure tones; a Goertzel demodulator reads the equation <b>straight out of the waveform</b> &mdash; no data chunk. CRC-checked, deterministic over lossless PCM.</td><td><b>Exact to the compact field</b> it carries (an approximate-but-real version of the dense original).</td></tr>
+      <tr><td><b>additive loader</b> (a plain sound you found)</td><td>For any audio with no equation in it: an STFT lays the sound's real time/frequency energy into a 2D field (time&rarr;x, log-frequency band&rarr;y on the F<sub>LO</sub>..F<sub>HI</sub> ladder, magnitude&rarr;brightness), forward-transformed into a real <span class="mono">C</span>.</td><td><b>Generated</b> from the sound &mdash; not the original.</td></tr>
+    </table>
+    <p><b>Why exact + listenable can&rsquo;t be the same file (no smoke):</b> a byte-exact dense field is megabytes;
+    encoding that &ldquo;as sound&rdquo; of any listenable length is information-theoretically impossible (it would be
+    hours of audio, or raw-data noise &mdash; which is exactly why the music <span class="mono">.uvme</span> tacks the data on).
+    So the <b>equational sound</b> carries the compact equation, and the byte-exact dense image stays on the music <span class="mono">.uvme</span>.</p>
+    <p>The rebuilt image then feeds the engines &mdash; the viewer&rsquo;s <b>zoom-fractalize</b> or the world compositor &mdash;
+    so the chain is <b>sound &rarr; equation C &rarr; image &rarr; engine</b> (the dimensional / fractal representation).
+    Any result can be saved as <b>.uvme</b>, <b>.wav</b>, an <b>equational sound</b>, or a plain <b>.png</b> (re-uploadable for
+    more conversions). <b>Try the example sound</b> on the Combiner page to watch a found sound become an image.</p>
+
+    <h3>What's playable, what converts &mdash; and the one converter that bridges it</h3>
+    <p><b>The sounds really are sounds.</b> A <b>.uvme</b> (and a <b>.wav</b> exported here, and an <b>equational
+    sound</b>) is a genuine, standard <b>RIFF/WAVE</b> file &mdash; it <b>plays in any normal audio app</b>. The
+    <b>.uvme</b> just carries the equation in an extra <span class="mono">UVME</span> chunk that audio players
+    skip as unknown (the same trick broadcast WAV uses for its <span class="mono">bext</span> metadata); the
+    equational sound carries it in the audible tones themselves. We use the branded <b>.uvme</b> extension (over a
+    bare <span class="mono">.wav</span>/<span class="mono">.uvm</span>) so other apps are less likely to grab it
+    by file association &mdash; rename it to <span class="mono">.wav</span> any time you just want to play it.</p>
+    <p><b>About images / <span class="mono">.png</span> / <span class="mono">.jpg</span>:</b> the exported
+    <span class="mono">.png</span> <b>also carries the equation</b> &mdash; hidden in a standard <span class="mono">tEXt</span>
+    chunk (PNG is chunk-based like WAV). So it <b>shows as a normal picture</b> in any viewer (the visible pixels are
+    the image; the equation is invisible metadata viewers ignore) <i>and</i> <b>re-imports here to rebuild the exact
+    image</b>. What it can't do is <b>play</b> audio &mdash; it's an image file. (<span class="mono">.jpg</span>/<span class="mono">.webp</span>
+    stay plain pixels &rarr; re-equationalized fresh.) A single file's magic bytes still pick <b>one</b> type: a
+    <span class="mono">.uvme</span> is audio (plays), a <span class="mono">.png</span> is an image (shows) &mdash;
+    each can secretly carry the equation, but neither both-plays-and-shows.</p>
+    <table class="tbl">
+      <tr><th>file</th><th>what it is</th><th>plays in a .wav app?</th><th>re-imports to rebuild?</th></tr>
+      <tr><td><b>.uvme</b></td><td>standard WAV + exact field <span class="mono">C</span> in a <span class="mono">UVME</span> chunk</td><td><b>yes</b> (chunk ignored)</td><td><b>yes</b> &mdash; exact dense image</td></tr>
+      <tr><td><b>.wav</b> (exported here)</td><td>same bytes as the .uvme, friendlier extension</td><td><b>yes</b></td><td><b>yes</b> &mdash; exact dense image</td></tr>
+      <tr><td><b>equational sound</b> (.wav)</td><td>MFSK tones that <i>are</i> the compact <span class="mono">C</span></td><td>yes (sounds like data-tones)</td><td><b>yes</b> &mdash; exact compact image (lossless audio only)</td></tr>
+      <tr><td><b>.png</b> (exported here)</td><td>the picture + the <b>exact equation</b> in a <span class="mono">tEXt</span> chunk</td><td>n/a (it's an image, won't play)</td><td><b>yes</b> &mdash; exact image rebuilt from the embedded equation</td></tr>
+      <tr><td><b>.jpg / .webp / foreign .png</b></td><td>plain pixels of the reconstruction</td><td>n/a (it's an image)</td><td>re-equationalized into a NEW field (forward transform)</td></tr>
+    </table>
+    <p><b>One unifying converter.</b> Every input above is handled by a single entry point,
+    <span class="mono">FT_COMBINER.fromAnyFile(file)</span> &mdash; drop an <b>image</b> or any <b>sound</b> and
+    it returns the same field <span class="mono">C</span> (auto-routing image&rarr;forward-transform,
+    <span class="mono">.uvme</span>&rarr;chunk, equational-sound&rarr;demod, plain-sound&rarr;additive). From that
+    <span class="mono">C</span> the existing exporters write back out to any format. One field, one converter, every direction.</p>
+    <p><b>Each <span class="mono">.uvme</span> is a Rosetta Stone.</b> It carries one equation (the field
+    <span class="mono">C</span>) plus a <span class="mono">produces</span> manifest declaring every representation
+    it can become, and a single master function <span class="mono">FT_COMBINER.extract(file, kind)</span>
+    <b>solves the equation for whichever you ask</b> &mdash;
+    <span class="mono">equation</span> · <span class="mono">image</span> · <span class="mono">png</span> ·
+    <span class="mono">jpg</span> · <span class="mono">webp</span> · <span class="mono">wav</span> ·
+    <span class="mono">sound</span> · <span class="mono">eqsound</span> · <span class="mono">fractal</span>.
+    Nothing is a redundant stored copy &mdash; each output is <b>derived live from <span class="mono">C</span></b>
+    by its master equation (Φ<sub>img</sub> / Φ<sub>snd</sub> / Φ<sub>frc</sub>). So one small artifact translates
+    between picture, sound and fractal on demand: <b>the equation is the stone, and the master code reads it into
+    any language.</b> (It still opens natively only as a <span class="mono">.wav</span> &mdash; a file's byte-0 magic
+    can be only one format, so the true polyglot is the <i>equation + code</i>, not the container.)</p>
+    <p class="muted"><b>Extensible &amp; versioned.</b> The stone is meant to grow: new <b>combiner equations</b>
+    (more transforms of <span class="mono">C</span> &mdash; new things to discover) become new
+    <span class="mono">produces</span> entries + a <span class="mono">produce()</span> branch, and any
+    <b>algorithm update</b> rides the <span class="mono">uvm-combiner@N</span> schema version stamped in the chunk
+    &mdash; bump the version, teach the decoder the new one, and <b>every older <span class="mono">.uvme</span>
+    still decodes</b>. Forward-compatible by design.</p>
+    <p class="muted"><b>Motion.</b> The same idea extends to motion: the <a href="videocombiner.html">Equational Video</a> page turns an <b>mp4/webm/mov</b>, an <b>animated .gif</b>, or even an <b>image/sound</b> (→ a zoom-dive) into a <b>sequence of per-frame equations</b> + audio (a <span class="mono">.uvmv</span>), reconstructs & plays it from the maths, and exports <span class="mono">.webm</span> / <span class="mono">.mp4</span> / animated <span class="mono">.gif</span> — all directions (sound↔gif↔mp4↔image), plus the equational answers. v1 stores a compact field per keyframe; inter-frame delta compression is a documented next step.</p>
+
+    <h3>Plays where &mdash; per-platform (Windows / macOS / Linux / iOS / Android)</h3>
+    <p>A <span class="mono">.uvme</span> (and any <span class="mono">.wav</span> we export) is a <b>standard WAV</b>,
+    so it plays in the everyday media players on every OS. <b>Rebuilding the image / running the engines</b> is a
+    separate thing &mdash; that needs <b>this site in a desktop browser with a GPU</b> (it is NOT something a media
+    player does, and phones can't run it). If an app doesn't recognise the <span class="mono">.uvme</span> extension,
+    <b>rename it to <span class="mono">.wav</span></b> (same bytes) and it opens.</p>
+    <table class="tbl">
+      <tr><th>platform</th><th>play the sound (any media app)</th><th>rebuild image / run the engines</th><th>common players</th></tr>
+      <tr><td><b>Windows</b></td><td>✓ Media Player / Groove / VLC</td><td>✓ desktop browser (Chrome/Edge/Firefox) on the site</td><td>VLC, Windows Media Player, foobar2000</td></tr>
+      <tr><td><b>macOS</b></td><td>✓ Music / QuickTime / VLC</td><td>✓ desktop browser (Safari/Chrome/Firefox)</td><td>VLC, QuickTime, Music</td></tr>
+      <tr><td><b>Linux</b></td><td>✓ VLC / mpv / Rhythmbox</td><td>✓ desktop browser (Chrome/Firefox)</td><td>VLC, mpv, Rhythmbox</td></tr>
+      <tr><td><b>iOS</b></td><td>✓ plays as audio (Files, VLC; rename to <span class="mono">.wav</span> if needed)</td><td>✗ <b>no engines</b> — no desktop GPU; you get the sound + all the text, not the live image</td><td>VLC for iOS, Files</td></tr>
+      <tr><td><b>Android</b></td><td>✓ VLC / any audio app (rename to <span class="mono">.wav</span> if needed)</td><td>✗ <b>no engines</b> — same as iOS: sound only, no live engine</td><td>VLC, Poweramp, default music</td></tr>
+    </table>
+    <p class="muted"><b>VLC plays it everywhere</b> (Win/macOS/Linux/iOS/Android) — the safest universal player.
+    To get the <i>image</i> back from a <span class="mono">.uvme</span>, open the <a href="audio.html">Combiner</a>
+    on a desktop browser and drop the file in; a media player only plays the audible side.</p>
+
+    <h3>A &middot; The image equation (reconstruction &mdash; what redraws the picture)</h3>
+    <p class="eq mono" style="white-space:pre-wrap">channel(x,y) = &Sigma;<sub>k</sub> c<sub>k</sub> &middot; &psi;<sub>k</sub>(x,y)        (computed separately for Y, Cb, Cr)
+R = Y + 1.402 (Cr&minus;&frac12;)
+G = Y &minus; 0.344 (Cb&minus;&frac12;) &minus; 0.714 (Cr&minus;&frac12;)
+B = Y + 1.772 (Cb&minus;&frac12;)</p>
+    <table class="tbl">
+      <tr><th>symbol</th><th>what it is</th></tr>
+      <tr><td><span class="mono">channel(x,y)</span></td><td>The value of one colour channel at pixel column <span class="mono">x</span>, row <span class="mono">y</span>. Three channels (Y, Cb, Cr) are reconstructed, then converted to RGB.</td></tr>
+      <tr><td><span class="mono">x, y</span></td><td>Pixel coordinates, from 0 to the image's native width/height.</td></tr>
+      <tr><td><span class="mono">k</span></td><td>Index of one term (one wavelet). The sum runs over all kept terms.</td></tr>
+      <tr><td><span class="mono">N</span></td><td>The number of kept terms in that channel (the <span class="mono">equation_count</span>); ranges here from ~0.4M to ~5M depending on the piece's complexity.</td></tr>
+      <tr><td><span class="mono">c<sub>k</sub></span></td><td>The <b>coefficient</b> &mdash; how strongly wavelet <span class="mono">k</span> contributes (its weight in the recipe).</td></tr>
+      <tr><td><span class="mono">&psi;<sub>k</sub>(x,y)</span></td><td>The <b>basis function</b> &mdash; one separable <b>CDF 9/7 biorthogonal wavelet</b> (the JPEG2000 wavelet) at a particular scale and position. &ldquo;Separable&rdquo; = a 1-D wavelet applied across rows then down columns.</td></tr>
+      <tr><td><span class="mono">Y, Cb, Cr</span></td><td>Luminance (brightness) + two chrominance (colour) channels. Storing colour this way matches how the eye works and keeps the maths compact. The RGB formulas above convert back for display.</td></tr>
+      <tr><td><span class="mono">lifting scheme</span></td><td>How the 9/7 wavelet is computed: alternating <i>predict</i> and <i>update</i> steps plus a scaling constant, applied over multiple <b>dyadic levels</b> (each level is half the size of the previous). It is exactly invertible, so the browser's inverse is byte-for-byte identical to the analyzer's forward transform.</td></tr>
+      <tr><td><span class="mono">level / scale</span></td><td>Which dyadic band a wavelet lives in. Low levels = big, coarse shapes; high levels = small, fine detail.</td></tr>
+      <tr><td><span class="mono">pad_w, pad_h</span></td><td>The working grid width/height &mdash; the native size padded up to a multiple of 64 so the multi-level transform divides cleanly.</td></tr>
+      <tr><td><span class="mono">L2 energy target / fidelity</span></td><td>The rule for how many terms to keep: enough to capture a set fraction of the image's total &ldquo;energy&rdquo; (sum of squared values). It's a quality threshold, not a fixed count &mdash; so a busy image honestly keeps more terms than a simple one.</td></tr>
+      <tr><td><span class="mono">PSNR</span></td><td>Peak signal-to-noise ratio (decibels) &mdash; how faithful the reconstruction is to the original. Higher = closer.</td></tr>
+      <tr><td><span class="mono">qscale, Int16, dv1 / LEB128</span></td><td>How the coefficients ship: values quantised to 16-bit integers times a per-channel scale (<span class="mono">qscale</span>), and their positions stored as <b>LEB128 delta-varints</b> (the gaps between sorted positions, packed to ~1 byte each). Base64-encoded text &mdash; never pixels.</td></tr>
+    </table>
+
+    <h3>B &middot; The master music equation (sound &mdash; what turns a picture into a song)</h3>
+    <p class="eq mono" style="white-space:pre-wrap">&ell;<sub>k</sub>   = &lfloor; log&#8322; max(r<sub>k</sub>, c<sub>k</sub>, 1) &rfloor;                  (which wavelet band the term sits in)
+f<sub>k</sub>   = f<sub>lo</sub> &middot; (f<sub>hi</sub> / f<sub>lo</sub>)<sup>(&ell;<sub>k</sub> / &ell;<sub>max</sub>)</sup> &middot; (1 + u<sub>k</sub>/16)     (its pitch, in Hz)
+a<sub>k</sub>   = |c<sub>k</sub>| / max<sub>j</sub> |c<sub>j</sub>|                          (its loudness, 0..1)
+t<sub>k</sub>   = (rank<sub>k</sub> / N) &middot; T                            (when it plays)</p>
+    <table class="tbl">
+      <tr><th>symbol</th><th>what it is</th></tr>
+      <tr><td><span class="mono">&ell;<sub>k</sub></span></td><td>The <b>wavelet band</b> (scale level) of term <span class="mono">k</span> &mdash; coarse shapes have a low <span class="mono">&ell;</span>, fine detail a high one.</td></tr>
+      <tr><td><span class="mono">r<sub>k</sub>, c<sub>k</sub></span></td><td>The term's <b>row and column</b> in the coefficient grid (its position). <i>(Note: here <span class="mono">c<sub>k</sub></span> means column; in section A the same letter meant the coefficient value &mdash; context distinguishes them.)</i></td></tr>
+      <tr><td><span class="mono">f<sub>k</sub></span></td><td>The <b>pitch</b> (frequency in Hz) the term is played at. Band &rarr; octave, so coarse structure is bass and fine detail is treble.</td></tr>
+      <tr><td><span class="mono">f<sub>lo</sub>, f<sub>hi</sub></span></td><td>The low and high ends of the pitch range: <span class="mono">f<sub>lo</sub> = 40&nbsp;Hz</span>, <span class="mono">f<sub>hi</sub> = 3200&nbsp;Hz</span> &mdash; a wide register, straight from the maths.</td></tr>
+      <tr><td><span class="mono">&ell;<sub>max</sub></span></td><td><span class="mono">&lfloor; log&#8322; max(W,H) &rfloor;</span> &mdash; the deepest band, used to normalise <span class="mono">&ell;<sub>k</sub></span> to 0..1 so the pitch spans the whole range.</td></tr>
+      <tr><td><span class="mono">u<sub>k</sub></span></td><td>The fractional position <i>inside</i> the band (0..1) &mdash; a small detune so notes in the same band aren't identical.</td></tr>
+      <tr><td><span class="mono">a<sub>k</sub></span></td><td><b>Loudness</b>, the term's magnitude divided by the largest magnitude &mdash; stronger coefficients play louder.</td></tr>
+      <tr><td><span class="mono">t<sub>k</sub></span></td><td><b>Onset time</b> &mdash; when the note plays, from its position <span class="mono">rank<sub>k</sub></span> in the read-out order across the total duration <span class="mono">T</span>.</td></tr>
+      <tr><td><span class="mono">rank<sub>k</sub> (read-out order)</span></td><td>The order the notes are played in. The strongest few coefficients <b>per band</b> are chosen, then read out in a <b>stride-rotated round-robin across the bands</b> (stride &asymp; half the band count, starting band drifting each round) so the melody <b>leaps across octaves</b> instead of climbing a low&rarr;high scale &mdash; that ascending sweep was an audible strobe. No scale, key or tune is added; only the read-out order changes.</td></tr>
+      <tr><td><span class="mono">T</span></td><td>The clip length (seconds) the note-set is laid out over; in the world engine the stream is continuous and crossfades piece&rarr;piece.</td></tr>
+      <tr><td>stereo pan</td><td>Left/right placement, taken from the dominant palette <b>hue</b> at the note's column &mdash; colour &rarr; stereo image.</td></tr>
+    </table>
+
+    <h3>C &middot; The generative IFS (fractal regeneration) + the &infin; zoom-fractalize</h3>
+    <p class="eq mono" style="white-space:pre-wrap">x<sub>n+1</sub> = A<sub>k</sub> x<sub>n</sub> + t<sub>k</sub> ,   A<sub>k</sub> = [ a b ; c d ] ,   t<sub>k</sub> = [ e ; f ] ,   Pr(choose k) = w<sub>k</sub>
+3D depth lift:   z<sub>n+1</sub> = &radic;|det A<sub>k</sub>| &middot; z<sub>n</sub> + shell<sub>k</sub>
+box-counting dimension:   D = lim<sub>&epsilon;&rarr;0</sub>  log N(&epsilon;) / log(1/&epsilon;)</p>
+    <table class="tbl">
+      <tr><th>symbol</th><th>what it is</th></tr>
+      <tr><td><span class="mono">IFS / chaos game</span></td><td>Iterated function system: pick one map at random (by its weight), apply it to the current point, plot, repeat. The cloud of plotted points fills the <b>attractor</b> &mdash; a true fractal in the artwork's family.</td></tr>
+      <tr><td><span class="mono">A<sub>k</sub> = [a b; c d]</span></td><td>The 2&times;2 linear part of map <span class="mono">k</span> &mdash; it rotates, scales and shears the point.</td></tr>
+      <tr><td><span class="mono">t<sub>k</sub> = [e; f]</span></td><td>The translation part &mdash; it shifts the point. (<span class="mono">a,b,c,d,e,f</span> are the six numbers stored per map.)</td></tr>
+      <tr><td><span class="mono">w<sub>k</sub></span></td><td>The probability of choosing map <span class="mono">k</span> each step (the maps' weights sum to 1).</td></tr>
+      <tr><td><span class="mono">x<sub>n</sub></span></td><td>The point after <span class="mono">n</span> iterations; the orbit of points fills the fractal.</td></tr>
+      <tr><td><span class="mono">det A<sub>k</sub></span></td><td>The determinant <span class="mono">ad&minus;bc</span> &mdash; how much the map shrinks area &mdash; its contraction factor.</td></tr>
+      <tr><td><span class="mono">z<sub>n</sub>, shell<sub>k</sub></span></td><td>Depth terms from an earlier IFS depth-lift experiment. The shipped interactive zoom is <b>mode E</b> (see C2) &mdash; it solves the equation across three axes and renders on the 2D plane; it does not use an IFS depth-lift.</td></tr>
+      <tr><td><span class="mono">D</span></td><td><b>Fractal (box-counting) dimension</b> &mdash; a number (often non-integer) describing how the detail fills space.</td></tr>
+      <tr><td><span class="mono">N(&epsilon;), &epsilon;</span></td><td><span class="mono">N(&epsilon;)</span> = how many boxes of size <span class="mono">&epsilon;</span> are needed to cover the edge set; the slope of <span class="mono">log N</span> vs <span class="mono">log(1/&epsilon;)</span> as boxes shrink is <span class="mono">D</span>.</td></tr>
+    </table>
+
+    <h3>C2 &middot; The zoom-fractalize "engine" (mode E: Newton&rarr;N³) &mdash; exactly what it is</h3>
+    <p>Stated honestly, no overclaiming &mdash; it is a <b>composite of established methods</b>, driven by each
+    image's own equation; the combination is bespoke, but no single step is a new invention:</p>
+    <ol class="doc">
+      <li><b>Complex stage = the classic NEWTON FRACTAL.</b> Newton&ndash;Raphson iteration
+      <span class="mono">z &larr; z &minus; (z³&minus;K)/(3z²)</span> in the complex plane (the fractal of
+      Cayley's 1879 problem). This is <b>2-dimensional</b> &mdash; the complex plane is two real axes. This part
+      is genuinely Newton's, not ours.</li>
+      <li><b>Then a real 3D step (this is where it goes beyond 2D Newton).</b> Where Newton converges, a point
+      <span class="mono">(x,y,z)</span> is Newton-projected onto the implicit cubic <b>surface</b>
+      <span class="mono">x³&minus;2y³&minus;z³=K</span> &mdash; step <span class="mono">&minus;g&middot;&nabla;g/|&nabla;g|²</span>,
+      <span class="mono">&nabla;g=(3x²,&minus;6y²,&minus;3z²)</span>. <b>Three real axes participate</b>; the z
+      axis is seeded by the sine/cosine navigators. So the <b>solve is 3-dimensional</b>.</li>
+      <li><b>Texture &amp; colour.</b> The result is shaded with <b>cellular (Worley) noise</b> [Steven Worley,
+      1996] in multi-octave <b>fBm</b> [Mandelbrot/Perlin], the coordinate <b>domain-warped</b> by the
+      sine/cosine navigators, and coloured from the piece's <b>palette</b> by which root-basin it falls in &mdash;
+      all seeded by the local <b>visual entropy</b> of the reconstruction, so the growth carries that image's
+      own character. Octaves step by <span class="mono">&radic;10</span> and the noise lattice is decimal, so
+      the scale is <b>base-ten</b>, proportional to the camera's zoom decades.</li>
+    </ol>
+    <p class="note"><b>So is it "a 3D engine"?</b> The <b>maths is solved across three axes</b> (genuinely more
+    than the 2D complex Newton fractal), but the <b>render is a 2D-plane view of that 3D solve</b> &mdash;
+    precisely "a 3D representation of the 2D plane," not a navigable 3D scene you fly through. That distinction
+    is the honest one. <b>Provenance:</b> Newton&ndash;Raphson (Newton), the Newton fractal (Cayley),
+    implicit-surface projection (standard numerical method), Worley cellular noise, fBm, domain warping &mdash;
+    all named prior art; only the equation-driven <i>combination</i> is bespoke.</p>
+
+    <h3>D &middot; The descriptive maths (the attributes measured from each image)</h3>
+    <p class="eq mono" style="white-space:pre-wrap">waveform power law:   S(&rho;) &prop; &rho;<sup>&minus;&beta;</sup>      (radial FFT power spectrum)
+lumen degradation:    &nabla;L  (gradient field of luminance falloff)</p>
+    <table class="tbl">
+      <tr><th>symbol</th><th>what it is</th></tr>
+      <tr><td><span class="mono">S(&rho;), &rho;</span></td><td>The image's <b>power spectrum</b> at spatial frequency <span class="mono">&rho;</span> (from the FFT) &mdash; how much fine vs coarse content it has, radially and angularly.</td></tr>
+      <tr><td><span class="mono">&beta;</span></td><td>The <b>power-law exponent</b> &mdash; the slope of that spectrum on a log-log plot; a single number summarising the texture's spectral fingerprint (&ldquo;waveform stereotype&rdquo;).</td></tr>
+      <tr><td><span class="mono">&nabla;L</span></td><td>The <b>gradient of luminance</b> &mdash; the direction and rate at which brightness falls off across the frame (the lumen-degradation field).</td></tr>
+      <tr><td>lumen density</td><td>Summed brightness per grid cell &mdash; where the image's light concentrates.</td></tr>
+      <tr><td>morph-allotment gradients</td><td>Normalised gradient maps reserved for smoothly interpolating between two templates.</td></tr>
+      <tr><td>orientation field (&theta;, coherence)</td><td>From the structure tensor: the dominant line angle <span class="mono">&theta;</span> at each region and how strongly aligned it is (coherence).</td></tr>
+      <tr><td>palette + channel GMM</td><td>The dominant colours, and a per-channel Gaussian mixture model describing the colour distribution.</td></tr>
+      <tr><td>quality / intricacy</td><td>A composite score (vector richness + edge density + spectral structure + luminance range) used to keep only detailed, intricate pieces.</td></tr>
+    </table>
+
+    <h3>E &middot; Encoding &amp; delivery</h3>
+    <table class="tbl">
+      <tr><th>symbol</th><th>what it is</th></tr>
+      <tr><td><span class="mono">FT.VERSION (?v=&hellip;)</span></td><td>A single version stamp appended to every asset and data URL, bumped each release, so a browser never mixes old code with new data.</td></tr>
+      <tr><td>thumbnails (webp)</td><td>Tiny preview images for the browse grid only &mdash; the full pieces are never stored, always reconstructed live from the equations.</td></tr>
+    </table>
+
+    <h2>Wiki &mdash; glossary</h2>
+    <table class="tbl">
+      <tr><th>term</th><th>meaning</th></tr>
+      <tr><td>Equational vectoring</td><td>The set of line segments + orientation field extracted from sharpened edges.</td></tr>
+      <tr><td>Colinear decimation</td><td>Collapsing near-parallel, near-coincident "same-trajectory" segments to one representative after sharpening.</td></tr>
+      <tr><td>Lumen density aggregation</td><td>Summed luminance per grid cell &mdash; where the image's light concentrates.</td></tr>
+      <tr><td>Lumen-degradation propagation</td><td>The decimated gradient field of luminance falloff (&nabla;L) across the frame.</td></tr>
+      <tr><td>Morph-allotment gradients</td><td>Normalized gradient maps reserved for interpolating/morphing between templates.</td></tr>
+      <tr><td>Waveform stereotype</td><td>The radial FFT power spectrum &mdash; the template's spectral fingerprint, with power-law exponent &beta;.</td></tr>
+      <tr><td>IFS / fractal flame</td><td>Iterated function system: affine maps applied repeatedly (chaos game) to regenerate a fractal.</td></tr>
+      <tr><td>Zoom-fractalize (&infin;)</td><td>On the viewer <b>and the world engine</b>: zoom into the reconstruction (the world engine holds its morph while you zoom); once past native detail the flat regions grow NEW self-similar detail solved LIVE from the equation &mdash; complex Newton z³−K + the cubic x³−2y³=3 (and its 3D form x³−2y³−z³=K), warped by <b>sine/cosine navigators</b> across all axes, with fBm micro-detail whose frequency rides the zoom so it refines <b>forever (no bottom-out)</b>, coloured from the piece's <b>palette</b>. The fractal <b>propagates OUT of the image's own edges/vectors</b> (Sobel-masked + additively composited, so the filigree grows ALONG the structure) &mdash; never a fade over the top, never a stored/tiled image.</td></tr>
+      <tr><td>Box-counting dimension</td><td>Fractal dimension D from how edge-occupied box count scales with box size.</td></tr>
+      <tr><td>Quality / intricacy</td><td>Composite score rewarding many distinct vectors, dense contours, structured spectrum, wide luminance range; low for noise.</td></tr>
+      <tr><td>Dominance gate</td><td>Text/emoji reject fires only when text fills the frame &mdash; a small caption is ignored.</td></tr>
+      <tr><td>Math layers</td><td>The seven layers the world engine derives <b>live in the browser</b> from each piece's reconstruction (no stored files): recon (faithful base), base glow (blur), mid (medium blur), colour-field wash (heavy blur + saturate), lumen (grayscale + blur), edges (Sobel), and high-freq spark (recon − mid). Stacked recon-first with their blend modes.</td></tr>
+      <tr><td>Layered math compositor</td><td>The world engine: it stacks a piece's math layers flat with their own blend modes and filters, geometry locked to the frame edges (no camera, no particles), and cross-fades whole composites piece→piece — a living world built from the equations.</td></tr>
+      <tr><td>Effects palette</td><td>The compositor's full mixer set: every blend mode (+ a global override), CSS filters (hue-rotate / blur / brightness / saturate / contrast / sepia / invert / grayscale), per-layer on/off toggles, and an <b>evolve</b> control that animates the layers' build/collapse/merge and drifts the hue over time — all without moving the locked geometry.</td></tr>
+      <tr><td>Master music equation</td><td>The sound engine — a pure function of the image's wavelet coefficients (no scale/key/melody/rhythm added ahead of time). Each coefficient's wavelet band → octave (coarse=bass, fine=treble, wide range), magnitude → loudness; strongest few per band so every octave speaks, read out in a stride-rotated round-robin across the bands so the melody leaps across octaves instead of climbing a scale (no strobe). A continuous scheduler crossfades piece→piece by the morph, no pauses. Formulas: equations page, form 9.</td></tr>
+      <tr><td>Live morph (3D universe)</td><td>The viewer cross-fades through a ladder of real reconstructions at different term-counts, so the image equation visibly morphs; synced to the sonifier so the full equation plays out in picture + sound.</td></tr>
+      <tr><td>Native reconstruction zoom</td><td>The viewer rebuilds the actual image from its 9/7 equations at full native resolution; pan/scroll/double-click explore that native reconstruction.</td></tr>
+      <tr><td>Math-layer still</td><td>The layered math compositor pinned to a single piece, shown on the viewer — its math layers stacked flat, geometry locked. The static counterpart of the live <a href="video.html">world engine</a>.</td></tr>
+      <tr><td>Live layer derivation</td><td>There are <b>no per-piece layer files</b> on the server. The engine fetches a piece's template (its equation), reconstructs it in-browser, and derives all seven math layers on the fly with in-engine image ops (blur / grayscale / Sobel / difference). Nothing is pre-rendered — the visualization is always computed from the maths.</td></tr>
+      <tr><td>Cache-busting / version stamp</td><td>A single <code>FT.VERSION</code> appended as <code>?v=…</code> to every asset and data URL, bumped each release, so a browser can never serve a stale mix of old JS against new data.</td></tr>
+      <tr><td>Equational extrapolator (<code>fromAnyAudio</code>)</td><td>One canonical function that takes <b>any</b> <code>.uvme</code> / <code>.wav</code> / audio buffer and extrapolates the combiner field <span class="mono">C</span> from it, auto-detecting the path: <b>UVME chunk</b> → exact dense field; else <b>equational-sound</b> waveform (MFSK demod) → exact compact field; else <b>additive loader</b> on the sound's own spectrum → generated field. Returns <span class="mono">{rec, palette, pcm, sampleRate, mode, exact}</span> — the single, reusable entry point for full <code>.uvme</code> ↔ <code>.wav</code> integration.</td></tr>
+      <tr><td><span class="mono">.uvme</span> (the equational file)</td><td>A standard <b>RIFF/WAVE</b> file (plays in any audio app) carrying the artwork's full equation &mdash; the coefficient field <span class="mono">C</span> + palette + dims &mdash; in a CRC-checked, schema-versioned <span class="mono">UVME</span> chunk. One file = sound + equation; rebuilds the <b>byte-exact</b> image. Full writeup: <a href="#uvme">🧠 the .uvme file type</a>.</td></tr>
+      <tr><td>Rosetta Stone (<code>extract</code> / <code>produce</code>)</td><td>Each <span class="mono">.uvme</span> carries one equation + a <span class="mono">produces</span> manifest; one master call solves it into any representation &mdash; <span class="mono">equation · image · png · jpg · webp · wav · sound · eqsound · fractal</span> &mdash; each derived live from <span class="mono">C</span>, never a stored copy.</td></tr>
+      <tr><td><code>fromAnyFile</code> (one converter)</td><td>Single entry point that turns <b>an image OR any sound</b> into the shared field <span class="mono">C</span>, auto-routing image→forward-transform / <span class="mono">.uvme</span>→chunk / equational-sound→demod / plain-sound→additive. The &ldquo;in&rdquo; half of <span class="mono">anything → C → anything</span>.</td></tr>
+      <tr><td><span class="mono">.uvmv</span> (equational video)</td><td>A clip as a <b>sequence of per-frame equations</b> <span class="mono">{C<sub>t</sub>}</span> + audio + fps in one container (<a href="videocombiner.html">Equational Video</a> page); reconstructs &amp; plays from the maths, exports <span class="mono">.webm</span> / <span class="mono">.mp4</span> / animated <span class="mono">.gif</span>. Source can be mp4/webm/gif or an image/sound (zoom-dive). v1 = compact field per frame; delta-compression is next.</td></tr>
+      <tr><td><span class="mono">.gif</span> / <span class="mono">.mp4</span> (equational, #263)</td><td>First-class equational motion, <b>all directions</b> (sound↔gif↔mp4↔image). An animated GIF decodes to per-frame equations (and re-exports as one); mp4/webm the same; from any motion file you can pull the four <b>answers</b> (image / original sound / equation-music / equational images). In-browser <span class="mono">.mp4</span> = the browser's H.264 recorder (Chrome 126+/Edge/Safari), else <span class="mono">.webm</span> or the desktop Converter (Rust ffmpeg).</td></tr>
+      <tr><td><span class="mono">uvm-combiner@N</span> (schema version)</td><td>The version stamp in the <span class="mono">UVME</span> chunk. New combiner equations add <span class="mono">produces</span> entries; bumping <span class="mono">N</span> + teaching the decoder keeps <b>every older <span class="mono">.uvme</span> decodable</b> &mdash; forward-compatible by design.</td></tr>
+      <tr><td>Converter app (native, offline)</td><td>A tiny native desktop app (Tauri/Rust shell + the same equation engine) for the <b>full file back-and-forth</b> — image ⇄ <span class="mono">.uvme</span> ⇄ sound, video ⇄ <span class="mono">.uvmv</span> ⇄ mp4 — byte-exact, offline, no AI; auto cross-decodes on open (image shown + sound played), original-track ⇄ equation-music toggle, an <b>image ⇄ equation</b> view toggle, native Save-As. <b>Conversion-only</b> — none of the morph / 3D world / fractal-zoom. Windows &amp; Linux builds + per-OS setup: <a href="download.html">Download</a>. (Or run the same converter in-browser: <a href="audio.html">Combiner</a> / <a href="videocombiner.html">Eq Video</a>.)</td></tr>
+      <tr><td>PNG carries the equation (<span class="mono">tEXt</span> chunk)</td><td>Every <span class="mono">.png</span> exported here hides its full equation in a standard PNG <span class="mono">tEXt</span> chunk — so the file <b>shows as a normal picture in any viewer</b> (the visible pixels are the image; the equation is invisible metadata apps ignore) AND <b>re-imports here to rebuild the exact image</b>. It can't <b>play</b> sound (it's an image) and doesn't carry the original audio track — for a playable file with the audio, use the <span class="mono">.uvme</span>.</td></tr>
+      <tr><td>Run-it-at-home (the static site)</td><td>The whole site is static (HTML/JS + data, no server), so a clone runs <b>100% offline</b> in a desktop browser — every engine on your own files, no gallery data needed. Per-OS run steps + the deploy-split data note: <a href="index.html#download">Run it at home</a>. Needs a desktop GPU; phones can't run the engines.</td></tr>
+      <tr><td>Deploy split (data out-of-band)</td><td>The 333-piece gallery data (<span class="mono">web/data/</span>, ~5.3&nbsp;GB) is <b>not</b> in the git repo (too big to clone every push) — it's hosted separately and the auto push-to-main deploy ships only the light ~8&nbsp;MB site. So a fresh clone is the full working player with an <b>empty gallery</b>; mirror the data folder or regenerate with <span class="mono">build_web.py</span> to get the pre-built pieces offline.</td></tr>
+    </table>
+
+    <h2 id="provenance">Provenance, attribution &amp; originality</h2>
+    <p><b>We stand on public, well-established mathematics &mdash; and we say so plainly.</b> Every underlying
+    method below is prior art by its named authors; we claim <b>none</b> of them as our invention. This is
+    deliberate: crediting the foundations is how we make clear that <b>nothing here is plagiarised</b>. What is
+    <b>ours</b> is the specific <i>combination</i> &mdash; the equations, code and compositions listed further down.</p>
+    <table class="tbl">
+      <tr><th>method used</th><th>prior art (author / origin)</th><th>status</th></tr>
+      <tr><td>CDF 9/7 biorthogonal wavelet (the reconstruction \(\psi\))</td><td>Cohen&ndash;Daubechies&ndash;Feauveau (1992); as used in <b>JPEG&nbsp;2000</b>; lifting scheme by Sweldens (1996)</td><td>standard / public</td></tr>
+      <tr><td>YCbCr colour transform</td><td>ITU-R BT.601</td><td>standard</td></tr>
+      <tr><td>FFT power spectra, power-law &beta;</td><td>Cooley&ndash;Tukey FFT (1965); classical signal processing</td><td>public</td></tr>
+      <tr><td>Edge / vector extraction (Canny, Hough, MSER, structure tensor), GMM colour</td><td>classical computer vision (OpenCV); no OCR, no trained models</td><td>standard</td></tr>
+      <tr><td>Generative IFS / chaos game; box-counting dimension</td><td>Barnsley (1988); Minkowski&ndash;Bouligand dimension</td><td>standard</td></tr>
+      <tr><td>Newton&ndash;Raphson iteration; the Newton fractal (basins of attraction)</td><td>Newton / Raphson; Cayley (1879)</td><td>public</td></tr>
+      <tr><td>Cellular noise; fractional Brownian motion; domain warping</td><td>Worley cellular noise (1996); Mandelbrot / Perlin noise (1985); standard procedural warping</td><td>standard</td></tr>
+      <tr><td>Implicit-surface (cubic) Newton projection</td><td>standard numerical method (gradient projection onto \(g=0\))</td><td>standard</td></tr>
+      <tr><td>Plucked-string synthesis; convolution reverb</td><td>Karplus&ndash;Strong (1983); classical DSP convolution</td><td>standard</td></tr>
+      <tr><td>Equational-sound modem: MFSK modulation; Goertzel tone detection</td><td>classical telecom MFSK; Goertzel algorithm (1958)</td><td>public</td></tr>
+      <tr><td>Containers &amp; codecs: RIFF/WAV, LEB128 varint, CRC-32, Base64</td><td>Microsoft/IBM RIFF; DWARF/Protobuf varint; ISO CRC-32; RFC&nbsp;4648</td><td>standard</td></tr>
+    </table>
+
+    <h3>Our own equational creations (Unity AI Lab) &mdash; and the caveat</h3>
+    <p>What we authored is the way these public methods are <b>composed</b> into one system &mdash; specifically:</p>
+    <ul class="doc">
+      <li><b>The combiner</b> &mdash; one shared coefficient field <span class="mono">C = {(r<sub>k</sub>,c<sub>k</sub>,v<sub>k</sub>)}</span>
+      with three transforms <span class="mono">&Phi;<sub>img</sub> / &Phi;<sub>snd</sub> / &Phi;<sub>frc</sub></span>, so image, sound and fractal are all derivations of the <i>same</i> wavelet field.</li>
+      <li><b>The master music equation</b> &mdash; the specific coefficient&rarr;sound mapping (band&rarr;octave over a fixed register, magnitude&rarr;loudness, rank&rarr;time, stride-rotated round-robin read-out).</li>
+      <li><b>The zoom-fractalize (mode E)</b> &mdash; the specific equation-driven chain: complex Newton <span class="mono">z³&minus;K</span> &rarr; 3D-cubic <span class="mono">x³&minus;2y³&minus;z³=K</span> continuation, entropy-seeded, base-ten octaves, Worley+fBm+domain-warp, palette-basin colour, propagated OUT of the image's own edges/vectors (Sobel-masked + additively composited).</li>
+      <li><b>The <span class="mono">.uvme</span> combiner file</b> &mdash; a self-describing WAV+<span class="mono">UVME</span> chunk carrying the serialized field <span class="mono">C</span>.</li>
+      <li><b>The equational sound</b> &mdash; encoding the compact field <span class="mono">C</span> into an audible MFSK waveform that demodulates back to <span class="mono">C</span> (the equation rides in the sound itself).</li>
+      <li><b>The additive loader</b> &mdash; deriving a field <span class="mono">C</span> from any sound's own STFT spectrum.</li>
+    </ul>
+    <p class="note"><b>Originality &amp; caveat.</b> These specific compositions, equations and the code that
+    implements them are <b>original creations of Unity AI Lab</b>, built independently here. They combine the
+    well-known, credited methods above in a way we arrived at on our own. We do <b>not</b> claim to have invented
+    those underlying methods, and we make <b>no claim to be the first person ever to conceive a given combination</b> &mdash;
+    if someone, somewhere, independently had the same thought, so be it; it changes nothing. We assert authorship
+    of <b>our</b> equations, code and compositions as built and first realised here. The <b>source artworks</b>
+    remain the work of their artist (deviantart.com/gfourteen); this project stores and renders their
+    <i>mathematics</i>, not the original image files. Beyond the artworks, several <b>equational ideas are the
+    artist's own invention</b> &mdash; the zoom-fractalize cubic <span class="mono">x³&minus;2y³=3</span>, the
+    combiner vision (one shared field for image+sound+fractal), and the <span class="mono">.uvme</span>
+    sound&harr;image Rosetta-stone &mdash; spelled out under
+    <a href="equations.html">Equations &rarr; Equations from the artist</a> (and the explicit
+    <i>specified-vs-possibly-new</i> breakdown there).</p>
+    <p class="note"><b>Caveat &amp; invitation.</b> We claim no first-ever invention of any of these &mdash; if
+    someone independently had the same idea, it changes nothing. <b>But if you conceived or published one first</b>
+    and have <b>peer-reviewed material</b>, email <a href="mailto:contact@unityailab.com">contact@unityailab.com</a>
+    and we will <b>reference it</b>. Credit both ways.</p>
+
+    <h2>Notes &amp; limitations</h2>
+    <ul class="doc">
+      <li>The IFS fit is an <b>approximation</b> (self-similarity collage), not an exact flame inversion. Regenerated images are "in the family", not pixel-exact.</li>
+      <li>Text/emoji detection is heuristic &mdash; purely classical computer vision (MSER + geometry), no OCR and no trained models. It is tuned conservative to never discard captioned vectored art; a rare text-heavy image could slip through.</li>
+      <li>The <code>variation</code> tag is a coarse hint; the per-image affine maps drive the actual regeneration.</li>
+    </ul>
+  </main>
+  <script src="assets/common.js?v=20260626c"></script>
+</body>
+</html>

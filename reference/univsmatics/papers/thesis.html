@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thesis — the equational representation, and what we falsified — Uni Vs Matics</title>
+  <meta name="description" content="The thesis behind Uni Vs Matics: an image, a sound and a motion clip are all transforms of ONE shared CDF 9/7 wavelet coefficient field C — resolution-independent, cross-modal, classical maths not AI. Plus an honest, Popperian falsification log: every hypothesis we tried to break, what broke, and what we shipped instead.">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Uni Vs Matics">
+  <meta property="og:title" content="Thesis — one equation for image, sound & motion · and what we falsified">
+  <meta property="og:description" content="The positive thesis (one shared coefficient field C, every modality a transform of it) and the falsification log — the hypotheses we tested and rejected. Honest science, no smoke.">
+  <meta property="og:url" content="https://univsmatics.git.unityailab.com/thesis.html">
+  <meta property="og:image" content="https://univsmatics.git.unityailab.com/social/collage.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Thesis — one equation, every modality · and what we falsified">
+  <meta name="twitter:image" content="https://univsmatics.git.unityailab.com/social/collage.png">
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    main.doc .lead{font-size:1.12rem;line-height:1.55}
+    .falsify{border:1px solid var(--edge);border-left:3px solid #e44;border-radius:8px;padding:.7rem .9rem;margin:.7rem 0;background:#160d10}
+    .falsify .h{font-weight:700;color:#f7a}
+    .falsify .verdict{display:inline-block;font-size:.74rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:#b3402f;border-radius:4px;padding:.05rem .4rem;margin-left:.4rem;vertical-align:middle}
+    .survive{border-left:3px solid #22c55e;background:#0d1612}
+    .survive .h{color:#7fe0a8}
+    .survive .verdict{background:#1f8a4c}
+  </style>
+</head>
+<body>
+  <main class="doc">
+    <span class="pill">thesis &amp; falsification log · honest science</span>
+    <h1>Thesis — one equation for image, sound &amp; motion</h1>
+    <p class="lead">Uni Vs Matics rests on a single claim: a picture, a sound and a moving clip are not three kinds of
+    file &mdash; they are three <b>views of one shared mathematical object</b>, a sparse <b>CDF 9/7 wavelet
+    coefficient field</b> <span class="mono">C</span>. Below is that thesis stated plainly, and &mdash; because a
+    claim that can't fail isn't science &mdash; a <b>Popperian falsification log</b>: every hypothesis we actually
+    tried to break, what broke, and what we shipped in its place. No smoke. Where a thing didn't work, it says so.</p>
+
+    <h2>The thesis (the positive claim)</h2>
+    <p>One shared coefficient field <span class="mono">C = {(r_k, c_k, v_k)}</span> &mdash; rows, wavelet bands and
+    values &mdash; is the variable space. Every modality is a deterministic <b>transform of the same <span class="mono">C</span></b>:</p>
+    <div class="eq eqraw">&Phi;<sub>img</sub>(C) = &Sigma;<sub>k</sub> v<sub>k</sub>&middot;&psi;(r<sub>k</sub>,c<sub>k</sub>) &nbsp;&middot;&nbsp; &Phi;<sub>snd</sub>(C) &rarr; (&ell;<sub>k</sub>,f<sub>k</sub>,a<sub>k</sub>,t<sub>k</sub>) &nbsp;&middot;&nbsp; &Phi;<sub>frc</sub>(C) &rarr; IFS &nbsp;&middot;&nbsp; V = { C<sub>t</sub> } (motion)</div>
+    <ul class="doc">
+      <li><b>Resolution-independent.</b> An equation has no pixel grid. The picture is solved at whatever resolution
+      you ask for; past the source's analyzed detail the same equation keeps generating self-similar structure.</li>
+      <li><b>Modality-independent.</b> The <i>same</i> field is the picture (<span class="mono">&Phi;<sub>img</sub></span>),
+      the music (<span class="mono">&Phi;<sub>snd</sub></span>), the fractal (<span class="mono">&Phi;<sub>frc</sub></span>),
+      and &mdash; per frame &mdash; a video. Convert in any direction <b>through <span class="mono">C</span></b>.</li>
+      <li><b>One artifact, self-describing.</b> The <a href="docs.html#uvme">🧠 <span class="mono">.uvme</span></a> is a
+      real WAV that plays as audio <i>and</i> carries the exact field in a standard chunk &mdash; a <b>Rosetta Stone</b>
+      a single <span class="mono">extract()</span> reads out as image / png / wav / sound / fractal.</li>
+      <li><b>Classical, not AI.</b> CDF 9/7 wavelets + signal processing &mdash; deterministic, inspectable, offline,
+      private. No trained model, no inference, no cloud.</li>
+    </ul>
+
+    <h2>Falsification log &mdash; what we tried to break, and what broke</h2>
+    <p class="muted">Each entry is a hypothesis we held, the test we ran, and the verdict. A <span class="mono">REJECTED</span>
+    badge means the idea failed and was dropped; the line after it is what we shipped instead.</p>
+
+    <div class="falsify">
+      <p class="h">H1 &mdash; "A single file can be a valid <span class="mono">.wav</span> AND <span class="mono">.png</span> AND <span class="mono">.jpg</span> at once."<span class="verdict">falsified</span></p>
+      <p>Every one of those formats demands its own magic bytes at byte&nbsp;0; they collide. A container is <b>one
+      format at a time</b>. <b>Shipped instead:</b> the polyglot is the <i>equation + master code</i>, not the wrapper &mdash;
+      the <span class="mono">.uvme</span> Rosetta Stone derives any representation from <span class="mono">C</span> on demand.</p>
+    </div>
+    <div class="falsify">
+      <p class="h">H2 &mdash; "The equational sound can carry the full dense field at a usable size."<span class="verdict">falsified</span></p>
+      <p>Encoding hundreds of thousands of coefficients as audible MFSK tones produces enormous files. Measured: the
+      exact field as a data chunk is <b>~131&times; smaller</b> than the same field rendered as listenable sound.
+      <b>Shipped instead:</b> the exact field rides the <b>data chunk</b>; the equational <i>sound</i> carries a
+      <b>compact</b> field (still byte-exact to what it encodes, invertible) &mdash; exact belongs in data, not in tone.</p>
+    </div>
+    <div class="falsify">
+      <p class="h">H3 &mdash; "A 3D fly-through is the best way to present the field."<span class="verdict">rejected</span></p>
+      <p>The "Innerspace" fly-through read as a warpspeed/starfield mess &mdash; it dramatized motion without showing the
+      maths. <b>Shipped instead:</b> a <b>flat layered compositor</b> (the world engine) + an <b>&infin; zoom-fractalize</b>
+      on a single still, which actually exposes the equation's structure.</p>
+    </div>
+    <div class="falsify">
+      <p class="h">H4 &mdash; "A colour-grade continuation stage improves the deep zoom" (the #271 three-stage model).<span class="verdict">falsified</span></p>
+      <p>The idea: past native detail, continue the silhouette-edge's two-tone colour gradient across the viewport
+      (vector-aligned) <i>before</i> the fractal takes over. In testing the flat viewport-filling gradient was an opaque
+      wash that <b>disassociated fine detail</b> &mdash; worse than doing nothing. <b>Shipped instead:</b> the fractal
+      <b>propagates out of the image's own edges and vectors</b> (Sobel-masked + additively composited), growing along
+      the real structure rather than pasted over it.</p>
+    </div>
+    <div class="falsify">
+      <p class="h">H5 &mdash; "Zooming in reveals infinite <i>real</i> detail."<span class="verdict">falsified</span></p>
+      <p>Past a source's analyzed resolution there is <b>no finer real detail</b> &mdash; it isn't hidden in the file.
+      <b>Stated honestly instead:</b> the fractal is an <b>honest infinite <i>fill</i></b>, the equation's own
+      self-similar continuation in the picture's colours &mdash; not recovered reality. Raising the <b>analysis
+      resolution</b> (the scanner depth) is what deepens the real fabric before the fill begins.</p>
+    </div>
+    <div class="falsify">
+      <p class="h">H6 &mdash; "This is novel / unprecedented."<span class="verdict">not claimed</span></p>
+      <p>A light online cross-check (not a peer review) found the <b>building blocks are established prior art</b> &mdash;
+      shared-wavelet multimodal representations, RIFF chunk side-data, audio-modem/SSTV-style sound encodings. We make
+      <b>no firm novelty claim</b>; only the <i>specific combination</i> (one field → exact image + invertible sound +
+      image-driven fractal via one extract) is, to our knowledge, uncommon &mdash; unconfirmed. <b>If you published it
+      first</b> with peer-reviewed material, email <a href="mailto:contact@unityailab.com">contact@unityailab.com</a> and we'll reference it.</p>
+    </div>
+
+    <h2>What survived (the corroborated core)</h2>
+    <div class="falsify survive">
+      <p class="h">The <span class="mono">.uvme</span> round-trips byte-for-byte.<span class="verdict">held</span></p>
+      <p>Verified in a real browser: image &rarr; <span class="mono">C</span> &rarr; <span class="mono">.uvme</span> &rarr;
+      <span class="mono">C</span> &rarr; image is <b>0.00% loss on every test image</b>; a found sound converted in and
+      round-tripped at PSNR &infin;. See <a href="robustness.html">Proven</a>.</p>
+    </div>
+    <div class="falsify survive">
+      <p class="h">Cross-modal conversion works in every direction.<span class="verdict">held</span></p>
+      <p>sound &harr; image &harr; gif &harr; mp4, plus the equational answers (image, original sound, music-of-the-equation,
+      equational images) &mdash; all derived from one field. Headless-verified across every portal.</p>
+    </div>
+    <div class="falsify survive">
+      <p class="h">It runs offline, on classical maths, with no AI.<span class="verdict">held</span></p>
+      <p>Everything is solved <b>client-side</b> from the coefficients &mdash; no upload, no model, no inference. The only
+      hard requirement is a desktop GPU for the live engines (a phone can read everything but can't render them).</p>
+    </div>
+
+    <h2>Method</h2>
+    <p>We hold a "code it right the first time" discipline backed by <b>manual + headless verification</b> rather than a
+    test suite: each claim above was exercised in a real headless browser (the round-trips, the cross-conversions, the
+    portal behaviours) and then signed off live on a real GPU before shipping. Negative results &mdash; H1&ndash;H6 &mdash;
+    are kept on the record here precisely because they shaped what got built. The thesis is only as strong as the
+    hypotheses it survived.</p>
+
+    <p class="muted" style="margin-top:1rem">Honest scope: this is an engineering thesis, not a peer-reviewed paper. The
+    maths is classical and credited (<a href="equations.html">Equations</a>, <a href="docs.html#provenance">provenance</a>);
+    the artwork is a real corpus by a schizophrenic artist with photographic memory. Prior-art corrections welcome at
+    <a href="mailto:contact@unityailab.com">contact@unityailab.com</a>.</p>
+  </main>
+
+  <script src="assets/common.js?v=20260626c"></script>
+</body>
+</html>

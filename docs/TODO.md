@@ -200,6 +200,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A menu held open, a dialog or a message box no longer taken for a hang by the watchdog (it had shut the program down after six seconds):** (built: DNA-AND DESIGN 671; waits on the test) "it crashed whhen i open the menu and try to open docs and periodic table of elemets , its like just clicking on the menu or holding open a drop down menu crashes the game as its running not zooming or moving cam around"
 
+- [~] **The Uni Vs Matics equations and builders pulled into `reference/univsmatics/` for the `.c97` clip (pictures only, no sound, no packaging; the program writes it and plays it, no separate player):** (built: DNA-AND DESIGN 672; the clip writer and player themselves are not built yet) "so goahead and pull any docs and shit u need or make sure own for equations and builders and stuff for import into Universe folder and project of anything and everything we need to hit the ground running on building this equation to propely have smal none infinity zoome just image no sound no extra packaging just a new file type called something not used by others like .cdf97w idnot know that seem long" / "and how do we play clips should we use our own player" / "or its just code in the app no need for another player"
+
 ---
 
 ## Pending

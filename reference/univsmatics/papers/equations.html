@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Equations — Uni Vs Matics</title>
+  <meta name="description" content="The maths itself - the combiner master equation (one shared coefficient field) plus every canonical form, including the master music equation. Equations, not images: a true back-and-forth sound to image to sound (and image to sound to image) through one shared equation, carried by the .uvme equational file. Classical CV + signal processing (CDF 9/7 wavelets), NOT AI. Needs a desktop GPU - phones cannot run the engines.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Uni Vs Matics">
+  <meta property="og:title" content="The equations — Uni Vs Matics">
+  <meta property="og:description" content="The maths itself - the combiner master equation (one shared coefficient field) plus every canonical form, including the master music equation. Equations, not images: a true back-and-forth sound to image to sound (and image to sound to image) through one shared equation, carried by the .uvme equational file. Classical CV + signal processing (CDF 9/7 wavelets), NOT AI. Needs a desktop GPU - phones cannot run the engines.">
+  <meta property="og:url" content="https://univsmatics.git.unityailab.com/equations.html">
+  <meta property="og:image" content="https://univsmatics.git.unityailab.com/social/equations.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The equations — Uni Vs Matics">
+  <meta name="twitter:image" content="https://univsmatics.git.unityailab.com/social/equations.png">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>
+    window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+      svg: { fontCache: 'global' } };
+  </script>
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+</head>
+<body>
+  <main class="doc">
+    <h1>The equations &mdash; how a template works</h1>
+    <p class="muted">Every template is built from the equation forms below. Each is a real,
+    inspectable piece of math computed per image; the per-template instantiated values live
+    on each <a href="browser.html">template page</a>. This page documents the canonical forms
+    "of the workings".</p>
+
+    <div class="note" id="counts">Loading corpus equation catalog&hellip;</div>
+
+    <h2>Equations by image</h2>
+    <p class="muted">Every named work synced to the exact equations it produced. Search a title,
+    expand to read its math, or open it in the viewer.</p>
+    <div class="toolbar">
+      <input id="eqsearch" type="search" placeholder="search image name…" style="min-width:240px">
+      <span class="muted" id="eqcount"></span>
+    </div>
+    <div id="eqlist"><div class="loading">Loading per-image equations&hellip;</div></div>
+
+    <h2>The canonical forms</h2>
+
+    <h2>&#9733; The combiner equation (the master of masters)</h2>
+    <p>Every form below is a transform over <b>one shared variable space</b> &mdash; the wavelet
+    <b>coefficient field</b>. This is the &ldquo;combiner&rdquo;: the image, the sound and the fractal are all
+    functions of the SAME \(C\), which is exactly what makes them <b>equatable between master equations</b>
+    (and what lets the reverse features run):</p>
+    $$ C = \{\, (r_k,\, c_k,\, v_k) : k = 1\ldots N \,\}\qquad(\text{+ palette } P,\ \text{dims } W\times H) $$
+    <p class="muted">each kept term \(k\) has row \(r_k\), column/band \(c_k\) (its \(\psi\) position) and value
+    \(v_k\). The three master maps:</p>
+    $$ \Phi_{\text{img}}(C) = \sum_k v_k\,\psi_{r_k,c_k}(x,y),\ \ \text{RGB}\leftarrow\text{YCbCr}
+       \qquad(\textbf{form 0}) $$
+    $$ \Phi_{\text{snd}}(C) = \Big(\ \ell_k=\lfloor\log_2\max(r_k,c_k,1)\rfloor,\ \
+       f_k=f_{\text{lo}}\big(\tfrac{f_{\text{hi}}}{f_{\text{lo}}}\big)^{\ell_k/\ell_{\max}},\ \
+       a_k=\tfrac{|v_k|}{\max|v|},\ \ t_k=\tfrac{\text{rank}_k}{N}T\ \Big)\quad(\textbf{form 9}) $$
+    $$ \Phi_{\text{frc}}(C) = \{A_k,\mathbf{t}_k,w_k\}\ \text{fitted to } \Phi_{\text{img}}(C);\qquad
+       \text{growth} = \text{iterate } x^3 - 2y^3 = 3\ \ (\text{Newton}) \quad(\textbf{form 7}) $$
+    <p class="muted"><b>Original vs equation &mdash; both faces of the same file.</b> The <b>original</b> you put in
+    (the source picture \(I_0\) or the source audio) is the ground truth; \(\Phi_{\text{img}}(C)\) and
+    \(\Phi_{\text{snd}}(C)\) are its <b>equational</b> faces re-synthesised from the field \(C\). A file made on the
+    site carries the original alongside \(C\), so the <a href="audio.html">Combiner</a>, <a href="uploads.html">Your
+    equations</a> and the <a href="viewer.html">Viewer</a> let you toggle <b>image: original / equation</b> and
+    <b>sound: original / equation</b> &mdash; the full combination pulled from any one file (an image-source has no
+    original sound, a sound-source no original picture; the equation supplies the missing modality).</p>
+    <p class="muted"><b>Inverses</b> exist only where information is preserved: \(\Phi_{\text{snd}}^{-1}\)
+    recovers \(C\) &mdash; and therefore the image via \(\Phi_{\text{img}}\) &mdash; <b>only when each note
+    encodes position</b> (pitch&rarr;band, pan&rarr;column, duration&rarr;row, amplitude&rarr;\(|v_k|\)). The
+    everyday few-notes playback discards position, so it is <b>not</b> invertible. The <a href="audio.html">Combiner</a>
+    realises <i>sound&rarr;image</i> three ways: a <b>.uvme/.wav</b> carries the exact \(C\) in a data chunk
+    (byte-exact); an <b>equational sound</b> encodes the compact \(C\) <b>in the waveform itself</b> via a 16-tone
+    MFSK modem demodulated by Goertzel (exact to the compact field, no chunk); and the <b>additive loader</b>
+    derives a \(C\) from any plain sound's spectrum (generated, not exact). A byte-exact <i>dense</i> field is
+    megabytes &mdash; impossible as a listenable waveform &mdash; so the equational sound carries the compact field
+    and the dense exact image stays on the chunked <b>.uvme</b>. The forms below instantiate these maps in full.</p>
+
+    <h2>&#9733; Equations from the artist</h2>
+    <p>The forms below are how the engine <i>measures and rebuilds</i> the work &mdash; but the <b>original
+    equational ideas</b> are the artist's own. Every piece in the gallery is by a <b>schizophrenic artist with a
+    photographic memory</b> (<a href="https://www.deviantart.com/gfourteen/gallery" target="_blank" rel="noopener">GFourteen</a>)
+    who <b>recalled the hallucinations they saw and drew them by hand</b> &mdash; so the <b>source forms themselves
+    are the artist's invented mathematics</b>, the seed everything here is derived from. Beyond the source art, these
+    specific equational parts were <b>conceived and specified by the artist</b> (we implemented them using the
+    credited prior-art methods in the <a href="docs.html#provenance">provenance table</a>):</p>
+    <ul class="doc">
+      <li><b>The zoom-fractalize cubic.</b> The artist gave the governing curve for growing new detail when a
+      zoom runs out of native resolution:
+      $$ x^{3} - 2y^{3} = 3 $$
+      iterated by Newton-projection (and continued in 3D as \(x^{3}-2y^{3}-z^{3}=K\)) so each piece grows its own
+      self-similar filigree of the <i>same</i> equational character &mdash; infinitely, in the picture's palette.</li>
+      <li><b>The combiner vision.</b> The insight that image, sound and fractal should all be transforms of
+      <b>one shared coefficient field \(C\)</b> &mdash; "equatable between master equations" &mdash; is the artist's
+      framing; it's what makes the whole round-trip possible.</li>
+      <li><b>The sound ⇄ image round-trip + the <span class="mono">.uvme</span> as a Rosetta Stone.</b> The artist
+      specified that a single equational file should carry the work both ways &mdash; play as sound, rebuild as
+      image &mdash; one artifact read into any representation by the master code.</li>
+    </ul>
+    <p class="muted">In short: the prior-art maths (Newton, Worley, CDF&nbsp;9/7, &hellip;) is credited and not ours;
+    the source forms and these equational ideas are the <b>artist's own invention</b>; the code that realises them is
+    Unity AI Lab's. See <a href="docs.html#provenance">Provenance, attribution &amp; originality</a> for the full split.</p>
+
+    <h2>&#9733; What was specified vs what may be new</h2>
+    <p>To keep the record straight, here is exactly <b>what the artist directed us to use</b>, and the parts that
+    &mdash; <b>to the best of our knowledge</b> &mdash; <b>may not have been done before</b>. The underlying methods
+    are all credited prior art (<a href="docs.html#provenance">provenance table</a>); what may be new is the
+    <b>specific combination and application</b>.</p>
+
+    <h3>Specified by the artist (use these)</h3>
+    <ul class="doc">
+      <li><b>The zoom-fractalize cubic</b> &mdash; the exact equation given: \(x^{3}-2y^{3}=3\) (and its 3D form
+      \(x^{3}-2y^{3}-z^{3}=K\)), solved by Newton-projection, to grow detail past native resolution.</li>
+      <li><b>The combiner</b> &mdash; one shared coefficient field \(C\) with image/sound/fractal as transforms,
+      &ldquo;equatable between master equations.&rdquo;</li>
+      <li><b>Sound &harr; image both ways</b> &mdash; a portable equational file (<span class="mono">.uvme</span>)
+      that plays as sound and rebuilds as image; the file as a <b>Rosetta Stone</b>.</li>
+      <li><b>The equational sound</b> &mdash; the waveform itself carrying the equation.</li>
+      <li><b>Mode E</b> (Newton z³ &rarr; the cubic N³ continuation), <b>base-ten infinite zoom</b>, and
+      <b>cellular fractal expansion</b> &mdash; each specified by the artist during the build.</li>
+    </ul>
+
+    <h3>Possibly never done before (the specific combination)</h3>
+    <ul class="doc">
+      <li>Using <b>one wavelet coefficient field</b> as the simultaneous source for an <b>exact image</b>, an
+      <b>invertible sound</b>, and a <b>self-similar zoom-fractal</b> &mdash; with a single master
+      <span class="mono">extract()</span> that solves it into any of them.</li>
+      <li>A <b>standard WAV that is also a self-describing equational Rosetta Stone</b> &mdash; carrying the field
+      \(C\) + a <span class="mono">produces</span> manifest, playable anywhere yet rebuildable to the exact image.</li>
+      <li>The <b>equational sound</b>: encoding a compact wavelet field as <b>MFSK tones in a listenable WAV</b>
+      that <b>demodulate back to the field</b> (the sound IS the equation).</li>
+      <li>The <b>mode E zoom-fractalize</b> chain &mdash; Newton z³−K &rarr; the 3D cubic \(x^{3}-2y^{3}-z^{3}=K\)
+      continuation, <b>entropy-seeded from the image</b>, base-ten octaves, cellular noise &mdash; driven by each
+      piece's <b>own</b> equation.</li>
+    </ul>
+    <p class="note"><b>Caveat &amp; invitation.</b> We make <b>no claim to be the first</b> to ever conceive any of
+    these &mdash; if someone independently had the same idea, that changes nothing for us. <b>But if you conceived
+    or published one of these first</b> and have <b>peer-reviewed material</b>, email
+    <a href="mailto:contact@unityailab.com">contact@unityailab.com</a> &mdash; we will <b>reference it here</b>.
+    Credit where it's due, both ways.</p>
+
+    <h2>0 &middot; Image reconstruction (primary)</h2>
+    <p>Each image is rebuilt exactly &mdash; to a deviation tolerance &mdash; as a sum of
+    <b>CDF 9/7 biorthogonal wavelet</b> basis-function terms per YCbCr channel (the JPEG2000
+    wavelet). A per-image count of coefficients \(c_k\) (roughly 130k for a sparse piece up to
+    ~1.5M for a dense one), each paired with a wavelet \(\psi\) at a scale and position, sum back
+    to the real pattern, colours, and lines:</p>
+    $$ \text{channel}(x,y) = \sum_{k} c_k\,\psi_{j_k}(x - x_k,\; y - y_k) $$
+    <p class="muted">\(\psi\) is the CDF 9/7 biorthogonal wavelet, applied <b>separably</b> (rows
+    then columns) over multiple dyadic levels via the <b>lifting scheme</b> — predict/update passes
+    with constants \(\alpha,\beta,\gamma,\delta\) and a scaling \(K\). Unlike the Haar box function
+    it has no finite closed form, which is exactly why it captures smooth gradients and fine spark
+    detail at native resolution without blocky artifacts.</p>
+    $$ R = Y + 1.402(C_r-\tfrac12),\;\; G = Y - 0.344(C_b-\tfrac12) - 0.714(C_r-\tfrac12),\;\;
+       B = Y + 1.772(C_b-\tfrac12) $$
+    <p class="muted">Dropping the weakest terms increases deviation (more abstract);
+    keeping all of them reproduces the image to within the tolerance. The per-image term
+    lists are searchable below and rendered live on each <a href="viewer.html">viewer</a>.</p>
+    <p class="note">This same forward transform runs <b>in your browser</b>: on
+    <a href="uploads.html">Your equations</a> you can upload any image and it is turned into its own
+    \(c_k\) coefficients client-side (nothing uploaded), saved locally to replay — the analyzer is a
+    machine-exact inverse-pair of the decoder above.</p>
+
+    <h2>1 &middot; Line-vector field</h2>
+    <p>Each image is sharpened with an unsharp mask, Canny-edged, and reduced to line
+    segments with a probabilistic Hough transform. Near-colinear "same-trajectory" segments
+    are decimated to a single representative:</p>
+    $$ V = \{\, (\mathbf{p}_0,\mathbf{p}_1,\theta,\ell) \,\},\qquad
+       \theta = \operatorname{atan2}(\Delta y,\Delta x)\bmod \pi,\quad
+       \ell = \lVert \mathbf{p}_1-\mathbf{p}_0\rVert $$
+    <p>A structure tensor gives a coarse dominant-orientation field
+    \( \theta(i,j)=\tfrac12\operatorname{atan2}(2J_{xy},\,J_{xx}-J_{yy}) \) with coherence
+    \( \sqrt{(J_{xx}-J_{yy})^2+4J_{xy}^2}/(J_{xx}+J_{yy}) \).</p>
+
+    <h2>2 &middot; Colour distribution</h2>
+    <p>Each RGB channel's histogram is fitted as a 3-component Gaussian mixture (EM), and the
+    dominant palette is extracted by k-means:</p>
+    $$ p_c(x) = \sum_{k=1}^{3} w_k\,\mathcal{N}(x;\mu_k,\sigma_k^2),\qquad
+       C(\text{image}) \approx \{\, w_i\cdot(r_i,g_i,b_i) \,\} $$
+
+    <h2>3 &middot; Luminance field &amp; density aggregation</h2>
+    <p>Rec.709 luminance, aggregated into a density grid (a fractal-flame "density" analogue):</p>
+    $$ L(x,y) = 0.2126\,R + 0.7152\,G + 0.0722\,B,\qquad
+       D(i,j) = \sum_{(x,y)\in \text{cell}(i,j)} L(x,y) $$
+
+    <h2>4 &middot; Lumen-degradation propagation</h2>
+    <p>A decimated gradient field describing how luminance falls off across the frame:</p>
+    $$ \nabla L(i,j) = \left(\tfrac{\partial L}{\partial x},\,\tfrac{\partial L}{\partial y}\right),
+       \qquad \text{magnitude } \lVert\nabla L\rVert \text{ on a coarse grid} $$
+
+    <h2>5 &middot; Morph-allotment gradients</h2>
+    <p>Normalized gradient maps reserved for morphing between templates:</p>
+    $$ M(i,j) = \frac{\nabla L(i,j)}{\max_{i,j}\lVert\nabla L\rVert} $$
+
+    <h2>6 &middot; Waveform stereotype</h2>
+    <p>The radially-averaged 2-D Fourier power spectrum is the template's waveform fingerprint;
+    its log-log slope \(\beta\) is the spectral / fractal falloff exponent:</p>
+    $$ P(f) \;\propto\; f^{-\beta},\qquad
+       \beta = -\,\frac{d\,\log P}{d\,\log f} $$
+
+    <h2>7 &middot; Generative IFS (regeneration)</h2>
+    <p>An approximate iterated function system whose affine maps regenerate a fractalized image
+    in the source's family. A point is iterated, choosing map \(k\) with probability \(w_k\):</p>
+    $$ \mathbf{x}_{n+1} = A_k\,\mathbf{x}_n + \mathbf{t}_k,\qquad
+       A_k=\begin{bmatrix} a&b\\ c&d \end{bmatrix},\;
+       \mathbf{t}_k=\begin{bmatrix} e\\ f \end{bmatrix},\quad \Pr(k)=w_k $$
+    <p class="muted">The maps are fitted by a self-similarity collage search over
+    scale&times;rotation; this is an approximation, not an exact flame inversion. Separately, the
+    <b>&infin; zoom-fractalize</b> on the viewer (and the world engine, which holds its morph while you zoom)
+    grows new detail where a zoomed image runs out: it solves
+    the cubic \(x^3-2y^3=K\) (and its 3D form \(x^3-2y^3-z^3=K\)) plus a complex Newton field \(z^3-K=0\),
+    warped by sine/cosine navigators across all axes, with fBm micro-detail whose frequency rides the zoom
+    &mdash; so it refines <b>forever, never bottoming out</b>, coloured from the piece's palette. The
+    <a href="index.html">home flight portal</a> runs this exact chain live: <i>Unity Born</i> is equationalized
+    into a single equation plane in a 3D frame and you <b>dive into its depth</b> (the equation fractalizes) by
+    scrolling, tilting with drag / WASD&middot;QE, R to home &mdash; the same \(\Phi_{\text{frc}}\) growth, piloted.</p>
+
+    <h2>8 &middot; Box-counting fractal dimension</h2>
+    <p>The Minkowski&ndash;Bouligand dimension of the edge set, from box counts \(N(\varepsilon)\)
+    at scales \(\varepsilon\):</p>
+    $$ D = \lim_{\varepsilon\to 0} \frac{\log N(\varepsilon)}{\log(1/\varepsilon)} $$
+
+    <h2>9 &middot; The master music equation (equation &rarr; sound)</h2>
+    <p>The sound is <b>not a tune added on top</b> &mdash; there is no scale, key, melody or rhythm pattern
+    anywhere. Every note is a pure function of the image's own luma wavelet coefficients \(c_k\) at grid
+    position \((r_k,c_k)\). Documented here so anyone can recreate it from a template alone:</p>
+    <p>Each coefficient's <b>wavelet band</b> (its dyadic scale level) sets the octave &mdash; coarse bands play
+    bass, fine bands play treble &mdash; giving a wide register straight from the maths:</p>
+    $$ \ell_k=\big\lfloor\log_2\max(r_k,c_k,1)\big\rfloor,\qquad
+       f_k=f_{\text{lo}}\left(\tfrac{f_{\text{hi}}}{f_{\text{lo}}}\right)^{\ell_k/\ell_{\max}}
+       \!\!\left(1+\tfrac{1}{16}\,u_k\right) $$
+    <p>with \(f_{\text{lo}}=40\,\text{Hz}\), \(f_{\text{hi}}=3200\,\text{Hz}\),
+    \(\ell_{\max}=\lfloor\log_2\max(W,H)\rfloor\), and \(u_k\in[0,1)\) the fractional position inside the
+    band. Loudness is the coefficient magnitude. The strongest few coefficients <b>per band</b> are chosen
+    so every octave speaks, then read out in a <b>stride-rotated round-robin across the bands</b> &mdash; each
+    successive note jumps about half the register and the starting band drifts each round, so the melody
+    <b>leaps</b> across octaves instead of climbing a low&rarr;high scale (that ascending sweep was an audible
+    strobe). \(\text{rank}_k\) is a note's position in that read-out order:</p>
+    $$ a_k=\frac{|c_k|}{\max_j|c_j|},\qquad t_k=\frac{\text{rank}_k}{N}\,T $$
+    <p class="muted">Stereo pan comes from the dominant palette hue; a continuous scheduler crossfades one
+    piece's note-set into the next by the live morph amount, so in the world engine the music morphs and
+    merges with the images without pauses. No notes are stored or pre-composed &mdash; feed any template's
+    \(c_k\) through these formulas and you get the same music.</p>
+
+    <h2>Reject ladder (what never becomes an equation)</h2>
+    <ul>
+      <li><b>Fog / blur</b> &mdash; low Laplacian variance + low edge density + low high-frequency energy ("no line vectors").</li>
+      <li><b>TV-snow static</b> &mdash; high entropy + flat spectrum + low lag-1 autocorrelation ("high noise volume").</li>
+      <li><b>Text / emoji-dominant</b> &mdash; uniform glyph rows filling the frame, vetoed when strong line-vector structure is present (a small title caption is ignored).</li>
+      <li><b>Non-unique</b> &mdash; equation signature too close (cosine) to an already-kept template.</li>
+    </ul>
+  </main>
+
+  <script src="assets/common.js?v=20260626c"></script>
+  <script>
+    const esc = s => s.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+
+    FT.json('data/corpus.json').then(c => {
+      document.getElementById('counts').innerHTML =
+        `<b>${(c.total_equation_terms||0).toLocaleString()}</b> equation terms across
+         <b>${c.template_count}</b> reconstructed images · avg
+         <b>${(c.avg_equation_terms||0).toLocaleString()}</b> terms/image ·
+         avg fidelity <b>${c.avg_psnr_db} dB</b>.`;
+    }).catch(() => document.getElementById('counts').textContent =
+      'Serve over HTTP and run build_web.py to load live corpus numbers.');
+
+    // Equations by image — ALL templates, image name synced to its equations.
+    let EQ = [];
+    const list = document.getElementById('eqlist');
+    function renderEq(filter) {
+      const q = (filter || '').toLowerCase();
+      const rows = EQ.filter(e => e.title.toLowerCase().includes(q));
+      document.getElementById('eqcount').textContent =
+        `${rows.length} of ${EQ.length} works`;
+      list.innerHTML = rows.map(e => `
+        <details class="panel" style="margin:.45rem 0">
+          <summary style="cursor:pointer"><b>${esc(e.title)}</b>
+            <span class="muted">· ${(e.equation_count||0).toLocaleString()} eqs · PSNR ${e.psnr!=null?e.psnr:'—'} dB</span>
+            <a href="viewer.html?id=${encodeURIComponent(e.id)}" style="float:right">open viewer &rarr;</a>
+          </summary>
+          ${e.equations.map(x => `<div class="eq eqraw">${esc(x)}</div>`).join('')}
+        </details>`).join('');
+    }
+    FT.json('data/equations_by_image.json').then(d => { EQ = d; renderEq(''); })
+      .catch(() => list.innerHTML =
+        `<div class="note">Couldn't load <code>data/equations_by_image.json</code> — run <code>build_web.py</code>.</div>`);
+    document.getElementById('eqsearch').addEventListener('input', e => renderEq(e.target.value));
+  </script>
+</body>
+</html>

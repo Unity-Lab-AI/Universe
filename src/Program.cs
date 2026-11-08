@@ -22,7 +22,7 @@ namespace Universe
             AppDomain.CurrentDomain.UnhandledException += (o, ev) => { try { if (OpenClip != null) OpenClip.Dispose(); } catch { } try {   // (a clip being filmed is finished first, so what was filmed still plays)
                                                                                      System.IO.Directory.CreateDirectory("build"); System.IO.File.AppendAllText(System.IO.Path.Combine("build", "last-run.log"), "crash · " + (ev.ExceptionObject.ToString().Contains("887A0005") || ev.ExceptionObject.ToString().Contains("887A0006") ? "the graphics card stopped answering (a frame took longer than Windows allows, so it reset the driver) · " : "") + ev.ExceptionObject + Environment.NewLine + (Universe.Render.Gpu.DeviceForLog != IntPtr.Zero ? Universe.Render.GpuLog.Describe(Universe.Render.Gpu.DeviceForLog) + Environment.NewLine : "")); } catch { } };
             // --smoke <ms>: a timed test run that closes itself after <ms> milliseconds.
-            int smokeMs = -1; bool testStall = false; int testDeep = -1; double testZoom = -1; bool testVisit = false, testCore = false; int openSet = 0; int openLook = 0; double testEvolve = 0; int testPlanet = -1; double clickAt = -1, clickX = 0.5, clickY = 0.5; double wheelFrom = -1, wheelFor = 0, backFrom = -1, backFor = 0; int pressKey = -1; double pressAt = -1; int testDyson = -1; bool testInside = false; int testJumps = 0; bool testFieldView = false; double testAlt = -1; double[] tour = null; int tourStep = 0; string tourName = "tour"; double shotAt = -1; string shotPath = null; int testSpeed = -1; double tryEvery = -1; int wheelEvery = 1; bool aimCentre = false; double journeyAt = -1, deepSince = -1; double clipAt = -1, clipFor = 10; string clipPath = null; Universe.Render.GifWriter clip = null; int clipFrame = 0; bool wantShot = false, wantRecord = false, wantTour = false; Universe.Render.IClipWriter rec = null; double shotsEvery = -1, shotsNext = 0; int shotsN = 0; string shotName = null; string recordTour = null; bool recForTour = false;
+            int smokeMs = -1; bool testStall = false; int testDeep = -1; double testZoom = -1; bool testVisit = false, testCore = false; int openSet = 0; bool openEncoders = false; int openLook = 0; double testEvolve = 0; int testPlanet = -1; double clickAt = -1, clickX = 0.5, clickY = 0.5; double wheelFrom = -1, wheelFor = 0, backFrom = -1, backFor = 0; int pressKey = -1; double pressAt = -1; int testDyson = -1; bool testInside = false; int testJumps = 0; bool testFieldView = false; double testAlt = -1; double[] tour = null; int tourStep = 0; string tourName = "tour"; double shotAt = -1; string shotPath = null; int testSpeed = -1; double tryEvery = -1; int wheelEvery = 1; bool aimCentre = false; double journeyAt = -1, deepSince = -1; double clipAt = -1, clipFor = 10; string clipPath = null; Universe.Render.GifWriter clip = null; int clipFrame = 0; bool wantShot = false, wantRecord = false, wantTour = false; Universe.Render.IClipWriter rec = null; double shotsEvery = -1, shotsNext = 0; int shotsN = 0; string shotName = null; string recordTour = null; bool recForTour = false;
             double shotsBelowKm = -1; bool shotsBmp = false;   // --shotsbelow <km>: shots only once the view is narrower than that; --bmp: shots as BMP (fast to write, so a test's frames stay quick)
             for (int i = 0; i < args.Length; i++)
             {
@@ -43,6 +43,7 @@ namespace Universe
                 if (args[i] == "--style") openSet = 9;       // the style sample for living and built things
                 if (args[i] == "--family") openSet = 10;     // families of every kind of life, built from their genes
                 if (args[i] == "--civ") openSet = 11;        // what an intelligent species builds, from its genes
+                if (args[i] == "--encoders") openEncoders = true;   // the encoders' sample: the frame, our .cdf97w and our H.264, VP9 and AV1 side by side, over the universe
                 if (args[i] == "--look" && i + 1 < args.Length) { int lk; if (int.TryParse(args[i + 1], out lk)) openLook = lk - 1; }
                 if (args[i] == "--wheelback" && i + 2 < args.Length)   // --wheelback <start s> <for s>: roll the wheel out, for test runs
                 {
@@ -191,7 +192,7 @@ namespace Universe
             bool waveHanded = false;
             if (handed != null && Universe.Platform.Launcher.ReplayClip == null) { Universe.Platform.ClipPlayer.Play(window.Handle, handed, () => watchdog.Beat()); waveHanded = true; }
             bool landing = args.Length == 0 || waveHanded; landing = landing && PreviewBuild;                            // a plain launch: the landing page first
-            Universe.Shell.FrontmanCompare frontman = null; bool frontWanted = false; Universe.Render.UniverseClipPlayer clipPlayer = null;   // (a clip of the universe itself, played through the universe made again)   // (View > Front man compared)
+            Universe.Shell.FrontmanCompare frontman = null; bool frontWanted = false; Universe.Render.UniverseClipPlayer clipPlayer = null;   // (a clip of the universe itself, played through the universe made again)
             Universe.Platform.Launcher.Choice landed = Universe.Platform.Launcher.Choice.Begin;
             if (landing)
             {
@@ -201,14 +202,15 @@ namespace Universe
                 if (chosen.HasValue) { Seed = chosen.Value; WriteLog("universe seed " + Seed + " (chosen on the landing page)"); }
             }
             Universe.Shell.ScaleHud firstHud = null;
-            if (Array.IndexOf(args, "--world") >= 0 || PreviewBuild)
+            if (Array.IndexOf(args, "--world") >= 0 || PreviewBuild || openEncoders)
             {
                 // the loading screen from the very first frame: the universe's making begins before its own screen can be drawn,
                 // and those seconds were a black window
                 try { firstHud = new Universe.Shell.ScaleHud(gpu.Device); gpu.BeginFrame(0.005f, 0.006f, 0.012f); firstHud.DrawLoading(meshes, gpu.Width, gpu.Height, 0, new[] { "Making the universe", "the first galaxies, from the seed" }); gpu.EndFrame(); } catch { }
             }
-            UniverseView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new UniverseView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the universe: one camera through every scale
+            UniverseView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild || openEncoders ? new UniverseView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the universe: one camera through every scale
             if (world != null && Universe.Platform.Launcher.ReplayClip != null) { try { clipPlayer = new Universe.Render.UniverseClipPlayer(new Universe.Render.UniverseClipReader(Universe.Platform.Launcher.ReplayClip)); } catch (Exception ex) { WriteLog("universe clip: " + ex.Message); } }
+            if (openEncoders && world != null) frontman = new Universe.Shell.FrontmanCompare(gpu.Device) { On = true };   // (a sample, opened on its own; never part of the game)
             if (landing && landed == Universe.Platform.Launcher.Choice.Tour && world != null)
             {
                 world.StartTour(Universe.Platform.Launcher.ReplayTour ?? "grand-tour");
@@ -271,7 +273,6 @@ namespace Universe
                 else if (cmd == Window.CmdReadme) DocViewer.Show(window.Handle, PreviewText.Docs(), 2);
                 else if (cmd == Window.CmdHowItWorks) DocViewer.Show(window.Handle, PreviewText.Docs(), 3);
                 else if (cmd == Window.CmdCompared) DocViewer.Show(window.Handle, PreviewText.Docs(), 5);
-                else if (cmd == Window.CmdFrontman && world != null) { if (frontman == null) frontman = new Universe.Shell.FrontmanCompare(gpu.Device); frontman.On = !frontman.On; Window.FrontmanOn = frontman.On; menuDirty = true; }
                 else if (cmd == Window.CmdElements && world != null) { if (elements == null) elements = new ElementView(gpu, meshes, content); showElements = !showElements; }
                 else if (cmd == Window.CmdCredits) DocViewer.Show(window.Handle, PreviewText.Docs(), 8);
                 else if (cmd == Window.CmdStats) { Settings.Set("show-stats", !Settings.Get("show-stats", true)); menuDirty = true; }

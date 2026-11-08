@@ -498,7 +498,7 @@ Still coarse: no AC terms yet, so a 4 × 4 patch is one value. Every frame is wh
 
 ### The front man compared, side by side (2026-11-08)
 
-View > Front man compared (`src/shell/FrontmanCompare.cs`). Over the universe, live, it shows three tiles:
+The encoders' sample (`src/shell/FrontmanCompare.cs`, opened on its own with `--encoders`, never part of the game). Over the universe, live, it shows the tiles:
 - the frame as drawn, taken at about 960 wide;
 - the same frame through the `.cdf97w`'s own sums (dyadic CDF 9/7, steps by subband, our coder) as a whole frame, solved back;
 - the same frame through our own H.264 writer as a whole frame, its own reconstruction: exactly what a chat app's player shows.
@@ -559,3 +559,4 @@ The title shows the clip's progress.
 | Our H.264, colour DC only | 583 KB |
 | Our H.264, with the colour's detail | 638 KB |
 
+**The comparison moved out of the game (2026-11-08).** It had been an entry in the game's View menu. It is a sample for showing the encoders, so it now opens on its own with `--encoders`, like the other sample sets.

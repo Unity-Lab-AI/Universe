@@ -1,4 +1,4 @@
-// Universe · shell · the front man compared, side by side over the universe (View > Front man compared): the frame as drawn, the
+// Universe · shell · the encoders' sample, side by side over the universe (opened on its own with --encoders, never in the game): the frame as drawn, the
 // same frame through our own .cdf97w (CDF 9/7 solved back into pixels) and through each front man built (our own H.264, VP9 and AV1 writers'
 // own reconstruction: exactly what a chat app's player will show), each tile with its bytes for the frame and its quality against
 // the frame as drawn. Right-click a tile to keep it (a green frame). Refreshed every few seconds from the live frame, worked out on

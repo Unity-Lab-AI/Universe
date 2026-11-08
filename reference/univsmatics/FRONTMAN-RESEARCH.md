@@ -496,3 +496,12 @@ Still coarse: no AC terms yet, so a 4 × 4 patch is one value. Every frame is wh
 - **The detail terms.** Each 4 × 4 goes through H.264's integer core transform. Its DC joins the macroblock's DC set, and its other 15 terms are quantised by class and coded with CAVLC. The coeff_token table is picked by nC from the counts of the blocks to the left and above, kept for every block exactly as a decoder keeps them. All four coeff_token tables, the total_zeros and run_before tables, and the level coding are in use. Chroma is still DC only.
 - **Checked with Windows' own decoder:** random-patch pictures, weak and strong, at two quality settings, and the filmed 4K frames as a whole frame, an unchanged one and a changed one. Every frame decoded, 50 to 60 dB against our writer's reconstruction: the same picture.
 
+### The front man compared, side by side (2026-11-08)
+
+View > Front man compared (`src/shell/FrontmanCompare.cs`). Over the universe, live, it shows three tiles:
+- the frame as drawn, taken at about 960 wide;
+- the same frame through the `.cdf97w`'s own sums (dyadic CDF 9/7, steps by subband, our coder) as a whole frame, solved back;
+- the same frame through our own H.264 writer as a whole frame, its own reconstruction: exactly what a chat app's player shows.
+
+Each tile carries its bytes for the frame and its quality against the frame as drawn. A right-click keeps a tile, with a green frame, remembered in the settings. It refreshes every three seconds, worked out on a thread of its own, and is never drawn into a clip. VP9 and AV1 tiles join as their writers are built.
+

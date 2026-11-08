@@ -244,6 +244,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Our own H.264 front man, version 0 (intra, DC terms, our MP4 boxes): Windows' decoder shows the same picture our writer computes:** (built: DNA-AND DESIGN 701; change frames and AC terms built: DNA-AND DESIGN 702) "okay get to it all u have a big back log"
 
+- [~] **The front man compared, side by side over the universe (the frame, our .cdf97w, our H.264; sizes, quality, keepers):** (built: DNA-AND DESIGN 703; waits on the test) "okay idk u still got that side by side non headless comparison from when we first did galaxy appearances"
+
 ---
 
 ## Pending

@@ -62,9 +62,9 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220, CmdClipFormatBase = 225;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdFrontman = 232, CmdClipBase = 220, CmdClipFormatBase = 225;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
-        public static bool Recording, Touring;
+        public static bool Recording, Touring, FrontmanOn;
         /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
         public static bool GravityOn = true;
         /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
@@ -102,6 +102,7 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("show-stats", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdStats, "Show GPU and CPU stats (time a frame, cores, memory)");
             Win32.AppendMenu(view, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(view, Win32.MF_STRING | (Touring ? Win32.MF_CHECKED : 0), (IntPtr)CmdTour, "Panoramic tour (galaxies down to the quarks)\tT");
+            Win32.AppendMenu(view, Win32.MF_STRING | (FrontmanOn ? Win32.MF_CHECKED : 0), (IntPtr)CmdFrontman, "Front man compared (the frame, our .cdf97w and our H.264 side by side, with their sizes and quality)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdElements, "The periodic table (all 118 elements, each as it really is; Escape comes back)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
             Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (in captures, in the clip format below)\tF9");

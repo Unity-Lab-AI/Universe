@@ -622,3 +622,14 @@ The clip was blocky in flight because our VP9 writer had no motion: every change
 | The busiest frames, quality 120 | 837 to 858 KB | 522 to 536 KB |
 | Time to code | about 40 ms | about 105 to 170 ms |
 
+### The front man's transforms, each block's own size (2026-11-08)
+
+A 9.5-minute clip held to the cap had 35% of its frames at the coarsest quality, where red came out about 4 too high (blacks maroon). The waste was every block described in 4 x 4 pieces. Each block's transform is now its own size, 4 x 4 to 32 x 32, chosen block by block. Checked with Windows' own decoder: every frame the picture our writer says.
+
+| Filmed 4K frames | Before | Now |
+|---|---|---|
+| Space, quality 120, a whole frame | 213 KB, 44.9 dB | 178 KB, 47.0 dB |
+| Space, quality 120, a change frame | 44 to 54 KB, 45.3 dB | 24 to 30 KB, 47.0 dB |
+| Coarsest quality, red's error | 3.8 | 0.3 |
+| Coarsest quality, a whole frame | 41 KB | 24 KB |
+

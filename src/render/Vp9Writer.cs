@@ -1,10 +1,11 @@
 // Universe · render · our own VP9 writer, every line ours, written from the published VP9 bitstream specification (its rules and
 // its fixed tables, read into Vp9Tables.cs): the front man a chat app's player reads, in our own WebM container (WebmFile.cs).
 // Version 3: profile 0, 8-bit 4:2:0, a key frame every KeyEvery frames and change frames between; each 64 x 64 superblock one block
-// (split at the frame's edges, and in change frames into four 32 x 32s where their motion differs), DC prediction in key frames;
+// (split at the frame's edges, where its motion differs, and down to 16 x 16 where the picture is busy), DC prediction in key frames;
 // in change frames the frame before moved by each block's own motion (searched here, in whole pairs of pixels, so the colour planes
 // move by whole pixels too), coded as the specification codes it (its candidate list from the blocks around, NEARESTMV, NEARMV,
-// ZEROMV or NEWMV against the best candidate); a block with nothing left to code skipped, 4 x 4 transforms, the coefficients in
+// ZEROMV or NEWMV against the best candidate); a block with nothing left to code skipped; each block's transforms its own size
+// (32 x 32 at most) where it is smooth, 4 x 4s where it is busy (chosen block by block: TX_MODE_SELECT); the coefficients in
 // the specification's token tree with its default odds, no loop filter. Change frames are error resilient (each stands on the
 // frame before alone), so no motion of an older frame enters a candidate list.
 // The frame is cut into as many tile columns as the specification allows (8 at 4K), each coded on a core of its own, its contexts
@@ -92,6 +93,7 @@ namespace Universe.Render
             Y = new byte[_sbCols * 64 * _sbRows * 64]; Cb = new byte[Y.Length / 4]; Cr = new byte[Y.Length / 4];
             for (int p = 0; p < 3; p++) _prev[p] = new byte[p == 0 ? Y.Length : Cb.Length];
             _skips = new byte[_miRows * _miCols];
+            _busy = new float[_skips.Length]; _txs = new byte[_skips.Length];
             _mvR = new short[_skips.Length]; _mvC = new short[_skips.Length]; _lastR = new short[_skips.Length]; _lastC = new short[_skips.Length]; _mode = new byte[_skips.Length];
             _qw = _fw / 4; _qh = _fh / 4; _qs = new byte[_qw * _qh]; _qr = new byte[_qw * _qh];
             // tile columns: as many as the specification allows (section 6.2.14), each coded on a core of its own
@@ -111,6 +113,15 @@ namespace Universe.Render
         // the frame and the frame before, a quarter each way (each the mean of 4 x 4 pixels): the search's first, coarse look
         private byte[] _qs, _qr; private int _qw, _qh;
         const int ZeroMv = 12, NewMv = 13, NearestMv = 10, NearMv = 11;
+        // how busy the picture is in each 8 x 8 (its luma's variance): a block stays whole, one transform its size, only where none of
+        // its 8 x 8s is busier than the quantiser can carry smoothly
+        private readonly float[] _busy; private readonly byte[] _txs;              // (and each 8 x 8's transform size, for the next block's context)
+        /// <summary>A block is split where an 8 x 8 in it varies by more than this many of the quantiser's steps (its standard deviation).</summary>
+        public static double BusySteps = 0.5;
+        /// <summary>Blocks are split for being busy down to this size (bsl: 0 is 8 x 8, 1 is 16 x 16); a busy block of it or smaller
+        /// keeps its size and codes its picture in 4 x 4 transforms.</summary>
+        public static int SplitFloor = 1;
+        static readonly byte[][] TxProbs = { null, new byte[] { 100, 66 }, new byte[] { 20, 152, 15, 101 }, new byte[] { 3, 136, 37, 5, 52, 13 } };   // default_tx_probs[ size ][ ctx ][ node ]
 
         /// <summary>One frame (RGB, three bytes a pixel, top row first, <paramref name="srcW"/> wide), shown for <paramref name="ms"/>.</summary>
         public void Add(byte[] rgb, int srcW, int srcH, uint ms) { AddPrepared(Prepare(rgb, srcW, srcH), ms); }
@@ -160,6 +171,18 @@ namespace Universe.Render
             Buffer.BlockCopy(_mvR, 0, _lastR, 0, _mvR.Length * 2); Buffer.BlockCopy(_mvC, 0, _lastC, 0, _mvC.Length * 2);
             if (_key) { Array.Clear(_lastR, 0, _lastR.Length); Array.Clear(_lastC, 0, _lastC.Length); }
             Array.Clear(_mvR, 0, _mvR.Length); Array.Clear(_mvC, 0, _mvC.Length); Array.Clear(_mode, 0, _mode.Length);
+            {
+                var y = _src[0]; int S = Stride, mc = _miCols;
+                Universe.Core.Jobs.For(_miRows, r =>
+                {
+                    for (int c = 0; c < mc; c++)
+                    {
+                        int o = r * 8 * S + c * 8; long sum = 0, sq = 0;
+                        for (int i = 0; i < 8; i++) { int k = o + i * S; for (int j = 0; j < 8; j++) { int a = y[k + j]; sum += a; sq += a * a; } }
+                        _busy[r * mc + c] = (float)((sq - sum * sum / 64.0) / 64.0);
+                    }
+                });
+            }
             _aboveNz[0] = new byte[_sbCols * 16]; _aboveNz[1] = new byte[_sbCols * 8]; _aboveNz[2] = new byte[_sbCols * 8];
             _abovePart = new byte[_sbCols * 8]; Array.Clear(_skips, 0, _skips.Length);
 
@@ -171,10 +194,11 @@ namespace Universe.Render
                 tiles[k] = new Tile(this, c0, c1).Code();
             });
 
-            // the compressed header: transforms 4 x 4 only, every default odds kept (each "update?" answered no)
+            // the compressed header: transforms up to 32 x 32, each block's its own size, every default odds kept (each "update?" no)
             var ch = new Vp9Bool(); ch.Put(0, 128);
-            ch.Lit(0, 2);                                                               // tx_mode ONLY_4X4
-            ch.Lit(0, 1);                                                               // the 4 x 4 coefficient odds
+            ch.Lit(3, 2); ch.Lit(1, 1);                                                 // tx_mode TX_MODE_SELECT: each block's transform size its own
+            for (int i = 0; i < 12; i++) ch.Put(0, 252);                                // the size odds kept (8 x 8's, 16 x 16's, 32 x 32's)
+            for (int t = 0; t < 4; t++) ch.Lit(0, 1);                                   // the coefficient odds of each size, 4 x 4 to 32 x 32
             int keep = 3;                                                               // the skip odds
             if (!_key) keep += 7 * 3 + 4 + 5 * 2 + 4 * 9 + 16 * 3 + 3 + 2 * (1 + 10 + 1 + 10) + 2 * (2 * 3 + 3);   // inter modes, is-inter, single reference, y modes, partitions, motion
             for (int i = 0; i < keep; i++) ch.Put(0, 252);
@@ -241,9 +265,10 @@ namespace Universe.Render
         {
             private readonly Vp9Writer _v; private readonly int _c0, _c1; private readonly Vp9Bool _bc = new Vp9Bool();
             private readonly byte[][] _leftNz; private readonly byte[] _leftPart = new byte[8];
-            private readonly int[][] _coef = new int[384][]; private readonly int[] _eob = new int[384], _tp = new int[384], _tx = new int[384], _ty = new int[384]; private readonly bool[] _in = new bool[384];
-            private readonly int[] _pred = new int[16], _dq = new int[16], _cache = new int[16]; private readonly double[] _res = new double[16], _tmp = new double[16];
-            public Tile(Vp9Writer v, int c0, int c1) { _v = v; _c0 = c0; _c1 = c1; _leftNz = new[] { new byte[16], new byte[8], new byte[8] }; for (int i = 0; i < 384; i++) _coef[i] = new int[16]; }
+            const int MaxTx = 384;                                                      // (transform blocks in one block at most: a 64 in 4 x 4s, 256 of luma and 128 of colour)
+            private readonly int[] _pool = new int[64 * 64 * 3 / 2], _off = new int[MaxTx]; private readonly int[] _eob = new int[MaxTx], _tp = new int[MaxTx], _tx = new int[MaxTx], _ty = new int[MaxTx], _tsz = new int[MaxTx]; private readonly bool[] _in = new bool[MaxTx];
+            private readonly int[] _pred = new int[1024], _dq = new int[1024], _cache = new int[1024], _it = new int[32]; private readonly double[] _res = new double[1024], _tmp = new double[1024];
+            public Tile(Vp9Writer v, int c0, int c1) { _v = v; _c0 = c0; _c1 = c1; _leftNz = new[] { new byte[16], new byte[8], new byte[8] };  }
             public byte[] Code()
             {
                 _bc.Put(0, 128);                                                          // (the marker bit init_bool reads)
@@ -265,7 +290,7 @@ namespace Universe.Render
                 int boff = 3 - bsl; int ctx = bsl * 4 + (((left & (1 << boff)) > 0) ? 2 : 0) + (((above & (1 << boff)) > 0) ? 1 : 0);
                 var probs = v._key ? Vp9Tables.KfPartitionProbs : Vp9Tables.DefaultPartitionProbs; int pbase = ctx * 3;
                 bool split;
-                if (hasRows && hasCols && bsl == 3 && !v._key && SplitPays(r, c)) { _bc.Put(1, probs[pbase]); _bc.Put(1, probs[pbase + 1]); _bc.Put(1, probs[pbase + 2]); split = true; }
+                if (hasRows && hasCols && bsl > 0 && ((bsl > SplitFloor && Busy(r, c, bsl)) || (bsl == 3 && !v._key && SplitPays(r, c)))) { _bc.Put(1, probs[pbase]); _bc.Put(1, probs[pbase + 1]); _bc.Put(1, probs[pbase + 2]); split = true; }
                 else if (hasRows && hasCols) { _bc.Put(0, probs[pbase]); split = false; }
                 else if (hasCols) { _bc.Put(1, probs[pbase + 1]); split = true; }
                 else if (hasRows) { _bc.Put(1, probs[pbase + 2]); split = true; }
@@ -280,30 +305,43 @@ namespace Universe.Render
                 for (int i = 0; i < num8; i++) { if (c + i < v._abovePart.Length) v._abovePart[c + i] = pv; if ((r & 7) + i < 8) _leftPart[(r & 7) + i] = pv; }
             }
 
-            // decode_block, written. A key frame's block: DC prediction for luma and chroma. A change frame's: the last frame, no motion
-            // (ZEROMV), so the frame before is the prediction. The residual worked out and rebuilt first; if nothing of it is left after
-            // quantising, the block is skipped (in a change frame: copied as it was). Left of the tile's first column counts as missing.
+            // whether a block is busier than one transform its size can carry: any of its 8 x 8s varying by more than BusySteps of the
+            // quantiser's steps (a star on the black, an edge); smooth, it stays whole
+            bool Busy(int r, int c, int bsl)
+            {
+                var v = _v; int n8 = 1 << bsl; double step = v._acq / 8.0 * BusySteps, lim = step * step;
+                for (int y = 0; y < n8 && r + y < v._miRows; y++) for (int x = 0; x < n8 && c + x < v._miCols; x++) if (v._busy[(r + y) * v._miCols + c + x] > lim) return true;
+                return false;
+            }
+
+            // decode_block, written. A key frame's block: DC prediction for luma and chroma, transform block by transform block. A
+            // change frame's: the frame before, moved by the block's motion. Each transform its block's size (32 x 32 at most; the
+            // colour's half that, 4 x 4 at least); the residual worked out and rebuilt first; if nothing of it is left after quantising,
+            // the block is skipped. Left of the tile's first column counts as missing.
             void Block(int r, int c, int bsl)
             {
                 var v = _v; bool availU = r > 0, availL = c > _c0;
-                int n = 0, eobTotal = 0;
+                int n = 0, eobTotal = 0, at = 0;                                       // (each transform block's coefficients at its own place in the pool)
                 int mode = ZeroMv, mctx = 0; _dy = _dx = 0; _bestR = _bestC = 0;
                 if (!v._key) mode = ChooseMotion(r, c, bsl, out mctx);
+                int maxT = Math.Min(bsl + 1, 3), ytx = Busy(r, c, bsl) ? 0 : maxT;            // (smooth: one transform its size; busy: 4 x 4s)
                 for (int p = 0; p < 3; p++)
                 {
-                    int sub = p > 0 ? 1 : 0, n4 = (2 << bsl) >> sub, baseX = (c * 8) >> sub, baseY = (r * 8) >> sub;
+                    int sub = p > 0 ? 1 : 0, tsz = p == 0 ? ytx : Math.Min(ytx, bsl), step = 1 << tsz;   // (colour: get_uv_tx_size, the smaller of the luma's and its own block's)
+                    int n4 = (2 << bsl) >> sub, baseX = (c * 8) >> sub, baseY = (r * 8) >> sub;
                     int maxx = (v._miCols * 8) >> sub, maxy = (v._miRows * 8) >> sub;
-                    for (int y = 0; y < n4; y++) for (int x = 0; x < n4; x++)
+                    for (int y = 0; y < n4; y += step) for (int x = 0; x < n4; x += step)
                     {
                         int sx = baseX + 4 * x, sy = baseY + 4 * y;
-                        _tp[n] = p; _tx[n] = sx; _ty[n] = sy; _in[n] = sx < maxx && sy < maxy; _eob[n] = 0;
-                        if (_in[n]) { Tx4(n, availL || x > 0, availU || y > 0); eobTotal += _eob[n]; }
+                        _tp[n] = p; _tx[n] = sx; _ty[n] = sy; _tsz[n] = tsz; _in[n] = sx < maxx && sy < maxy; _eob[n] = 0; _off[n] = at; at += 16 << (2 * tsz);
+                        if (_in[n]) { TxBlock(n, availL || x > 0, availU || y > 0); eobTotal += _eob[n]; }
                         n++;
                     }
                 }
                 int skip = eobTotal == 0 ? 1 : 0;
                 int sctx = (availU ? v._skips[(r - 1) * v._miCols + c] : 0) + (availL ? v._skips[r * v._miCols + c - 1] : 0);
                 _bc.Put(skip, Vp9Tables.DefaultSkipProb[sctx]);
+                if (v._key) PutTxSize(r, c, maxT, ytx, availU, availL);
                 if (v._key)
                 {
                     _bc.Put(0, Vp9Tables.KfYModeProbs[0]);                             // DC_PRED (above and left DC_PRED)
@@ -312,6 +350,7 @@ namespace Universe.Render
                 else
                 {
                     _bc.Put(1, Vp9Tables.DefaultIsInterProb[0]);                       // inter (the neighbours inter too: context 0)
+                    if (skip == 0) PutTxSize(r, c, maxT, ytx, availU, availL);          // (a skipped inter block's is the largest, not written)
                     _bc.Put(0, Vp9Tables.DefaultSingleRefProb[(availU || availL ? 4 : 2) * 2]);   // the last frame
                     // the inter mode (inter_mode_tree: ZEROMV 0; NEARESTMV 10; NEARMV 110; NEWMV 111), in its context from the candidates
                     int mp = mctx * 3; var imp = Vp9Tables.DefaultInterModeProbs;
@@ -327,27 +366,50 @@ namespace Universe.Render
                 int n8 = 1 << bsl;                                                     // (an inter block with nothing coded counts as skipped)
                 for (int y = 0; y < n8; y++) for (int x = 0; x < n8; x++) if (r + y < v._miRows && c + x < v._miCols)
                 {
-                    int g = (r + y) * v._miCols + c + x; v._skips[g] = (byte)skip;
+                    int g = (r + y) * v._miCols + c + x; v._skips[g] = (byte)skip; v._txs[g] = (byte)(!v._key && skip == 1 ? maxT : ytx);
                     v._mvR[g] = (short)(_dy * 8); v._mvC[g] = (short)(_dx * 8); v._mode[g] = (byte)mode;
                 }
                 for (int k = 0; k < n; k++)
                 {
-                    int p = _tp[k], sub = p > 0 ? 1 : 0; byte nz = 0;
+                    // each transform block's coefficients, then its above and left contexts (every 4 x 4 it covers), as the residual
+                    // syntax sets them
+                    int p = _tp[k], sub = p > 0 ? 1 : 0, step = 1 << _tsz[k]; byte nz = 0;
                     if (skip == 0 && _in[k]) nz = Tokens(k);
-                    v._aboveNz[p][_tx[k] >> 2] = nz; _leftNz[p][(_ty[k] >> 2) & ((16 >> sub) - 1)] = nz;
+                    int ax = _tx[k] >> 2, ly = _ty[k] >> 2, lm = (16 >> sub) - 1;
+                    for (int i = 0; i < step; i++) { if (ax + i < v._aboveNz[p].Length) v._aboveNz[p][ax + i] = nz; _leftNz[p][(ly + i) & lm] = nz; }
                 }
             }
 
-            // one 4 x 4: predicted, its residual moved to frequencies (separably), quantised, and rebuilt as the decoder will
-            void Tx4(int k, bool haveLeft, bool haveAbove)
+            // tx_size, in its context (section 9.3.2): the sizes above and left (the largest where none is coded), as the decoder works it
+            void PutTxSize(int r, int c, int maxT, int t, bool availU, bool availL)
             {
-                var v = _v; int p = _tp[k], x0 = _tx[k], y0 = _ty[k];
+                var v = _v; int above = maxT, left = maxT;
+                if (availU && v._skips[(r - 1) * v._miCols + c] == 0) above = v._txs[(r - 1) * v._miCols + c];
+                if (availL && v._skips[r * v._miCols + c - 1] == 0) left = v._txs[r * v._miCols + c - 1];
+                if (!availL) left = above; if (!availU) above = left;
+                int ctx = above + left > maxT ? 1 : 0; var pr = TxProbs[maxT]; int o = ctx * maxT;
+                // tx_size trees: 8 { -4x4, -8x8 }; 16 { -4x4, 2, -8x8, -16x16 }; 32 { -4x4, 2, -8x8, 4, -16x16, -32x32 }
+                _bc.Put(t > 0 ? 1 : 0, pr[o]); if (t == 0 || maxT == 1) return;
+                _bc.Put(t > 1 ? 1 : 0, pr[o + 1]); if (t == 1 || maxT == 2) return;
+                _bc.Put(t > 2 ? 1 : 0, pr[o + 2]);
+            }
+
+            // one transform block (4 << tsz wide): predicted, its residual moved to frequencies (separably), quantised, and rebuilt as
+            // the decoder will
+            void TxBlock(int k, bool haveLeft, bool haveAbove)
+            {
+                var v = _v; int p = _tp[k], x0 = _tx[k], y0 = _ty[k], tsz = _tsz[k], N = 4 << tsz, NN = N * N;
                 int S = p == 0 ? v.Stride : v.Stride / 2; var rec = v._rec[p]; var src = v._src[p]; var pred = _pred;
+                int maxX = (p == 0 ? v._miCols * 8 : (v._miCols * 8) >> 1) - 1, maxY = (p == 0 ? v._miRows * 8 : (v._miRows * 8) >> 1) - 1;
                 if (v._key)
                 {
-                    int sa = 0, sl = 0, dc; for (int i = 0; i < 4; i++) { if (haveAbove) sa += rec[(y0 - 1) * S + x0 + i]; if (haveLeft) sl += rec[(y0 + i) * S + x0 - 1]; }
-                    if (haveAbove && haveLeft) dc = (sa + sl + 4) >> 3; else if (haveLeft) dc = (sl + 2) >> 2; else if (haveAbove) dc = (sa + 2) >> 2; else dc = 128;
-                    for (int i = 0; i < 16; i++) pred[i] = dc;
+                    // DC_PRED (section 8.5.1): the row above and the column left, each taken from inside the frame
+                    int sa = 0, sl = 0, dc;
+                    if (haveAbove) for (int i = 0; i < N; i++) sa += rec[(y0 - 1) * S + Math.Min(maxX, x0 + i)];
+                    if (haveLeft) for (int i = 0; i < N; i++) sl += rec[Math.Min(maxY, y0 + i) * S + x0 - 1];
+                    int lg = tsz + 2;
+                    if (haveAbove && haveLeft) dc = (sa + sl + N) >> (lg + 1); else if (haveLeft) dc = (sl + (N >> 1)) >> lg; else if (haveAbove) dc = (sa + (N >> 1)) >> lg; else dc = 128;
+                    for (int i = 0; i < NN; i++) pred[i] = dc;
                 }
                 else
                 {
@@ -356,32 +418,48 @@ namespace Universe.Render
                     var pv = v._prev[p]; int my = p == 0 ? _dy : _dy / 2, mx = p == 0 ? _dx : _dx / 2;
                     int lastX = p == 0 ? v._fw - 1 : ((v._fw + 1) >> 1) - 1, lastY = p == 0 ? v._fh - 1 : ((v._fh + 1) >> 1) - 1;
                     int ry = y0 + my, rx = x0 + mx;
-                    if (ry >= 0 && rx >= 0 && ry + 3 <= lastY && rx + 3 <= lastX) for (int i = 0; i < 4; i++) { int o = (ry + i) * S + rx; pred[i * 4] = pv[o]; pred[i * 4 + 1] = pv[o + 1]; pred[i * 4 + 2] = pv[o + 2]; pred[i * 4 + 3] = pv[o + 3]; }
-                    else for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) { int yy = Math.Max(0, Math.Min(lastY, ry + i)), xx = Math.Max(0, Math.Min(lastX, rx + j)); pred[i * 4 + j] = pv[yy * S + xx]; }
+                    if (ry >= 0 && rx >= 0 && ry + N - 1 <= lastY && rx + N - 1 <= lastX) for (int i = 0; i < N; i++) { int o = (ry + i) * S + rx, q = i * N; for (int j = 0; j < N; j++) pred[q + j] = pv[o + j]; }
+                    else for (int i = 0; i < N; i++) for (int j = 0; j < N; j++) { int yy = Math.Max(0, Math.Min(lastY, ry + i)), xx = Math.Max(0, Math.Min(lastX, rx + j)); pred[i * N + j] = pv[yy * S + xx]; }
                 }
+                // the residual (nothing outside the frame: what is there is never shown)
                 var res = _res; bool any = false;
-                for (int i = 0; i < 4; i++) { int o = (y0 + i) * S + x0; for (int j = 0; j < 4; j++) { double d = src[o + j] - pred[i * 4 + j]; res[i * 4 + j] = d; if (d != 0) any = true; } }
-                var coef = _coef[k]; int eob = 0;
-                if (any || v._key)
+                for (int i = 0; i < N; i++)
                 {
-                    // the forward transform: 8 x the orthonormal DCT (the specification's inverse is 1/8 of its transpose), rows then columns
-                    var t = _tmp;
-                    for (int i = 0; i < 4; i++) for (int u = 0; u < 4; u++) t[i * 4 + u] = Df[u * 4] * res[i * 4] + Df[u * 4 + 1] * res[i * 4 + 1] + Df[u * 4 + 2] * res[i * 4 + 2] + Df[u * 4 + 3] * res[i * 4 + 3];
-                    for (int u = 0; u < 4; u++) for (int w = 0; w < 4; w++)
-                    {
-                        double s = Df[u * 4] * t[w] + Df[u * 4 + 1] * t[4 + w] + Df[u * 4 + 2] * t[8 + w] + Df[u * 4 + 3] * t[12 + w];
-                        double qd = (u | w) == 0 ? v._dcq : v._acq; double a = Math.Abs(s) / qd;
-                        int qv = (int)(a + ((u | w) == 0 ? 0.5 : 0.36)); coef[u * 4 + w] = s < 0 ? -qv : qv;
-                    }
-                    var scan = Vp9Tables.DefaultScan4x4;
-                    for (int i = 0; i < 16; i++) if (coef[scan[i]] != 0) eob = i + 1;
+                    int o = (y0 + i) * S + x0; bool rowIn = y0 + i <= maxY;
+                    for (int j = 0; j < N; j++) { double d = rowIn && x0 + j <= maxX ? src[o + j] - pred[i * N + j] : 0; res[i * N + j] = d; if (d != 0) any = true; }
                 }
-                else Array.Clear(coef, 0, 16);
+                var coef = _pool; int co = _off[k], eob = 0;
+                if (any)
+                {
+                    // the forward transform: 8 x the orthonormal DCT at every size (the decoder's inverse, with its rounding and the
+                    // halving of a 32 x 32's coefficients, is 1/8 of its transpose), rows then columns
+                    var D = Dm[tsz]; var t = _tmp;
+                    for (int i = 0; i < N; i++) { int ro = i * N; for (int u = 0; u < N; u++) { double a = 0; int du = u * N; for (int j = 0; j < N; j++) a += D[du + j] * res[ro + j]; t[ro + u] = a; } }
+                    double dcq = v._dcq, acq = v._acq;
+                    for (int u = 0; u < N; u++)
+                    {
+                        int du = u * N;
+                        for (int w = 0; w < N; w++)
+                        {
+                            double a = 0; for (int i = 0; i < N; i++) a += D[du + i] * t[i * N + w];
+                            bool dcp = (u | w) == 0; double m = Math.Abs(a) / (dcp ? dcq : acq);
+                            int qv = (int)(m + (dcp ? 0.5 : 0.36)); coef[co + du + w] = a < 0 ? -qv : qv;
+                        }
+                    }
+                    var scan = Scans[tsz];
+                    for (int i = NN - 1; i >= 0; i--) if (coef[co + scan[i]] != 0) { eob = i + 1; break; }
+                }
+                else Array.Clear(coef, co, NN);
                 _eob[k] = eob;
                 // rebuilt exactly as the decoder rebuilds it (sections 8.6.2 and 8.7)
                 var dq = _dq;
-                if (eob > 0) { for (int i = 0; i < 16; i++) dq[i] = coef[i] * (i == 0 ? v._dcq : v._acq); Inverse4(dq); }
-                for (int i = 0; i < 4; i++) { int o = (y0 + i) * S + x0; for (int j = 0; j < 4; j++) { int val = pred[i * 4 + j] + (eob > 0 ? dq[i * 4 + j] : 0); rec[o + j] = (byte)(val < 0 ? 0 : val > 255 ? 255 : val); } }
+                if (eob > 0)
+                {
+                    int den = tsz == 3 ? 2 : 1;
+                    for (int i = 0; i < NN; i++) dq[i] = coef[co + i] * (i == 0 ? v._dcq : v._acq) / den;
+                    Inverse(dq, tsz + 2, _it);
+                }
+                for (int i = 0; i < N; i++) { int o = (y0 + i) * S + x0, q = i * N; for (int j = 0; j < N; j++) { int val = pred[q + j] + (eob > 0 ? dq[q + j] : 0); rec[o + j] = (byte)(val < 0 ? 0 : val > 255 ? 255 : val); } }
             }
 
             // ── motion ──
@@ -597,26 +675,32 @@ namespace Universe.Render
                 if (fr == 0) _bc.Put(0, frp[0]); else { _bc.Put(1, frp[0]); if (fr == 1) _bc.Put(0, frp[1]); else { _bc.Put(1, frp[1]); _bc.Put(fr == 3 ? 1 : 0, frp[2]); } }
             }
 
-            // one 4 x 4's coefficients in the token tree (section 6.4.24), its contexts as the decoder works them out
+            // one transform block's coefficients in the token tree (section 6.4.24), its contexts as the decoder works them out (section
+            // 9.3.2: the first from the nonzero flags above and left over its width, the rest from the two neighbours already coded)
             byte Tokens(int k)
             {
-                var v = _v; int p = _tp[k], x0 = _tx[k], y0 = _ty[k], eob = _eob[k]; var coef = _coef[k]; var scan = Vp9Tables.DefaultScan4x4;
-                int pl = p > 0 ? 1 : 0, rf = v._key ? 0 : 1;
-                int ctx0 = v._aboveNz[p][x0 >> 2] + _leftNz[p][(y0 >> 2) & ((p > 0 ? 8 : 16) - 1)];
-                var cache = _cache; Array.Clear(cache, 0, 16); bool checkEob = true;
-                for (int c = 0; c < 16; c++)
+                var v = _v; int p = _tp[k], x0 = _tx[k], y0 = _ty[k], eob = _eob[k], tsz = _tsz[k], N = 4 << tsz, NN = N * N; var coef = _pool; int co = _off[k]; var scan = Scans[tsz];
+                int pl = p > 0 ? 1 : 0, rf = v._key ? 0 : 1, sub = p > 0 ? 1 : 0;
+                int ctx0;
                 {
-                    int pos = scan[c], band = Vp9Tables.Coefband4x4[c], ctx;
+                    int maxX4 = (2 * v._miCols) >> sub, maxY4 = (2 * v._miRows) >> sub, x4 = x0 >> 2, y4 = y0 >> 2, lm = (16 >> sub) - 1, above = 0, left = 0;
+                    for (int i = 0; i < (1 << tsz); i++) { if (x4 + i < maxX4) above |= v._aboveNz[p][x4 + i]; if (y4 + i < maxY4) left |= _leftNz[p][(y4 + i) & lm]; }
+                    ctx0 = above + left;
+                }
+                var cache = _cache; bool checkEob = true; int pbase0 = ((tsz * 2 + pl) * 2 + rf) * 6;
+                for (int c = 0; c < NN; c++)
+                {
+                    int pos = scan[c], band = tsz == 0 ? Vp9Tables.Coefband4x4[c] : (c == 0 ? 0 : c < 3 ? 1 : c < 6 ? 2 : c < 10 ? 3 : c < 21 ? 4 : 5), ctx;   // (coefband_8x8plus)
                     if (c == 0) ctx = ctx0;
                     else
                     {
-                        int i = pos >> 2, j = pos & 3, nb0, nb1;
-                        if (i > 0 && j > 0) { nb0 = (i - 1) * 4 + j; nb1 = i * 4 + j - 1; } else if (i > 0) nb0 = nb1 = (i - 1) * 4 + j; else nb0 = nb1 = i * 4 + j - 1;
+                        int i = pos / N, j = pos % N, nb0, nb1;
+                        if (i > 0 && j > 0) { nb0 = (i - 1) * N + j; nb1 = i * N + j - 1; } else if (i > 0) nb0 = nb1 = (i - 1) * N + j; else nb0 = nb1 = i * N + j - 1;
                         ctx = (1 + cache[nb0] + cache[nb1]) >> 1;
                     }
-                    int pb = ((((0 * 2 + pl) * 2 + rf) * 6 + band) * 6 + ctx) * 3;
+                    int pb = ((pbase0 + band) * 6 + ctx) * 3;
                     if (checkEob) { _bc.Put(c < eob ? 1 : 0, Vp9Tables.DefaultCoefProbs[pb]); if (c >= eob) break; }
-                    int val = coef[pos], av = Math.Abs(val), tok = TokenOf(av);
+                    int val = coef[co + pos], av = Math.Abs(val), tok = TokenOf(av);
                     PutToken(tok, Vp9Tables.DefaultCoefProbs[pb + 1], Vp9Tables.DefaultCoefProbs[pb + 2]);
                     cache[pos] = Vp9Tables.EnergyClass[tok];
                     if (tok == 0) checkEob = false;
@@ -649,31 +733,48 @@ namespace Universe.Render
         static int TokenOf(int a) { if (a < 5) return a; if (a < 7) return 5; if (a < 11) return 6; if (a < 19) return 7; if (a < 35) return 8; if (a < 67) return 9; return 10; }
         static byte[] CatProbs(int cat) { switch (cat) { case 1: return Vp9Tables.CatProbs1; case 2: return Vp9Tables.CatProbs2; case 3: return Vp9Tables.CatProbs3; case 4: return Vp9Tables.CatProbs4; case 5: return Vp9Tables.CatProbs5; default: return Vp9Tables.CatProbs6; } }
 
-        // ── the transforms: the forward one 8 x the orthonormal DCT (sqrt 8 each way); the inverse, section 8.7, exactly ──
-        static readonly double[] Df = MakeDf();
-        static double[] MakeDf() { var d = new double[16]; for (int k = 0; k < 4; k++) for (int n = 0; n < 4; n++) d[k * 4 + n] = Math.Sqrt(8) * (k == 0 ? 0.5 : Math.Sqrt(0.5)) * Math.Cos((2 * n + 1) * k * Math.PI / 8); return d; }
+        // ── the transforms: the forward ones 8 x the orthonormal DCT at every size (sqrt 8 each way); the inverse, section 8.7, exactly ──
+        static readonly double[][] Dm = { MakeD(4), MakeD(8), MakeD(16), MakeD(32) };
+        static double[] MakeD(int N) { var d = new double[N * N]; for (int k = 0; k < N; k++) for (int n = 0; n < N; n++) d[k * N + n] = Math.Sqrt(8) * Math.Sqrt(2.0 / N) * (k == 0 ? Math.Sqrt(0.5) : 1) * Math.Cos((2 * n + 1) * k * Math.PI / (2 * N)); return d; }
+        static readonly short[][] Scans = { Vp9Tables.DefaultScan4x4, Vp9Tables.DefaultScan8x8, Vp9Tables.DefaultScan16x16, Vp9Tables.DefaultScan32x32 };
         static int Cos64(int angle) { int a = angle & 127; var t = Vp9Tables.Cos64Lookup; if (a <= 32) return t[a]; if (a <= 64) return -t[64 - a]; if (a <= 96) return -t[a - 64]; return t[128 - a]; }
         static int Sin64(int angle) { return Cos64(angle - 32); }
         static long R14(long x) { return (x + (1 << 13)) >> 14; }
-        static void B(int[] T, int o, int a, int b, int angle, bool flip)
+        // the butterfly B( a, b, angle, flip ) and the Hadamard H( a, b, flip ) of section 8.7.1.1
+        static void B(int[] T, int a, int b, int angle, bool flip)
         {
-            long x = (long)T[o + a] * Cos64(angle) - (long)T[o + b] * Sin64(angle), y = (long)T[o + a] * Sin64(angle) + (long)T[o + b] * Cos64(angle);
-            T[o + a] = (int)R14(x); T[o + b] = (int)R14(y); if (flip) { int s = T[o + a]; T[o + a] = T[o + b]; T[o + b] = s; }
+            long x = (long)T[a] * Cos64(angle) - (long)T[b] * Sin64(angle), y = (long)T[a] * Sin64(angle) + (long)T[b] * Cos64(angle);
+            T[a] = (int)R14(x); T[b] = (int)R14(y); if (flip) { int s = T[a]; T[a] = T[b]; T[b] = s; }
         }
-        // one 4-point inverse DCT on 4 values at a stride (the bit-reversed order, B(0,1,16,1), B(2,3,24,0), H(0,3), H(1,2))
-        static void Idct4(int[] d, int o, int st, int[] T)
+        static void H(int[] T, int a, int b, bool flip) { if (flip) { int s = a; a = b; b = s; } int x = T[a], y = T[b]; T[a] = x + y; T[b] = x - y; }
+        static int Brev(int bits, int x) { int t = 0; for (int i = 0; i < bits; i++) t |= ((x >> i) & 1) << (bits - 1 - i); return t; }
+        // the inverse DCT of 2^n points on the permuted array (section 8.7.1.3), in place
+        static void Idct(int[] T, int n)
         {
-            T[0] = d[o]; T[1] = d[o + 2 * st]; T[2] = d[o + st]; T[3] = d[o + 3 * st];
-            B(T, 0, 0, 1, 16, true); B(T, 0, 2, 3, 24, false);
-            int a0 = T[0], a3 = T[3], a1 = T[1], a2 = T[2];
-            d[o] = a0 + a3; d[o + 3 * st] = a0 - a3; d[o + st] = a1 + a2; d[o + 2 * st] = a1 - a2;
+            int n0 = 1 << n, n1 = n0 >> 1, n2 = n0 >> 2, n3 = n0 >> 3;
+            if (n == 2) B(T, 0, 1, 16, true); else Idct(T, n - 1);
+            for (int i = 0; i < n2; i++) B(T, n1 + i, n0 - 1 - i, 32 - Brev(5, n1 + i), false);
+            if (n >= 3) for (int i = 0; i < n3; i++) for (int j = 0; j < 2; j++) H(T, n1 + 4 * i + 2 * j, n1 + 1 + 4 * i + 2 * j, j == 1);
+            if (n == 5)
+            {
+                for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) B(T, n0 - n + 3 - n2 * j - 4 * i, n1 + n - 4 + n2 * j + 4 * i, 28 - 16 * i + 56 * j, true);
+                for (int i = 0; i < 2; i++) for (int j = 0; j < 4; j++) H(T, n1 + n3 * j + i, n1 + n2 - 5 + n3 * j - i, (j & 1) == 1);
+            }
+            if (n >= 4)
+            {
+                for (int i = 0; i <= (n == 5 ? 1 : 0); i++) for (int j = 0; j < 2; j++) B(T, n0 - n + 2 - i - n2 * j, n1 + n - 3 + i + n2 * j, 24 + 48 * j, true);
+                for (int i = 0; i <= 2 * n - 7; i++) for (int j = 0; j < 2; j++) H(T, n1 + n2 * j + i, n1 + n2 - 1 + n2 * j - i, (j & 1) == 1);
+            }
+            if (n >= 3) for (int i = 0; i < n3; i++) B(T, n0 - n3 - 1 - i, n1 + n3 + i, 16, true);
+            for (int i = 0; i < n1; i++) H(T, i, n0 - 1 - i, false);
         }
-        [ThreadStatic] static int[] _t4;
-        static void Inverse4(int[] d)
+        // the 2D inverse (section 8.7.2): each row, then each column, permuted and transformed; the columns rounded by min(6, n + 2) bits
+        [ThreadStatic] static int[] _perm;
+        static void Inverse(int[] d, int n, int[] T)
         {
-            var T = _t4 ?? (_t4 = new int[4]);
-            for (int i = 0; i < 4; i++) Idct4(d, i * 4, 1, T);
-            for (int j = 0; j < 4; j++) { Idct4(d, j, 4, T); for (int i = 0; i < 4; i++) d[i * 4 + j] = (d[i * 4 + j] + 8) >> 4; }
+            int n0 = 1 << n, sh = Math.Min(6, n + 2), half = 1 << (sh - 1); var c = _perm ?? (_perm = new int[32]);
+            for (int i = 0; i < n0; i++) { int o = i * n0; for (int j = 0; j < n0; j++) c[j] = d[o + j]; for (int j = 0; j < n0; j++) T[j] = c[Brev(n, j)]; Idct(T, n); for (int j = 0; j < n0; j++) d[o + j] = T[j]; }
+            for (int j = 0; j < n0; j++) { for (int i = 0; i < n0; i++) c[i] = d[i * n0 + j]; for (int i = 0; i < n0; i++) T[i] = c[Brev(n, i)]; Idct(T, n); for (int i = 0; i < n0; i++) d[i * n0 + j] = (T[i] + half) >> sh; }
         }
 
         public void Dispose() { if (_path != null) WebmFile.Write(_path, "V_VP9", null, _w, _h, _frames, _times, _keys, _t); }

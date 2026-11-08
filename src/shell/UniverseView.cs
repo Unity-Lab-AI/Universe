@@ -4263,7 +4263,7 @@ namespace Universe.Shell
                     var lines = new List<string> { TourCaption };
                     var now = _matterScale > 0 || _spaceScale > 0 ? _matter.Card() : (_tKind >= 0 ? Card() : null);
                     if (now != null && now.Count > 0) lines.Add("now: " + now[0] + (now.Count > 1 ? ", " + now[1] : ""));
-                    _hud.CardTop = 4; _hud.CardBottom = (float)(h * 0.66); _hud.DrawCard(_meshes, lines, w * 0.3, h * 0.9, w, h, cap);   // to the right of the scale (the caption alone sits in the lower bar)
+                    _hud.DrawBarText(_meshes, lines, w * 0.3, w, h, 0.1f, cap);          // in the lower bar, to the right of the scale, across its width (it had been held above two thirds of the screen: a paragraph over the middle of the view)
                 }
                 _gpu.ClearDepth();                                                     // the cards and the frames a second on top of the bars
                 // what is in view and in focus, written as you go, just below the top bar
@@ -4281,7 +4281,7 @@ namespace Universe.Shell
                     if (at.Length > 0) lines.Add("at: " + at);
                     lines.Add("T: carry on    R: start again    Backspace: close this");
                 }
-                _hud.DrawCard(_meshes, lines, w * 0.3, h * 0.86, w, h);
+                _hud.DrawBarText(_meshes, lines, w * 0.3, w, h, 0.12f, 1);             // (along the foot of the picture, never over its middle)
             }
             if (Loading) { _gpu.ClearDepth(); _hud.DrawLoading(_meshes, w, h, _loadShare, _loadLines ?? new[] { "Making the universe" }); }   // (the start's loading screen over everything)
             if (Settings.Get("show-fps", true))                                       // frames a second, top right (View > Show FPS)

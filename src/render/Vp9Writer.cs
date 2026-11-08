@@ -1,8 +1,12 @@
 // Universe · render · our own VP9 writer, every line ours, written from the published VP9 bitstream specification (its rules and
 // its fixed tables, read into Vp9Tables.cs): the front man a chat app's player reads, in our own WebM container (WebmFile.cs).
-// Version 2: profile 0, 8-bit 4:2:0, a key frame every KeyEvery frames and change frames between; each 64 x 64 superblock one block
-// (split only at the frame's edges), DC prediction in key frames, the frame before (no motion) in change frames, a block with nothing
-// left to code skipped, 4 x 4 transforms, the coefficients in the specification's token tree with its default odds, no loop filter.
+// Version 3: profile 0, 8-bit 4:2:0, a key frame every KeyEvery frames and change frames between; each 64 x 64 superblock one block
+// (split at the frame's edges, and in change frames into four 32 x 32s where their motion differs), DC prediction in key frames;
+// in change frames the frame before moved by each block's own motion (searched here, in whole pairs of pixels, so the colour planes
+// move by whole pixels too), coded as the specification codes it (its candidate list from the blocks around, NEARESTMV, NEARMV,
+// ZEROMV or NEWMV against the best candidate); a block with nothing left to code skipped, 4 x 4 transforms, the coefficients in
+// the specification's token tree with its default odds, no loop filter. Change frames are error resilient (each stands on the
+// frame before alone), so no motion of an older frame enters a candidate list.
 // The frame is cut into as many tile columns as the specification allows (8 at 4K), each coded on a core of its own, its contexts
 // kept to its own columns as a decoder keeps them; the forward transform separable, nothing made anew per block, so a 4K frame codes
 // in a few tens of milliseconds. The writer keeps the decoder's own reconstruction (it predicts from it), so what a player shows is
@@ -88,6 +92,8 @@ namespace Universe.Render
             Y = new byte[_sbCols * 64 * _sbRows * 64]; Cb = new byte[Y.Length / 4]; Cr = new byte[Y.Length / 4];
             for (int p = 0; p < 3; p++) _prev[p] = new byte[p == 0 ? Y.Length : Cb.Length];
             _skips = new byte[_miRows * _miCols];
+            _mvR = new short[_skips.Length]; _mvC = new short[_skips.Length]; _lastR = new short[_skips.Length]; _lastC = new short[_skips.Length]; _mode = new byte[_skips.Length];
+            _qw = _fw / 4; _qh = _fh / 4; _qs = new byte[_qw * _qh]; _qr = new byte[_qw * _qh];
             // tile columns: as many as the specification allows (section 6.2.14), each coded on a core of its own
             int maxLog2 = 1; while ((_sbCols >> maxLog2) >= 4) maxLog2++; maxLog2--;
             _minLog2 = 0; while ((64 << _minLog2) < _sbCols) _minLog2++;
@@ -99,6 +105,12 @@ namespace Universe.Render
         // the frame being written: its source planes and its reconstruction (shared, each tile writing only its own columns)
         private byte[][] _src = new byte[3][]; private readonly byte[][] _rec = new byte[3][];
         private byte[][] _aboveNz = new byte[3][]; private byte[] _abovePart;
+        // the motion of every 8 x 8 of the frame being written (in eighths of a pixel, as coded) and its mode; the last frame's, a
+        // starting guess for the search only (never in the bitstream: change frames are error resilient)
+        private readonly short[] _mvR, _mvC, _lastR, _lastC; private readonly byte[] _mode;
+        // the frame and the frame before, a quarter each way (each the mean of 4 x 4 pixels): the search's first, coarse look
+        private byte[] _qs, _qr; private int _qw, _qh;
+        const int ZeroMv = 12, NewMv = 13, NearestMv = 10, NearMv = 11;
 
         /// <summary>One frame (RGB, three bytes a pixel, top row first, <paramref name="srcW"/> wide), shown for <paramref name="ms"/>.</summary>
         public void Add(byte[] rgb, int srcW, int srcH, uint ms) { AddPrepared(Prepare(rgb, srcW, srcH), ms); }
@@ -140,7 +152,14 @@ namespace Universe.Render
             _src = planes;
             _key = _count % KeyEvery == 0; _count++;
             _rec[0] = Y; _rec[1] = Cb; _rec[2] = Cr;
-            if (!_key) for (int p = 0; p < 3; p++) Buffer.BlockCopy(_rec[p], 0, _prev[p], 0, _rec[p].Length);   // (the reference: the frame before, as the decoder holds it)
+            if (!_key)
+            {
+                for (int p = 0; p < 3; p++) Buffer.BlockCopy(_rec[p], 0, _prev[p], 0, _rec[p].Length);   // (the reference: the frame before, as the decoder holds it)
+                Quarter(_src[0], _qs); Quarter(_prev[0], _qr);
+            }
+            Buffer.BlockCopy(_mvR, 0, _lastR, 0, _mvR.Length * 2); Buffer.BlockCopy(_mvC, 0, _lastC, 0, _mvC.Length * 2);
+            if (_key) { Array.Clear(_lastR, 0, _lastR.Length); Array.Clear(_lastC, 0, _lastC.Length); }
+            Array.Clear(_mvR, 0, _mvR.Length); Array.Clear(_mvC, 0, _mvC.Length); Array.Clear(_mode, 0, _mode.Length);
             _aboveNz[0] = new byte[_sbCols * 16]; _aboveNz[1] = new byte[_sbCols * 8]; _aboveNz[2] = new byte[_sbCols * 8];
             _abovePart = new byte[_sbCols * 8]; Array.Clear(_skips, 0, _skips.Length);
 
@@ -164,7 +183,7 @@ namespace Universe.Render
             // the uncompressed header
             var u = new Raw();
             u.U(2, 2); u.U(1, 0); u.U(1, 0); u.U(1, 0);                                // frame marker; profile 0; not a shown-again frame
-            u.U(1, _key ? 0 : 1); u.U(1, 1); u.U(1, 0);                                // key or not; shown; not error resilient
+            u.U(1, _key ? 0 : 1); u.U(1, 1); u.U(1, _key ? 0 : 1);                     // key or not; shown; change frames error resilient
             if (_key)
             {
                 u.U(8, 0x49); u.U(8, 0x83); u.U(8, 0x42);                              // the sync code
@@ -173,14 +192,14 @@ namespace Universe.Render
             }
             else
             {
-                u.U(2, 0);                                                             // reset_frame_context: none
                 u.U(8, 1);                                                             // this frame becomes reference 0
                 for (int i = 0; i < 3; i++) { u.U(3, 0); u.U(1, 0); }                  // last, golden and altref all reference 0, no sign bias
                 u.U(1, 1);                                                             // its size: reference 0's
             }
             if (_fw != _w || _fh != _h) { u.U(1, 1); u.U(16, _w - 1); u.U(16, _h - 1); } else u.U(1, 0);   // the size shown
             if (!_key) { u.U(1, 0); u.U(1, 0); u.U(2, 1); }                            // no 1/8 motion; one filter, EIGHTTAP
-            u.U(1, 0); u.U(1, 1); u.U(2, 0);                                           // no odds saved back; frame-parallel; context 0
+            if (_key) { u.U(1, 0); u.U(1, 1); }                                        // no odds saved back; frame-parallel (error resilient: both so already)
+            u.U(2, 0);                                                                 // context 0
             u.U(6, 0); u.U(3, 0); u.U(1, 0);                                           // no loop filter
             u.U(8, _q); u.U(1, 0); u.U(1, 0); u.U(1, 0);                               // the quantiser, no deltas
             u.U(1, 0);                                                                 // no segmentation
@@ -200,6 +219,21 @@ namespace Universe.Render
             _last = f; _lastKey = _key;
             if (KeepFrames) { _frames.Add(f); _times.Add(_t); _keys.Add(_key); }
             _t += Math.Max(1u, ms);
+        }
+
+        // a luma plane a quarter each way (each the rounded mean of 4 x 4), the frame's own area only
+        void Quarter(byte[] y, byte[] q)
+        {
+            int S = Stride, qw = _qw;
+            Universe.Core.Jobs.For(_qh, r =>
+            {
+                for (int c = 0; c < qw; c++)
+                {
+                    int o = r * 4 * S + c * 4, sum = 0;
+                    for (int i = 0; i < 4; i++) { int k = o + i * S; sum += y[k] + y[k + 1] + y[k + 2] + y[k + 3]; }
+                    q[r * qw + c] = (byte)((sum + 8) >> 4);
+                }
+            });
         }
 
         // ── one tile column: its own coder, its own left contexts, its scratch made once ──
@@ -231,7 +265,8 @@ namespace Universe.Render
                 int boff = 3 - bsl; int ctx = bsl * 4 + (((left & (1 << boff)) > 0) ? 2 : 0) + (((above & (1 << boff)) > 0) ? 1 : 0);
                 var probs = v._key ? Vp9Tables.KfPartitionProbs : Vp9Tables.DefaultPartitionProbs; int pbase = ctx * 3;
                 bool split;
-                if (hasRows && hasCols) { _bc.Put(0, probs[pbase]); split = false; }
+                if (hasRows && hasCols && bsl == 3 && !v._key && SplitPays(r, c)) { _bc.Put(1, probs[pbase]); _bc.Put(1, probs[pbase + 1]); _bc.Put(1, probs[pbase + 2]); split = true; }
+                else if (hasRows && hasCols) { _bc.Put(0, probs[pbase]); split = false; }
                 else if (hasCols) { _bc.Put(1, probs[pbase + 1]); split = true; }
                 else if (hasRows) { _bc.Put(1, probs[pbase + 2]); split = true; }
                 else split = true;
@@ -252,6 +287,8 @@ namespace Universe.Render
             {
                 var v = _v; bool availU = r > 0, availL = c > _c0;
                 int n = 0, eobTotal = 0;
+                int mode = ZeroMv, mctx = 0; _dy = _dx = 0; _bestR = _bestC = 0;
+                if (!v._key) mode = ChooseMotion(r, c, bsl, out mctx);
                 for (int p = 0; p < 3; p++)
                 {
                     int sub = p > 0 ? 1 : 0, n4 = (2 << bsl) >> sub, baseX = (c * 8) >> sub, baseY = (r * 8) >> sub;
@@ -276,16 +313,23 @@ namespace Universe.Render
                 {
                     _bc.Put(1, Vp9Tables.DefaultIsInterProb[0]);                       // inter (the neighbours inter too: context 0)
                     _bc.Put(0, Vp9Tables.DefaultSingleRefProb[(availU || availL ? 4 : 2) * 2]);   // the last frame
-                    // the inter mode's context: the two nearest candidates (mv_ref_blocks), each a ZEROMV block inside the tile
-                    int a0r = -1, a0c = bsl == 3 ? 3 : bsl == 2 ? 1 : 0, a1r = bsl == 3 ? 3 : bsl == 2 ? 1 : 0, a1c = -1;
-                    int counter = 0;
-                    if (r + a0r >= 0 && r + a0r < v._miRows && c + a0c >= _c0 && c + a0c < _c1) counter += 3;
-                    if (r + a1r >= 0 && r + a1r < v._miRows && c + a1c >= _c0 && c + a1c < _c1) counter += 3;
-                    int mctx = counter == 0 ? 2 : counter == 3 ? 1 : 0;                // BOTH_PREDICTED, ZERO_PLUS_PREDICTED, BOTH_ZERO
-                    _bc.Put(0, Vp9Tables.DefaultInterModeProbs[mctx * 3]);             // ZEROMV
+                    // the inter mode (inter_mode_tree: ZEROMV 0; NEARESTMV 10; NEARMV 110; NEWMV 111), in its context from the candidates
+                    int mp = mctx * 3; var imp = Vp9Tables.DefaultInterModeProbs;
+                    if (mode == ZeroMv) _bc.Put(0, imp[mp]);
+                    else
+                    {
+                        _bc.Put(1, imp[mp]);
+                        if (mode == NearestMv) _bc.Put(0, imp[mp + 1]);
+                        else { _bc.Put(1, imp[mp + 1]); _bc.Put(mode == NewMv ? 1 : 0, imp[mp + 2]); }
+                    }
+                    if (mode == NewMv) PutMv(_dy * 8 - _bestR, _dx * 8 - _bestC);      // (against the best candidate, BestMv)
                 }
                 int n8 = 1 << bsl;                                                     // (an inter block with nothing coded counts as skipped)
-                for (int y = 0; y < n8; y++) for (int x = 0; x < n8; x++) if (r + y < v._miRows && c + x < v._miCols) v._skips[(r + y) * v._miCols + c + x] = (byte)skip;
+                for (int y = 0; y < n8; y++) for (int x = 0; x < n8; x++) if (r + y < v._miRows && c + x < v._miCols)
+                {
+                    int g = (r + y) * v._miCols + c + x; v._skips[g] = (byte)skip;
+                    v._mvR[g] = (short)(_dy * 8); v._mvC[g] = (short)(_dx * 8); v._mode[g] = (byte)mode;
+                }
                 for (int k = 0; k < n; k++)
                 {
                     int p = _tp[k], sub = p > 0 ? 1 : 0; byte nz = 0;
@@ -305,7 +349,16 @@ namespace Universe.Render
                     if (haveAbove && haveLeft) dc = (sa + sl + 4) >> 3; else if (haveLeft) dc = (sl + 2) >> 2; else if (haveAbove) dc = (sa + 2) >> 2; else dc = 128;
                     for (int i = 0; i < 16; i++) pred[i] = dc;
                 }
-                else { var pv = v._prev[p]; for (int i = 0; i < 4; i++) { int o = (y0 + i) * S + x0; pred[i * 4] = pv[o]; pred[i * 4 + 1] = pv[o + 1]; pred[i * 4 + 2] = pv[o + 2]; pred[i * 4 + 3] = pv[o + 3]; } }
+                else
+                {
+                    // the frame before, moved by the block's motion (whole pixels: the filters' first phase, a plain copy), each sample
+                    // taken from inside the frame as the decoder takes it (section 8.5.2.4: clamped to the last row and column)
+                    var pv = v._prev[p]; int my = p == 0 ? _dy : _dy / 2, mx = p == 0 ? _dx : _dx / 2;
+                    int lastX = p == 0 ? v._fw - 1 : ((v._fw + 1) >> 1) - 1, lastY = p == 0 ? v._fh - 1 : ((v._fh + 1) >> 1) - 1;
+                    int ry = y0 + my, rx = x0 + mx;
+                    if (ry >= 0 && rx >= 0 && ry + 3 <= lastY && rx + 3 <= lastX) for (int i = 0; i < 4; i++) { int o = (ry + i) * S + rx; pred[i * 4] = pv[o]; pred[i * 4 + 1] = pv[o + 1]; pred[i * 4 + 2] = pv[o + 2]; pred[i * 4 + 3] = pv[o + 3]; }
+                    else for (int i = 0; i < 4; i++) for (int j = 0; j < 4; j++) { int yy = Math.Max(0, Math.Min(lastY, ry + i)), xx = Math.Max(0, Math.Min(lastX, rx + j)); pred[i * 4 + j] = pv[yy * S + xx]; }
+                }
                 var res = _res; bool any = false;
                 for (int i = 0; i < 4; i++) { int o = (y0 + i) * S + x0; for (int j = 0; j < 4; j++) { double d = src[o + j] - pred[i * 4 + j]; res[i * 4 + j] = d; if (d != 0) any = true; } }
                 var coef = _coef[k]; int eob = 0;
@@ -329,6 +382,219 @@ namespace Universe.Render
                 var dq = _dq;
                 if (eob > 0) { for (int i = 0; i < 16; i++) dq[i] = coef[i] * (i == 0 ? v._dcq : v._acq); Inverse4(dq); }
                 for (int i = 0; i < 4; i++) { int o = (y0 + i) * S + x0; for (int j = 0; j < 4; j++) { int val = pred[i * 4 + j] + (eob > 0 ? dq[i * 4 + j] : 0); rec[o + j] = (byte)(val < 0 ? 0 : val > 255 ? 255 : val); } }
+            }
+
+            // ── motion ──
+            private int _dy, _dx, _bestR, _bestC;                                     // the block's motion (whole pixels, luma), BestMv (eighths)
+            private readonly int[] _tgtDy = new int[4], _tgtDx = new int[4]; private int _tgtR = -1, _tgtC = -1;   // a split 64's four quarters, as searched
+            static readonly sbyte[][] MvRefBlocks =
+            {
+                new sbyte[] { -1, 0, 0, -1, -1, -1, -2, 0, 0, -2, -2, -1, -1, -2, -2, -2 },   // 8 x 8 (mv_ref_blocks: row, column)
+                new sbyte[] { -1, 0, 0, -1, -1, 1, 1, -1, -1, -1, -3, 0, 0, -3, -3, -3 },     // 16 x 16
+                new sbyte[] { -1, 1, 1, -1, -1, 2, 2, -1, -1, -1, -3, 0, 0, -3, -3, -3 },     // 32 x 32
+                new sbyte[] { -1, 3, 3, -1, -1, 4, 4, -1, -1, -1, -1, 0, 0, -1, -1, 6 },      // 64 x 64
+            };
+            static readonly byte[] Mode2Counter = { 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 3, 1 };
+            static readonly sbyte[] CounterToContext = { 2, 3, 4, 1, 3, -1, 0, -1, -1, 5, 5, -1, 5, -1, -1, -1, -1, -1, 6 };
+            const int MvBorder = 16 << 3, BestBorder = (160 - 4) << 3;               // MV_BORDER; (BORDERINPIXELS - INTERP_EXTEND) << 3
+
+            // find_mv_refs and find_best_ref_mvs (sections 6.5.1, 6.5.12) as the decoder runs them, for a frame whose every block is
+            // inter, of the last frame, with no older frame's motion in play: the candidates are the blocks around (inside the tile),
+            // the first two counted for the context; then each clamped as the decoder clamps it
+            void FindRefs(int r, int c, int bsl, out int nr0, out int nc0, out int nr1, out int nc1, out int ctx)
+            {
+                var v = _v; var t = MvRefBlocks[bsl]; int count = 0, counter = 0; nr0 = nc0 = nr1 = nc1 = 0;
+                for (int i = 0; i < 8; i++)
+                {
+                    int cr = r + t[i * 2], cc = c + t[i * 2 + 1];
+                    if (cr < 0 || cr >= v._miRows || cc < _c0 || cc >= _c1) continue;
+                    int g = cr * v._miCols + cc;
+                    if (i < 2) counter += Mode2Counter[v._mode[g]];
+                    if (count >= 2) continue;
+                    int mr = v._mvR[g], mc = v._mvC[g];
+                    if (count == 0) { nr0 = mr; nc0 = mc; count = 1; }
+                    else if (mr != nr0 || mc != nc0) { nr1 = mr; nc1 = mc; count = 2; }
+                }
+                ctx = CounterToContext[counter];
+                int bh = 1 << bsl;
+                int top = -(r * 64), bottom = (v._miRows - bh - r) * 64, left = -(c * 64), right = (v._miCols - bh - c) * 64;
+                // clamp_mv_ref, then (no eighth-pixel motion: odd parts made even, ours never odd) find_best_ref_mvs' clamp
+                nr0 = Clip(Clip(nr0, top - MvBorder, bottom + MvBorder), top - BestBorder, bottom + BestBorder);
+                nc0 = Clip(Clip(nc0, left - MvBorder, right + MvBorder), left - BestBorder, right + BestBorder);
+                nr1 = Clip(Clip(nr1, top - MvBorder, bottom + MvBorder), top - BestBorder, bottom + BestBorder);
+                nc1 = Clip(Clip(nc1, left - MvBorder, right + MvBorder), left - BestBorder, right + BestBorder);
+            }
+            static int Clip(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+            // the block's mode and motion: the searched motion against the candidates the decoder already has (NEARESTMV, NEARMV and
+            // ZEROMV cost a bit or two; NEWMV its difference too), each priced as the picture's difference plus its bits
+            int ChooseMotion(int r, int c, int bsl, out int ctx)
+            {
+                var v = _v; int nr0, nc0, nr1, nc1; FindRefs(r, c, bsl, out nr0, out nc0, out nr1, out nc1, out ctx);
+                _bestR = nr0; _bestC = nc0;
+                int x = c * 8, y = r * 8, n = 8 << bsl, lam = Math.Max(1, v._acq / 8);
+                int sdy, sdx;
+                if (_tgtR >= 0 && bsl == 2 && (r & ~7) == _tgtR && (c & ~7) == _tgtC) { int q = ((r >> 2) & 1) * 2 + ((c >> 2) & 1); sdy = _tgtDy[q]; sdx = _tgtDx[q]; }
+                else
+                {
+                    int g = r * v._miCols + c;
+                    Search(x, y, n, new[] { 0, 0, nr0 / 8, nc0 / 8, nr1 / 8, nc1 / 8, v._lastR[g] / 8, v._lastC[g] / 8 }, out sdy, out sdx);
+                }
+                long best = long.MaxValue; int mode = ZeroMv;
+                Try(ref best, ref mode, ZeroMv, 0, 0, x, y, n, lam * 1L);
+                Try(ref best, ref mode, NearestMv, nr0 / 8, nc0 / 8, x, y, n, lam * 2L);
+                Try(ref best, ref mode, NearMv, nr1 / 8, nc1 / 8, x, y, n, lam * 3L);
+                Try(ref best, ref mode, NewMv, sdy, sdx, x, y, n, lam * (3L + MvBits(sdy * 8 - nr0) + MvBits(sdx * 8 - nc0)));
+                if (mode == NearestMv) { _dy = nr0 / 8; _dx = nc0 / 8; }
+                else if (mode == NearMv) { _dy = nr1 / 8; _dx = nc1 / 8; }
+                else if (mode == NewMv) { _dy = sdy; _dx = sdx; }
+                else { _dy = 0; _dx = 0; }
+                return mode;
+            }
+            void Try(ref long best, ref int mode, int m, int dy, int dx, int x, int y, int n, long bits)
+            {
+                long cost = Sad(x, y, n, dy, dx, 1, long.MaxValue) + bits;
+                if (cost < best) { best = cost; mode = m; }
+            }
+            static int MvBits(int d) { if (d == 0) return 0; int a = Math.Abs(d) >> 3, b = 3; while (a > 1) { a >>= 1; b += 2; } return b; }
+
+            // whether a whole 64's four quarters, each searched on its own, beat the 64 moved as one by more than their extra motions
+            bool SplitPays(int r, int c)
+            {
+                var v = _v; int x = c * 8, y = r * 8, lam = Math.Max(1, v._acq / 8);
+                int g = r * v._miCols + c;
+                int nr0, nc0, nr1, nc1, ctx; FindRefs(r, c, 3, out nr0, out nc0, out nr1, out nc1, out ctx);
+                int dy, dx; long whole = Search(x, y, 64, new[] { 0, 0, nr0 / 8, nc0 / 8, nr1 / 8, nc1 / 8, v._lastR[g] / 8, v._lastC[g] / 8 }, out dy, out dx);
+                long parts = 0;
+                for (int q = 0; q < 4; q++)
+                {
+                    int qx = x + (q & 1) * 32, qy = y + (q >> 1) * 32, gq = (qy >> 3) * v._miCols + (qx >> 3);
+                    parts += Search(qx, qy, 32, new[] { dy, dx, 0, 0, v._lastR[gq] / 8, v._lastC[gq] / 8 }, out _tgtDy[q], out _tgtDx[q]);
+                }
+                bool split = parts + lam * 40L < whole;
+                if (split) { _tgtR = r; _tgtC = c; } else _tgtR = -1;
+                return split;
+            }
+
+            // the luma's absolute difference between the frame's block at (x, y), n wide (its part inside the frame), and the frame
+            // before moved by (dy, dx), every step-th row; samples outside the frame taken from its edge, as the decoder takes them
+            long Sad(int x, int y, int n, int dy, int dx, int step, long stop)
+            {
+                var v = _v; int S = v.Stride, w = Math.Min(n, v._fw - x), h = Math.Min(n, v._fh - y); var src = v._src[0]; var pv = v._prev[0];
+                long sum = 0; int lastX = v._fw - 1, lastY = v._fh - 1;
+                bool inside = x + dx >= 0 && y + dy >= 0 && x + dx + w - 1 <= lastX && y + dy + h - 1 <= lastY;
+                for (int i = 0; i < h; i += step)
+                {
+                    int so = (y + i) * S + x;
+                    if (inside) { int ro = (y + dy + i) * S + x + dx; for (int j = 0; j < w; j++) { int d = src[so + j] - pv[ro + j]; sum += d < 0 ? -d : d; } }
+                    else { int yy = Clip(y + dy + i, 0, lastY) * S; for (int j = 0; j < w; j++) { int d = src[so + j] - pv[yy + Clip(x + dx + j, 0, lastX)]; sum += d < 0 ? -d : d; } }
+                    if (sum > stop) return sum * step;
+                }
+                return sum * step;
+            }
+            // the same on the quarter-size planes (a block qn wide there), only where the block moved stays inside the frame
+            long QSad(int qx, int qy, int qn, int dy, int dx, long stop)
+            {
+                var v = _v; int W = v._qw, w = Math.Min(qn, v._qw - qx), h = Math.Min(qn, v._qh - qy); long sum = 0;
+                if (w <= 0 || h <= 0 || qx + dx < 0 || qy + dy < 0 || qx + dx + w > v._qw || qy + dy + h > v._qh) return long.MaxValue;
+                for (int i = 0; i < h; i++)
+                {
+                    int so = (qy + i) * W + qx, ro = (qy + dy + i) * W + qx + dx;
+                    for (int j = 0; j < w; j++) { int d = v._qs[so + j] - v._qr[ro + j]; sum += d < 0 ? -d : d; }
+                    if (sum > stop) return sum;
+                }
+                return sum;
+            }
+
+            const int Range = 256;                                                     // (the farthest a block is looked for, in pixels)
+            // the block's motion: the best of the starting guesses, then (big blocks) a coarse look on the quarter-size planes, then a
+            // fine one in steps of 8, 4 and 2 pixels; whole pairs of pixels only, the block moved kept within the frame before
+            long Search(int x, int y, int n, int[] starts, out int bdy, out int bdx)
+            {
+                var v = _v; int w = Math.Min(n, v._fw - x), h = Math.Min(n, v._fh - y);
+                int minY = Math.Max(-Range, -y), maxY = Math.Min(Range, v._fh - h - y), minX = Math.Max(-Range, -x), maxX = Math.Min(Range, v._fw - w - x);
+                long best = long.MaxValue; bdy = 0; bdx = 0;
+                for (int k = 0; k + 1 < starts.Length; k += 2)
+                {
+                    int sy = Clip(starts[k], minY, maxY) & ~1, sx = Clip(starts[k + 1], minX, maxX) & ~1;
+                    long cst = Sad(x, y, n, sy, sx, 2, best); if (cst < best) { best = cst; bdy = sy; bdx = sx; }
+                }
+                if (n >= 32)
+                {
+                    // coarse: a quarter each way, from the best guess, in steps of 8, 4, 2 and 1 there (32, 16, 8 and 4 pixels here)
+                    int qx = x / 4, qy = y / 4, qn = n / 4, cy = bdy / 4, cx = bdx / 4; long qb = QSad(qx, qy, qn, cy, cx, long.MaxValue);
+                    for (int st = 8; st >= 1; st >>= 1)
+                        for (int it = 0; it < 8; it++)
+                        {
+                            int by = cy, bx = cx;
+                            for (int d = 0; d < 8; d++)
+                            {
+                                int ty = cy + DY[d] * st, tx = cx + DX[d] * st;
+                                if (ty * 4 < minY || ty * 4 > maxY || tx * 4 < minX || tx * 4 > maxX) continue;
+                                long cs = QSad(qx, qy, qn, ty, tx, qb); if (cs < qb) { qb = cs; by = ty; bx = tx; }
+                            }
+                            if (by == cy && bx == cx) break; cy = by; cx = bx;
+                        }
+                    if (cy * 4 >= minY && cy * 4 <= maxY && cx * 4 >= minX && cx * 4 <= maxX) { long fc = Sad(x, y, n, cy * 4, cx * 4, 2, best); if (fc < best) { best = fc; bdy = cy * 4; bdx = cx * 4; } }
+                }
+                for (int st = 8; st >= 2; st >>= 1)
+                    for (int it = 0; it < 6; it++)
+                    {
+                        int by = bdy, bx = bdx;
+                        for (int d = 0; d < 8; d++)
+                        {
+                            int ty = bdy + DY[d] * st, tx = bdx + DX[d] * st;
+                            if (ty < minY || ty > maxY || tx < minX || tx > maxX) continue;
+                            long cs = Sad(x, y, n, ty, tx, 2, best); if (cs < best) { best = cs; by = ty; bx = tx; }
+                        }
+                        if (by == bdy && bx == bdx) break; bdy = by; bdx = bx;
+                    }
+                return best;
+            }
+            static readonly int[] DY = { -1, 1, 0, 0, -1, -1, 1, 1 }, DX = { 0, 0, -1, 1, -1, 1, -1, 1 };
+
+            // a motion difference (eighths, even: no eighth-pixel motion) as read_mv reads it: the joint, then each part that is not 0
+            void PutMv(int dr, int dc)
+            {
+                int joint = (dr != 0 ? 2 : 0) | (dc != 0 ? 1 : 0);                     // MV_JOINT_ZERO 0, HNZVZ 1, HZVNZ 2, HNZVNZ 3
+                // mv_joint_tree { -ZERO, 2, -HNZVZ, 4, -HZVNZ, -HNZVNZ }, its default odds 32, 64, 96
+                if (joint == 0) _bc.Put(0, 32);
+                else { _bc.Put(1, 32); if (joint == 1) _bc.Put(0, 64); else { _bc.Put(1, 64); _bc.Put(joint == 3 ? 1 : 0, 96); } }
+                if (dr != 0) PutMvPart(dr, 0);
+                if (dc != 0) PutMvPart(dc, 1);
+            }
+            static readonly byte[][] MvClassProbs = { new byte[] { 224, 144, 192, 168, 192, 176, 192, 198, 198, 245 }, new byte[] { 216, 128, 176, 160, 176, 176, 192, 198, 198, 208 } };
+            static readonly byte[] MvClass0Bit = { 216, 208 };
+            static readonly byte[][][] MvClass0Fr = { new[] { new byte[] { 128, 128, 64 }, new byte[] { 96, 112, 64 } }, new[] { new byte[] { 128, 128, 64 }, new byte[] { 96, 112, 64 } } };
+            static readonly byte[][] MvFr = { new byte[] { 64, 96, 64 }, new byte[] { 64, 96, 64 } };
+            static readonly byte[] MvBitsP = { 136, 140, 148, 160, 176, 192, 224, 234, 234, 240 };
+            static readonly int[] MvClassTree = { 0, 2, -1, 4, 6, 8, -2, -3, 10, 12, -4, -5, -6, 14, 16, 18, -7, -8, -9, -10 };
+            static readonly int[][] ClassPath = MakeClassPaths();
+            static int[][] MakeClassPaths() { var p = new int[11][]; for (int t = 0; t < 11; t++) { var l = new List<int>(); FindIn(MvClassTree, 0, t, l); p[t] = l.ToArray(); } return p; }
+            static bool FindIn(int[] tree, int n, int v, List<int> path)
+            {
+                for (int b = 0; b < 2; b++)
+                {
+                    int ch = tree[n + b]; path.Add(n); path.Add(b);
+                    if (ch <= 0 ? -ch == v : FindIn(tree, ch, v, path)) return true;
+                    path.RemoveRange(path.Count - 2, 2);
+                }
+                return false;
+            }
+            // read_mv_component, written: the sign, the class, then (class 0) its bit or (above it) the class's bits, then the
+            // fraction; the high precision bit is not sent (no eighth-pixel motion: taken as 1)
+            void PutMvPart(int v, int comp)
+            {
+                _bc.Put(v < 0 ? 1 : 0, 128);
+                int z = Math.Abs(v) - 1, ip = z >> 3, fr = (z >> 1) & 3, cls = 0;
+                if (ip >= 2) { cls = 1; while ((ip >> (cls + 1)) != 0) cls++; }
+                var path = ClassPath[cls]; var cp = MvClassProbs[comp];
+                for (int k = 0; k < path.Length; k += 2) _bc.Put(path[k + 1], cp[path[k] >> 1]);
+                byte[] frp;
+                if (cls == 0) { _bc.Put(ip, MvClass0Bit[comp]); frp = MvClass0Fr[comp][ip]; }
+                else { int d = ip - (1 << cls); for (int i = 0; i < cls; i++) _bc.Put((d >> i) & 1, MvBitsP[i]); frp = MvFr[comp]; }
+                // mv_fr_tree { -0, 2, -1, 4, -2, -3 }
+                if (fr == 0) _bc.Put(0, frp[0]); else { _bc.Put(1, frp[0]); if (fr == 1) _bc.Put(0, frp[1]); else { _bc.Put(1, frp[1]); _bc.Put(fr == 3 ? 1 : 0, frp[2]); } }
             }
 
             // one 4 x 4's coefficients in the token tree (section 6.4.24), its contexts as the decoder works them out

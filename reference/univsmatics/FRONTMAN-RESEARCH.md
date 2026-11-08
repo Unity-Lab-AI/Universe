@@ -612,3 +612,13 @@ The front man now codes at 30. It codes as fast as before, about 39 ms a 4K fram
 | Each frame | 47 KB against the cap's 48 |
 | Ten minutes at that rate | 835 MB |
 
+### The front man's motion (2026-11-08)
+
+The clip was blocky in flight because our VP9 writer had no motion: every change frame was predicted from the same place in the frame before. Over the cap, the rate control then coarsened the quality as far as it goes. The writer now searches each block's motion and codes it as the specification does. Checked with Windows' own decoder on eight filmed 4K frames in a row: every frame is the picture our writer says.
+
+| A 4K change frame | Without motion | With motion |
+|---|---|---|
+| A flight through space, quality 120 | 74 to 99 KB, 44.8 dB | 44 to 54 KB, 45.3 dB |
+| The busiest frames, quality 120 | 837 to 858 KB | 522 to 536 KB |
+| Time to code | about 40 ms | about 105 to 170 ms |
+

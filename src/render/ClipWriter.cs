@@ -132,6 +132,7 @@ namespace Universe.Render
     /// point, at any size. Version 9, kind 1; the records packed with Deflate.</summary>
     internal sealed class UniverseClipWriter : IClipWriter
     {
+        private bool _disposed;
         public const ushort Version = 9; public const byte Kind = 1;
         private readonly System.IO.FileStream _file; private readonly System.IO.Compression.DeflateStream _z; private readonly System.IO.BinaryWriter _o;
         private int _points;
@@ -207,6 +208,7 @@ namespace Universe.Render
         public void Add(byte[] rgb, int srcW, int srcH) { if (_video == null) return; _video.Add(rgb, srcW, srcH, (uint)Ms()); }
         public void Dispose()
         {
+            if (_disposed) return; _disposed = true;   // (finished once: a crash and then the watchdog had both finished it)
             if (Universe.Shell.MatterView.Recorded != null) Universe.Shell.MatterView.Recorded = null;
             try { _o.Flush(); _z.Dispose(); _file.Dispose(); } catch { }
             if (_video == null) return;

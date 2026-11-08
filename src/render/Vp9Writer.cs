@@ -127,6 +127,9 @@ namespace Universe.Render
         }
         /// <summary>The quantiser index for the frames from here on (1 finest .. 255 coarsest): the rate control's dial.</summary>
         public int Quality { get { return _q; } set { _q = Math.Max(1, Math.Min(255, value)); _dcq = Vp9Tables.DcQLookup[_q]; _acq = Vp9Tables.AcQLookup[_q]; } }
+        /// <summary>A copy of the picture as the decoder holds it now, as planes for <see cref="AddPrepared"/>: a frame made of it
+        /// repeats the last one exactly (every block skipped).</summary>
+        public byte[][] Recon() { return new[] { (byte[])Y.Clone(), (byte[])Cb.Clone(), (byte[])Cr.Clone() }; }
         /// <summary>The last frame written, as its bytes, and whether it was a whole one.</summary>
         public byte[] LastFrame { get { return _last; } }
         public bool LastKey { get { return _lastKey; } }

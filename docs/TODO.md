@@ -264,6 +264,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The .cdf97w: the front man under 850 MB for 10 minutes at 4K, the universe's own equations inside:** (built: DNA-AND DESIGN 719; waits on the test) "wtf are we going in reverse it used to be like 500mb for 10min 4k now its fucking maxing itout weell over 1Gb wher 850 was set max" / "Yes, universe equations (Recommended)"
 - [x] **The simulation running inside a player: probed (needs a machine-wide plug-in, administrator rights); not built, the front man kept:** (decided: DNA-AND DESIGN 720) "can we just make the simulation run in a player or not possible" / "do it" / "No, keep the front man"
 - [~] **The clip size dropdown back: Full (4K on a 4K screen), Half, Quarter:** (built: DNA-AND DESIGN 721; waits on the test) "still no 4k option dropdown wi"
+- [~] **The clip held under 850 MB for 10 minutes (one rate-control account for the whole clip):** (built: DNA-AND DESIGN 722; waits on the test) "okay, huh clip is 1.21Gb so its a bit too big"
+- [ ] **A graphics card hang after 12 minutes of filming at 4K: cause to be found** (seen: DNA-AND DESIGN 722)
 
 ---
 

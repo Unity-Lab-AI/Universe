@@ -515,3 +515,14 @@ The title shows the clip's progress.
 
 **H15 step 3 built: the handover.** The installer registers `.cdf97w` to the program. Double-clicked, a clip of the universe itself plays straight away, made again from its seed. A waveform clip plays in the program's own player, then the start page opens. The start page's Play does the same.
 
+### VP9 front man, version 1: from the published specification (2026-11-08)
+
+- **Written from the specification's text,** its rules and its fixed tables (the default coefficient odds, the scans, the bands, the Pareto table, the quantiser tables), read by our own parse of the document. Every line of the writer is ours, and so is the WebM container round it.
+- **Whole frames** (one every 30): each 64 × 64 superblock is one block, split only at the frame's edges. DC prediction, 4 × 4 transforms, the coefficients in the token tree with the default odds, no loop filter.
+- **Change frames:** every block predicted from the frame before, with no motion. A block with nothing left after quantising is skipped, and the decoder copies it.
+- **Checked with Windows' own VP9 decoder** at 1920 × 1080 and 3840 × 2160. Every frame decoded, whole and change frames, at about 45 dB against our writer's reconstruction. That is the same picture; the gap is the colour conversion's rounding.
+
+| Three 4K frames (a whole one, an unchanged one, a changed one) | Bytes |
+|---|---|
+| Our VP9 | 358 KB |
+| Our H.264 | 576 KB |

@@ -1,5 +1,5 @@
 // Universe · shell · the front man compared, side by side over the universe (View > Front man compared): the frame as drawn, the
-// same frame through our own .cdf97w (CDF 9/7 solved back into pixels) and through each front man built (our own H.264 writer's
+// same frame through our own .cdf97w (CDF 9/7 solved back into pixels) and through each front man built (our own H.264 and VP9 writers'
 // own reconstruction: exactly what a chat app's player will show), each tile with its bytes for the frame and its quality against
 // the frame as drawn. Right-click a tile to keep it (a green frame). Refreshed every few seconds from the live frame, worked out on
 // a thread of its own so the universe never waits.
@@ -59,6 +59,16 @@ namespace Universe.Shell
                 h264[o] = B8((1.164 * Y + 1.596 * cr) / 255); h264[o + 1] = B8((1.164 * Y - 0.813 * cr - 0.392 * cb) / 255); h264[o + 2] = B8((1.164 * Y + 2.017 * cb) / 255);
             }
             tiles.Add(new Tile { Name = "H.264 (ours)", Rgb = h264, Bytes = hb, Db = Db(rgb, h264) });
+            // VP9: our own writer, one whole frame, and its own reconstruction, back to RGB
+            var vw = new Vp9Writer(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "front-man-compare.webm"), w, h);
+            vw.Add(rgb, w, h, 33); long vb = vw.Bytes; int VS = vw.Stride, VC = VS / 2;
+            var vp9 = new byte[w * h * 3];
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+            {
+                double Y = vw.Y[y * VS + x] - 16, cb = vw.Cb[(y / 2) * VC + x / 2] - 128, cr = vw.Cr[(y / 2) * VC + x / 2] - 128; int o = (y * w + x) * 3;
+                vp9[o] = B8((1.164 * Y + 1.596 * cr) / 255); vp9[o + 1] = B8((1.164 * Y - 0.813 * cr - 0.392 * cb) / 255); vp9[o + 2] = B8((1.164 * Y + 2.017 * cb) / 255);
+            }
+            tiles.Add(new Tile { Name = "VP9 (ours)", Rgb = vp9, Bytes = vb, Db = Db(rgb, vp9) });
             foreach (var t in tiles) { t.Rgb = Shrink(t.Rgb, w, h, 320); }
             return tiles.ToArray();
         }

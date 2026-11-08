@@ -382,3 +382,25 @@ At equal size, dyadic is about 7 dB better and keeps more stars. **H9 holds.**
 - **H13, the choice per subband.** Code the coarse subbands, which stay alike from frame to frame, as changes, and the fine ones, which shimmer, whole.
 - **H14, steps that follow what the eye can see in motion.** Coarser fine-subband steps while the picture is changing fast, since fast motion hides fine detail.
 - **H15, the universe as the clip.** The `.cdf97u` is 86 bytes for the whole tour, because the universe itself is the equation. Extending it to free flight means storing the camera's path, a few KB a minute. That's the one route under 100 MB at any size.
+
+### H13, H14, H17, H18 on the version 8 clip (2026-11-08, own code: `shots/rt/tw.cs`, `ff.cs`)
+
+8 consecutive 4K frames from a busy stretch (4:30) and 8 from a calm one (8:50):
+
+| | Busy | Calm |
+|---|---:|---:|
+| Version 8 (first whole, then closed-loop changes) | 3,359 KB a frame, 58.3 dB | 250 KB, 62.3 dB |
+| H13, change or whole per subband | 2,919 KB (−13 %), 58.6 dB | 250 KB, no gain |
+| H14, the two finest levels of each change at twice the step | 2,979 KB (−11 %), 56.5 dB | 237 KB (−5 %), 61.8 dB |
+| H17, the CDF 9/7 through time (8 frames, 2 levels) | 4,146 KB, worse | 339 KB, worse |
+
+**H18, fill instead of store.** The finest levels are not stored, and the decoder fills them. "Left empty" is the 9/7 inverse lifting filling the rows and columns from the coarser levels, the equations already solved. "Fractal fill" scales each term's four children from it, one number per subband by least squares.
+
+| 4K frame | Every level | Finest level filled | With the fractal fill |
+|---|---:|---:|---:|
+| Busy (5,163 stars) | 2,942 KB, 58.5 dB, 5,124 stars | 1,503 KB, 29.0 dB, 307 stars | 1,503 KB, 29.1 dB, 305 |
+| Calm (88 stars) | 708 KB, 62.6 dB, 87 | 424 KB, 33.2 dB, 20 | 424 KB, 33.2 dB, 18 |
+
+**H18 fails.** A single-pixel star is almost all finest-level energy, and the coarser levels hold only a faint smudge of it. Any fill, lifting or fractal (Uni Vs Matics' cubic included), spreads what the coarser levels hold or invents new detail in its place. It can't put back a star that wasn't stored. Across the levels the children's signs don't follow the parent's, so the least-squares scale comes out near zero.
+
+**Where the lab stands.** Every pixel equation tested leaves a busy 4K frame at 1 to 3 MB, and the stars force the finest level to be stored. The stars are themselves exact equations in the universe, made from the seed. So the one route to 4K with every star in 100 to 900 MB for ten minutes is H15: the file stores the seed and the camera's path, and plays back by making the universe again. That's one file, the `.cdf97w` itself, under 1 MB.

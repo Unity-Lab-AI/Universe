@@ -1073,6 +1073,7 @@ namespace Universe.Shell
 
         private void Add(List<StarVertex> l, double x, double y, double z, double size, float r, float g, float b, double s)
         {
+            if (l.Count >= 900000) return;                                                  // (a ceiling: a frame of millions of soft points had the card stop answering, the driver reset by Windows, the program gone with it)
             x -= _fx; z -= _fz;                                                             // around the point you dive into
             double vx = x / s + _ex, vy = (y + _yOff - _fy) / s + _ey, vz = z / s + _ez, vs = size / s;        // view units: one unit = the scale; you are 0.6 above the surface under you
             if (Math.Abs(vx - _ex) > 60 || Math.Abs(vz - _ez) > 60 || vy - _ey < -60 || (vs < 2e-4 && size > 1e-20) || vs > 400) return;   // (electrons are points: kept as the smallest dot on screen)
@@ -1723,7 +1724,7 @@ namespace Universe.Shell
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
-                double a = SiteA(fm); long n = (long)Math.Min(60, Math.Ceiling(2.4 * s / a) + 1), ai0 = FocusAI, aj0 = FocusAJ;
+                double a = SiteA(fm); long n = (long)Math.Min(27, Math.Ceiling(2.4 * s / a) + 1), ai0 = FocusAI, aj0 = FocusAJ;   // (no more sites than a crystal's atoms: sixty a side was ninety thousand sites at six nanometres, three atoms each, and the card stopped answering)
                 double px = 2.0 * s / Math.Max(1, _viewH); float f = 1;                               // (no fading in: drawn once big enough to see)
                 for (long i = ai0 - n; i <= ai0 + n; i++)
                     for (long j = aj0 - n; j <= aj0 + n; j++)
@@ -1739,14 +1740,20 @@ namespace Universe.Shell
                             var mol = fm.Molecule;
                             if (mol != null && el.Symbol == mol[0].Key)
                             {
-                                // a whole molecule on this site, in its real shape, each turned its own way (a dissolved ion in a molecule's place stands alone)
-                                for (int q = 1; q < mol.Length; q++)
+                                // a whole molecule on this site, in its real shape, each turned its own way (a dissolved ion in a molecule's place stands alone):
+                                // each of its atoms drawn as a crystal's atoms are, its cloud at the lattice's level and its own system only
+                                // close in and near where you look (every atom of every molecule had been its full system, every electron and
+                                // its path, at every size below forty spacings: millions of points in a frame at six nanometres, and the card
+                                // stopped answering: the driver reset, and the program went down with it)
+                                double cw2 = Fade(s, AtomSpacing * 7, AtomSpacing * 4); float lw2 = (float)((1 - cw2) * (1 - fw));
+                                for (int q = 0; q < mol.Length; q++)
                                 {
-                                    var me = El(mol[q].Key); if (me == null) continue; double ox, oy, oz; Orient(i, j, k, mol[q].Value, out ox, out oy, out oz);
-                                    double mr = AtomRadius(me) * 0.55;                       // bonded atoms overlap: drawn at their bonded size
-                                    AtomSystem(glow, me, sx + ox, sy - ar + oy - _yOff, sz + oz, s, time, i * 7919 ^ j * 104729 ^ k * 31 + q, sh * f * (1 - fw));
+                                    var me = q == 0 ? el : El(mol[q].Key); if (me == null) continue; double ox = 0, oy = 0, oz = 0; if (q > 0) Orient(i, j, k, mol[q].Value, out ox, out oy, out oz);
+                                    double mx = sx + ox, my = sy - ar + oy - _yOff, mz = sz + oz, mar = AtomRadius(me); long mk = i * 7919 ^ j * 104729 ^ k * 31 + q;
+                                    if (mar < px * 0.5) continue;
+                                    if (lw2 > 0.02f && mar > px * 2) LatticeCloud(glow, me, mx, my, mz, s, sh * lw2);
+                                    if (cw2 > 0.02) { float fa = sh * f * (float)cw2 * (1 - fw); if (NearLook(mx, my, mz, s)) Cloud(glow, me, mx, my, mz, s, time, mk, fa); else AtomSystem(glow, me, mx, my, mz, s, time, mk, fa); }
                                 }
-                                AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, sh * f * (1 - fw));
                                 { int nb = _bodies.Count; AddBody(6, i, j, sx, sy - ar - _yOff, sz, ar * 1.6, s); if (_bodies.Count > nb) _bodies[nb].Sym = fm.Id; }   // the whole molecule
                             }
                             else

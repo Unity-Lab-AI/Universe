@@ -188,6 +188,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The tour back to what it was: every chain added without being asked for (the comet's, the giant's, the star's, the neutron star's) out:** (built: DNA-AND DESIGN 665; waits on the test) "okay wtf !!! now u r zooming into the comet, wtf STOP FUCKING DOING SHIT I NEVER FUCKING TOLD YOU TO DO"
 
+- [~] **The crash at a grain of water ice's lattice (the card stopped answering) fixed: a molecular crystal's sites capped and its atoms drawn as a crystal's, and a ceiling on the glows in a frame:** (built: DNA-AND DESIGN 666; waits on the test) "it got to 2um and then crashed,, and it was weird it was just side stepping for along ways during grain zoom levels and never propelry zoomed down but just slide along the grains lvl surface then crashed ate the black and white none wavelegth size levels with the black and white first appeard i saw crystal lattice then it crassed"
+
 ---
 
 ## Pending

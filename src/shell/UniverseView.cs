@@ -2240,7 +2240,12 @@ namespace Universe.Shell
                         else if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
                         if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_spaceScale > 0 && _matter.SpaceKind == 12 && _fallShare < 1) || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
-                        if ((sign > 0 && d <= want * 1.02) || (sign < 0 && !st.Out && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; if (!chain) _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
+                        // a zoom in aimed below the hand-over into the matter is not over until you are in the matter: a step onto the
+                        // ground had read the height as a nanometre for one frame, the stop called itself done at its two micrometres, the
+                        // floor lifted the camera back before the hand-over could come, and every stop below (the crystal, the lattice,
+                        // the atoms, the quark) was skipped as not in any body's matter
+                        bool intoMatter = sign > 0 && _ground != null && _matterScale <= 0 && _spaceScale <= 0 && want < HandoffKm();
+                        if ((sign > 0 && d <= want * 1.02 && !intoMatter) || (sign < 0 && !st.Out && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; if (!chain) _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
                     }
                     break;
                 case "shot":

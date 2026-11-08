@@ -190,6 +190,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The crash at a grain of water ice's lattice (the card stopped answering) fixed: a molecular crystal's sites capped and its atoms drawn as a crystal's, and a ceiling on the glows in a frame:** (built: DNA-AND DESIGN 666; waits on the test) "it got to 2um and then crashed,, and it was weird it was just side stepping for along ways during grain zoom levels and never propelry zoomed down but just slide along the grains lvl surface then crashed ate the black and white none wavelegth size levels with the black and white first appeard i saw crystal lattice then it crassed"
 
+- [~] **A zoom aimed below the hand-over into the matter never ends until you are in the matter, so the chain below the face is not skipped:** (built: DNA-AND DESIGN 667; waits on the test) "wtf the tour eneded at 200 nanmeters where is my crystal my latusses my atoms and all of it i workded so damn hard building all that and u just gut it on a whime? look were video clip ends"
+
 ---
 
 ## Pending

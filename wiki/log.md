@@ -75,3 +75,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (a star whose system is open is the target at its real place): DNA-AND DESIGN 664.
 - 2026-11-07 (the tour back to what it was, the unasked chains out): DNA-AND DESIGN 665.
 - 2026-11-07 (the water ice lattice crash: molecular sites capped, a glow ceiling): DNA-AND DESIGN 666.
+- 2026-11-07 (a zoom below the hand-over ends only in the matter): DNA-AND DESIGN 667.

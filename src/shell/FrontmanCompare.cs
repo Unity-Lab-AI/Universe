@@ -1,5 +1,5 @@
 // Universe · shell · the front man compared, side by side over the universe (View > Front man compared): the frame as drawn, the
-// same frame through our own .cdf97w (CDF 9/7 solved back into pixels) and through each front man built (our own H.264 and VP9 writers'
+// same frame through our own .cdf97w (CDF 9/7 solved back into pixels) and through each front man built (our own H.264, VP9 and AV1 writers'
 // own reconstruction: exactly what a chat app's player will show), each tile with its bytes for the frame and its quality against
 // the frame as drawn. Right-click a tile to keep it (a green frame). Refreshed every few seconds from the live frame, worked out on
 // a thread of its own so the universe never waits.
@@ -69,6 +69,16 @@ namespace Universe.Shell
                 vp9[o] = B8((1.164 * Y + 1.596 * cr) / 255); vp9[o + 1] = B8((1.164 * Y - 0.813 * cr - 0.392 * cb) / 255); vp9[o + 2] = B8((1.164 * Y + 2.017 * cb) / 255);
             }
             tiles.Add(new Tile { Name = "VP9 (ours)", Rgb = vp9, Bytes = vb, Db = Db(rgb, vp9) });
+            // AV1: our own writer, one whole frame, and its own reconstruction, back to RGB
+            var aw = new Av1Writer(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "front-man-compare-av1.webm"), w, h);
+            aw.Add(rgb, w, h, 33); long ab = aw.Bytes; int AS = aw.Stride, AC = AS / 2;
+            var av1 = new byte[w * h * 3];
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+            {
+                double Y = aw.Y[y * AS + x] - 16, cb = aw.Cb[(y / 2) * AC + x / 2] - 128, cr = aw.Cr[(y / 2) * AC + x / 2] - 128; int o = (y * w + x) * 3;
+                av1[o] = B8((1.164 * Y + 1.596 * cr) / 255); av1[o + 1] = B8((1.164 * Y - 0.813 * cr - 0.392 * cb) / 255); av1[o + 2] = B8((1.164 * Y + 2.017 * cb) / 255);
+            }
+            tiles.Add(new Tile { Name = "AV1 (ours)", Rgb = av1, Bytes = ab, Db = Db(rgb, av1) });
             foreach (var t in tiles) { t.Rgb = Shrink(t.Rgb, w, h, 320); }
             return tiles.ToArray();
         }

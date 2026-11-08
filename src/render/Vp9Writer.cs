@@ -1,5 +1,5 @@
 // Universe · render · our own VP9 writer, every line ours, written from the published VP9 bitstream specification (its rules and
-// its fixed tables, read into Vp9Tables.cs): the front man a chat app's player reads, in our own WebM container.
+// its fixed tables, read into Vp9Tables.cs): the front man a chat app's player reads, in our own WebM container (WebmFile.cs).
 // Version 1: profile 0, 8-bit 4:2:0, a key frame every KeyEvery frames and change frames between; each 64 x 64 superblock one block
 // (split only at the frame's edges), DC prediction in key frames, the frame before (no motion) in change frames, a block with nothing
 // left to code skipped, 4 x 4 transforms, the coefficients in the specification's token tree with its default odds, no loop filter. The
@@ -331,36 +331,6 @@ namespace Universe.Render
         }
         static int Clip(double v) { int i = (int)(v + 0.5); return i < 0 ? 0 : i > 255 ? 255 : i; }
 
-        // ── the WebM container (EBML), ours ──
-        static void Id(List<byte> o, uint id) { if (id > 0xFFFFFF) o.Add((byte)(id >> 24)); if (id > 0xFFFF) o.Add((byte)(id >> 16)); if (id > 0xFF) o.Add((byte)(id >> 8)); o.Add((byte)id); }
-        static void Size8(List<byte> o, long n) { o.Add(0x01); for (int i = 6; i >= 0; i--) o.Add((byte)(n >> (8 * i))); }
-        static void El(List<byte> o, uint id, List<byte> body) { Id(o, id); Size8(o, body.Count); o.AddRange(body); }
-        static void UInt(List<byte> o, uint id, ulong v) { var b = new List<byte>(); int n = 1; while (n < 8 && (v >> (8 * n)) != 0) n++; for (int i = n - 1; i >= 0; i--) b.Add((byte)(v >> (8 * i))); El(o, id, b); }
-        static void Str(List<byte> o, uint id, string s) { El(o, id, new List<byte>(System.Text.Encoding.ASCII.GetBytes(s))); }
-        static void F64(List<byte> o, uint id, double v) { var b = BitConverter.GetBytes(v); Array.Reverse(b); El(o, id, new List<byte>(b)); }
-        public void Dispose()
-        {
-            var ebml = new List<byte>(); UInt(ebml, 0x4286, 1); UInt(ebml, 0x42F7, 1); UInt(ebml, 0x42F2, 4); UInt(ebml, 0x42F3, 8); Str(ebml, 0x4282, "webm"); UInt(ebml, 0x4287, 2); UInt(ebml, 0x4285, 2);
-            var head = new List<byte>(); El(head, 0x1A45DFA3, ebml);
-            var info = new List<byte>(); UInt(info, 0x2AD7B1, 1000000); F64(info, 0x4489, _t); Str(info, 0x4D80, "Universe front man"); Str(info, 0x5741, "Universe front man");
-            var video = new List<byte>(); UInt(video, 0xB0, (ulong)_w); UInt(video, 0xBA, (ulong)_h);
-            var entry = new List<byte>(); UInt(entry, 0xD7, 1); UInt(entry, 0x73C5, 1); UInt(entry, 0x83, 1); UInt(entry, 0x9C, 0); Str(entry, 0x86, "V_VP9"); El(entry, 0xE0, video);
-            var tracks = new List<byte>(); El(tracks, 0xAE, entry);
-            var seg = new List<byte>(); El(seg, 0x1549A966, info); El(seg, 0x1654AE6B, tracks);
-            // clusters: one from each whole frame onwards, its time and the frames as simple blocks (the whole ones marked: a player starts there)
-            var cues = new List<byte>();
-            int i0 = 0;
-            while (i0 < _frames.Count)
-            {
-                int i1 = i0 + 1; while (i1 < _frames.Count && !_keys[i1] && _times[i1] - _times[i0] < 30000) i1++;
-                var cl = new List<byte>(); UInt(cl, 0xE7, _times[i0]);
-                for (int k = i0; k < i1; k++) { var sb = new List<byte>(); sb.Add(0x81); int rel = (int)(_times[k] - _times[i0]); sb.Add((byte)(rel >> 8)); sb.Add((byte)rel); sb.Add((byte)(_keys[k] ? 0x80 : 0)); sb.AddRange(_frames[k]); El(cl, 0xA3, sb); }
-                var tp = new List<byte>(); UInt(tp, 0xF7, 1); UInt(tp, 0xF1, (ulong)seg.Count);
-                var cp = new List<byte>(); UInt(cp, 0xB3, _times[i0]); El(cp, 0xB7, tp); El(cues, 0xBB, cp);
-                El(seg, 0x1F43B675, cl); i0 = i1;
-            }
-            El(seg, 0x1C53BB6B, cues);
-            using (var f = System.IO.File.Create(_path)) { f.Write(head.ToArray(), 0, head.Count); var s = new List<byte>(); El(s, 0x18538067, seg); f.Write(s.ToArray(), 0, s.Count); }
-        }
+        public void Dispose() { WebmFile.Write(_path, "V_VP9", null, _w, _h, _frames, _times, _keys, _t); }
     }
 }

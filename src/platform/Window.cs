@@ -102,7 +102,7 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("show-stats", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdStats, "Show GPU and CPU stats (time a frame, cores, memory)");
             Win32.AppendMenu(view, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(view, Win32.MF_STRING | (Touring ? Win32.MF_CHECKED : 0), (IntPtr)CmdTour, "Panoramic tour (galaxies down to the quarks)\tT");
-            Win32.AppendMenu(view, Win32.MF_STRING | (FrontmanOn ? Win32.MF_CHECKED : 0), (IntPtr)CmdFrontman, "Front man compared (the frame, our .cdf97w, our H.264 and our VP9 side by side, with their sizes and quality)");
+            Win32.AppendMenu(view, Win32.MF_STRING | (FrontmanOn ? Win32.MF_CHECKED : 0), (IntPtr)CmdFrontman, "Front man compared (the frame, our .cdf97w, our H.264, our VP9 and our AV1 side by side, with their sizes and quality)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdElements, "The periodic table (all 118 elements, each as it really is; Escape comes back)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
             Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (in captures, in the clip format below)\tF9");

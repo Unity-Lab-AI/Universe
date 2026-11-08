@@ -248,6 +248,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **H15 steps 2 and 3: the universe clip played back (scene calls, camera point, waiting on loading, the scene checked) and handed over (.cdf97w registered to the program, a double-click plays it):** (built: DNA-AND DESIGN 704; waits on the test) "and we still need those player frontman and script change over hand off from the file"
 - [~] **Our own VP9 front man from the published specification (key frames, change frames, our WebM), checked with Windows' VP9 decoder, a tile in View > Front man compared:** (built: DNA-AND DESIGN 706; waits on the test) "okay get to it all u have a big back log" / "Yes, read the specs"
+- [~] **Our own AV1 front man from the published specification (key frames, change frames, our WebM), checked with Windows' AV1 decoder, a tile in View > Front man compared:** (built: DNA-AND DESIGN 707; waits on the test) "okay get to it all u have a big back log" / "Yes, read the specs"
 
 ---
 

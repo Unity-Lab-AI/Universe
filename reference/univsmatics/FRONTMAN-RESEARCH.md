@@ -526,3 +526,18 @@ The title shows the clip's progress.
 |---|---|
 | Our VP9 | 358 KB |
 | Our H.264 | 576 KB |
+
+### AV1 front man, version 1: from the published specification (2026-11-08)
+
+- **The specification read by our own code.** The document's text was pulled with our own zlib parse. Its body font is drawn in hex codes, read through the font's own character map. Its code is drawn twice, so each table's words were checked in pairs and halved. 138 fixed tables came out whole, each count checked against its dimensions.
+- **The symbol coder is ours:** its writing side is the exact reverse of the specification's reading (section 8.2).
+- **Blocks:** the frame is padded to a multiple of 32. Each 64 × 64 superblock is four 32 × 32 blocks, each with one 32 × 32 luma transform and two 16 × 16 chroma ones. Our exact inverse transforms match the float cosine transform within rounding.
+- **Whole frames** (one every 30) are DC-predicted. **Change frames:** every block is an inter block on the last frame with no motion. A block with nothing left after quantising is skipped, and the decoder copies it.
+- **Checked with Windows' own AV1 decoder** at 1920 × 1080 and 3840 × 2160. Every frame decoded, whole and change frames, at about 44 to 45 dB against our writer's reconstruction: the same picture. Windows shows the padded rows (2176 for 2160).
+
+| Three 4K frames (a whole one, an unchanged one, a changed one) | Bytes |
+|---|---|
+| Our VP9 | 358 KB |
+| Our AV1 | 429 KB |
+| Our H.264 | 576 KB |
+

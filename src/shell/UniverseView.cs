@@ -1359,7 +1359,7 @@ namespace Universe.Shell
             // you are at moves you with it, so you stay beside it, or on its ground, as it goes round (at a minute a second an
             // asteroid at three AU would leave you in half a second)
             if (_tKind != 6 || _tExtra == null) _tSpot = null;
-            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && (ex != _tExtra || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra) { _ox += ex.OffX - ex.LOffX; _oy += ex.OffY - ex.LOffY; _oz += ex.OffZ - ex.LOffZ; } } }   // (a held spin let go once you are off the body)
+            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && ((ex != _tExtra && ex != _groundExtra) || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra || ex == _groundExtra) { _ox += ex.OffX - ex.LOffX; _oy += ex.OffY - ex.LOffY; _oz += ex.OffZ - ex.LOffZ; } } }   // (a held spin let go once you are off the body; the camera rides with the body picked or the body whose ground you are on)
             if (key == _extraKey) return; _extraKey = key; _extras.Clear();
             // the compact remnants of this galaxy's past supernovae: a neutron star (from a star of eight to about twenty solar masses) or a
             // stellar black hole (heavier) born at each one's middle, from the blast; the ones near you, picked like any body
@@ -1428,6 +1428,14 @@ namespace Universe.Shell
                 for (int q = 0; q < _extras.Count; q++) { var ex = _extras[q]; if (ex == _tExtra || (Math.Abs(ex.X - _tExtra.X) <= 1e-9 * Math.Max(1, Math.Abs(ex.X)) && Math.Abs(ex.Y - _tExtra.Y) <= 1e-9 * Math.Max(1, Math.Abs(ex.Y)) && Math.Abs(ex.Z - _tExtra.Z) <= 1e-9 * Math.Max(1, Math.Abs(ex.Z)) && ex.Hole == _tExtra.Hole)) { found = q; break; } }
                 if (found < 0) { _extras.Add(_tExtra); found = _extras.Count - 1; }
                 _tIndex = found; _tExtra = _extras[found];
+                if (_groundExtra != null && !_extras.Contains(_groundExtra))
+                {
+                    // the body whose ground you are on, in the list made afresh: the same body (its name and make-up, the nearest of them),
+                    // so its ground rides on with it; else the ground is let go by distance, as a planet's is
+                    Extra gb = null; double gd = double.MaxValue; double gx = RelX(_groundExtra), gy = RelY(_groundExtra), gz = RelZ(_groundExtra);
+                    foreach (var ex in _extras) { if (ex.Name != _groundExtra.Name || ex.Mix != _groundExtra.Mix) continue; double dx = RelX(ex) - gx, dy = RelY(ex) - gy, dz = RelZ(ex) - gz, d = dx * dx + dy * dy + dz * dz; if (d < gd) { gd = d; gb = ex; } }
+                    if (gb != null) _groundExtra = gb;
+                }
             }
         }
 
@@ -1755,7 +1763,7 @@ namespace Universe.Shell
             // of its radii its ground is made by the same ground system a planet's is, with its own shape, size, spin, minerals and
             // elements, and everything from there down (the landing, the grains, a grain's face, the crystal, the atoms, the picks on
             // its surface, the way out) is the one code a world uses: nothing special for rocks
-            var sb = _tKind == 6 && _tExtra != null && _tExtra.Shape.Length > 0 && !_tExtra.Hole && _tExtra.Mix != null && _tExtra.R > 0 ? _tExtra : null;
+            var sb = _tKind == 6 && _tExtra != null && _tExtra.Shape.Length > 0 && !_tExtra.Hole && _tExtra.Mix != null && _tExtra.R > 0 ? _tExtra : _groundExtra;   // (or the body whose ground you are on: its ground lives by your distance from it, as a planet's does, picked or not; the tour's stand stop clears the pick while you stand on the ground, and the ground had gone with the pick, the camera left behind in empty space, every stop after it zooming into nothing)
             if (_system == null && sb == null) { DropPlanet(); return; }
             int best = -1; double bd = double.MaxValue;
             if (_system != null) for (int i = 0; i < _system.Bodies.Count; i++)
@@ -2638,6 +2646,7 @@ namespace Universe.Shell
             // is off by up to a million kilometres: the zoom had flown to a point beside the body and stalled there, the dive never
             // within reach of the stone it was aimed at)
             if (_tKind == 6 && _tExtra != null) { dx = RelX(_tExtra) - _ox; dy = RelY(_tExtra) - _oy; dz = RelZ(_tExtra) - _oz; radius = _tRadius; return true; }
+            if (_tKind == 1 && _tSn != null && _tName == "a supernova") { _tx = _tSn.Ux; _ty = _tSn.Uy; _tz = _tSn.Uz; }   // (where it is now: a supernova is moved onto a real star of its galaxy once that galaxy's stars are made, after the pick from afar had copied its far place; the shots had flown to the old point, light-years from the dying star, and seen it as a point of light with no cloud)
             if (_tKind == 1 || _tKind == 4 || _tKind == 5 || _tKind == 6 || _tKind == 7 || _tKind == 8) { dx = (_tx - _ax) - _ox; dy = (_ty - _ay) - _oy; dz = (_tz - _az) - _oz; radius = _tRadius; return true; }   // a star, or a spot in a belt
             if (_tKind == 2 && _system != null && _tIndex < _system.Bodies.Count)
             { double x, y, z; BodyPos(_tIndex, out x, out y, out z); dx = x - _ox; dy = y - _oy; dz = z - _oz; radius = _system.Bodies[_tIndex].RadiusUnits; return true; }

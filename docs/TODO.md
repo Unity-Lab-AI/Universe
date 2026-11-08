@@ -164,6 +164,9 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Typing a seed on the landing page: the field has the focus, digits typed anywhere on the page go into it, never Windows' refusing beep:** (built: DNA-AND DESIGN 651; waits on the test) "something is up im trying to type a seed into the landing page and im gettth the error sound and cant type numbers into it" / "the windows error sound" / "the same sound that i used to get when trying to close out the top right x on this app" / "that we fixed"
 
+- [~] **The small body's ground lives by distance like a planet's, the camera rides with it, the stand stop no longer drops it:** (built: DNA-AND DESIGN 652; waits on the test) "SAME FUCKING ASTROID PROBLEM I TOOK PICS JEXSUS CRISTE THE 40th fucking attempt at fixing one fucking thing" / "idk write some code to catch the fucking issue" / "id rather u figure it out tho"
+- [~] **The tour's supernova target its live place (moved onto a real star once the galaxy is made), so the shots fly to the cloud, not to where it was picked from afar:** (built: DNA-AND DESIGN 653; waits on the test) "the super nova fly by went back to be just a star so u dint code it properly to persist the gas clauds correctly"
+
 ---
 
 ## Pending

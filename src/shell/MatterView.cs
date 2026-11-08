@@ -845,7 +845,7 @@ namespace Universe.Shell
                 if ((_picked.Kind == 1 || _picked.Kind == 7) && _picked.Sym != null) { var pe = El(_picked.Sym); if (pe != null) { _lockE = pe; _lockX = _picked.X; _lockY = _picked.Y; _lockZ = _picked.Z; } }
                 else if (_picked.Kind == 3 && _picked.Sym != null) { var bits = _picked.Sym.Split(':'); var pe = bits.Length > 1 ? El(bits[1]) : null; if (pe != null) { _lockE = pe; _lockX = _picked.AX; _lockY = _picked.AY + _yOff; _lockZ = _picked.AZ; } }
                 else if (_picked.Kind != 5 && _picked.Kind != 4) _lockE = null;
-                if (_lockE != null && (_picked.Kind == 1 || _picked.Kind == 7 || _picked.Kind == 3 || _picked.Kind == 5 || _picked.Kind == 4)) { x = _lockX; y = _lockY; z = _lockZ; return _lockE; }
+                if (_lockE != null && (_picked.Kind == 1 || _picked.Kind == 7 || _picked.Kind == 3 || _picked.Kind == 5 || _picked.Kind == 4)) { x = _lockX; y = _lockY - _yOff; z = _lockZ; return _lockE; }   // (its height as the crystal's atoms give theirs, the face's height taken off: held as it is, every nucleus, proton and quark picked in it had the face's height added again, 218 nm a pick, so the dive point ended 655 nm over the crystal and the zoom back out ran up through empty air)
             }
             else _lockE = null;
             if (_space) { x = y = z = 0; return GasAtom(0, 0, 0); }                     // in the gas: the atom right where you dive

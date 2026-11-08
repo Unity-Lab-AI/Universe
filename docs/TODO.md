@@ -220,7 +220,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The .cdf97w made on the card inside the frame (no picture copied back, the game never waiting for the clip):** (built: DNA-AND DESIGN 688; waits on the test) "yeah wtf? we just need the recorder to tie directly inot the universe so ther is no back build and side car recorder" / "i like both and number 2 is very very important"
 
-- [ ] **The clip as the universe itself: the seed, the camera's path and the clock, replayed live in the program:** (next, after DNA-AND DESIGN 688) "yeah wtf? we just need the recorder to tie directly inot the universe so ther is no back build and side car recorder" / "i like both and number 2 is very very important"
+- [~] (version 1 for tours built: DNA-AND DESIGN 689; free flight waits on the universe loading in the same order every time) **The clip as the universe itself: the seed, the camera's path and the clock, replayed live in the program:** (next, after DNA-AND DESIGN 688) "yeah wtf? we just need the recorder to tie directly inot the universe so ther is no back build and side car recorder" / "i like both and number 2 is very very important"
 
 ---
 

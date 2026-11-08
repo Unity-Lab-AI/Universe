@@ -18,6 +18,30 @@ namespace Universe.Render
 
     internal static class ClipWriters
     {
+        /// <summary>The clip as the universe itself (.cdf97u): what makes the tour, not its pictures. Its seed, the tour's name and the
+        /// program that filmed it, a few lines; played here, the same universe is made again from the seed and the same tour flown
+        /// through it, at any size. Written beside every filmed tour.</summary>
+        public static void WriteUniverse(string clipPath, ulong seed, string tour)
+        {
+            try
+            {
+                System.IO.File.WriteAllText(System.IO.Path.ChangeExtension(clipPath, ".cdf97u"),
+                    "C97U 1\nseed: " + seed + "\ntour: " + tour + "\nprogram: " + Universe.Shell.PreviewText.AppName + " " + Universe.Shell.PreviewText.Version + "\nfilmed: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\n");
+            }
+            catch { }
+        }
+        /// <summary>Reads a .cdf97u: its seed and tour (false: not one).</summary>
+        public static bool ReadUniverse(string path, out ulong seed, out string tour)
+        {
+            seed = 0; tour = null;
+            try
+            {
+                var lines = System.IO.File.ReadAllLines(path); if (lines.Length == 0 || !lines[0].StartsWith("C97U")) return false;
+                foreach (var l in lines) { if (l.StartsWith("seed: ")) ulong.TryParse(l.Substring(6).Trim(), out seed); if (l.StartsWith("tour: ")) tour = l.Substring(6).Trim(); }
+                return tour != null && tour.Length > 0;
+            }
+            catch { return false; }
+        }
         /// <summary>The clip format picked (View > Clip format, or the start page): 0 MP4, 1 .cdf97w, 2 an MP4 carrying the .cdf97w (the front man).</summary>
         public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? f : 0; } }
         public static string Extension { get { return Format == 1 ? ".cdf97w" : ".mp4"; } }

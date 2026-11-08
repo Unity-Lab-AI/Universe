@@ -37,13 +37,15 @@ namespace Universe.Platform
         private static Choice? _done; private static Action _guide, _alive;
         /// <summary>The tour is to be filmed (an MP4 clip into the captures folder): ticked on the page.</summary>
         public static bool RecordTour;
+        /// <summary>A universe clip (.cdf97u) chosen to play: its tour, flown again through the universe made from its seed (null: none).</summary>
+        public static string ReplayTour; private static ulong? _replaySeed;
         /// <summary>Where screenshots and clips go: the captures folder beside the program.</summary>
         public static string Captures { get { return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "captures"); } }
 
         /// <summary>Shows the landing page over <paramref name="owner"/> until Begin, the tour or Quit; the seed typed (null: chosen at random).</summary>
         public static Choice Run(IntPtr owner, Action openGuide, Action alive, out ulong? seed)
         {
-            _guide = openGuide; _alive = alive; _done = null; seed = null;
+            _guide = openGuide; _alive = alive; _done = null; seed = null; ReplayTour = null; _replaySeed = null;
             var inst = Win32.GetModuleHandle(null);
             _brush = CreateSolidBrush(Back);
             if (!_registered)
@@ -123,6 +125,7 @@ namespace Universe.Platform
             }
             var b = new StringBuilder(32); GetWindowText(_seed, b, 32); ulong v;
             if (b.Length > 0 && ulong.TryParse(b.ToString(), out v)) seed = v;
+            if (_replaySeed.HasValue) seed = _replaySeed;                                  // (a universe clip played: its own seed)
             Settings.Set("show-fps", SendMessage(_fps, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("show-stats", SendMessage(_stats, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
@@ -147,7 +150,7 @@ namespace Universe.Platform
             {
                 if (System.IO.Directory.Exists(Captures))
                 {
-                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.mp4"), System.IO.Directory.GetFiles(Captures, "*.cdf97w"))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
+                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.mp4"), System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.cdf97w"), System.IO.Directory.GetFiles(Captures, "*.cdf97u")))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
                 }
             }
             catch { }
@@ -173,7 +176,11 @@ namespace Universe.Platform
                 {
                     // the clip chosen: an MP4 in Windows' own video player, a .cdf97w in this program's own (no other player reads it)
                     int i = (int)SendMessage(_clips, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero);
-                    if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) { if (ClipPlayer.Plays(_clipFiles[i])) ClipPlayer.Play(_wnd, _clipFiles[i], _alive); else ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1); }
+                    if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) {
+                        ulong us; string ut;
+                        if (_clipFiles[i].EndsWith(".cdf97u", StringComparison.OrdinalIgnoreCase) && Universe.Render.ClipWriters.ReadUniverse(_clipFiles[i], out us, out ut)) { _replaySeed = us; ReplayTour = ut; _done = Choice.Tour; }   // (the universe made again from its seed, the tour flown again through it, not filmed)
+                        else if (ClipPlayer.Plays(_clipFiles[i])) ClipPlayer.Play(_wnd, _clipFiles[i], _alive); else ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1);
+                    }
                 }
                 else if (id == IdFolder) { try { System.IO.Directory.CreateDirectory(Captures); } catch { } ShellExecute(_wnd, "open", Captures, null, null, 1); }
                 else if (id == IdRandom) { var r = (ulong)DateTime.UtcNow.Ticks ^ BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0); Win32.SetWindowText(_seed, (r % 10000000000000000000UL).ToString()); SetFocus(_seed); SendMessage(_seed, EM_SETSEL, IntPtr.Zero, (IntPtr)(-1)); }   // (the focus back in the field with the number selected: typing replaces it, instead of the button holding the focus and every digit refused)

@@ -203,8 +203,8 @@ namespace Universe
             UniverseView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new UniverseView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the universe: one camera through every scale
             if (landing && landed == Universe.Platform.Launcher.Choice.Tour && world != null)
             {
-                world.StartTour("grand-tour");
-                if (Universe.Platform.Launcher.RecordTour)
+                world.StartTour(Universe.Platform.Launcher.ReplayTour ?? "grand-tour");
+                if (Universe.Platform.Launcher.RecordTour && Universe.Platform.Launcher.ReplayTour == null)
                 {
                     // filmed: the whole tour as an MP4 clip in the captures folder, finished when the tour ends
                     try { System.IO.Directory.CreateDirectory(Universe.Platform.Launcher.Captures); } catch { }
@@ -243,8 +243,8 @@ namespace Universe
                         world = new UniverseView(gpu, pipeline, meshes, content, Seed);
                         if (landed2 == Universe.Platform.Launcher.Choice.Tour)
                         {
-                            world.StartTour("grand-tour");
-                            if (Universe.Platform.Launcher.RecordTour) { try { System.IO.Directory.CreateDirectory(Universe.Platform.Launcher.Captures); } catch { } recordTour = System.IO.Path.Combine(Universe.Platform.Launcher.Captures, "tour " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4"); }
+                            world.StartTour(Universe.Platform.Launcher.ReplayTour ?? "grand-tour");
+                            if (Universe.Platform.Launcher.RecordTour && Universe.Platform.Launcher.ReplayTour == null) { try { System.IO.Directory.CreateDirectory(Universe.Platform.Launcher.Captures); } catch { } recordTour = System.IO.Path.Combine(Universe.Platform.Launcher.Captures, "tour " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4"); }
                         }
                         menuDirty = true;
                     }
@@ -390,7 +390,7 @@ namespace Universe
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
                     if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
-                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { rec = OpenClip = Universe.Render.ClipWriters.Open(recordTour, gpu.Width, gpu.Height); recForTour = true; } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
+                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { rec = OpenClip = Universe.Render.ClipWriters.Open(recordTour, gpu.Width, gpu.Height); recForTour = true; Universe.Render.ClipWriters.WriteUniverse(rec.Path, Seed, "grand-tour"); } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
                     if (recForTour && world != null && !world.Touring && !(world.TourPaused && !world.TourFinished)) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
                     if (wantRecord)
                     {

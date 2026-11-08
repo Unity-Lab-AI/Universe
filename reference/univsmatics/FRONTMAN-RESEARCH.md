@@ -490,3 +490,9 @@ Checked with Windows' own decoder (Windows: an allowed dependency, used only to 
 
 Still coarse: no AC terms yet, so a 4 × 4 patch is one value. Every frame is whole, too: 10 minutes at 30 a second would be about 1.9 GB. Next: P frames (an unchanged macroblock costs about one bit), the AC terms (CAVLC's other tables), and then the comparison tiles.
 
+### H.264 front man, version 1: change frames and the detail terms (2026-11-08)
+
+- **Change frames.** Between whole frames (one every 30), P frames. A 16 × 16 block with a mean difference under 1.5 levels from what is shown is skipped: about a bit, and the decoder copies it. A changed block is coded as in a whole frame. The `stss` box marks the whole frames.
+- **The detail terms.** Each 4 × 4 goes through H.264's integer core transform. Its DC joins the macroblock's DC set, and its other 15 terms are quantised by class and coded with CAVLC. The coeff_token table is picked by nC from the counts of the blocks to the left and above, kept for every block exactly as a decoder keeps them. All four coeff_token tables, the total_zeros and run_before tables, and the level coding are in use. Chroma is still DC only.
+- **Checked with Windows' own decoder:** random-patch pictures, weak and strong, at two quality settings, and the filmed 4K frames as a whole frame, an unchanged one and a changed one. Every frame decoded, 50 to 60 dB against our writer's reconstruction: the same picture.
+

@@ -110,3 +110,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (MP4 for sharing taken back: other people's formats): DNA-AND DESIGN 699.
 - 2026-11-08 (the front man: our own H.264, VP9 and AV1 encoders, opened): DNA-AND DESIGN 700.
 - 2026-11-08 (our own H.264 front man, version 0): DNA-AND DESIGN 701.
+- 2026-11-08 (our own H.264 front man: change frames and detail terms): DNA-AND DESIGN 702.

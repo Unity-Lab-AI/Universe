@@ -49,6 +49,44 @@ namespace Universe.Render
             new[] { "0000000000001011", "0000000000001110", "0000000000001101", "000000000001000" },
             new[] { "0000000000000111", "0000000000001010", "0000000000001001", "0000000000001100" },
             new[] { "0000000000000100", "0000000000000110", "0000000000000101", "0000000000001000" } };
+        // coeff_token for 2 <= nC < 4
+        static readonly string[][] Tok1 = {
+            new[] { "11" },
+            new[] { "001011", "10" },
+            new[] { "000111", "00111", "011" },
+            new[] { "0000111", "001010", "001001", "0101" },
+            new[] { "00000111", "000110", "000101", "0100" },
+            new[] { "00000100", "0000110", "0000101", "00110" },
+            new[] { "000000111", "00000110", "00000101", "001000" },
+            new[] { "00000001111", "000000110", "000000101", "000100" },
+            new[] { "00000001011", "00000001110", "00000001101", "0000100" },
+            new[] { "000000001111", "00000001010", "00000001001", "000000100" },
+            new[] { "000000001011", "000000001110", "000000001101", "00000001100" },
+            new[] { "000000001000", "000000001010", "000000001001", "00000001000" },
+            new[] { "0000000001111", "0000000001110", "0000000001101", "000000001100" },
+            new[] { "0000000001011", "0000000001010", "0000000001001", "0000000001100" },
+            new[] { "0000000000111", "00000000001011", "0000000000110", "0000000001000" },
+            new[] { "00000000001001", "00000000001000", "00000000001010", "0000000000001" },
+            new[] { "00000000000111", "00000000000110", "00000000000101", "00000000000100" } };
+        // coeff_token for 4 <= nC < 8
+        static readonly string[][] Tok2 = {
+            new[] { "1111" },
+            new[] { "001111", "1110" },
+            new[] { "001011", "01111", "1101" },
+            new[] { "001000", "01100", "01110", "1100" },
+            new[] { "0001111", "01010", "01011", "1011" },
+            new[] { "0001011", "01000", "01001", "1010" },
+            new[] { "0001001", "001110", "001101", "1001" },
+            new[] { "0001000", "001010", "001001", "1000" },
+            new[] { "00001111", "0001110", "0001101", "01101" },
+            new[] { "00001011", "00001110", "0001010", "001100" },
+            new[] { "000001111", "00001010", "00001101", "0001100" },
+            new[] { "000001011", "000001110", "00001001", "00001100" },
+            new[] { "000001000", "000001010", "000001101", "00001000" },
+            new[] { "0000001101", "000000111", "000001001", "000001100" },
+            new[] { "0000001001", "0000001100", "0000001011", "0000001010" },
+            new[] { "0000000101", "0000001000", "0000000111", "0000000110" },
+            new[] { "0000000001", "0000000100", "0000000011", "0000000010" } };
         // coeff_token for nC = -1 (chroma DC, 4:2:0)
         static readonly string[][] TokC = {
             new[] { "01" },
@@ -90,15 +128,20 @@ namespace Universe.Render
         static readonly int[] MF0 = { 13107, 11916, 10082, 9362, 8192, 7282 };   // the quantiser's multiplier at position (0, 0), by QP % 6
         static readonly int[] V0 = { 10, 11, 13, 14, 16, 18 };                   // the decoder's scale at (0, 0), by QP % 6
 
-        /// <summary>One block's coefficients (in scan order) as CAVLC; chromaDc: the 2 x 2 chroma DC table.</summary>
-        static void Residual(Bits b, int[] c, int max, bool chromaDc)
+        /// <summary>One block's coefficients (in scan order) as CAVLC, its coeff_token table by nC (-1: chroma DC); returns how many are nonzero.</summary>
+        static int Residual(Bits b, int[] c, int max, int nC)
         {
+            bool chromaDc = nC < 0;
             int total = 0, last = -1; for (int i = 0; i < max; i++) if (c[i] != 0) { total++; last = i; }
             var lv = new List<int>(); var pos = new List<int>();
             for (int i = max - 1; i >= 0; i--) if (c[i] != 0) { lv.Add(c[i]); pos.Add(i); }
             int t1 = 0; for (int i = 0; i < lv.Count && t1 < 3; i++) { if (Math.Abs(lv[i]) == 1) t1++; else break; }
-            b.Code(chromaDc ? TokC[total][t1] : Tok0[total][t1]);
-            if (total == 0) return;
+            if (chromaDc) b.Code(TokC[total][t1]);
+            else if (nC < 2) b.Code(Tok0[total][t1]);
+            else if (nC < 4) b.Code(Tok1[total][t1]);
+            else if (nC < 8) b.Code(Tok2[total][t1]);
+            else { if (total == 0) b.U(6, 3); else b.U(6, ((total - 1) << 2) | t1); }
+            if (total == 0) return 0;
             for (int i = 0; i < t1; i++) b.Bit(lv[i] < 0 ? 1 : 0);
             int sl = total > 10 && t1 < 3 ? 1 : 0;
             for (int i = t1; i < total; i++)
@@ -131,20 +174,63 @@ namespace Universe.Render
                     b.Code(Rb[Math.Min(left, 7)][run]); left -= run;
                 }
             }
+            return total;
         }
+        // the 4 x 4 forward core transform (8.5.12's reverse), in place on 16 values in raster order
+        static void Fwd4(int[] x)
+        {
+            var t = new int[16];
+            for (int i = 0; i < 4; i++)
+            {
+                int a = x[i * 4], b = x[i * 4 + 1], c = x[i * 4 + 2], d = x[i * 4 + 3], s03 = a + d, d03 = a - d, s12 = b + c, d12 = b - c;
+                t[i * 4] = s03 + s12; t[i * 4 + 1] = 2 * d03 + d12; t[i * 4 + 2] = s03 - s12; t[i * 4 + 3] = d03 - 2 * d12;
+            }
+            for (int j = 0; j < 4; j++)
+            {
+                int a = t[j], b = t[4 + j], c = t[8 + j], d = t[12 + j], s03 = a + d, d03 = a - d, s12 = b + c, d12 = b - c;
+                x[j] = s03 + s12; x[4 + j] = 2 * d03 + d12; x[8 + j] = s03 - s12; x[12 + j] = d03 - 2 * d12;
+            }
+        }
+        // the 4 x 4 inverse (8.5.12), exactly as a decoder does it, then (x + 32) >> 6
+        static void Inv4(int[] d)
+        {
+            var t = new int[16];
+            for (int i = 0; i < 4; i++)
+            {
+                int d0 = d[i * 4], d1 = d[i * 4 + 1], d2 = d[i * 4 + 2], d3 = d[i * 4 + 3];
+                int e0 = d0 + d2, e1 = d0 - d2, e2 = (d1 >> 1) - d3, e3 = d1 + (d3 >> 1);
+                t[i * 4] = e0 + e3; t[i * 4 + 1] = e1 + e2; t[i * 4 + 2] = e1 - e2; t[i * 4 + 3] = e0 - e3;
+            }
+            for (int j = 0; j < 4; j++)
+            {
+                int d0 = t[j], d1 = t[4 + j], d2 = t[8 + j], d3 = t[12 + j];
+                int e0 = d0 + d2, e1 = d0 - d2, e2 = (d1 >> 1) - d3, e3 = d1 + (d3 >> 1);
+                d[j] = (e0 + e3 + 32) >> 6; d[4 + j] = (e1 + e2 + 32) >> 6; d[8 + j] = (e1 - e2 + 32) >> 6; d[12 + j] = (e0 - e3 + 32) >> 6;
+            }
+        }
+        // a position's class for the quantiser and the scale: 0 for (even, even), 1 for (odd, odd), 2 otherwise
+        static int Cls(int i) { int r = i >> 2, c = i & 3; return (r & 1) == 0 && (c & 1) == 0 ? 0 : (r & 1) == 1 && (c & 1) == 1 ? 1 : 2; }
+        static readonly int[][] MF = { new[] { 13107, 11916, 10082, 9362, 8192, 7282 }, new[] { 5243, 4660, 4194, 3647, 3355, 2893 }, new[] { 8066, 7490, 6554, 5825, 5243, 4559 } };
+        static readonly int[][] LV = { new[] { 10, 11, 13, 14, 16, 18 }, new[] { 16, 18, 20, 23, 25, 29 }, new[] { 13, 14, 16, 18, 20, 23 } };
+        private int[] _nz; private int _nzW;
+        int NzAt(int bx, int by) { return bx < 0 || by < 0 ? -1 : _nz[by * _nzW + bx]; }
+        int NC(int bx, int by) { int a = NzAt(bx - 1, by), t = NzAt(bx, by - 1); return a >= 0 && t >= 0 ? (a + t + 1) >> 1 : a >= 0 ? a : t >= 0 ? t : 0; }
 
         private readonly int _w, _h, _mbw, _mbh, _qp; private readonly List<byte[]> _samples = new List<byte[]>(); private readonly List<uint> _durations = new List<uint>();
         private readonly string _path; private readonly byte[] _sps, _pps; private int _idr;
         /// <summary>The picture a player shows for the last frame written (Y, then Cb, then Cr), as the decoder rebuilds it.</summary>
         public byte[] Y, Cb, Cr;
         public long Bytes { get { long n = 0; foreach (var s in _samples) n += s.Length; return n; } }
+        /// <summary>A whole frame every this many; the rest only what changed.</summary>
+        public int KeyEvery = 30;
+        private int _frames, _frameNum; private readonly List<bool> _keys = new List<bool>(); private byte[] _pY, _pCb, _pCr;
 
         public H264Writer(string path, int w, int h, int qp = 28)
         {
             _path = path; _w = w & ~1; _h = h & ~1; _mbw = (_w + 15) / 16; _mbh = (_h + 15) / 16; _qp = qp;
             var s = new Bits();
             s.U(8, 66); s.U(8, 0xC0); s.U(8, 51); s.Ue(0);           // baseline, constraint sets 0 and 1, level 5.1, SPS 0
-            s.Ue(0); s.Ue(2); s.Ue(0); s.Bit(0);                       // frame_num bits 4; picture order type 2; no reference frames; no gaps
+            s.Ue(0); s.Ue(2); s.Ue(1); s.Bit(0);                       // frame_num bits 4; picture order type 2; one reference frame (the last); no gaps
             s.Ue(_mbw - 1); s.Ue(_mbh - 1); s.Bit(1); s.Bit(1);        // the size in macroblocks; frames only; direct 8x8 inference
             int cr = _mbw * 16 - _w, cb = _mbh * 16 - _h;
             if (cr > 0 || cb > 0) { s.Bit(1); s.Ue(0); s.Ue(cr / 2); s.Ue(0); s.Ue(cb / 2); } else s.Bit(0);
@@ -153,6 +239,8 @@ namespace Universe.Render
             p.Ue(0); p.Ue(0); p.Bit(0); p.Bit(0); p.Ue(0); p.Ue(0); p.Ue(0); p.Bit(0); p.U(2, 0);
             p.Se(_qp - 26); p.Se(0); p.Se(0); p.Bit(1); p.Bit(0); p.Bit(0); p.Trailing(); _pps = p.ToArray();
             Y = new byte[_mbw * 16 * _mbh * 16]; Cb = new byte[_mbw * 8 * _mbh * 8]; Cr = new byte[_mbw * 8 * _mbh * 8];
+            _pY = new byte[Y.Length]; _pCb = new byte[Cb.Length]; _pCr = new byte[Cr.Length];
+            _nzW = _mbw * 4; _nz = new int[_nzW * _mbh * 4];
         }
 
         /// <summary>One frame (RGB, three bytes a pixel, top row first, <paramref name="srcW"/> wide), shown for <paramref name="ms"/>.</summary>
@@ -168,36 +256,77 @@ namespace Universe.Render
                 if ((x & 1) == 0 && (y & 1) == 0) { su[(y / 2) * CW + x / 2] = Clip(128 + (-37.945 * r - 74.494 * g + 112.439 * bb) / 256); sv[(y / 2) * CW + x / 2] = Clip(128 + (112.439 * r - 94.154 * g - 18.285 * bb) / 256); }
             }
             var b = new Bits();
-            b.U(8, 0x65);                                               // NAL: an IDR slice, of the highest importance
-            b.Ue(0); b.Ue(7); b.Ue(0); b.U(4, 0); b.Ue(_idr++ & 1);   // first macroblock 0; all I; PPS 0; frame_num 0; idr_pic_id
-            b.Bit(0); b.Bit(0);                                         // dec_ref_pic_marking: no_output_of_prior_pics, long_term_reference
+            // a whole frame (an IDR) every KeyEvery frames; between them a P frame: an unchanged macroblock is skipped (it costs about a
+            // bit: the decoder copies it from the frame before, no motion), a changed one coded as in a whole frame
+            bool key = _frames % KeyEvery == 0; _keys.Add(key);
+            if (!key) { Array.Copy(Y, _pY, Y.Length); Array.Copy(Cb, _pCb, Cb.Length); Array.Copy(Cr, _pCr, Cr.Length); }
+            if (key)
+            {
+                b.U(8, 0x65);                                           // NAL: an IDR slice, of the highest importance
+                b.Ue(0); b.Ue(7); b.Ue(0); b.U(4, 0); b.Ue(_idr++ & 1); // first macroblock 0; all I; PPS 0; frame_num 0; idr_pic_id
+                b.Bit(0); b.Bit(0);                                     // dec_ref_pic_marking: no_output_of_prior_pics, long_term_reference
+                _frameNum = 0;
+            }
+            else
+            {
+                _frameNum = (_frameNum + 1) & 15;
+                b.U(8, 0x41);                                           // NAL: a P slice, kept as the next one's reference
+                b.Ue(0); b.Ue(5); b.Ue(0); b.U(4, _frameNum);           // first macroblock 0; all P; PPS 0; frame_num
+                b.Bit(0); b.Bit(0); b.Bit(0);                           // no ref count override; no list modification; the sliding window
+            }
+            _frames++;
             b.Se(0); b.Ue(1);                                           // slice_qp_delta 0; deblocking off
+            int skipRun = 0;
             int qp = _qp, qc = QpChroma(qp);
             for (int my = 0; my < _mbh; my++) for (int mx = 0; mx < _mbw; mx++)
             {
-                b.Ue(7); b.Ue(0); b.Se(0);                              // I16x16, DC prediction, chroma DC only; chroma DC prediction; qp delta 0
-                // luma: the DC prediction from the decoded picture, each 4 x 4's mean residual, a Hadamard, the quantiser
+                if (!key)
+                {
+                    // unchanged since the frame before (its mean difference under a level and a half against what is shown): skipped
+                    long sad = 0; for (int y = 0; y < 16; y++) for (int x = 0; x < 16; x++) { int i = (my * 16 + y) * W + mx * 16 + x; sad += Math.Abs(sy[i] - _pY[i]); }
+                    long sadc = 0; for (int y = 0; y < 8; y++) for (int x = 0; x < 8; x++) { int i = (my * 8 + y) * CW + mx * 8 + x; sadc += Math.Abs(su[i] - _pCb[i]) + Math.Abs(sv[i] - _pCr[i]); }
+                    if (sad < 256 * 3 / 2 && sadc < 128 * 3 / 2) { skipRun++; for (int k = 0; k < 16; k++) _nz[(my * 4 + (k >> 2)) * _nzW + mx * 4 + (k & 3)] = 0; continue; }   // (a skipped block has no terms)
+                    b.Ue(skipRun); skipRun = 0;
+                }
+                // luma: the DC prediction from the decoded picture; each 4 x 4's residual through the core transform: its DC term to the
+                // macroblock's DC set (a Hadamard, the quantiser), its other 15 quantised and coded as the block's AC terms
                 int pred = PredDc16(mx, my, W);
-                var dc = new int[16];
+                var dc = new int[16]; var acq = new int[16][]; bool anyAc = false; int qbits = 15 + qp / 6, f = (1 << qbits) / 3;
                 for (int by = 0; by < 4; by++) for (int bx = 0; bx < 4; bx++)
                 {
-                    int s = 0; for (int y = 0; y < 4; y++) for (int x = 0; x < 4; x++) s += sy[(my * 16 + by * 4 + y) * W + mx * 16 + bx * 4 + x] - pred;
-                    dc[by * 4 + bx] = s;                                // the 4 x 4 transform's DC term (its rows and columns all 1)
+                    var r = new int[16]; for (int y = 0; y < 4; y++) for (int x = 0; x < 4; x++) r[y * 4 + x] = sy[(my * 16 + by * 4 + y) * W + mx * 16 + bx * 4 + x] - pred;
+                    Fwd4(r); dc[by * 4 + bx] = r[0];
+                    var qa = acq[by * 4 + bx] = new int[16];
+                    for (int i = 1; i < 16; i++) { int z = (int)(((long)Math.Abs(r[i]) * MF[Cls(i)][qp % 6] + f) >> qbits); qa[i] = r[i] < 0 ? -z : z; if (z != 0) anyAc = true; }
                 }
-                var hd = Hadamard4(dc); var q = new int[16]; int qbits = 15 + qp / 6, f = (1 << qbits) / 3;
+                b.Ue((key ? 0 : 5) + 1 + 2 + 4 + (anyAc ? 12 : 0)); b.Ue(0); b.Se(0);   // I16x16: DC prediction, chroma DC only, the AC terms when any; chroma DC prediction; qp delta 0
+                var hd = Hadamard4(dc); var q = new int[16];
                 for (int i = 0; i < 16; i++) { int a = Math.Abs(hd[i]) / 2; int z = (int)(((long)a * MF0[qp % 6] + 2 * f) >> (qbits + 1)); q[i] = hd[i] < 0 ? -z : z; }
                 var scan = new int[16]; for (int i = 0; i < 16; i++) scan[i] = q[Zig[i]];
-                Residual(b, scan, 16, false);
-                // the decoder's own rebuild: the inverse Hadamard, the scale, each 4 x 4 a flat patch of its DC
+                Residual(b, scan, 16, NC(mx * 4, my * 4));            // (its table by the blocks round the macroblock's first)
+                // the AC terms, block by block in the decoder's order (8 x 8 quadrants, then 4 x 4 within each); each block's count kept
+                for (int k = 0; k < 16; k++)
+                {
+                    int bx = (k & 1) + ((k >> 2) & 1) * 2, by = ((k >> 1) & 1) + ((k >> 3) & 1) * 2, gx = mx * 4 + bx, gy = my * 4 + by;
+                    if (!anyAc) { _nz[gy * _nzW + gx] = 0; continue; }
+                    var sc = new int[15]; var qa = acq[by * 4 + bx]; for (int i = 1; i < 16; i++) sc[i - 1] = qa[Zig[i]];
+                    int nc = NC(gx, gy); _nz[gy * _nzW + gx] = Residual(b, sc, 15, nc);
+                }
+                // the decoder's own rebuild: the DC set back through the inverse Hadamard and its scale, each block's AC scaled, the inverse
+                // core transform, added to the prediction
                 var ih = Hadamard4(q); int ls = 16 * V0[qp % 6];
                 for (int by = 0; by < 4; by++) for (int bx = 0; bx < 4; bx++)
                 {
-                    int c = ih[by * 4 + bx], d = qp >= 36 ? (c * ls) << (qp / 6 - 6) : (c * ls + (1 << (5 - qp / 6))) >> (6 - qp / 6);
-                    int v = Clip255(pred + ((d + 32) >> 6));
-                    for (int y = 0; y < 4; y++) for (int x = 0; x < 4; x++) Y[(my * 16 + by * 4 + y) * W + mx * 16 + bx * 4 + x] = (byte)v;
+                    var d = new int[16]; int c = ih[by * 4 + bx];
+                    d[0] = qp >= 36 ? (c * ls) << (qp / 6 - 6) : (c * ls + (1 << (5 - qp / 6))) >> (6 - qp / 6);
+                    var qa = acq[by * 4 + bx];
+                    for (int i = 1; i < 16; i++) { int lsi = 16 * LV[Cls(i)][qp % 6]; d[i] = qp >= 24 ? (qa[i] * lsi) << (qp / 6 - 4) : (qa[i] * lsi + (1 << (3 - qp / 6))) >> (4 - qp / 6); }
+                    Inv4(d);
+                    for (int y = 0; y < 4; y++) for (int x = 0; x < 4; x++) Y[(my * 16 + by * 4 + y) * W + mx * 16 + bx * 4 + x] = (byte)Clip255(pred + d[y * 4 + x]);
                 }
                 ChromaDc(b, su, Cb, mx, my, CW, qc); ChromaDc(b, sv, Cr, mx, my, CW, qc);
             }
+            if (skipRun > 0) b.Ue(skipRun);                             // the skipped ones at the end
             b.Trailing();
             var raw = b.ToArray(); var esc = Bits.Escape(raw);
             var sample = new byte[4 + esc.Length]; sample[0] = (byte)(esc.Length >> 24); sample[1] = (byte)(esc.Length >> 16); sample[2] = (byte)(esc.Length >> 8); sample[3] = (byte)esc.Length; Array.Copy(esc, 0, sample, 4, esc.Length);
@@ -216,7 +345,7 @@ namespace Universe.Render
             int[] h = { dc[0] + dc[1] + dc[2] + dc[3], dc[0] - dc[1] + dc[2] - dc[3], dc[0] + dc[1] - dc[2] - dc[3], dc[0] - dc[1] - dc[2] + dc[3] };
             int qbits = 15 + qc / 6, f = (1 << qbits) / 3; var q = new int[4];
             for (int i = 0; i < 4; i++) { int z = (int)(((long)Math.Abs(h[i]) * MF0[qc % 6] + 2 * f) >> (qbits + 1)); q[i] = h[i] < 0 ? -z : z; }
-            Residual(b, q, 4, true);
+            Residual(b, q, 4, -1);
             int[] ih = { q[0] + q[1] + q[2] + q[3], q[0] - q[1] + q[2] - q[3], q[0] + q[1] - q[2] - q[3], q[0] - q[1] - q[2] + q[3] };
             int ls = 16 * V0[qc % 6];
             for (int k = 0; k < 4; k++)
@@ -280,7 +409,8 @@ namespace Universe.Render
             var stsc = new List<byte>(); Be32(stsc, 0); Be32(stsc, 1); Be32(stsc, 1); Be32(stsc, _samples.Count); Be32(stsc, 1);
             var stsz = new List<byte>(); Be32(stsz, 0); Be32(stsz, 0); Be32(stsz, _samples.Count); foreach (var s in _samples) Be32(stsz, s.Length);
             var stco = new List<byte>(); Be32(stco, 0); Be32(stco, 1); Be32(stco, mdatStart);
-            var stbl = Box("stbl", Box("stsd", stsd), Box("stts", stts), Box("stsc", stsc), Box("stsz", stsz), Box("stco", stco));
+            var stss = new List<byte>(); Be32(stss, 0); int nk = 0; foreach (var k in _keys) if (k) nk++; Be32(stss, nk); for (int i = 0; i < _keys.Count; i++) if (_keys[i]) Be32(stss, i + 1);   // the whole frames, where a player can start
+            var stbl = Box("stbl", Box("stsd", stsd), Box("stts", stts), Box("stss", stss), Box("stsc", stsc), Box("stsz", stsz), Box("stco", stco));
             var minf = Box("minf", Box("vmhd", vmhd), Box("dinf", Box("dref", dref)), stbl);
             var moov = Box("moov", Box("mvhd", mvhd), Box("trak", Box("tkhd", tkhd), Box("mdia", Box("mdhd", mdhd), Box("hdlr", hdlr), minf)));
             using (var f = System.IO.File.Create(_path))

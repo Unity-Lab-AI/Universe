@@ -242,6 +242,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [ ] **The front man, our own encoders for H.264, VP9 and AV1, measured for which carries our CDF 9/7 equations best (the translator equation), the metadata and the universe clip behind it; H.264 first:** (research and build, DNA-AND DESIGN 700) "we make a fucking front man gold fish head" / "all three and see which maskes a bettrer translator equation that we can use inline with metadata and the frontman"
 
+- [~] **Our own H.264 front man, version 0 (intra, DC terms, our MP4 boxes): Windows' decoder shows the same picture our writer computes:** (built: DNA-AND DESIGN 701; next P frames and AC terms) "okay get to it all u have a big back log"
+
 ---
 
 ## Pending

@@ -481,3 +481,12 @@ The measure is the same for all three: the picture's quality after the crossing 
 3. Then AV1, whose film grain and identity transform are the most likely to carry the stars and the shimmer for few bytes.
 
 Each container (MP4, WebM) also gets written by our own code.
+
+### H.264 front man, version 0 (2026-11-08)
+
+`src/render/H264Writer.cs`, every line ours. It writes the H.264 baseline profile: every frame an IDR of Intra16x16 macroblocks with DC prediction, CAVLC, each macroblock carrying its 16 luma DCs (one for each 4 × 4) and its chroma DCs. The MP4 boxes around it are ours too. The writer keeps the picture a decoder will rebuild, since it predicts from it.
+
+Checked with Windows' own decoder (Windows: an allowed dependency, used only to check; `shots/rt/h264t.cs`). It decoded every frame of flat, ramp and random-patch pictures and of the filmed tour's 4K frame. Against our writer's own reconstruction: 45 to 60 dB, the same picture apart from rounding in Windows' colour conversion. Full 4K (3840 × 2024, cropped from 2032): 105 KB a frame.
+
+Still coarse: no AC terms yet, so a 4 × 4 patch is one value. Every frame is whole, too: 10 minutes at 30 a second would be about 1.9 GB. Next: P frames (an unchanged macroblock costs about one bit), the AC terms (CAVLC's other tables), and then the comparison tiles.
+

@@ -84,6 +84,13 @@ A frame in `eqvideo.js` is the JSON object `equationalizeImageData` returns: mod
 
 JSON plus base64 costs about a third more than the bytes it carries. The `.c97` carries the bytes.
 
+## What the program already has (the port is half done)
+
+- `src/core/Wavelet97.cs` is this engine in C#, ported earlier from the same source so the numbers match: `Forward` and `Inverse` (rows and columns on every core), `Keep` (the energy-target selection with `tol` and a minimum term count, Int16 at max/32000), `Rebuild` (with the deviation dial), `PackPositions` and `UnpackPositions` (dv1 LEB128 deltas), `Write` and `Read` (a field as bytes: size, scale, count, packed positions, values) and `Psnr`. Today it stores a planet's terrain changes in the save file (`PlanetTerrain.cs`). It runs on the processor cores, not the card.
+- The recorder: `Program.cs` hands each shown frame to `src/render/Mp4Writer.cs` (`Add(rgb, w, h)`, H.264 through Windows Media Foundation, a `Down` factor of 1, 2 or 4). The landing page has the "Film the tour (an MP4 clip)" box, the clip-size drop-down (Auto, Full, Half, Quarter), the clip list, Play (hands the file to the system's player) and the folder button. F9 films in flight.
+
+So the `.c97` writer is a second clip writer beside `Mp4Writer` with the same `Add` call: RGB → the three YCbCr planes, reflect-padded to 64, `Wavelet97.Forward` and `Keep` per plane, `Wavelet97.Write` per plane into the clip. The drop-down that picks the clip size gets a neighbour that picks the format. Play of a `.c97` opens it in the program instead of the system player, since no system player can.
+
 ## The `.c97` clip — what the Universe program writes and plays
 
 The brief: a small clip of pictures only. No sound, no zoom-dive, no palette, no original riding alongside, no WAV or PNG wrapper, no JSON. One new file type nobody else uses. (The `.c97` name is the working name; `.eqv` belongs to IDL's equation viewer and `.uvv` to UltraViolet video, so neither is free.)

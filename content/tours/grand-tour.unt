@@ -153,6 +153,168 @@ max-rate: 0.5
 seconds: 5
 caption: {hole}
 
+@stop nebula
+do: pick
+target: nebula
+caption: A nebula: a cloud of gas and dust between the stars
+
+@stop to-nebula
+do: shot
+to-radii: 1.5
+sweep: 40
+rise: 15
+max-rate: 0.5
+seconds: 6
+caption: Into the cloud where stars are born
+
+@stop into-nebula
+do: zoom
+rate: 0.6
+until-km: 0.001
+caption: Down into its gas, thinner than any vacuum made on Earth
+
+@stop into-gas
+do: zoom
+rate: 0.5
+until-km: 1e-9
+through: yes
+caption: Its atoms, about a millimetre apart, hydrogen most of all
+
+@stop nebula-choose-atom
+do: pick
+target: atom
+caption: One atom
+
+@stop nebula-to-atom
+do: zoom
+rate: 0.4
+until-km: 6e-13
+caption: An atom: its nucleus, and its electrons where they may be
+
+@stop nebula-round-atom
+do: arc
+rate: 0.03
+until-km: 2.5e-13
+turn: 14
+seconds: 6
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
+
+@stop nebula-through-electrons
+do: zoom
+rate: 0.3
+until-km: 5e-14
+pan: 12
+caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
+
+@stop nebula-inner-shells
+do: orbit
+turn: 15
+seconds: 5
+caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
+
+@stop nebula-to-neighbour
+do: pick
+target: bonded-atom
+caption: Its neighbour
+
+@stop nebula-across-bond
+do: arc
+rate: 0
+until-km: 0
+turn: 8
+seconds: 4
+caption: Across the bond to its neighbour: atoms share their outer electrons
+
+@stop nebula-choose-electron
+do: pick
+target: electron
+caption: One electron
+
+@stop nebula-to-electron
+do: zoom
+rate: 0.35
+until-km: 2.5e-14
+pan: 8
+caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
+
+@stop nebula-follow-electron
+do: orbit
+turn: 12
+seconds: 5
+caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
+
+@stop nebula-choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop nebula-to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward: an atom is almost all empty space
+
+@stop nebula-round-nucleus
+do: arc
+rate: 0
+until-km: 0
+turn: 24
+seconds: 5
+caption: Its nucleus: protons and neutrons bound by the strong force
+
+@stop nebula-choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop nebula-to-proton
+do: zoom
+rate: 0.35
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop nebula-round-proton
+do: arc
+rate: 0
+until-km: 0
+turn: 20
+seconds: 4
+caption: Three quarks in a storm of gluons
+
+@stop nebula-choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop nebula-to-quark
+do: zoom
+rate: 0.35
+until-km: 6e-19
+caption: One quark
+
+@stop nebula-at-quark
+do: orbit
+turn: 8
+seconds: 4
+caption: The smallest thing we know
+
+@stop nebula-let-go
+do: pick
+target: none
+caption: And back out
+
+@stop out-of-gas
+do: zoom
+rate: -0.7
+until-km: 1e-9
+caption: Back out of the gas
+
+@stop off-nebula
+do: zoom
+rate: -0.7
+until-km: 1e14
+caption: Out of the nebula, among the stars
+
 @stop supernova
 do: pick
 target: supernova
@@ -188,6 +350,91 @@ sweep: 20
 max-rate: 0.5
 seconds: 5
 caption: Out to one star among them
+
+@stop onto-star
+do: zoom
+rate: 0.6
+until-km: 1
+caption: Onto its face: the photosphere, the plasma its light comes from
+
+@stop into-star
+do: zoom
+rate: 0.5
+until-km: 1e-12
+through: yes
+caption: Into the plasma: too hot for atoms to hold their electrons, bare nuclei with free electrons racing between them
+
+@stop star-choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop star-to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward: an atom is almost all empty space
+
+@stop star-round-nucleus
+do: arc
+rate: 0
+until-km: 0
+turn: 24
+seconds: 5
+caption: Its nucleus: protons and neutrons bound by the strong force
+
+@stop star-choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop star-to-proton
+do: zoom
+rate: 0.35
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop star-round-proton
+do: arc
+rate: 0
+until-km: 0
+turn: 20
+seconds: 4
+caption: Three quarks in a storm of gluons
+
+@stop star-choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop star-to-quark
+do: zoom
+rate: 0.35
+until-km: 6e-19
+caption: One quark
+
+@stop star-at-quark
+do: orbit
+turn: 8
+seconds: 4
+caption: The smallest thing we know
+
+@stop star-let-go
+do: pick
+target: none
+caption: And back out
+
+@stop out-of-star
+do: zoom
+rate: -0.7
+until-km: 1e-9
+caption: Back out through the plasma to its face
+
+@stop off-star
+do: zoom
+rate: -0.7
+until-km: 3e6
+caption: Off its face, out among its worlds
 
 @stop round-system
 do: shot
@@ -680,6 +927,248 @@ until-km: 1e40
 out: yes
 caption: Back out to its surface, and its sky
 
+@stop giant
+do: pick
+target: giant
+caption: A giant world of gas
+
+@stop to-giant
+do: shot
+to-radii: 5
+sweep: 30
+rise: 5
+max-rate: 0.5
+seconds: 5
+caption: Down to a giant: hydrogen and helium, with no ground at its clouds
+
+@stop round-giant
+do: shot
+to-radii: 2.5
+sweep: 120
+rise: 10
+seconds: 6
+caption: Its bands of cloud and its storms, its rings and moons
+
+@stop into-giant
+do: zoom
+rate: 0.5
+until-km: 0.002
+through: yes
+caption: Down through the cloud tops, the hydrogen, the metallic hydrogen, to the core: rock, iron and ice under enormous pressure
+
+@stop giant-stand
+do: pick
+target: none
+caption: Standing
+
+@stop giant-look-up
+do: look
+tilt: 55
+turn: 1.5
+seconds: 4
+caption: Look up: {sky}
+
+@stop giant-sky
+do: orbit
+turn: 3
+seconds: 4
+caption: {sky}
+
+@stop giant-look-down
+do: look
+tilt: -85
+turn: 1.5
+seconds: 3
+caption: And down: there is as much below us as above
+
+@stop giant-to-grains
+do: zoom
+rate: 0.4
+until-km: 2e-6
+through: yes
+caption: The ground breaks into stones, then grains of sand
+
+@stop giant-choose-grain
+do: pick
+target: grain
+caption: One grain of sand
+
+@stop giant-to-face
+do: zoom
+rate: 0.45
+until-km: 2e-9
+through: yes
+caption: Onto one grain, a crystal of one mineral
+
+@stop giant-choose-spot
+do: pick
+target: spot
+caption: A spot on its face
+
+@stop giant-to-crystal
+do: zoom
+rate: 0.5
+until-km: 6e-12
+caption: Down to its atoms, in a pattern repeated billions of times
+
+@stop giant-round-crystal
+do: arc
+rate: 0
+until-km: 0
+turn: 15
+seconds: 5
+caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
+
+@stop giant-into-lattice
+do: arc
+rate: 0.25
+until-km: 1.5e-12
+turn: 6
+seconds: 5
+caption: Down among them
+
+@stop giant-through-lattice
+do: fly
+rate: 0.6
+turn: 3
+seconds: 5
+caption: Through the lattice: row on row of atoms, each bonded to its neighbours
+
+@stop giant-choose-atom
+do: pick
+target: atom
+caption: One atom
+
+@stop giant-to-atom
+do: zoom
+rate: 0.4
+until-km: 6e-13
+caption: An atom: its nucleus, and its electrons where they may be
+
+@stop giant-round-atom
+do: arc
+rate: 0.03
+until-km: 2.5e-13
+turn: 14
+seconds: 6
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
+
+@stop giant-through-electrons
+do: zoom
+rate: 0.3
+until-km: 5e-14
+pan: 12
+caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
+
+@stop giant-inner-shells
+do: orbit
+turn: 15
+seconds: 5
+caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
+
+@stop giant-to-neighbour
+do: pick
+target: bonded-atom
+caption: Its neighbour
+
+@stop giant-across-bond
+do: arc
+rate: 0
+until-km: 0
+turn: 8
+seconds: 4
+caption: Across the bond to its neighbour: atoms share their outer electrons
+
+@stop giant-choose-electron
+do: pick
+target: electron
+caption: One electron
+
+@stop giant-to-electron
+do: zoom
+rate: 0.35
+until-km: 2.5e-14
+pan: 8
+caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
+
+@stop giant-follow-electron
+do: orbit
+turn: 12
+seconds: 5
+caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
+
+@stop giant-choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop giant-to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward: an atom is almost all empty space
+
+@stop giant-round-nucleus
+do: arc
+rate: 0
+until-km: 0
+turn: 24
+seconds: 5
+caption: Its nucleus: protons and neutrons bound by the strong force
+
+@stop giant-choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop giant-to-proton
+do: zoom
+rate: 0.35
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop giant-round-proton
+do: arc
+rate: 0
+until-km: 0
+turn: 20
+seconds: 4
+caption: Three quarks in a storm of gluons
+
+@stop giant-choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop giant-to-quark
+do: zoom
+rate: 0.35
+until-km: 6e-19
+caption: One quark
+
+@stop giant-at-quark
+do: orbit
+turn: 8
+seconds: 4
+caption: The smallest thing we know
+
+@stop giant-let-go
+do: pick
+target: none
+caption: And back out
+
+@stop giant-out-of-atom
+do: zoom
+rate: -0.7
+until-km: 1e-9
+caption: Back out through the atom, the crystal, the grain of its core
+
+@stop off-giant
+do: zoom
+rate: -0.7
+until-km: 3e5
+caption: Up through the giant, out of its clouds, away
+
 @stop star-2
 do: pick
 target: star
@@ -965,6 +1454,114 @@ do: zoom
 rate: -0.7
 until-km: 1e14
 caption: Out past its star's worlds, its star a point among the galaxy's stars
+
+@stop neutron
+do: pick
+target: neutron
+caption: A neutron star: a star's core crushed to a city's width
+
+@stop to-neutron
+do: shot
+to-radii: 10
+sweep: 30
+rise: 10
+max-rate: 0.6
+seconds: 6
+caption: A sun's mass in twenty kilometres, spinning, its surface a trillion times denser than steel
+
+@stop round-neutron
+do: shot
+to-radii: 3
+sweep: 100
+rise: 20
+max-rate: 0.4
+seconds: 5
+caption: Its crust is iron nuclei in a lattice; beneath it, neutrons pressed together as in one nucleus
+
+@stop onto-neutron
+do: zoom
+rate: 0.5
+until-km: 0.001
+caption: Onto its surface
+
+@stop into-crust
+do: zoom
+rate: 0.5
+until-km: 1e-12
+through: yes
+caption: Into the crust: nuclei a picometre apart in a lattice, electrons racing between them
+
+@stop neutron-choose-nucleus
+do: pick
+target: nucleus
+caption: The nucleus
+
+@stop neutron-to-nucleus
+do: zoom
+rate: 0.45
+until-km: 3e-17
+caption: Inward: an atom is almost all empty space
+
+@stop neutron-round-nucleus
+do: arc
+rate: 0
+until-km: 0
+turn: 24
+seconds: 5
+caption: Its nucleus: protons and neutrons bound by the strong force
+
+@stop neutron-choose-proton
+do: pick
+target: proton
+caption: A proton
+
+@stop neutron-to-proton
+do: zoom
+rate: 0.35
+until-km: 2.5e-18
+caption: Into a single proton
+
+@stop neutron-round-proton
+do: arc
+rate: 0
+until-km: 0
+turn: 20
+seconds: 4
+caption: Three quarks in a storm of gluons
+
+@stop neutron-choose-quark
+do: pick
+target: quark
+caption: A quark
+
+@stop neutron-to-quark
+do: zoom
+rate: 0.35
+until-km: 6e-19
+caption: One quark
+
+@stop neutron-at-quark
+do: orbit
+turn: 8
+seconds: 4
+caption: The smallest thing we know
+
+@stop neutron-let-go
+do: pick
+target: none
+caption: And back out
+
+@stop out-of-crust
+do: zoom
+rate: -0.7
+until-km: 1e-9
+caption: Back out through the crust
+
+@stop off-neutron
+do: zoom
+rate: -0.7
+until-km: 1e4
+caption: Off the neutron star
 
 @stop out-of-galaxy
 do: zoom

@@ -2472,6 +2472,50 @@ namespace Universe.Shell
                 case "supernova":
                     { var sn = NearestSupernova() ?? YoungRemnant(); if (sn != null) PickSupernova(sn); else ZoomLog("TOUR no supernova, going or young, in the " + _galaxies.Count + " galaxies made round you"); }
                     break;
+                case "giant":
+                    if (_system != null)
+                    {
+                        // a giant of this star's worlds (gas or ice), by chance among them, weighted as the planets are
+                        var rng = new Rng(_seed ^ (ulong)(Environment.TickCount + 47)); var opts = new List<int>();
+                        for (int i = 0; i < _system.Bodies.Count; i++) { var b = _system.Bodies[i]; if (b.Parent < 0 && b.Giant) opts.Add(i); }
+                        double total = 0; var wts = new double[opts.Count];
+                        for (int q = 0; q < opts.Count; q++) { wts[q] = Math.Max(0.01, _system.Bodies[opts[q]].Interest); total += wts[q]; }
+                        double pickAt = rng.NextDouble() * total; int pick = opts.Count > 0 ? opts[opts.Count - 1] : -1;
+                        for (int q = 0; q < opts.Count; q++) { pickAt -= wts[q]; if (pickAt <= 0) { pick = opts[q]; break; } }
+                        if (pick >= 0) { _tKind = 2; _tIndex = pick; _tName = _system.Bodies[pick].Kind; } else ZoomLog("TOUR no giant among the " + _system.Bodies.Count + " bodies of this system");
+                    }
+                    break;
+                case "neutron":
+                    {
+                        // the nearest neutron star, pulsar or magnetar among the bodies round you (placed among the stars, or left at a
+                        // supernova's middle): a body like any other, picked and dived into
+                        int bi = -1; double bd = double.MaxValue;
+                        for (int q = 0; q < _extras.Count; q++)
+                        {
+                            var ex = _extras[q]; if (ex.Pl == null) continue; string id = ex.Pl.Id;
+                            if (!(id.Contains("neutron") || id.Contains("pulsar") || id.Contains("magnetar"))) continue;
+                            double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = dx * dx + dy * dy + dz * dz; if (d < bd) { bd = d; bi = q; }
+                        }
+                        if (bi >= 0) { var ex = _extras[bi]; _tKind = 6; _tIndex = bi; _tx = ex.X; _ty = ex.Y; _tz = ex.Z; _tRadius = ex.R; _tName = ex.Name; _tExtra = ex; }
+                        else ZoomLog("TOUR no neutron star among the " + _extras.Count + " bodies round you");
+                    }
+                    break;
+                case "nebula":
+                    if (_near >= 0 && _near < _galaxies.Count && _features != null)
+                    {
+                        // the nearest nebula of the galaxy you are in (emission, reflection, planetary, a supernova's remnant or a dark one)
+                        var g = _galaxies[_near]; string[] names = { "a globular cluster", "an open cluster", "an emission nebula", "a reflection nebula", "a planetary nebula", "a supernova remnant", "a dark nebula" };
+                        int bi = -1; double bd = double.MaxValue;
+                        for (int q = 0; q < _features.Count; q++)
+                        {
+                            var fq = _features[q]; int fk = (int)fq[4]; if (fk < 2 || fk > 6) continue;
+                            double ux, uy, uz; ToUniverse(g, fq[0], fq[1], fq[2], out ux, out uy, out uz);
+                            double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, d = dx * dx + dy * dy + dz * dz; if (d < bd) { bd = d; bi = q; }
+                        }
+                        if (bi >= 0) { double ux, uy, uz; ToUniverse(g, _features[bi][0], _features[bi][1], _features[bi][2], out ux, out uy, out uz); _tGal = _near; _tKind = 5; _tIndex = bi; _tx = ux; _ty = uy; _tz = uz; _tRadius = _features[bi][3] * g.Scale; int fk = (int)_features[bi][4]; _tName = fk >= 0 && fk < names.Length ? names[fk] : "a nebula"; }
+                        else ZoomLog("TOUR no nebula among the " + _features.Count + " features of " + g.Name);
+                    }
+                    break;
                 case "start-galaxy":
                     {
                         // the galaxy you begin in (a galaxy of this universe, like any other), to open on
@@ -2654,7 +2698,8 @@ namespace Universe.Shell
             // is off by up to a million kilometres: the zoom had flown to a point beside the body and stalled there, the dive never
             // within reach of the stone it was aimed at)
             if (_tKind == 6 && _tExtra != null) { dx = RelX(_tExtra) - _ox; dy = RelY(_tExtra) - _oy; dz = RelZ(_tExtra) - _oz; radius = _tRadius; return true; }
-            if (_tKind == 1 && _tSn != null && _tName == "a supernova") { _tx = _tSn.Ux; _ty = _tSn.Uy; _tz = _tSn.Uz; }   // (where it is now: a supernova is moved onto a real star of its galaxy once that galaxy's stars are made, after the pick from afar had copied its far place; the shots had flown to the old point, light-years from the dying star, and seen it as a point of light with no cloud)
+            if (_tKind == 1 && _tSn != null && _tName == "a supernova") { _tx = _tSn.Ux; _ty = _tSn.Uy; _tz = _tSn.Uz; }
+            if (_tKind == 1 && _system != null && _tName == "a star" && Math.Abs(_tx - _ax) + Math.Abs(_ty - _ay) + Math.Abs(_tz - _az) < StarRadiusNow * 0.01) { dx = -_ox; dy = -_oy; dz = -_oz; radius = StarRadiusNow; return true; }   // (the system's own star: its real radius, so a zoom onto its face ends at its face; one solar radius had stood for every star)   // (where it is now: a supernova is moved onto a real star of its galaxy once that galaxy's stars are made, after the pick from afar had copied its far place; the shots had flown to the old point, light-years from the dying star, and seen it as a point of light with no cloud)
             if (_tKind == 1 || _tKind == 4 || _tKind == 5 || _tKind == 6 || _tKind == 7 || _tKind == 8) { dx = (_tx - _ax) - _ox; dy = (_ty - _ay) - _oy; dz = (_tz - _az) - _oz; radius = _tRadius; return true; }   // a star, or a spot in a belt
             if (_tKind == 2 && _system != null && _tIndex < _system.Bodies.Count)
             { double x, y, z; BodyPos(_tIndex, out x, out y, out z); dx = x - _ox; dy = y - _oy; dz = z - _oz; radius = _system.Bodies[_tIndex].RadiusUnits; return true; }

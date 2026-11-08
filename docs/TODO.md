@@ -171,6 +171,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A spot picked on the face at height nothing, so the camera is on the face and the crystal, lattice, atom, electrons and nucleus show, and the way out too, on every body:** (built: DNA-AND DESIGN 656; waits on the test) "major problems and everyone of my pics documents one read the text and look at whats in focus and the zoom in was all funky and the zoom out was nothing but blackness all the way to the surface" / "ik dont know whats so hard about matching code we already have working" / "akay dont jsut fix it for astroids" / "fix it for all bodies,, you know what that means right?"
 
+- [~] **All bodies: the tour's chain on the star, the giant to its core, the neutron star's crust and the nebula's gas, each the planet's own stops, by the one code; black holes kept as their fall:** (built: DNA-AND DESIGN 657; waits on the test) "well you obviously didnt do all bodies as u didnt list them all in what u said" / "what about stars what about nuetron stars what about gas giants metal core,, like i said u didnt do all bodies" / "ALL BODIES" / "so what do i mean by all bodies" / "black holes are differnt there is no matter to zoom into"
+
 ---
 
 ## Pending

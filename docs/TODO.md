@@ -182,6 +182,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Nebulae drawn close up as clouds of their own gas, each kind its own shape, from forty radii in:** (built: DNA-AND DESIGN 662; waits on the test) "it now zzoms to planetary nebula i think u added that but the nebulas are missing"
 
+- [~] **The tour: the asteroid seen, not dived into; the nebula out of it:** (built: DNA-AND DESIGN 663; waits on the test) "what the fuck this thing was suuppose to max out at five minutes and u keep adding shit to the tour" / "kllets not dive into the astreoid that save alot of time" / "and i never said do a gas cloud fly by" / "m,ake those changes i said and dont worry about the time just make thosae adjustment"
+
 ---
 
 ## Pending

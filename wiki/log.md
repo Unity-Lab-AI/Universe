@@ -82,3 +82,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the watchdog forgives menus, dialogs and message boxes): DNA-AND DESIGN 671.
 - 2026-11-08 (the Uni Vs Matics engine and papers pulled into reference/univsmatics/ for the .c97 clip): DNA-AND DESIGN 672.
 - 2026-11-08 (the .cdf97w clip: writer, start-page and View format pick, in-program player): DNA-AND DESIGN 673.
+- 2026-11-08 (the front-man equation research written up): DNA-AND DESIGN 674.

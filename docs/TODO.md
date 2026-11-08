@@ -204,6 +204,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The clip filmed can be a .cdf97w (the pictures as CDF 9/7 wavelet equations, no sound), picked on the start page or under View > Clip format, played in the program's own window:** (built: DNA-AND DESIGN 673; waits on the test; the transforms on the processor, compute shaders next) "no i need the fucking clip i make to be a .cdf97w not wait to properly write the equations"
 
+- [ ] **The front-man equation: research, hypotheses and experiments (E1 to E5) for an H.264 front man carrying the .cdf97w:** (written: DNA-AND DESIGN 674, reference/univsmatics/FRONTMAN-RESEARCH.md; E1 next) "okay so u know math start build ing hypothesis and research and math we need to solve the eqaution we need for the front man to use"
+
 ---
 
 ## Pending

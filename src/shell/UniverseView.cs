@@ -3653,6 +3653,81 @@ namespace Universe.Shell
             g.StructCount = st.Length; g.Struct = new UploadBuffer(_gpu.Device, (long)Math.Max(1, st.Length) * Stride); if (st.Length > 0) g.Struct.Write(st, st.Length);
         }
         private int _tGal = -1;                                                           // the galaxy of a picked cluster or nebula
+        // -- the nebulae close up: a nebula had been only its far marker (eight soft points scattered over it, for the galaxy's sky seen from
+        // outside), so flown to, or dived into, there was nothing on the screen; each kind is a cloud of its own gas now, in the colours of
+        // what it is made of (its make-up, the same its card and its far marker use), made once when you come within forty of its radii
+        private readonly Dictionary<long, UploadBuffer> _nebBufs = new Dictionary<long, UploadBuffer>(); private readonly Dictionary<long, int> _nebNs = new Dictionary<long, int>();
+        private void DrawNebulae(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
+        {
+            if (_near < 0 || _near >= _galaxies.Count || _features == null) return;
+            var g = _galaxies[_near];
+            for (int q = 0; q < _features.Count; q++)
+            {
+                var fq = _features[q]; int fk = (int)fq[4]; if (fk < 2 || fk > 6) continue;
+                double ux, uy, uz; ToUniverse(g, fq[0], fq[1], fq[2], out ux, out uy, out uz);
+                double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, R = fq[3] * g.Scale, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                if (R <= 0 || d > R * 40) continue;
+                long key = (long)(g.Seed % 1000003UL) * 100003L + q; UploadBuffer buf; int n;
+                if (!_nebBufs.TryGetValue(key, out buf))
+                {
+                    if (_nebBufs.Count >= 12) { foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear(); _nebNs.Clear(); }   // (a few at a time: the ones round you)
+                    var cloud = NebulaCloud(fk, fq.Length > 5 ? fq[5] : 0.5, g.Seed ^ (ulong)(q * 2654435761L));
+                    n = cloud.Count; buf = new UploadBuffer(_gpu.Device, (long)Math.Max(1, n) * Stride); if (n > 0) buf.Write(cloud.ToArray(), n);
+                    _nebBufs[key] = buf; _nebNs[key] = n;
+                }
+                n = _nebNs[key]; if (n == 0) continue;
+                float fade = (float)Math.Max(0, Math.Min(1, (40 - d / R) / 20));   // (coming in from forty of its radii to twenty; the far marker's points stand for it beyond)
+                var m = Mat4.Identity; m.M11 = (float)R; m.M22 = (float)R; m.M33 = (float)R; m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
+                DrawPoints(buf, n, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade * (fk == 6 ? 0.35f : 0.75f));
+            }
+        }
+        // a nebula's cloud in its own units (its radius 1): a planetary nebula a thin shell puffed off its dying star (oxygen's green-blue
+        // within, hydrogen's and nitrogen's red at the rim, the white dwarf at its middle); a supernova's remnant a torn shell of filaments;
+        // an emission nebula knots and pillars of glowing gas with its hot young stars inside, a reflection nebula smaller and blue round
+        // its stars, a dark nebula dim dust; every point's colour from a part of what the nebula is made of, by its share
+        private static List<StarVertex> NebulaCloud(int kind, double mix, ulong seed)
+        {
+            var rng = new Rng(seed); var parts = SpaceGen.Composition(kind, mix); var l = new List<StarVertex>();
+            Func<SpaceGen.Part> part = () => { double u = rng.NextDouble(); foreach (var p in parts) { u -= p.Share; if (u <= 0) return p; } return parts[parts.Length - 1]; };
+            Func<Vec3> dir = () => { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, s = Math.Sqrt(1 - u * u); return new Vec3((float)(s * Math.Cos(a)), (float)u, (float)(s * Math.Sin(a))); };
+            if (kind == 4)
+            {
+                float squash = (float)(0.6 + 0.4 * rng.NextDouble());
+                for (int k = 0; k < 2600; k++)
+                {
+                    var dv = dir(); double rr = 0.75 + 0.22 * rng.NextDouble() + 0.05 * rng.Gaussian(); var p = part(); bool rim = rr > 0.9;
+                    float br = (float)(0.35 + 0.45 * rng.NextDouble()) * (rim ? 1f : 0.7f), cr = rim ? 1f : p.R, cg = rim ? 0.3f : p.G, cb = rim ? 0.3f : p.B;
+                    l.Add(new StarVertex { X = (float)(dv.X * rr), Y = (float)(dv.Y * rr * squash), Z = (float)(dv.Z * rr), Size = 0.09f, R = cr * br, G = cg * br, B = cb * br, A = 1 });
+                }
+                for (int k = 0; k < 600; k++) { var dv = dir(); double rr = Math.Pow(rng.NextDouble(), 0.5) * 0.7; const float br = 0.18f; l.Add(new StarVertex { X = (float)(dv.X * rr), Y = (float)(dv.Y * rr * squash), Z = (float)(dv.Z * rr), Size = 0.14f, R = 0.2f * br, G = 1f * br, B = 0.75f * br, A = 1 }); }
+                l.Add(new StarVertex { X = 0, Y = 0, Z = 0, Size = 0.012f, R = 0.8f, G = 0.9f, B = 1f, A = 1 });   // the white dwarf that puffed it off
+                return l;
+            }
+            if (kind == 5)
+            {
+                int fil = 40; var fd = new Vec3[fil]; for (int f = 0; f < fil; f++) fd[f] = dir();
+                for (int k = 0; k < 3200; k++)
+                {
+                    var f0 = fd[rng.Below(fil)]; var jt = dir(); double rr = 0.85 + 0.15 * rng.NextDouble(); var dv = (f0 * 0.75f + jt * 0.35f).Normalized; var p = part(); float br = (float)(0.3 + 0.5 * rng.NextDouble());
+                    l.Add(new StarVertex { X = dv.X * (float)rr, Y = dv.Y * (float)rr, Z = dv.Z * (float)rr, Size = 0.07f, R = p.R * br, G = p.G * br, B = p.B * br, A = 1 });
+                }
+                for (int k = 0; k < 500; k++) { var dv = dir(); double rr = Math.Pow(rng.NextDouble(), 0.4); const float br = 0.12f; l.Add(new StarVertex { X = dv.X * (float)rr, Y = dv.Y * (float)rr, Z = dv.Z * (float)rr, Size = 0.16f, R = 0.9f * br, G = 0.4f * br, B = 0.35f * br, A = 1 }); }
+                return l;
+            }
+            int knots = 28; var kc = new Vec3[knots]; var ks = new float[knots];
+            for (int q = 0; q < knots; q++) { kc[q] = new Vec3((float)rng.Gaussian() * 0.45f, (float)rng.Gaussian() * 0.3f, (float)rng.Gaussian() * 0.45f); ks[q] = (float)(0.12 + 0.3 * rng.NextDouble()); }
+            int pts = kind == 6 ? 1800 : 3000;
+            for (int k = 0; k < pts; k++)
+            {
+                int q = rng.Below(knots); var c = kc[q] + new Vec3((float)rng.Gaussian(), (float)rng.Gaussian(), (float)rng.Gaussian()) * ks[q];
+                double cl = Math.Sqrt(c.X * c.X + c.Y * c.Y + c.Z * c.Z); if (cl > 1) continue;
+                var p = part(); if (p.El == "O" && cl > 0.5) continue;                                   // (oxygen's teal toward the middle, hydrogen's red throughout)
+                float br = (float)((0.25 + 0.45 * rng.NextDouble()) * (1 - cl * 0.5)) * (kind == 6 ? 0.45f : 1f);
+                l.Add(new StarVertex { X = c.X, Y = c.Y, Z = c.Z, Size = kind == 3 ? 0.11f : 0.15f, R = p.R * br, G = p.G * br, B = p.B * br, A = 1 });
+            }
+            if (kind == 2 || kind == 3) for (int k = 0; k < (kind == 2 ? 24 : 6); k++) { int q = rng.Below(knots); var c = kc[q] + new Vec3((float)rng.Gaussian(), (float)rng.Gaussian(), (float)rng.Gaussian()) * ks[q] * 0.5f; l.Add(new StarVertex { X = c.X, Y = c.Y, Z = c.Z, Size = 0.01f, R = 0.75f, G = 0.85f, B = 1f, A = 1 }); }   // the hot young stars that light it
+            return l;
+        }
         private UploadBuffer _structBuf; private int _structCount; private List<double[]> _features = new List<double[]>();   // the near galaxy's clusters and nebulae
         private readonly object _extraLock = new object(); private StarVertex[] _extra; private int[] _extraKinds; private int _extraFor = -1;
 
@@ -3950,6 +4025,7 @@ namespace Universe.Shell
             // the solid small bodies (asteroids, comets' nuclei) and worlds' rings last of everything in space: after every star,
             // belt and orbit behind them, so nothing shows through a solid body (the glows are drawn without looking at what is in front)
             Render.GpuLog.Pass = "asteroids and comets";
+            DrawNebulae(vp, right, up, w, h, time);                                   // the nebulae near you, each a cloud of its own gas (its far marker stands for it beyond forty of its radii)
             DrawSmallBodies(vp, right, up, w, h, time);
             DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them
             Render.GpuLog.Pass = "a world's ground";
@@ -4603,7 +4679,7 @@ namespace Universe.Shell
         public void Dispose()
         {
             foreach (var g in _galaxies) if (g.Far != null) g.Far.Dispose(); if (_glowBuf != null) _glowBuf.Dispose();
-            if (_nearBuf != null) _nearBuf.Dispose(); foreach (var g in _galaxies) if (g.Struct != null) g.Struct.Dispose();
+            if (_nearBuf != null) _nearBuf.Dispose(); foreach (var g in _galaxies) if (g.Struct != null) g.Struct.Dispose(); foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear();
             CloseSystem();
             DropPlanet();
             _hud.Dispose(); _matter.Dispose();

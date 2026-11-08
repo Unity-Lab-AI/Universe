@@ -180,6 +180,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The shot's pace eased at both ends, so no crossing jerks away or slams to a halt:** (built: DNA-AND DESIGN 660; waits on the test) "and every tour movment need proper pand and gentle pan away shit like tleaving the focuus of the black hole jsut instantly shoots to another system like slide show the black hole si there then another system is instantly in view it look like im cheezing the video to make unreal thing look like they are real, like i mean the snap jerks everywhere on all motion start ups and stops need to be gradual to a halt and gradualy pan away and speed up not just jerk from one place to the next"
 - [~] **The piece of ground under the camera never thrown out of the walk; the ground's log line with the height above bare rock and the piece under you:** (built: DNA-AND DESIGN 661; waits on the test and its log) "and if u check the new ones pic just made the astroid is showing stars through it" / "the application is still open pasued on the issue" / "at 1mm"
 
+- [~] **Nebulae drawn close up as clouds of their own gas, each kind its own shape, from forty radii in:** (built: DNA-AND DESIGN 662; waits on the test) "it now zzoms to planetary nebula i think u added that but the nebulas are missing"
+
 ---
 
 ## Pending

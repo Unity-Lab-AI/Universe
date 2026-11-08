@@ -70,3 +70,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the public pages read in full and mended): DNA-AND DESIGN 658.
 - 2026-11-07 (the dive atom drawn and pickable at every size in gas and plasma): DNA-AND DESIGN 659.
 - 2026-11-07 (the shot's pace eased; the ground under the camera never culled, the ground probe): DNA-AND DESIGN 660, 661.
+- 2026-11-07 (nebulae close up as clouds of their own gas): DNA-AND DESIGN 662.

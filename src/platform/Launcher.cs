@@ -17,6 +17,8 @@ namespace Universe.Platform
         [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr h);
         [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr h);
         [DllImport("user32.dll")] private static extern bool IsDialogMessage(IntPtr h, ref Win32.MSG msg);
+        [DllImport("user32.dll")] private static extern IntPtr SetFocus(IntPtr h);
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassName(IntPtr h, StringBuilder s, int max);
         [DllImport("gdi32.dll", CharSet = CharSet.Unicode)] private static extern IntPtr CreateFont(int h, int w, int esc, int orient, int weight, uint italic, uint underline, uint strike, uint charset, uint outPrec, uint clipPrec, uint quality, uint pitch, string face);
         [DllImport("gdi32.dll")] private static extern IntPtr CreateSolidBrush(uint color);
         [DllImport("gdi32.dll")] private static extern uint SetTextColor(IntPtr dc, uint color);
@@ -25,10 +27,10 @@ namespace Universe.Platform
 
         private const uint WS_CHILD = 0x40000000, WS_VISIBLE = 0x10000000, WS_TABSTOP = 0x00010000, WS_CAPTION = 0x00C00000, WS_SYSMENU = 0x00080000, WS_VSCROLL = 0x00200000;
         private const uint BS_DEFPUSHBUTTON = 0x1, BS_AUTOCHECKBOX = 0x3, ES_NUMBER = 0x2000, ES_AUTOHSCROLL = 0x80, CBS_DROPDOWNLIST = 0x3, WS_EX_CLIENTEDGE = 0x200;
-        private const uint WM_CLOSE = 0x10, WM_SETFONT = 0x30, WM_COMMAND = 0x111, WM_CTLCOLORSTATIC = 0x138, WM_CTLCOLOREDIT = 0x133, BM_GETCHECK = 0xF0, BM_SETCHECK = 0xF1;
+        private const uint WM_CLOSE = 0x10, WM_CHAR = 0x102, WM_SETFONT = 0x30, WM_COMMAND = 0x111, EM_SETSEL = 0xB1, EN_MAXTEXT = 0x0501, WM_CTLCOLORSTATIC = 0x138, WM_CTLCOLOREDIT = 0x133, BM_GETCHECK = 0xF0, BM_SETCHECK = 0xF1;
         private const uint CB_SETDROPPEDWIDTH = 0x160, CB_RESETCONTENT = 0x14B, CB_ADDSTRING = 0x143, CB_SETCURSEL = 0x14E, CB_GETCURSEL = 0x147, EM_SETCUEBANNER = 0x1501, EM_LIMITTEXT = 0xC5;
         private const uint Back = 0x140C0A, Ink = 0xF2EEEA, Dim = 0xB4AAA0;                 // (colours as 0x00BBGGRR)
-        private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14;
+        private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14, IdSeed = 15;
 
         private static Win32.WndProc _proc; private static bool _registered;
         private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
@@ -61,7 +63,7 @@ namespace Universe.Platform
             Child("STATIC", Universe.Shell.PreviewText.AppName, 0, 0, x, y, cw, (int)(60 * s), _big); y += (int)(64 * s);
             Child("STATIC", "From the cosmic web down to the quarks.", 0, 0, x, y, cw, (int)(24 * s), _font); y += (int)(48 * s);
             Child("STATIC", "Seed", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _font);
-            _seed = Child("EDIT", "", ES_NUMBER | ES_AUTOHSCROLL | WS_TABSTOP, 0, x + (int)(64 * s), y, cw - (int)(64 * s) - (int)(110 * s), row, _font, WS_EX_CLIENTEDGE);
+            _seed = Child("EDIT", "", ES_NUMBER | ES_AUTOHSCROLL | WS_TABSTOP, IdSeed, x + (int)(64 * s), y, cw - (int)(64 * s) - (int)(110 * s), row, _font, WS_EX_CLIENTEDGE);
             SendMessage(_seed, EM_SETCUEBANNER, (IntPtr)1, "blank for a new one"); SendMessage(_seed, EM_LIMITTEXT, (IntPtr)19, IntPtr.Zero);
             Child("BUTTON", "Random", WS_TABSTOP, IdRandom, x + cw - (int)(100 * s), y, (int)(100 * s), row, _font); y += row + (int)(22 * s);
             Child("BUTTON", "Begin", BS_DEFPUSHBUTTON | WS_TABSTOP, IdBegin, x, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font);
@@ -93,13 +95,21 @@ namespace Universe.Platform
             SendMessage(_stats, BM_SETCHECK, (IntPtr)(Settings.Get("show-stats", true) ? 1 : 0), IntPtr.Zero);
             SendMessage(_invert, BM_SETCHECK, (IntPtr)(Settings.Get("invert-up-down", false) ? 1 : 0), IntPtr.Zero);
             SendMessage(_record, BM_SETCHECK, (IntPtr)(Settings.Get("film-tour", false) ? 1 : 0), IntPtr.Zero);
-            Window.LandingOpen = true; Window.CloseAsked = false; SetForegroundWindow(_wnd);   // (the game's window stays enabled: its own close button quits too, never a refusing beep)
+            Window.LandingOpen = true; Window.CloseAsked = false; SetForegroundWindow(_wnd); SetFocus(_seed);   // (the game's window stays enabled: its own close button quits too, never a refusing beep; the seed field has the focus from the start, so typing goes into it)
             Win32.MSG msg;
             while (_done == null)
             {
                 if (Window.CloseAsked) { _done = Choice.Quit; break; }
                 while (Win32.PeekMessage(out msg, IntPtr.Zero, 0, 0, 1))
                 {
+                    // a digit typed anywhere on the page but in a field or a list (on the page itself, or with a button holding the
+                    // focus after a click) goes into the seed field: the page's own key handling had hunted for a shortcut letter
+                    // for it, found none, and refused it with Windows' beep, so no seed could be typed
+                    if (msg.message == WM_CHAR && msg.hwnd != _seed && (long)msg.wParam >= '0' && (long)msg.wParam <= '9')
+                    {
+                        var cls = new StringBuilder(32); GetClassName(msg.hwnd, cls, 32); string cn = cls.ToString();
+                        if (!cn.Equals("Edit", StringComparison.OrdinalIgnoreCase) && !cn.Equals("ComboBox", StringComparison.OrdinalIgnoreCase)) { SetFocus(_seed); SendMessage(_seed, WM_CHAR, msg.wParam, msg.lParam); continue; }
+                    }
                     if (!IsDialogMessage(_wnd, ref msg)) { Win32.TranslateMessage(ref msg); Win32.DispatchMessage(ref msg); }
                 }
                 if (alive != null) alive();                                           // (the watchdog knows the page is open, not hung)
@@ -146,8 +156,9 @@ namespace Universe.Platform
             if (msg == WM_CLOSE) { _done = Choice.Quit; return IntPtr.Zero; }
             if (msg == WM_COMMAND)
             {
-                int id = (int)((long)w & 0xFFFF);
-                if (id == IdBegin) _done = Choice.Begin;
+                int id = (int)((long)w & 0xFFFF), code = (int)(((long)w >> 16) & 0xFFFF);
+                if (id == IdSeed) { if (code == EN_MAXTEXT) SendMessage(_seed, EM_SETSEL, IntPtr.Zero, (IntPtr)(-1)); }   // (the field full at nineteen digits: the whole number selected, so the next digit typed starts a new one instead of being refused with a beep)
+                else if (id == IdBegin) _done = Choice.Begin;
                 else if (id == IdTour) _done = Choice.Tour;
                 else if (id == IdQuit) _done = Choice.Quit;
                 else if (id == IdGuide && _guide != null) _guide();
@@ -158,7 +169,7 @@ namespace Universe.Platform
                     if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1);
                 }
                 else if (id == IdFolder) { try { System.IO.Directory.CreateDirectory(Captures); } catch { } ShellExecute(_wnd, "open", Captures, null, null, 1); }
-                else if (id == IdRandom) { var r = (ulong)DateTime.UtcNow.Ticks ^ BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0); Win32.SetWindowText(_seed, (r % 10000000000000000000UL).ToString()); }
+                else if (id == IdRandom) { var r = (ulong)DateTime.UtcNow.Ticks ^ BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0); Win32.SetWindowText(_seed, (r % 10000000000000000000UL).ToString()); SetFocus(_seed); SendMessage(_seed, EM_SETSEL, IntPtr.Zero, (IntPtr)(-1)); }   // (the focus back in the field with the number selected: typing replaces it, instead of the button holding the focus and every digit refused)
                 return IntPtr.Zero;
             }
             return Win32.DefWindowProc(h, msg, w, l);

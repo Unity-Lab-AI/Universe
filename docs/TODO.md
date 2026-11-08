@@ -162,6 +162,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The crash at the first zoom toward the asteroid (the small body's world indexed as a planet's) fixed; its day passes like a planet's:** (built: DNA-AND DESIGN 649; waits on the test) "it crashed at zooming into the astroid" / "like theh first zoom incremment when it wasnt even close to the asteroid crashed it or it crashed trying to get close idk i have tno information on what happened"
 - [~] **Every small body its own size (metres to the width gravity rounds a body at) and shape (lumpier the smaller), by data:** (built: DNA-AND DESIGN 650; waits on the test) "and we properly have diffetn astroid shapes and sizesd right as some are feet across and others can be a 1000 miles or more, any sized bascily before gravity pulls it into a sphere"
 
+- [~] **Typing a seed on the landing page: the field has the focus, digits typed anywhere on the page go into it, never Windows' refusing beep:** (built: DNA-AND DESIGN 651; waits on the test) "something is up im trying to type a seed into the landing page and im gettth the error sound and cant type numbers into it" / "the windows error sound" / "the same sound that i used to get when trying to close out the top right x on this app" / "that we fixed"
+
 ---
 
 ## Pending

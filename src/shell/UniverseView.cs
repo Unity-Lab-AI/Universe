@@ -60,6 +60,7 @@ namespace Universe.Shell
         // value in the kind's range, the same one its ground is lit by); moons turn once each orbit (one face to their planet)
         private double DayHours(int i)
         {
+            if (i == -2 && _groundExtra != null && _groundExtra.DayH > 0) return _groundExtra.DayH;   // (a small body's ground: its own day, the one its stone turns by)
             if (i < 0 || _system == null || i >= _system.Bodies.Count) return 8;   // (a small body: a few hours)
             var b = _system.Bodies[i];
             if (b.Parent >= 0 || b.Terrain == null) return Math.Max(1, b.Parent >= 0 ? b.Period * 8766 : 24);
@@ -351,7 +352,7 @@ namespace Universe.Shell
         // each galaxy's heart; stellar black holes, neutron stars and rogue planets among a galaxy's stars; stars and rogue
         // planets between the galaxies; asteroids, Kuiper-belt bodies and Oort-cloud comets round a star ──
         private sealed class Place { public string Id, Name, Where, Entry, Says, Shape; public double PerLy3, SizeKm, SizeLo, SizeHi, SizePow = 1, RoundKm, FeedShare, JetShare, ComaLo, ComaHi, TailLo, TailHi, DiscLo = 3, DiscHi = 60, SwarmLo = 12, SwarmHi = 120, EatShare, OrbitSeconds = 8, EatLo = 1, EatHi = 1; public int Shown, Swarm; public float R, G, B; }   // EatLo..EatHi: how many stars a feeding hole tears apart at once   // DiscLo..DiscHi: a black hole's disc, in horizon radii; Swarm stars on orbits of SwarmLo..SwarmHi radii; EatShare: how many feeding holes are tearing a star apart now; OrbitSeconds: the inner edge's turn, as watched
-        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public double OffX, OffY, OffZ, LOffX, LOffY, LOffZ; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; public int ShapeIx; }   // ShapeIx: which of the rock shapes is its (by its seed; its band by its size)   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
+        private sealed class Extra { public double X, Y, Z, R, Mass, ComaKm, TailKm, DayH; public string Name; public List<string> Lines; public float Cr, Cg, Cb; public bool Hole; public int Feeding; public float Tilt, Turn; public string Shape = ""; public Place Pl; public bool Eating; public string Mix, KindName; public double Density, Albedo; public int EatN; public double Spin; public double SpinHold = double.NaN; public double OffX, OffY, OffZ, LOffX, LOffY, LOffZ; public bool Orbits; public double OrbE, OrbQ, OrbPeriod, OrbCx, OrbCy, OrbCz, LX, LY, LZ; public double[] OrbE1, OrbE2; public int ShapeIx; }   // ShapeIx: which of the rock shapes is its (by its seed; its band by its size)   // Spin: a share of the most a hole could have (content/physics.unt @law frame-dragging). EatN: the stars being torn apart at once; Mix: the ground its matter is (content/minerals.unt @mix); Density g/cc; Albedo its share of light reflected   // Feeding: 0 quiet, 1 a glowing disc, 2 a disc and jets
         private List<Place> _places; private readonly List<Extra> _extras = new List<Extra>(); private string _extraKey = "";
         // a feeding black hole's accretion disc and its jets, made once in its own units (Schwarzschild radii), drawn for each,
         // tilted its own way, turning, sized to it
@@ -1141,7 +1142,16 @@ namespace Universe.Shell
         }
         // a small body's spin: it turns about its star line, except while you are on it (a dive holds it, so the ground under you is
         // the stone that is drawn and does not sweep away at a kilometre a second)
-        private static double BodySpin(Extra ex, double time) { return double.IsNaN(ex.SpinHold) ? time * 0.15 + ex.Turn : ex.SpinHold; }
+        // a small body's turn now (radians): its own day on the universe's clock, the same clock its ground's day runs on (the stone
+        // had spun on the screen's clock at a fixed rate, its ground on the universe's at eight hours, and neither from its kind)
+        private double BodySpin(Extra ex, double time) { return double.IsNaN(ex.SpinHold) ? 2 * Math.PI * ((_simYears * 8766.0 / Math.Max(1, ex.DayH > 0 ? ex.DayH : 8)) % 1) + ex.Turn : ex.SpinHold; }
+        private double _rockDayLo = -1, _rockDayHi;
+        private double RockDayHours(double x, double y, double z)
+        {
+            if (_rockDayLo < 0) { _rockDayLo = 6; _rockDayHi = 30; foreach (var e in _content.OfKind("terrain.unt", "terrain")) if (e.Id == "asteroid") { double lo, hi; if (e.TryRange("day-hours", out lo, out hi)) { _rockDayLo = lo; _rockDayHi = hi; } } }
+            double u = Math.Abs(Math.Sin(x * 5.9 + y * 23.3 + z * 71.7) * 7919.311) % 1;
+            return _rockDayLo + (_rockDayHi - _rockDayLo) * u;
+        }
         // the body's real surface along a direction from its middle (unit, in the universe's frame): the mesh's own shape in the body's
         // frame at this moment, so a dive lands on the stone that is drawn, not on a sphere kilometres inside or above it (a rock is
         // half again as long as it is wide, with bumps and craters besides: "a metre above it" had been nothing but stars)
@@ -1252,6 +1262,7 @@ namespace Universe.Shell
         private Extra MakeExtra(Place pl, double x, double y, double z)
         {
             var ex = new Extra { X = x, Y = y, Z = z, R = Units.Km(SizeOf(pl, x, y, z)), ShapeIx = (int)(Math.Abs(Math.Sin(x * 9.3 + y * 2.9 + z * 7.7) * 3313.7) % 1 * RockSeeds), Name = pl.Name, Shape = pl.Shape ?? "", Turn = (float)(Math.Abs(Math.Sin(x * 7.1 + z * 3.3) * 9187.3) % (Math.PI * 2)), Cr = pl.R, Cg = pl.G, Cb = pl.B, Lines = new List<string>(), Pl = pl };
+            ex.DayH = RockDayHours(x, y, z);                                             // its own day, one turn of its spin (content/terrain.unt @terrain asteroid day-hours), the one clock its stone, its ground and its light keep
             ex.OrbCx = _ax; ex.OrbCy = _ay; ex.OrbCz = _az; ex.OffX = x - _ax; ex.OffY = y - _ay; ex.OffZ = z - _az;   // (its place from the anchor; a body on an orbit gets its precise offset below)
             ex.Lines.Add(pl.Name);
             {
@@ -2729,7 +2740,7 @@ namespace Universe.Shell
             // within reach of the stone it was aimed at)
             if (_tKind == 6 && _tExtra != null) { dx = RelX(_tExtra) - _ox; dy = RelY(_tExtra) - _oy; dz = RelZ(_tExtra) - _oz; radius = _tRadius; return true; }
             if (_tKind == 1 && _tSn != null && _tName == "a supernova") { _tx = _tSn.Ux; _ty = _tSn.Uy; _tz = _tSn.Uz; }
-            if (_tKind == 1 && _system != null && _tName == "a star" && Math.Abs(_tx - _ax) + Math.Abs(_ty - _ay) + Math.Abs(_tz - _az) < SystemRange * 0.5) { dx = -_ox; dy = -_oy; dz = -_oz; radius = StarRadiusNow; return true; }   // (a star whose system is open is that star: its real place and radius, so a zoom onto its face ends at its face. The pick's stored point can sit a tenth of an AU from where the star is drawn, and aimed at the point the zoom crawled to a kilometre short of nothing, the caption saying onto its face with the star a dot in the distance, and the dive never came; one solar radius had stood for every star)   // (where it is now: a supernova is moved onto a real star of its galaxy once that galaxy's stars are made, after the pick from afar had copied its far place; the shots had flown to the old point, light-years from the dying star, and seen it as a point of light with no cloud)
+            if (_tKind == 1 && _system != null && _tName == "a star" && Math.Abs(_tx - _ax) + Math.Abs(_ty - _ay) + Math.Abs(_tz - _az) < SystemRange * 0.5) { dx = -_ox; dy = -_oy; dz = -_oz; double want = StarRadiusNow; _tRadius = _tRadius > 0 && want > 0 ? Math.Exp(Math.Log(_tRadius) + (Math.Log(want) - Math.Log(_tRadius)) * 0.08) : want; radius = _tRadius; return true; }   // (its real radius eased in from the one the pick was made with, a twelfth of the way a frame: the shot measures its distance in radii, and the radius jumping from one solar radius to a dwarf's or a giant's the frame the system opened jerked the camera)   // (a star whose system is open is that star: its real place and radius, so a zoom onto its face ends at its face. The pick's stored point can sit a tenth of an AU from where the star is drawn, and aimed at the point the zoom crawled to a kilometre short of nothing, the caption saying onto its face with the star a dot in the distance, and the dive never came; one solar radius had stood for every star)   // (where it is now: a supernova is moved onto a real star of its galaxy once that galaxy's stars are made, after the pick from afar had copied its far place; the shots had flown to the old point, light-years from the dying star, and seen it as a point of light with no cloud)
             if (_tKind == 1 || _tKind == 4 || _tKind == 5 || _tKind == 6 || _tKind == 7 || _tKind == 8) { dx = (_tx - _ax) - _ox; dy = (_ty - _ay) - _oy; dz = (_tz - _az) - _oz; radius = _tRadius; return true; }   // a star, or a spot in a belt
             if (_tKind == 2 && _system != null && _tIndex < _system.Bodies.Count)
             { double x, y, z; BodyPos(_tIndex, out x, out y, out z); dx = x - _ox; dy = y - _oy; dz = z - _oz; radius = _system.Bodies[_tIndex].RadiusUnits; return true; }
@@ -3288,7 +3299,7 @@ namespace Universe.Shell
                             _matter.Set(exd.Mix, false, false, exd.Cr, exd.Cg, exd.Cb, dspot);
                             _matter.SetGround(qrD / Units.Km(1), ux, uy, uz, exd.Mix, dspot * 0x9E3779B97F4A7C15UL + 0x51UL, 0, 0); exd.SpinHold = BodySpin(exd, _lastDrawTime);   // (its ground at the drawn stone's own height here; its spin held while you are on it)
                             _matter.SetAirAbove(null);
-                            _bodyUp = new[] { ux, uy, uz }; _bodyStar = sl > 0 ? new[] { sx / sl, sy / sl, sz / sl } : new[] { ux, uy, uz };
+                            _bodyUp = new[] { ux, uy, uz }; _bodyStar = sl > 0 ? new[] { sx / sl, sy / sl, sz / sl } : new[] { ux, uy, uz }; _bodyUpGen = _matter.Generation;
                             double hgt = Math.Max(cl - qrD, Units.Km(MatterView.OverlayKm * 2)); _ox = RelX(exd) + ux * (qrD + hgt); _oy = RelY(exd) + uy * (qrD + hgt); _oz = RelZ(exd) + uz * (qrD + hgt);   // (the camera set just over the drawn stone under it, never inside a stone that reaches past its nominal sphere)
                             _spaceScale = Math.Max(MatterView.OverlayKm / 0.6, hgt / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;   // (from your real height over its skin, the rock still drawn behind: the zoom goes on down to the grains at its own pace, no jump to a centimetre)
                             ZoomLog("DIVE onto " + exd.Name + ": its ground " + exd.Mix + " from " + ScaleHud.Words(_spaceScale * 0.6) + " up"); return true;
@@ -4148,7 +4159,7 @@ namespace Universe.Shell
                 // of a millimetre only the matter itself, no stars or galaxies behind (a draw distance for the very small)
                 _gpu.ClearDepth();
                 Mat4 sv;
-                if (!_matter.InSpace && _bodyUp != null) sv = MatterFrameFor(new Vec3((float)_bodyUp[0], (float)_bodyUp[1], (float)_bodyUp[2]), new Vec3((float)_bodyStar[0], (float)_bodyStar[1], (float)_bodyStar[2]), look);   // on a small body's ground: its own up and its star's light, as on a world's
+                if (!_matter.InSpace && _bodyUp != null && _bodyUpGen == _matter.Generation) sv = MatterFrameFor(new Vec3((float)_bodyUp[0], (float)_bodyUp[1], (float)_bodyUp[2]), new Vec3((float)_bodyStar[0], (float)_bodyStar[1], (float)_bodyStar[2]), look);   // on a small body's ground: its own up and its star's light, as on a world's
                 else
                 {
                     if (_matter.SpaceKind == 12) { _hud.DrawFill(_meshes, w, h, 0, 0, 0); _gpu.ClearDepth(); }   // inside a black hole: pitch black, all the way down, the well's grid the one reference
@@ -4341,7 +4352,7 @@ namespace Universe.Shell
 
         // the matter lies under the planet's own up and down: the view turned into that frame (up = away from the planet's
         // middle), and the starlight with it
-        private double[] _bodyUp, _bodyStar;                                              // on a small body's ground: its up (from its middle to you) and the way to its star
+        private double[] _bodyUp, _bodyStar; private int _bodyUpGen = -1;   // (the dive the frame was made for: any later dive, a gas, a plasma, a world, sets the matter afresh and the frame is no longer its)                                              // on a small body's ground: its up (from its middle to you) and the way to its star
         private Mat4 MatterFrame(Vec3 look)
         {
             double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z);

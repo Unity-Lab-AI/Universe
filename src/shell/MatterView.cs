@@ -53,7 +53,7 @@ namespace Universe.Shell
         public void SetSpace(int kind, ulong spot, double fromCentre) { SetSpace(kind, spot, fromCentre, null); }
         private SpaceGen.Part[] _gasParts;
         public void SetSpace(int kind, ulong spot, double fromCentre, SpaceGen.Part[] parts)
-        {
+        { Generation++;
             _gasParts = parts; _bornSec = double.NaN;
             _space = true; _spaceKind = kind; _seed = spot; _mix = null; _mixId = "space"; _noGrains = true; _plasma = false;
             // denser at the middle: an emission nebula about 9,000 atoms a cubic centimetre at its centre down to about 100 at its edge,
@@ -122,7 +122,7 @@ namespace Universe.Shell
         private string _plasmaWhere; private double _plasmaTempK;
         /// <summary>A star's plasma at a layer: its make-up there, its density (g/cc: the nuclei packed accordingly), the layer's name and its heat.</summary>
         public void SetPlasma(ulong spot, string makeup, double densityGcc, string where, double tempK)
-        {
+        { Generation++;
             var parts = new List<SpaceGen.Part>(); double total = 0;
             foreach (var bit in (makeup ?? _plasmaMake).Split(','))
             {
@@ -139,11 +139,13 @@ namespace Universe.Shell
             _gasSpacing = 1e-5 / Math.Pow(perCc, 1 / 3.0);
         }
         public bool InSpace { get { return _space; } }
+        /// <summary>Goes up by one every time the matter is set afresh (a ground, a gas, a plasma, a hole, a crust): what was made for one dive is known not to be this one's.</summary>
+        public int Generation;
         public int SpaceKind { get { return _space ? _spaceKind : 0; } }   // (none at all on a body's ground: a hole's kind had outlived the fall, and the well's grid, its black and its clock had followed you onto every rock after)
         /// <summary>A neutron star's crust: iron nuclei packed in a lattice (about a hundred million grams a cubic centimetre: the nuclei
         /// a hundredth of an atom's width apart), electrons racing between them; the same drawing as a star's plasma, at that spacing.</summary>
         public void SetNeutronCrust(ulong spot)
-        {
+        { Generation++;
             SetPlasma(spot, "iron 100%"); _spaceKind = 13; _gasSpacing = 1e-15;
         }
         private double _holeRs, _holeMass, _fallTau, _fallRate = 1, _fallSpeed;   // the fall's own clock: your proper time since the horizon, how fast it is shown against real time, your speed inward
@@ -162,7 +164,7 @@ namespace Universe.Shell
         /// <summary>The hole's spin, a share of the most it could have: frame dragging twists the fall's funnel (content/physics.unt @law frame-dragging).</summary>
         public double HoleSpin { get { return _holeSpin; } }
         public void SetHole(ulong spot, double rsKm, double massSol, double spin, double wayInKm)
-        {
+        { Generation++;
             SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _holeSpin = spin; _wayInKm = wayInKm; _gasSpacing = 1e-40;
         }
         // the singularity: its whole mass in a point with no size at all, as far as the laws we have can say; drawn, once the zoom
@@ -274,7 +276,7 @@ namespace Universe.Shell
         }
         // the point you dive into (km, across the ground) and where it is easing to (what you picked)
         private double _fx, _fz, _tfx, _tfz, _fy, _tfy, _lastTime = -1;   // (and its height, so a pick in any layer is gone to)
-        private sealed class Body { public int Kind; public long I, J, Key; public double X, Y, Z, Size; public string Sym; public double AX, AY, AZ; }   // AX AY AZ: an electron's atom, so the ride can work out where the electron is every frame   // Kind 0 a grain, 1 an atom, 2 a spot   // 0 a grain, 1 an atom
+        private sealed class Body { public int Kind; public bool Free; public long I, J, Key; public double X, Y, Z, Size; public string Sym; public double AX, AY, AZ; }   // AX AY AZ: an electron's atom, so the ride can work out where the electron is every frame   // Kind 0 a grain, 1 an atom, 2 a spot   // 0 a grain, 1 an atom
         private readonly List<Body> _bodies = new List<Body>();
         private Mat4 _lastVp; private int _lastW = 1, _lastH = 1; private bool _haveVp;
         private Body _picked;
@@ -567,7 +569,7 @@ namespace Universe.Shell
         /// <summary>What the ground at this spot is made of: its kind, whether it is under water or ice, and its colour; and
         /// the spot (a seed), so the same place always holds the same grains.</summary>
         public void Set(string planetKind, bool sea, bool ice, float r, float g, float b, ulong spot)
-        { _bornSec = double.NaN;
+        { _bornSec = double.NaN; Generation++;
             string id = sea ? "sea" : ice ? "ice" : planetKind;
             if (!_mixes.ContainsKey(id)) id = "desert";
             _space = false; _spaceKind = 0; _mixId = id; _mix = _mixes.ContainsKey(id) ? _mixes[id] : null; _seed = spot;
@@ -2092,10 +2094,10 @@ namespace Universe.Shell
                     // the point one view ahead along the line under the mouse
                     var d = (fwd + right * (float)(nx * t * aspect) + up * (float)(ny * t)).Normalized;
                     _tfx = _fx + (d.X - _ex) * _scale; _tfy = _fy + (d.Y - _ey) * _scale; _tfz = _fz + (d.Z - _ez) * _scale;
-                    _picked = new Body { Kind = 2, X = _tfx, Y = _tfy, Z = _tfz, Size = _scale * 0.02 }; return true;
+                    _picked = new Body { Kind = 2, Free = true, X = _tfx, Y = _tfy, Z = _tfz, Size = _scale * 0.02 }; return true;   // (a point in space, not on the face: Free keeps it at its own height)
                 }
             }
-            _picked = pick; _tfx = pick.X; _tfz = pick.Z; _tfy = pick.Kind == 0 || pick.Kind == 2 ? 0 : pick.Y;   // (a grain: to its top; a spot on the face: on the face, which is height nothing at the focus wherever the focus is. Its stored height is against the face at the focus of the moment it was picked, and as the focus eases over to it the face's reference moves and that height does not: the camera ended a residual height off the face, on a slope a hundred and eighty nanometres, thirty views at six nanometres over a lattice three deep, floating in the solid with nothing round it: black from the crystal to the nucleus, and on the way out until above it)
+            _picked = pick; _tfx = pick.X; _tfz = pick.Z; _tfy = pick.Kind == 0 || (pick.Kind == 2 && !pick.Free) ? 0 : pick.Y;   // (a grain: to its top; a spot on the face: on the face, which is height nothing at the focus wherever the focus is. Its stored height is against the face at the focus of the moment it was picked, and as the focus eases over to it the face's reference moves and that height does not: the camera ended a residual height off the face, on a slope a hundred and eighty nanometres, thirty views at six nanometres over a lattice three deep, floating in the solid with nothing round it: black from the crystal to the nucleus, and on the way out until above it)
             return true;   // whatever you pick is gone to, in any layer (a grain: to its top)   // grains and atoms are flown to; electrons, nucleons and quarks are only named
         }
 
@@ -2173,7 +2175,7 @@ namespace Universe.Shell
                 if (what == "spot" || what == "grain") { _picked = new Body { Kind = 2, X = _fx, Y = _fy, Z = _fz, Size = _scale * 0.02 }; _tfx = _fx; _tfz = _fz; _tfy = 0; PickCount++; }   // (on the face: height nothing)
                 return;
             }
-            _picked = best; _tfx = best.X; _tfz = best.Z; _tfy = best.Kind == 0 || best.Kind == 2 ? 0 : best.Y; PickCount++;   // (a grain or a spot on the face: on the face, height nothing at the focus; an atom, an electron, a nucleus: its own height in the lattice)
+            _picked = best; _tfx = best.X; _tfz = best.Z; _tfy = best.Kind == 0 || (best.Kind == 2 && !best.Free) ? 0 : best.Y; PickCount++;   // (a grain or a spot on the face: on the face, height nothing at the focus; an atom, an electron, a nucleus: its own height in the lattice)
         }
 
         public bool PickedOnScreen(out double sx, out double sy, out double rpx)

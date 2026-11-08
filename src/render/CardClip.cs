@@ -66,8 +66,7 @@ void FWD(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= lines) return;
     uint b = base0 + id.x * across;
-    uint size = n;
-    [loop] while (size >= 4 && (size & 1) == 0)
+    uint size = n;   // one level: the dyadic layout splits only the low corner, a level a dispatch
     {
         uint i;
         [loop] for (i = 1; i < size - 1; i += 2) a[b + i * along] += A * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
@@ -83,7 +82,6 @@ void FWD(uint3 id : SV_DispatchThreadID)
         uint hs = size / 2;
         [loop] for (i = 0; i < hs; i++) { t[b + i * along] = a[b + 2 * i * along]; t[b + (hs + i) * along] = a[b + (2 * i + 1) * along]; }
         [loop] for (i = 0; i < size; i++) a[b + i * along] = t[b + i * along];
-        size = hs;
     }
 }
 [numthreads(256, 1, 1)]
@@ -99,10 +97,7 @@ void INV(uint3 id : SV_DispatchThreadID)
 {
     if (id.x >= lines) return;
     uint b = base0 + id.x * across;
-    uint smallest = n;
-    [loop] while (smallest >= 4 && (smallest & 1) == 0) smallest /= 2;
-    uint size = smallest * 2;
-    [loop] while (size <= n && size >= 4)
+    uint size = n;   // one level, a dispatch
     {
         uint i, hs = size / 2;
         [loop] for (i = 0; i < hs; i++) { t[b + 2 * i * along] = a[b + i * along]; t[b + (2 * i + 1) * along] = a[b + (hs + i) * along]; }
@@ -117,7 +112,6 @@ void INV(uint3 id : SV_DispatchThreadID)
         [loop] for (i = 2; i < size; i += 2) a[b + i * along] -= B * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
         [loop] for (i = 1; i < size - 1; i += 2) a[b + i * along] -= A * (a[b + (i - 1) * along] + a[b + (i + 1) * along]);
         a[b + (size - 1) * along] -= 2 * A * a[b + (size - 2) * along];
-        size *= 2;
     }
 }
 [numthreads(256, 1, 1)]
@@ -236,8 +230,12 @@ void QUANT(uint3 id : SV_DispatchThreadID)
             for (int pl = 0; pl < 3; pl++)
             {
                 c[4] = N * (uint)pl;
-                c[0] = (uint)_pw; c[1] = (uint)_ph; c[2] = 1; c[3] = (uint)_pw; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_ph + 63) / 64, 1, 1); Uav(barrier, list, _a);   // rows
-                c[0] = (uint)_ph; c[1] = (uint)_pw; c[2] = (uint)_pw; c[3] = 1; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_pw + 63) / 64, 1, 1); Uav(barrier, list, _a);   // columns
+                for (int l = 0; l < Universe.Core.Wavelet97.DyadicLevels; l++)
+                {
+                    uint lw = (uint)(_pw >> l), lh = (uint)(_ph >> l);   // the low corner at this level: its rows, then its columns
+                    c[0] = lw; c[1] = lh; c[2] = 1; c[3] = (uint)_pw; setC(list, 0, NC, c, 0); dispatch(list, (lh + 63) / 64, 1, 1); Uav(barrier, list, _a);
+                    c[0] = lh; c[1] = lw; c[2] = (uint)_pw; c[3] = 1; setC(list, 0, NC, c, 0); dispatch(list, (lw + 63) / 64, 1, 1); Uav(barrier, list, _a);
+                }
             }
             pso(list, _quant); setUav(list, 3, Addr(_q));
             for (int pl = 0; pl < 3; pl++) { c[4] = N * (uint)pl; c[5] = BitConverter.ToUInt32(BitConverter.GetBytes(_step[pl]), 0); setC(list, 0, NC, c, 0); dispatch(list, (N + 255) / 256, 1, 1); }
@@ -255,8 +253,12 @@ void QUANT(uint3 id : SV_DispatchThreadID)
                 for (int pl = 0; pl < 3; pl++)
                 {
                     c[4] = N * (uint)pl;
-                    c[0] = (uint)_ph; c[1] = (uint)_pw; c[2] = (uint)_pw; c[3] = 1; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_pw + 63) / 64, 1, 1); Uav(barrier, list, _a);   // columns
-                    c[0] = (uint)_pw; c[1] = (uint)_ph; c[2] = 1; c[3] = (uint)_pw; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_ph + 63) / 64, 1, 1); Uav(barrier, list, _a);   // rows
+                    for (int l = Universe.Core.Wavelet97.DyadicLevels - 1; l >= 0; l--)
+                    {
+                        uint lw = (uint)(_pw >> l), lh = (uint)(_ph >> l);   // from the coarsest: the low corner's columns, then its rows
+                        c[0] = lh; c[1] = lw; c[2] = (uint)_pw; c[3] = 1; setC(list, 0, NC, c, 0); dispatch(list, (lw + 63) / 64, 1, 1); Uav(barrier, list, _a);
+                        c[0] = lw; c[1] = lh; c[2] = 1; c[3] = (uint)_pw; setC(list, 0, NC, c, 0); dispatch(list, (lh + 63) / 64, 1, 1); Uav(barrier, list, _a);
+                    }
                 }
                 pso(list, _rgb); c[4] = 0; setC(list, 0, NC, c, 0); dispatch(list, (uint)(_w * _h + 255) / 256, 1, 1);
                 b = Turn(_q, 0x8, 0x800); barrier(list, 1, ref b);

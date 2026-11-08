@@ -10,17 +10,26 @@ namespace Universe.Render
 {
     internal static class WaveletCoder
     {
-        private const int Levels = 16, Unary = 15, Golomb = 32;
+        private const int Levels = 32, Unary = 15, Golomb = 32;   // (Levels: the subband labels, up to 6 × 4 + 3)
 
         /// <summary>Which level of the wavelet each position of a <paramref name="pw"/> × <paramref name="ph"/> plane belongs to (1 the finest).</summary>
         public static byte[] LevelMap(int pw, int ph)
         {
-            var L = new byte[pw * ph]; int w = pw, h = ph; byte lv = 1;
-            while (w >= 4 && h >= 4 && w % 2 == 0 && h % 2 == 0)
-            {
-                for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) L[y * pw + x] = lv;
-                w /= 2; h /= 2; if (lv < Levels - 1) lv++;
-            }
+            // each position's subband in the dyadic layout: its level (1 the finest) × 4 + its orientation (0 the coarsest low corner,
+            // 1 high across, 2 high down, 3 high both); every subband learns its own odds
+            var L = new byte[pw * ph]; int NLv = Universe.Core.Wavelet97.DyadicLevels;
+            for (int y = 0; y < ph; y++)
+                for (int x = 0; x < pw; x++)
+                {
+                    int l = 1, w = pw / 2, h = ph / 2, o;
+                    while (true)
+                    {
+                        if (x >= w || y >= h) { o = (x >= w ? 1 : 0) + (y >= h ? 2 : 0); break; }
+                        if (l == NLv) { o = 0; break; }
+                        l++; w /= 2; h /= 2;
+                    }
+                    L[y * pw + x] = (byte)(l * 4 + o);
+                }
             return L;
         }
 

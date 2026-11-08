@@ -66,19 +66,39 @@ namespace Universe.Render
     internal static class Cdf97wCodec
     {
         public const uint Magic = 0x57373943;                // 'C97W'
-        public const ushort Version = 7;
+        public const ushort Version = 8;
         /// <summary>The quantising step of each plane at the finest level: Y, Cb, Cr. Each coarser level's step is smaller by its own
         /// weight (<see cref="LevelWeights"/>). Measured on the filmed tour (FRONTMAN-RESEARCH.md, E10): at a quarter of 4K about
         /// 36 KB a frame at 34.5 dB, where one step for every level gave 29 dB at that size and a DCT picture 31.</summary>
         public static readonly float[] Step = { 0.032f, 0.064f, 0.064f };
-        /// <summary>The steps for a clip this wide: a quarter of these above 1920 (a 4K picture's single-pixel stars live in its finest
-        /// terms; measured on the filmed tour, E11: 89 % of them kept at a quarter, 64 % at these).</summary>
-        public static float[] StepFor(int width) { float k = width > 1920 ? 0.25f : 1f; return new[] { Step[0] * k, Step[1] * k, Step[2] * k }; }
+        /// <summary>The steps for a clip this wide: half of these above 1920 (a 4K picture's single-pixel stars live in its finest terms;
+        /// measured on the filmed tour with the dyadic layout, H9: 43 of 46 stars kept at half, 45.5 dB, 1.5 MB a whole frame).</summary>
+        public static float[] StepFor(int width) { float k = width > 1920 ? 0.5f : 1f; return new[] { Step[0] * k, Step[1] * k, Step[2] * k }; }
         /// <summary>The clip's metadata (what made it, when, from which seed and tour), written into every .cdf97w after its header.</summary>
-        public static string Meta(int w, int h)
+        public static string Meta(int w, int h, float[] steps)
         {
-            return "program: " + Universe.Shell.PreviewText.AppName + " " + Universe.Shell.PreviewText.Version + "\nfilmed: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") +
-                "\nsize: " + w + " x " + h + "\nframes-a-second: 30\nwaveform: CDF 9/7 (Y Cb Cr, steps weighted by level, whole every 30th frame, changes between)" + (ClipWriters.Seed.HasValue ? "\nseed: " + ClipWriters.Seed.Value : "") + (ClipWriters.Tour != null ? "\ntour: " + ClipWriters.Tour : "") + "\n";
+            // everything that turns this file's waveforms back into pixels, in readable lines: the layout, the lifting, the steps and
+            // weights of every subband, the colour, the frames, the packing; then what made it
+            int pw = Wavelet97.PadSide(w), ph = Wavelet97.PadSide(h); var lw = LevelWeights(pw, ph); var L = WaveletCoder.LevelMap(pw, ph);
+            var seen = new System.Collections.Generic.SortedDictionary<int, float>(); for (int i = 0; i < L.Length; i++) if (!seen.ContainsKey(L[i])) seen[L[i]] = lw[i];
+            var sb = new System.Text.StringBuilder();
+            sb.Append("format: cdf97w " + Version + "\n");
+            sb.Append("picture: " + w + " x " + h + ", stored padded to " + pw + " x " + ph + " by mirroring the last row and column\n");
+            sb.Append("transform: CDF 9/7 lifting, dyadic, " + Wavelet97.DyadicLevels + " levels; each level splits the low corner, rows then columns; whole-sample mirror at the edges\n");
+            sb.Append("lifting: alpha " + Wavelet97.A97.ToString("R") + ", beta " + Wavelet97.B97.ToString("R") + ", gamma " + Wavelet97.G97.ToString("R") + ", delta " + Wavelet97.D97.ToString("R") + ", K " + Wavelet97.K97.ToString("R") + "\n");
+            sb.Append("forward, one line of n: odd += alpha(left+right), last odd += 2 alpha prev; even += beta(left+right), first += 2 beta next; odd += gamma(...), last += 2 gamma prev; even += delta(...), first += 2 delta next; low = even / K first half, high = odd x K second half\n");
+            sb.Append("inverse, one line of n: even = K low, odd = high / K interleaved; even -= delta(...), first -= 2 delta next; odd -= gamma(...), last -= 2 gamma prev; even -= beta(...), first -= 2 beta next; odd -= alpha(...), last -= 2 alpha prev; from the coarsest level, columns then rows\n");
+            sb.Append("subband: label = level x 4 + orientation (level 1 the finest; 0 the coarsest low corner, 1 high across, 2 high down, 3 high both)\n");
+            sb.Append("steps: Y " + steps[0].ToString("R") + ", Cb " + steps[1].ToString("R") + ", Cr " + steps[2].ToString("R") + " (a term's step = its plane's step x its subband's weight)\n");
+            sb.Append("weights:"); foreach (var kv in seen) sb.Append(" " + kv.Key + "=" + kv.Value.ToString("R")); sb.Append("\n");
+            sb.Append("value: term q to coefficient (q + half its sign) x step; q = 0 is 0\n");
+            sb.Append("colour: Y Cb Cr in 0..1, Cb and Cr centred on 0.5; R = Y + 1.402 (Cr - 0.5), G = Y - 0.344136 (Cb - 0.5) - 0.714136 (Cr - 0.5), B = Y + 1.772 (Cb - 0.5); x 255, rounded, held to 0..255\n");
+            sb.Append("frames: each its time in milliseconds, whole (kind 0) or the change from the frame before (kind 1, added term by term), a whole one every " + KeyEvery + "; 30 a second at most\n");
+            sb.Append("packing: per frame, the three planes each cut into " + WaveletCoder.Strips + " strips of rows, each strip an adaptive binary range coder (11-bit odds moved a 32nd each bit): nonzero or not by subband and how many of the left and upper terms are nonzero, sign, size as a unary count to 15 by subband then Exp-Golomb\n");
+            sb.Append("program: " + Universe.Shell.PreviewText.AppName + " " + Universe.Shell.PreviewText.Version + "\nfilmed: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\n");
+            if (ClipWriters.Seed.HasValue) sb.Append("seed: " + ClipWriters.Seed.Value + "\n");
+            if (ClipWriters.Tour != null) sb.Append("tour: " + ClipWriters.Tour + "\n");
+            return sb.ToString();
         }
         private static float[] _lw; private static int _lwW, _lwH;
         /// <summary>Each position's share of its plane's step: one over the square root of how much picture energy a term at its level
@@ -96,10 +116,12 @@ namespace Universe.Render
                 {
                     int at = -1, n = 0; for (int i = 0; i < L.Length; i++) if (L[i] == lv && n++ == 0) at = i;
                     int mid = -1, k = 0; for (int i = 0; i < L.Length && mid < 0; i++) if (L[i] == lv && k++ == n / 2) mid = i;
-                    var g = new double[pw * ph]; g[mid >= 0 ? mid : at] = 1; Wavelet97.Inverse(g, pw, ph);
+                    if (at < 0) { energy[lv] = -1; continue; }                     // (no position has this label)
+                    var g = new double[pw * ph]; g[mid >= 0 ? mid : at] = 1; Wavelet97.InverseDyadic(g, pw, ph);
                     double e = 0; foreach (double v in g) e += v * v; energy[lv] = Math.Max(1e-12, e);
                 }
-                var w = new float[pw * ph]; for (int i = 0; i < w.Length; i++) w[i] = (float)(1 / Math.Sqrt(energy[L[i]] / energy[1]));
+                double e1 = double.MaxValue; for (int lv = 1; lv <= top; lv++) if (energy[lv] > 0) e1 = Math.Min(e1, energy[lv]);   // (against the subband whose terms spread least: the finest)
+                var w = new float[pw * ph]; for (int i = 0; i < w.Length; i++) w[i] = (float)(1 / Math.Sqrt(energy[L[i]] / e1));
                 _lw = w; _lwW = pw; _lwH = ph; return w;
             }
         }
@@ -198,7 +220,6 @@ namespace Universe.Render
         private short[][] _prev;
         /// <summary>When set, each frame's terms are also solved back into pixels (RGB, top row first, the clip's own size) and handed here: the front man's frames.</summary>
         public Action<byte[], int, int> Solved;
-        private GpuWavelet _gw;                                                         // the wavelet on the graphics card (null: on the processor)
         private CardClip _card;                                                         // the whole frame worked out on the card, inside the frame (null: the frames come here as pictures)
         private readonly System.Collections.Concurrent.BlockingCollection<int> _terms = new System.Collections.Concurrent.BlockingCollection<int>(2);
         /// <summary>How often (seconds) the terms are solved back into a picture for <see cref="Solved"/> (0: every frame).</summary>
@@ -225,12 +246,11 @@ namespace Universe.Render
             _o.Write(0);                                                                   // the frame count (byte 14), filled in when the clip ends
             _steps = Cdf97wCodec.StepFor(_w);
             foreach (float st in _steps) _o.Write(st);
-            { var meta = System.Text.Encoding.UTF8.GetBytes(Cdf97wCodec.Meta(_w, _h)); _o.Write((ushort)meta.Length); _o.Write(meta); }   // (version 7: the metadata after the steps)
+            { var meta = System.Text.Encoding.UTF8.GetBytes(Cdf97wCodec.Meta(_w, _h, _steps)); _o.Write((ushort)meta.Length); _o.Write(meta); }   // (version 7: the metadata after the steps)
             if (ClipWriters.Device != IntPtr.Zero)
             {
                 try { _card = new CardClip(ClipWriters.Device, _w, _h, Down, _steps, _solveOnCard); }
                 catch (Exception ex) { _card = null; Universe.Program.WriteLog("cdf97w: the frame could not be worked out on the card (" + ex.Message + "); its picture comes to the processor"); }
-                if (_card == null) { try { _gw = new GpuWavelet(ClipWriters.Device); } catch (Exception ex) { _gw = null; Universe.Program.WriteLog("cdf97w: the card's wavelet could not be set up (" + ex.Message + "); the processor does it"); } }
             }
             // the packing, the one part on the processor: the card's terms (or, without the card, the pictures) in the order they came
             _encoder = new System.Threading.Thread(() =>
@@ -285,8 +305,7 @@ namespace Universe.Render
             for (int c = 0; c < 3; c++)
             {
                 var qc = q[c] = new short[planes[c].Length]; float st = _steps[c]; int pw = _pw; var lw = Cdf97wCodec.LevelWeights(_pw, _ph);
-                if (Card(planes[c], true)) { var co = _f; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
-                else { Wavelet97.Forward(planes[c], _pw, _ph); var co = planes[c]; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
+                { Wavelet97.ForwardDyadic(planes[c], _pw, _ph); var co = planes[c]; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
             }
             Store(q, ms, null);
         }
@@ -319,7 +338,7 @@ namespace Universe.Render
             for (int c = 0; c < 3; c++)
             {
                 var g = pl[c] = new double[_pw * _ph]; var a = q[c]; float st = _steps[c]; var lw = Cdf97wCodec.LevelWeights(_pw, _ph); for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st * lw[k]);
-                if (Card(g, false)) { var f = _f; for (int k = 0; k < g.Length; k++) g[k] = f[k]; } else Wavelet97.Inverse(g, _pw, _ph);
+                Wavelet97.InverseDyadic(g, _pw, _ph);
             }
             var rgb = new byte[_w * _h * 3]; int w = _w, pw = _pw;
             Jobs.For(_h, y =>
@@ -332,20 +351,6 @@ namespace Universe.Render
             });
             return rgb;
         }
-        // a plane through the card's wavelet, its result in _f; false (the processor to do it) when there is no card's, or it failed
-        // (a failure lets the card's go for the rest of the clip, noted once)
-        private float[] _f;
-        private bool Card(double[] plane, bool forward)
-        {
-            if (_gw == null) return false;
-            try
-            {
-                if (_f == null || _f.Length != plane.Length) _f = new float[plane.Length];
-                for (int i = 0; i < plane.Length; i++) _f[i] = (float)plane[i];
-                _gw.Run(_f, _pw, _ph, forward); return true;
-            }
-            catch (Exception ex) { Universe.Program.WriteLog("cdf97w: the card's wavelet failed (" + ex.Message + "); the processor does the rest"); try { _gw.Dispose(); } catch { } _gw = null; return false; }
-        }
         private static byte B(double v) { int i = (int)(v * 255 + 0.5); return (byte)(i < 0 ? 0 : i > 255 ? 255 : i); }
 
         /// <summary>Finishes the clip: the frames still waiting go in, then the frame count.</summary>
@@ -355,7 +360,6 @@ namespace Universe.Render
             if (_card != null && ClipWriters.BeforeCardRelease != null) { try { ClipWriters.BeforeCardRelease(); } catch { } try { Collect(); } catch { } }   // (the card finishes and stops first; its last frames are read)
             _queue.CompleteAdding(); _terms.CompleteAdding(); _encoder.Join(30000);
             if (_card != null) { try { _card.Dispose(); } catch { } _card = null; }
-            if (_gw != null) { try { _gw.Dispose(); } catch { } _gw = null; }
             lock (_lock) { try { _o.Flush(); _file.Seek(14, System.IO.SeekOrigin.Begin); _o.Write(_frames); _o.Flush(); } catch { } try { _o.Close(); } catch { } }
         }
     }

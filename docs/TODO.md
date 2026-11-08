@@ -230,6 +230,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [ ] (C1 rejected: DNA-AND DESIGN 693, "WE DO NOT USE OTHER PEOPLES CODE SCRIPS FILES SOFTWARE CREATIONS WHAT THE FUCVK IS WRONG WITH YOU@!@@@@@@") **The conversion equation (how a media player turns the waveforms into pixels): C1 our terms as a JPEG 2000 codestream in Motion JPEG 2000, C2 a decoder installed on Windows, C3 a web player, C4 the change frames; next, C1 on one frame:** (research, DNA-AND DESIGN 692; reference/univsmatics/FRONTMAN-RESEARCH.md section 8) "the H.264 is the probelm we only need the waveforms and the metadata and the conversion equation still needs more hypothestsiing and research and devising and invention"
 
+- [~] **The .cdf97w version 8: the dyadic layout (about 7 dB better), Full at step 0.016 (43 of 46 stars), and the metadata carrying the full waveforms-to-pixels equations:** (built: DNA-AND DESIGN 694; waits on the test) "okay back to making the equations" / "the cdf97 waveforms equations to pixels is the equations we need" / "then we need the correct meta data"
+
 ---
 
 ## Pending

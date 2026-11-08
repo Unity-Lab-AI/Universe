@@ -102,3 +102,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (full size keeping up: 16 strips, packed terms, reading off the game thread): DNA-AND DESIGN 691.
 - 2026-11-08 (full 4K steps, the .cdf97w as waveforms and metadata, the conversion equation opened as research): DNA-AND DESIGN 692.
 - 2026-11-08 (C1 rejected: no other people's code, formats or software): DNA-AND DESIGN 693.
+- 2026-11-08 (the .cdf97w version 8: dyadic layout, Full at 0.016, the full equations in the metadata): DNA-AND DESIGN 694.

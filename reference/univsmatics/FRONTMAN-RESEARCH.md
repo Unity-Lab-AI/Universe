@@ -344,3 +344,24 @@ The next experiment is C1 on one frame: write our terms as a JPEG 2000 codestrea
 
 **C1 rejected (2026-11-08), on the creator's word: "WE DO NOT USE OTHER PEOPLES CODE SCRIPS FILES SOFTWARE CREATIONS WHAT THE FUCVK IS WRONG WITH YOU@!@@@@@@".** C1 rests on JPEG 2000, someone else's format, and its decoders, other people's software. It is not pursued, and no prototype of it is kept. The measurements E1 to E12 used outside tools (OpenCV with OpenJPEG, numpy) on the researcher's side only; the program never contained or used any of them. From here, measurements use the program's own code only.
 
+## 9. The equations, own code only (2026-11-08)
+
+All measurements from here use the program's own code (`shots/rt/eq.cs`, `v8.cs` and `ct.cs`: C# programs built on `Wavelet97`, `WaveletCoder` and `CardClip`). No outside tools.
+
+**H9, the dyadic layout.** Each level splits only the low corner, rows then columns. Before, every level ran along all the rows, then all the columns. Measured on the filmed clip's 4K frame 600, with the steps weighted for each layout:
+
+| Step | Rows then columns | Dyadic |
+|------:|------:|------:|
+| 0.004 | 2,583 KB, 48.3 dB, 42 of 46 stars | 3,110 KB, 51.4 dB, 44 of 46 |
+| 0.008 | 1,905 KB, 42.9 dB, 40 | 2,132 KB, 48.8 dB, 44 |
+| 0.016 | 1,291 KB, 38.2 dB, 33 | 1,496 KB, 45.5 dB, 43 |
+| 0.032 | 828 KB, 34.1 dB, 28 | 1,031 KB, 41.6 dB, 36 |
+
+At equal size, dyadic is about 7 dB better and keeps more stars. **H9 holds.**
+
+**H10, a richer context model.** The odds were also conditioned on the four causal neighbours' sizes and the parent term one level coarser. It saved 2 to 3 %. Its parent part can't run with the strips packed in parallel, since a parent can sit in another strip's rows, so it isn't built.
+
+**Built: the `.cdf97w` version 8.** The layout is dyadic with 6 levels, on the card (one level a dispatch, low corner only), on the processor (`Wavelet97.ForwardDyadic` and `InverseDyadic`) and in the player. Subbands are labelled level × 4 + orientation, each with its own weight from its synthesis energy. Full 4K uses step 0.016 (Y): 1.5 MB a whole frame, 45.5 dB, 43 of 46 stars. That is smaller, sharper and keeps more stars than version 7's 0.008. Checked: the card's terms match the processor's (one in 18,023 off by one at a rounding edge, single against double precision), the solved picture is within one level of 255, and the packing gives every term back exactly.
+
+**The waveforms-to-pixels equations, in the file.** The metadata block, about 2 KB of readable lines, now carries everything that turns the waveforms into pixels: the picture size and padding, the layout and its 6 levels, the five lifting constants, the forward and inverse lifting step by step, the subband labels, the three steps and every subband's weight, how a term becomes a coefficient, the colour equations, how frames are kept (whole or as changes) and how they're packed. Then the program, the date, and the seed and tour.
+

@@ -57,6 +57,52 @@ namespace Universe.Core
             }
         }
 
+        /// <summary>The levels of the dyadic layout (the .cdf97w): 64 = 2^6, the pad.</summary>
+        public const int DyadicLevels = 6;
+        // one level of the lifting on n samples at a stride (the same sums as FwdLine's, for one level)
+        private static void FwdLevel(double[] a, int off, int st, int n, double[] s)
+        {
+            for (int i = 0; i < n; i++) s[i] = a[off + i * st];
+            for (int i = 1; i < n - 1; i += 2) s[i] += A97 * (s[i - 1] + s[i + 1]); s[n - 1] += 2 * A97 * s[n - 2];
+            s[0] += 2 * B97 * s[1]; for (int i = 2; i < n; i += 2) s[i] += B97 * (s[i - 1] + s[i + 1]);
+            for (int i = 1; i < n - 1; i += 2) s[i] += G97 * (s[i - 1] + s[i + 1]); s[n - 1] += 2 * G97 * s[n - 2];
+            s[0] += 2 * D97 * s[1]; for (int i = 2; i < n; i += 2) s[i] += D97 * (s[i - 1] + s[i + 1]);
+            int h = n / 2; for (int i = 0; i < h; i++) { a[off + i * st] = s[2 * i] / K97; a[off + (h + i) * st] = s[2 * i + 1] * K97; }
+        }
+        private static void InvLevel(double[] a, int off, int st, int n, double[] s)
+        {
+            int h = n / 2; for (int i = 0; i < h; i++) { s[2 * i] = a[off + i * st] * K97; s[2 * i + 1] = a[off + (h + i) * st] / K97; }
+            s[0] -= 2 * D97 * s[1]; for (int i = 2; i < n; i += 2) s[i] -= D97 * (s[i - 1] + s[i + 1]);
+            for (int i = 1; i < n - 1; i += 2) s[i] -= G97 * (s[i - 1] + s[i + 1]); s[n - 1] -= 2 * G97 * s[n - 2];
+            s[0] -= 2 * B97 * s[1]; for (int i = 2; i < n; i += 2) s[i] -= B97 * (s[i - 1] + s[i + 1]);
+            for (int i = 1; i < n - 1; i += 2) s[i] -= A97 * (s[i - 1] + s[i + 1]); s[n - 1] -= 2 * A97 * s[n - 2];
+            for (int i = 0; i < n; i++) a[off + i * st] = s[i];
+        }
+        /// <summary>The dyadic forward transform (w and h multiples of 64): each level the low corner's rows, then its columns, so only
+        /// the low corner is split again. Measured on the filmed tour (FRONTMAN-RESEARCH.md, H9): about 7 dB better pictures and more
+        /// stars than rows-then-columns at the same size.</summary>
+        public static void ForwardDyadic(double[] g, int w, int h)
+        {
+            int cw = w, ch = h;
+            for (int l = 0; l < DyadicLevels; l++)
+            {
+                int lw = cw, lh = ch;
+                Jobs.For(lh, y => { var s = new double[lw]; FwdLevel(g, y * w, 1, lw, s); });
+                Jobs.For(lw, x => { var s = new double[lh]; FwdLevel(g, x, w, lh, s); });
+                cw /= 2; ch /= 2;
+            }
+        }
+        /// <summary>The exact reverse of <see cref="ForwardDyadic"/>: from the coarsest level, the low corner's columns, then its rows.</summary>
+        public static void InverseDyadic(double[] g, int w, int h)
+        {
+            for (int l = DyadicLevels - 1; l >= 0; l--)
+            {
+                int lw = w >> l, lh = h >> l;
+                Jobs.For(lw, x => { var s = new double[lh]; InvLevel(g, x, w, lh, s); });
+                Jobs.For(lh, y => { var s = new double[lw]; InvLevel(g, y * w, 1, lw, s); });
+            }
+        }
+
         /// <summary>Forward 2D transform of a w × h grid (row-major), in place: rows, then columns. Rows run on every core.</summary>
         public static void Forward(double[] g, int w, int h)
         {

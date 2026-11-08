@@ -39,13 +39,15 @@ namespace Universe.Platform
         public static bool RecordTour;
         /// <summary>A universe clip (.cdf97u) chosen to play: its tour, flown again through the universe made from its seed (null: none).</summary>
         public static string ReplayTour; private static ulong? _replaySeed;
+        /// <summary>A clip of the universe itself chosen to play (its path; null: none).</summary>
+        public static string ReplayClip;
         /// <summary>Where screenshots and clips go: the captures folder beside the program.</summary>
         public static string Captures { get { return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "captures"); } }
 
         /// <summary>Shows the landing page over <paramref name="owner"/> until Begin, the tour or Quit; the seed typed (null: chosen at random).</summary>
         public static Choice Run(IntPtr owner, Action openGuide, Action alive, out ulong? seed)
         {
-            _guide = openGuide; _alive = alive; _done = null; seed = null; ReplayTour = null; _replaySeed = null;
+            _guide = openGuide; _alive = alive; _done = null; seed = null; ReplayTour = null; _replaySeed = null; ReplayClip = null;
             var inst = Win32.GetModuleHandle(null);
             _brush = CreateSolidBrush(Back);
             if (!_registered)
@@ -179,6 +181,11 @@ namespace Universe.Platform
                     if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) {
                         ulong us; string ut;
                         if (_clipFiles[i].EndsWith(".cdf97u", StringComparison.OrdinalIgnoreCase) && Universe.Render.ClipWriters.ReadUniverse(_clipFiles[i], out us, out ut)) { _replaySeed = us; ReplayTour = ut; _done = Choice.Tour; }   // (the universe made again from its seed, the tour flown again through it, not filmed)
+                        else if (Universe.Render.UniverseClipReader.Is(_clipFiles[i]))
+                        {
+                            // a clip of the universe itself: the universe made again from its seed, the clip played through it
+                            try { var rc = new Universe.Render.UniverseClipReader(_clipFiles[i]); if (rc.Seed.HasValue) _replaySeed = rc.Seed; ReplayClip = _clipFiles[i]; _done = Choice.Begin; } catch { }
+                        }
                         else if (ClipPlayer.Plays(_clipFiles[i])) ClipPlayer.Play(_wnd, _clipFiles[i], _alive); else ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1);
                     }
                 }

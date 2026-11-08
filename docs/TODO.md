@@ -246,6 +246,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The front man compared, side by side over the universe (the frame, our .cdf97w, our H.264; sizes, quality, keepers):** (built: DNA-AND DESIGN 703; waits on the test) "okay idk u still got that side by side non headless comparison from when we first did galaxy appearances"
 
+- [~] **H15 steps 2 and 3: the universe clip played back (scene calls, camera point, waiting on loading, the scene checked) and handed over (.cdf97w registered to the program, a double-click plays it):** (built: DNA-AND DESIGN 704; waits on the test) "and we still need those player frontman and script change over hand off from the file"
+
 ---
 
 ## Pending

@@ -505,3 +505,13 @@ View > Front man compared (`src/shell/FrontmanCompare.cs`). Over the universe, l
 
 Each tile carries its bytes for the frame and its quality against the frame as drawn. A right-click keeps a tile, with a green frame, remembered in the settings. It refreshes every three seconds, worked out on a thread of its own, and is never drawn into a clip. VP9 and AV1 tiles join as their writers are built.
 
+**H15 step 2 built (2026-11-08): playback.** `src/render/UniverseClip.cs`. The reader takes back the header, the seed and every record. The player:
+- holds its clock while the universe is still being made round the camera (loading, or a large ground backlog);
+- applies each recorded scene call to the matter view by name with its exact arguments;
+- sets the camera point before and after the universe's own update, so nothing in the update moves it;
+- checks the galaxy, star system and ground made against the ones recorded, putting any mismatch in the title and the run log.
+
+The title shows the clip's progress.
+
+**H15 step 3 built: the handover.** The installer registers `.cdf97w` to the program. Double-clicked, a clip of the universe itself plays straight away, made again from its seed. A waveform clip plays in the program's own player, then the start page opens. The start page's Play does the same.
+

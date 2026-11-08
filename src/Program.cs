@@ -184,8 +184,14 @@ namespace Universe
             }
             if (testPlanet >= 0) { planet = new PlanetView(gpu, meshes, pipeline, viewer.TerrainAt(testPlanet), viewer.FieldTerrainAt(testPlanet), viewer.Set == 5 || testFieldView); planet.TestEvolveYears = testEvolve; planet.TestGoToCiv = Array.IndexOf(args, "--tociv") >= 0; int sli = Array.IndexOf(args, "--savelife"); if (sli >= 0 && sli + 1 < args.Length) planet.TestSaveLife = args[sli + 1]; int lli = Array.IndexOf(args, "--loadlife"); if (lli >= 0 && lli + 1 < args.Length) planet.TestLoadLife = args[lli + 1]; int csi = Array.IndexOf(args, "--civstep"); if (csi >= 0 && csi + 1 < args.Length) int.TryParse(args[csi + 1], out planet.TestCivStep); for (int k = 0; k < testJumps; k++) planet.JumpToNextField(); if (testAlt > 0) planet.SetAltitude(testAlt); int si = Array.IndexOf(args, "--undersea"); if (si >= 0 && si + 1 < args.Length) planet.GoUnderSea(double.Parse(args[si + 1], System.Globalization.CultureInfo.InvariantCulture)); }
             GalaxiesView universe = journey ? new GalaxiesView(gpu, pipeline, content, Seed) : null;
-            bool landing = PreviewBuild && args.Length == 0;                            // a plain launch: the landing page first
-            Universe.Shell.FrontmanCompare frontman = null; bool frontWanted = false;   // (View > Front man compared)
+            // a .cdf97w handed over (double-clicked in Explorer): the clip of the universe itself plays through the universe made again
+            // from its seed, straight away; a waveform clip plays in the program's own player, then the landing page
+            string handed = args.Length == 1 && args[0].EndsWith(".cdf97w", StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(args[0]) ? args[0] : null;
+            if (handed != null && Universe.Render.UniverseClipReader.Is(handed)) { try { var rc = new Universe.Render.UniverseClipReader(handed); if (rc.Seed.HasValue) Seed = rc.Seed.Value; Universe.Platform.Launcher.ReplayClip = handed; WriteLog("universe clip handed over: " + handed + ", seed " + Seed); } catch (Exception ex) { WriteLog("universe clip: " + ex.Message); handed = null; } }
+            bool waveHanded = false;
+            if (handed != null && Universe.Platform.Launcher.ReplayClip == null) { Universe.Platform.ClipPlayer.Play(window.Handle, handed, () => watchdog.Beat()); waveHanded = true; }
+            bool landing = args.Length == 0 || waveHanded; landing = landing && PreviewBuild;                            // a plain launch: the landing page first
+            Universe.Shell.FrontmanCompare frontman = null; bool frontWanted = false; Universe.Render.UniverseClipPlayer clipPlayer = null;   // (a clip of the universe itself, played through the universe made again)   // (View > Front man compared)
             Universe.Platform.Launcher.Choice landed = Universe.Platform.Launcher.Choice.Begin;
             if (landing)
             {
@@ -202,6 +208,7 @@ namespace Universe
                 try { firstHud = new Universe.Shell.ScaleHud(gpu.Device); gpu.BeginFrame(0.005f, 0.006f, 0.012f); firstHud.DrawLoading(meshes, gpu.Width, gpu.Height, 0, new[] { "Making the universe", "the first galaxies, from the seed" }); gpu.EndFrame(); } catch { }
             }
             UniverseView world = Array.IndexOf(args, "--world") >= 0 || PreviewBuild ? new UniverseView(gpu, pipeline, meshes, content, Seed) { AutoPath = Array.IndexOf(args, "--autopath") >= 0, AutoNebula = Array.IndexOf(args, "--autonebula") >= 0 } : null;   // the universe: one camera through every scale
+            if (world != null && Universe.Platform.Launcher.ReplayClip != null) { try { clipPlayer = new Universe.Render.UniverseClipPlayer(new Universe.Render.UniverseClipReader(Universe.Platform.Launcher.ReplayClip)); } catch (Exception ex) { WriteLog("universe clip: " + ex.Message); } }
             if (landing && landed == Universe.Platform.Launcher.Choice.Tour && world != null)
             {
                 world.StartTour(Universe.Platform.Launcher.ReplayTour ?? "grand-tour");
@@ -242,6 +249,7 @@ namespace Universe
                         WriteLog("universe seed " + Seed + (chosen2.HasValue ? " (chosen on the start page)" : " (new, from the start page)"));
                         try { if (firstHud == null) firstHud = new Universe.Shell.ScaleHud(gpu.Device); gpu.BeginFrame(0.005f, 0.006f, 0.012f); firstHud.DrawLoading(meshes, gpu.Width, gpu.Height, 0, new[] { "Making the universe", "the first galaxies, from the seed" }); gpu.EndFrame(); } catch { }
                         world = new UniverseView(gpu, pipeline, meshes, content, Seed);
+                        clipPlayer = null; if (Universe.Platform.Launcher.ReplayClip != null) { try { clipPlayer = new Universe.Render.UniverseClipPlayer(new Universe.Render.UniverseClipReader(Universe.Platform.Launcher.ReplayClip)); } catch (Exception ex) { WriteLog("universe clip: " + ex.Message); } }
                         if (landed2 == Universe.Platform.Launcher.Choice.Tour)
                         {
                             world.StartTour(Universe.Platform.Launcher.ReplayTour ?? "grand-tour");
@@ -307,7 +315,7 @@ namespace Universe
                 if (clickAt >= 0 && clock.Total >= clickAt) { window.Input.MouseX = (int)(clickX * gpu.Width); window.Input.MouseY = (int)(clickY * gpu.Height); window.Input.LeftClicked = true; clickAt = -1; }
                 window.Input.Glide(clock.Delta, window.Input.IsDown(0x11));      // the wheel glides in smoothly; hold Ctrl: eight times as fast, in every view
                 if (showElements && window.Input.WasPressed(0x1B)) showElements = false;   // Escape: back from the periodic table to the universe, where you were
-                if (world != null && !showElements) { if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); var uc = rec as Universe.Render.UniverseClipWriter; if (uc != null && !(recForTour && (world.TourPaused || world.Loading))) uc.Point(world); }   // (the universe clip: the camera's point each frame, no pixels)
+                if (world != null && !showElements) { if (clipPlayer != null) { clipPlayer.Before(world, clock.Delta); world.ClipNote = clipPlayer.Note; } if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); if (clipPlayer != null) { clipPlayer.After(world); world.ClipNote = clipPlayer.Note; if (clipPlayer.Finished) { WriteLog("universe clip played to its end (" + clipPlayer.Mismatches + " frames whose scene was not the one recorded)"); clipPlayer = null; world.ClipNote = null; } } var uc = rec as Universe.Render.UniverseClipWriter; if (uc != null && !(recForTour && (world.TourPaused || world.Loading))) uc.Point(world); }   // (the universe clip: the camera's point each frame, no pixels)
                 else if (style != null) style.Update(window.Input, clock.Delta, gpu.Width, gpu.Height);
                 else if (microbes != null) microbes.Update(window.Input, clock.Delta);
                 else if (elements != null) elements.Update(window.Input, clock.Delta);

@@ -312,7 +312,17 @@ internal static class Setup
                     k.SetValue("NoModify", 1); k.SetValue("NoRepair", 1); k.SetValue("EstimatedSize", (int)(DirSize(dir) / 1024));
                 }
                 using (var c = Registry.CurrentUser.CreateSubKey(ChoiceKey)) c.SetValue("InstallDir", dir);   // (offered again next time)
-                try { Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\.cdf97w", false); } catch { }   // (a .cdf97w is waveforms and metadata, not an MP4: no longer marked one)
+                // a .cdf97w is handed to this program: double-clicked, it plays (the waveform clip in the program's own player, the clip of
+                // the universe itself through the universe made again)
+                try
+                {
+                    string prog = AppName.Replace("-", "") + ".cdf97w";
+                    using (var e = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.cdf97w")) { foreach (var v in new[] { "Content Type", "PerceivedType" }) try { e.DeleteValue(v, false); } catch { } e.SetValue("", prog); }
+                    using (var p = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + prog)) p.SetValue("", AppName + " clip (CDF 9/7 equations)");
+                    using (var i = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + prog + @"\DefaultIcon")) i.SetValue("", "\"" + exe + "\",0");
+                    using (var c = Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + prog + @"\shell\open\command")) c.SetValue("", "\"" + exe + "\" \"%1\"");
+                }
+                catch { }
                 _bar.Value = _bar.Maximum; _installed = true; _installedDir = dir;
                 foreach (Control c in _pages[8].Controls) if (c.Name == "body") c.Text = c.Text.Replace("{dir}", dir);
                 Show(8);
@@ -338,6 +348,7 @@ internal static class Setup
         foreach (var l in new[] { StartMenuLink, DesktopLink }) try { if (File.Exists(l)) File.Delete(l); } catch { }
         Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, false);
         try { Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\.cdf97w", false); } catch { }
+        try { Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + AppName.Replace("-", "") + ".cdf97w", false); } catch { }
         if (all) try { if (Directory.Exists(SettingsDir)) Directory.Delete(SettingsDir, true); } catch { }
         // the game goes now; this running uninstaller, and the folder if it is left empty, a moment after it closes
         string self = Assembly.GetExecutingAssembly().Location;

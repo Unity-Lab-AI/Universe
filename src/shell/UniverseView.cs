@@ -2977,6 +2977,37 @@ namespace Universe.Shell
             o.Write(_near); o.Write(_sysStar); o.Write(_planet);
         }
 
+        /// <summary>A camera point of a universe clip set (the exact reverse of <see cref="WritePoint"/>).</summary>
+        public void ApplyPoint(byte[] d)
+        {
+            using (var r = new System.IO.BinaryReader(new System.IO.MemoryStream(d)))
+            {
+                _ax = r.ReadDouble(); _ay = r.ReadDouble(); _az = r.ReadDouble(); _ox = r.ReadDouble(); _oy = r.ReadDouble(); _oz = r.ReadDouble();
+                _fx = r.ReadSingle(); _fy = r.ReadSingle(); _fz = r.ReadSingle(); _camUp = new Vec3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                _farScale = r.ReadDouble(); _spaceScale = r.ReadDouble(); _spaceTop = r.ReadDouble(); _matterScale = r.ReadDouble(); _simYears = r.ReadDouble();
+                _matter.ReadFocus(r);
+            }
+        }
+        /// <summary>A scene call of a universe clip made again on the matter view, by its name, with its recorded arguments.</summary>
+        public void ApplyMatterCall(string name, object[] args)
+        {
+            foreach (var m in typeof(MatterView).GetMethods())
+            {
+                if (m.Name != name) continue; var ps = m.GetParameters(); if (ps.Length != args.Length) continue;
+                bool fit = true; for (int i = 0; i < ps.Length; i++) if (args[i] != null && !ps[i].ParameterType.IsInstanceOfType(args[i])) fit = false;
+                if (!fit) continue;
+                try { m.Invoke(_matter, args); } catch (Exception ex) { Universe.Program.WriteLog("universe clip: " + name + " could not be made again: " + (ex.InnerException ?? ex).Message); }
+                return;
+            }
+            Universe.Program.WriteLog("universe clip: no scene call " + name + " with " + args.Length + " arguments");
+        }
+        /// <summary>The galaxy, star system and ground made round the camera now (the universe clip's check).</summary>
+        public int NearIndex { get { return _near; } }
+        public int SystemIndex { get { return _sysStar; } }
+        public int GroundIndex { get { return _planet; } }
+        /// <summary>A line for the title while a universe clip plays (null: none).</summary>
+        public string ClipNote;
+
         public bool Update(Input input, double dt, int w, int h)
         {
             Mark();
@@ -4715,6 +4746,7 @@ namespace Universe.Shell
         {
             get
             {
+                if (ClipNote != null) return PreviewText.AppName + " · " + ClipNote;
                 double pdx, pdy, pdz, prad; string picked = _tKind >= 0 && TargetFromCamera(out pdx, out pdy, out pdz, out prad) ? " · going to " + _tName + ", " + Units.Describe(Math.Max(0, Math.Sqrt(pdx * pdx + pdy * pdy + pdz * pdz) - prad)) + " away" : " · click something to go to it";
                 string where = _spaceScale > 0 ? "in " + (_tName.Length > 0 ? _tName : "the matter") + ", " + ScaleHud.Words(_spaceScale * 0.6) + " from the point you dive into: " + _matter.Stage(_spaceScale)
                     : _matterScale > 0 ? "at " + GroundKind() + ", " + ScaleHud.Words(_matterScale * 0.6) + " above the ground: " + _matter.Stage(_matterScale)

@@ -548,3 +548,14 @@ The title shows the clip's progress.
 - **Checked against our C# decode** on a clip the program's own coder made from the filmed frames. Every term of all 8 frames was identical. The last frame, rebuilt in the page's pass order, was identical pixel for pixel.
 - **A clip of the universe itself** holds no pixels. The page plays its track: the camera's path, its scale, the scene and the calls. The universe itself is made again from the seed by the program.
 
+### H.264 front man, version 2: the colour's detail (2026-11-08)
+
+- **Each chroma 4 × 4** goes through the core transform. Its DC joins the plane's chroma DC set (the 2 × 2 Hadamard). Its other 15 terms are quantised and coded with CAVLC, the table picked by the counts of the chroma blocks to its left and above.
+- **The macroblock's type** carries the colour's pattern: DC only, or the detail terms too when any is left.
+- **Checked with Windows' own decoder** at 1920 × 1080 (three quality settings) and 3840 × 2160. Every frame decoded. All three colours of Windows' picture match our writer's own at about 44.4 dB: the same picture, the gap the colour conversion's rounding.
+
+| Three 4K frames | Bytes |
+|---|---|
+| Our H.264, colour DC only | 583 KB |
+| Our H.264, with the colour's detail | 638 KB |
+

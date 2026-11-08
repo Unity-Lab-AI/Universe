@@ -250,6 +250,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **Our own VP9 front man from the published specification (key frames, change frames, our WebM), checked with Windows' VP9 decoder, a tile in View > Front man compared:** (built: DNA-AND DESIGN 706; waits on the test) "okay get to it all u have a big back log" / "Yes, read the specs"
 - [~] **Our own AV1 front man from the published specification (key frames, change frames, our WebM), checked with Windows' AV1 decoder, a tile in View > Front man compared:** (built: DNA-AND DESIGN 707; waits on the test) "okay get to it all u have a big back log" / "Yes, read the specs"
 - [~] **Our own .cdf97w player for the web (a browser or a Discord Activity), in web/: the waveform kind plays as pictures, the universe kind plays its track and scene:** (built: DNA-AND DESIGN 708; waits on the test in a browser and in Discord) "okay get to it all u have a big back log" / "okay and its still going to be playable in liek discord right?"
+- [~] **Our own H.264 front man's colour detail (chroma AC), checked with Windows' decoder:** (built: DNA-AND DESIGN 709; waits on the test) "okay get to it all u have a big back log"
 
 ---
 

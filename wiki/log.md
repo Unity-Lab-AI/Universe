@@ -117,3 +117,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (our own VP9 front man from the specification, key and change frames, our WebM): DNA-AND DESIGN 706.
 - 2026-11-08 (our own AV1 front man from the specification, key and change frames, one WebM writer): DNA-AND DESIGN 707.
 - 2026-11-08 (our own .cdf97w player for the web and a Discord Activity, web/): DNA-AND DESIGN 708.
+- 2026-11-08 (our own H.264 front man's colour detail, chroma AC): DNA-AND DESIGN 709.

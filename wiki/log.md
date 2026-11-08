@@ -69,3 +69,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (all bodies: the star's, the giant's, the neutron star's and the nebula's chains on the tour): DNA-AND DESIGN 657.
 - 2026-11-07 (the public pages read in full and mended): DNA-AND DESIGN 658.
 - 2026-11-07 (the dive atom drawn and pickable at every size in gas and plasma): DNA-AND DESIGN 659.
+- 2026-11-07 (the shot's pace eased; the ground under the camera never culled, the ground probe): DNA-AND DESIGN 660, 661.

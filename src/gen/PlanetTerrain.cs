@@ -73,6 +73,8 @@ namespace Universe.Gen
         /// <summary>The size (km) of the finest ground piece ready under the camera. The camera may not go lower
         /// than a few of its steps, so it always lands on finished ground and never inside a rough early piece.</summary>
         public double ReadyStep { get; private set; }
+        /// <summary>For the log: the edge (km) and level of the finished piece under the camera this frame, 0 when none was found.</summary>
+        public double CamPieceEdge; public int CamPieceLevel;
         /// <summary>The processor's part of the last frame on this ground, by phase: pieces drawn, taken in, chosen, drawn, the rest (for the stats card and the log).</summary>
         public string FrameStats { get; private set; }
         private int _uploadsLast;
@@ -1287,7 +1289,7 @@ namespace Universe.Gen
             if (Generation != DrawnGeneration) _framesWaiting++;
             _missing = 0;
             _camInside = Shell && Math.Sqrt(camX * camX + camY * camY + camZ * camZ) < Radius;
-            ReadyStep = double.MaxValue;
+            ReadyStep = double.MaxValue; CamPieceEdge = 0; CamPieceLevel = -1;
             float lx = (float)StarDir[0], ly = (float)StarDir[1], lz = (float)StarDir[2];
             if (Shell)
             {
@@ -1476,6 +1478,11 @@ namespace Universe.Gen
             double dx = p.Cx - camX, dy = p.Cy - camY, dz = p.Cz - camZ, dist = Math.Sqrt(dx * dx + dy * dy + dz * dz);
             // past the horizon: hidden by the planet itself
             double camDist = Math.Sqrt(camX * camX + camY * camY + camZ * camZ), r = LayerRadius(layer);
+            // the piece the camera stands over: never thrown out of the walk for lying outside the view (looking sideways it was,
+            // so the ground under your feet was neither split finer nor counted as ready: "ready: none" at four millimetres up,
+            // the hand-over to the grains mistimed, and the pieces round you left coarse)
+            bool underCam = (layer == Ground && (!Shell || _camInside) || layer == Hull && (!_camInside || !Habitable)) && f == _camF;
+            if (underCam) { double szc = 2.0 / Math.Pow(2, level), s0c = -1 + i * szc, t0c = -1 + j * szc; underCam = _camS >= s0c && _camS <= s0c + szc && _camT >= t0c && _camT <= t0c + szc; }
             // gaps in a ring, a part-built shell or a mirror cap
             if (Shell)
             {
@@ -1490,7 +1497,7 @@ namespace Universe.Gen
             }
             // out of view (behind you or off to the side): drawn as it is, but not split finer, so only what you see loads in
             // detail; pieces right around you always split, so turning your head never shows a hole
-            if (ViewDir != null && level >= 3 && dist > p.Edge * 1.5)
+            if (ViewDir != null && level >= 3 && dist > p.Edge * 1.5 && !underCam)
             {
                 double ang = Math.Acos(Math.Max(-1, Math.Min(1, (dx * ViewDir[0] + dy * ViewDir[1] + dz * ViewDir[2]) / Math.Max(1e-12, dist))));
                 if (ang > ViewHalfAngle + Math.Asin(Math.Min(1, p.Edge * 0.9 / dist)) + 0.05) { _drawList.Add(p); return; }
@@ -1523,7 +1530,7 @@ namespace Universe.Gen
                 double sz = 2.0 / Math.Pow(2, level), s0 = -1 + i * sz, t0 = -1 + j * sz;
                 if (_camS >= s0 && _camS <= s0 + sz && _camT >= t0 && _camT <= t0 + sz)
                 {
-                    ReadyStep = p.Edge / Grid;
+                    ReadyStep = p.Edge / Grid; CamPieceEdge = p.Edge; CamPieceLevel = level;
                     // the finer pieces under you asked for ahead of the camera (four levels down, all four of each, as the piece
                     // descends only when all four are made), so coming down they are built before you get there and the floor
                     // never holds you waiting at each level (the lock-and-hand-off on the way down to the ground)

@@ -177,6 +177,9 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The atom you dive at drawn and pickable at every size in a gas or a plasma, so the nebula's, the star's and the neutron star's chains go down; matter picks that find nothing given up at once:** (built: DNA-AND DESIGN 659; waits on the test) "wtf are these screen shots probelms its saying things that arent on screen"
 
+- [~] **The shot's pace eased at both ends, so no crossing jerks away or slams to a halt:** (built: DNA-AND DESIGN 660; waits on the test) "and every tour movment need proper pand and gentle pan away shit like tleaving the focuus of the black hole jsut instantly shoots to another system like slide show the black hole si there then another system is instantly in view it look like im cheezing the video to make unreal thing look like they are real, like i mean the snap jerks everywhere on all motion start ups and stops need to be gradual to a halt and gradualy pan away and speed up not just jerk from one place to the next"
+- [~] **The piece of ground under the camera never thrown out of the walk; the ground's log line with the height above bare rock and the piece under you:** (built: DNA-AND DESIGN 661; waits on the test and its log) "and if u check the new ones pic just made the astroid is showing stars through it" / "the application is still open pasued on the issue" / "at 1mm"
+
 ---
 
 ## Pending

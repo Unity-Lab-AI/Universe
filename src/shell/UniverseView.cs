@@ -1943,6 +1943,14 @@ namespace Universe.Shell
             return Math.Max(gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9, _ground.ReadyStep < 1e30 ? _ground.ReadyStep * 1.6 : 0);   // (and never later than the drawn pieces' own cell: their flat faces are the floor until then)
         }
         private double _agX = double.NaN, _agY, _agZ, _agCell, _agVal; private object _agGround;
+        // for the log: the camera's height above the bare rock (the ground without its grains, at a millimetre cell), beside its height above the grains
+        private string BaseHeightWords()
+        {
+            if (_ground == null) return "-";
+            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); if (r <= 0) return "-";
+            double h = r - _ground.Radius - (_ground.Solid ? _ground.GroundAt(x / r, y / r, z / r, 1e-6) : 0);
+            return (h < 0 ? "-" : "") + ScaleHud.Words(Math.Abs(h));
+        }
         private double AboveGround()
         {
             if (_ground == null) return double.MaxValue;
@@ -2035,7 +2043,7 @@ namespace Universe.Shell
         private Rng _shotRng = new Rng(1); private double _shotDir = 1, _shotMul = 1, _shotCrane; private string _lastGalaxyType = "";
         private double[] _shotE1, _shotE2, _shotUp, _shotLook0; private double _waitSpin, _shotTurnT = 2, _shotSweep;   // (_shotSweep: how far round the shot sweeps, radians, signed: the stop's sweep, or round to a small body's lit side)
         private double[] _shotP0; private double _shotR0;   // where the shot began (universe units) and the size of what was in view there: the departure is paced from it
-        private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1, _shotELast;   // the shot under way: its frame round the subject, its distances and heights, its length
+        private float _localLf = -1; private int _localVersion, _localWritten = -1, _localWrittenN = -1; private double _shotD0, _shotD1, _shotEl0, _shotEl1, _shotLen, _shotT = -1, _shotELast, _shotAllowLog;   // the shot under way: its frame round the subject, its distances and heights, its length
         private void NewShot()
         {
             _shotDir = _shotRng.NextDouble() < 0.5 ? -1 : 1; _shotMul = 0.75 + 0.5 * _shotRng.NextDouble(); _shotCrane = (_shotRng.NextDouble() * 2 - 1) * 1.5;
@@ -2266,7 +2274,7 @@ namespace Universe.Shell
                             _shotEl1 = Math.Max(-1.3, Math.Min(1.3, _shotEl0 + st.Rise * Math.PI / 180));
                             double decades = Math.Abs(Math.Log10(_shotD1 / _shotD0));
                             _shotLen = Math.Max(st.Seconds, decades / Math.Max(0.05, st.MaxRate) + 2);
-                            _shotT = 0; _shotLook0 = new[] { _fx, _fy, _fz };
+                            _shotT = 0; _shotLook0 = new[] { _fx, _fy, _fz }; _shotAllowLog = 0;
                             // the departure is paced from what was in view where the shot began: the nearest thing drawn (the asteroid or comet
                             // you were beside, a world's ground, a star), never the distance to the new subject (its pick is made before the
                             // shot starts, so that was an AU wide while the asteroid filled the view, and the asteroid was gone in a frame)
@@ -2296,7 +2304,18 @@ namespace Universe.Shell
                         // its pace allows (max-rate tenfolds a second, from that size), so an asteroid you were beside pulls away and
                         // shrinks smoothly instead of being left in one frame on the way to a comet across the system; once the
                         // shot's own glide is within that, it goes on as written, and it is not over until the camera has arrived
-                        double allow = _shotP0 != null ? _shotR0 * Math.Pow(10, Math.Max(0.05, st.MaxRate) * _shotT) : double.MaxValue, eUse = e;
+                        // the pace itself eased: brought up from rest over two and a half seconds once the pan is done, and slowed to a crawl
+                        // over the last tenfold and a half of the way, a twentieth of its rate at the end (it had run at the stop's full rate
+                        // from the first frame and stopped dead on arrival, so every long crossing jerked away and slammed to a halt: the
+                        // black hole in one frame, another system in the next)
+                        {
+                            double tm = Math.Max(0, _shotT - hold), rampIn = Math.Min(1, tm / 2.5); rampIn = rampIn * rampIn * (3 - 2 * rampIn);
+                            double endFrom = _shotP0 != null ? fromStart(frame(1)) : 0, allowNow = _shotR0 * Math.Pow(10, _shotAllowLog);
+                            double leftDec = endFrom > 0 ? Math.Log10(Math.Max(1e-300, endFrom) / Math.Max(1e-300, allowNow)) : 0;
+                            double easeOut = Math.Max(0.05, Math.Min(1, Math.Sqrt(Math.Max(0, leftDec) / 1.5)));
+                            if (!WebNotMade && tm > 0) _shotAllowLog += Math.Max(0.05, st.MaxRate) * rampIn * easeOut * dt;
+                        }
+                        double allow = _shotP0 != null ? _shotR0 * Math.Pow(10, _shotAllowLog) : double.MaxValue, eUse = e;
                         var fr0 = frame(e);
                         if (_shotP0 != null && fromStart(fr0) > allow)
                         {
@@ -3319,7 +3338,7 @@ namespace Universe.Shell
                 }
                 else { _farScale *= Math.Pow(0.87, input.Wheel); if (_farScale < reach) _farScale = 0; }
                 double altBefore = _ground != null ? AboveGround() / Units.Km(1) : 0;
-                ZoomLog("wheel " + input.Wheel.ToString("0") + " step " + Units.Describe(Math.Abs(step)) + " reach " + Units.Describe(reach) + " pick " + _tKind + ":" + _tIndex + " planet " + _planet + " nearest-body " + _cpBest + " at " + _cpBd.ToString("0.##") + " radii follow " + _followBody + (_ground != null ? " ground-ready " + (_ground.ReadyStep < 1e30 ? ScaleHud.Words(_ground.ReadyStep) : "none") + " height " + ScaleHud.Words(AboveGround() / Units.Km(1)) + " [" + _ground.BuildStats + "; " + _ground.FrameStats + "]" : ""));
+                ZoomLog("wheel " + input.Wheel.ToString("0") + " step " + Units.Describe(Math.Abs(step)) + " reach " + Units.Describe(reach) + " pick " + _tKind + ":" + _tIndex + " planet " + _planet + " nearest-body " + _cpBest + " at " + _cpBd.ToString("0.##") + " radii follow " + _followBody + (_ground != null ? " ground-ready " + (_ground.ReadyStep < 1e30 ? ScaleHud.Words(_ground.ReadyStep) : "none") + " height " + ScaleHud.Words(AboveGround() / Units.Km(1)) + " base " + BaseHeightWords() + " piece " + (_ground.CamPieceEdge > 0 ? ScaleHud.Words(_ground.CamPieceEdge) + " L" + _ground.CamPieceLevel : "none") + " [" + _ground.BuildStats + "; " + _ground.FrameStats + "]" : ""));
                 _ox += dir.X * step; _oy += dir.Y * step; _oz += dir.Z * step;
                 if (_ground != null)
                 {

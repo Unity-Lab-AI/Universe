@@ -90,7 +90,7 @@ namespace Universe.Platform
                         else { Cdf97wCodec.Unpack(frames[j].Data, delta, pw, ph); for (int c = 0; c < 3; c++) { var a = cur[c]; var d = delta[c]; for (int k = 0; k < a.Length; k++) a[k] = unchecked((short)(a[k] + d[k])); } }
                     }
                     var pl = new double[3][];
-                    for (int c = 0; c < 3; c++) { var g = pl[c] = new double[pw * ph]; var a = cur[c]; float st = steps[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st); Wavelet97.Inverse(g, pw, ph); }
+                    for (int c = 0; c < 3; c++) { var g = pl[c] = new double[pw * ph]; var a = cur[c]; float st = steps[c]; var lw = Cdf97wCodec.LevelWeights(pw, ph); for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st * lw[k]); Wavelet97.Inverse(g, pw, ph); }
                     var Y = pl[0]; var Cb = pl[1]; var Cr = pl[2];
                     var px = new int[w * h];
                     Jobs.For(h, y =>

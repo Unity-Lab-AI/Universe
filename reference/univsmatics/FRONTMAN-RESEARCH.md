@@ -259,3 +259,40 @@ Built as the `.cdf97w` version 3 (`src/render/WaveletCoder.cs`). A one-off round
 - **Where a frame's time went** (1080p, measured outside the game): building the planes 9 ms, forward 30 ms on the processor (about 10 on the card), quantising 10 ms, packing 130 ms on one core, and the inverse for the front man 67 ms on the processor (about 10 on the card). So the packing was the bottleneck, not the transform.
 - **The packing on every core (version 4):** each plane is cut into 4 strips of rows, and each strip is coded on its own. All 12 strips run at once. That cut packing from 130 ms to 27 ms, at a cost of about half a percent more bytes. The round-trip check still gives back every term exactly.
 - A full 1080p frame now takes about 70 ms, roughly 14 a second. A Half-size clip has a quarter of the pixels, so it keeps up with 30.
+
+### E10 — the filmed clip, the theory checked, and the 100 MB target (2026-11-08)
+
+**The clip as filmed:** `tour 2026-11-08 02-42-26.cdf97w`, version 4, full size (3840 × 2024), 2,732 frames over 637 s. That's 4.3 frames a second, the gaps 218 ms at the median, 4.6 GB in all.
+
+- Whole frames averaged 1,871 KB. Changes averaged 1,635 KB. Frames 218 ms apart differ almost everywhere, so a change barely beats a whole frame, and at times it is 7 times bigger. That matches E4: wavelet terms don't survive motion.
+- The coarsest levels had 15 to 55 % of their terms nonzero, coded at the same step as the finest.
+
+**The model, checked against the clip.** Frames rebuilt from the clip were sized by the entropy of the `.cdf97w` coder's own model. Against the bytes those same frames really took in the file, it came within 5 to 10 %:
+
+| Frame | Model | Real |
+|------:|------:|------:|
+| 600, whole | 2,614 KB | 2,475 KB |
+| 601, change | 2,209 KB | 2,000 KB |
+| 1500, whole | 1,307 KB | 1,203 KB |
+| 1501, change | 1,199 KB | 1,133 KB |
+
+So it can be trusted to predict other settings. Scripts: `shots/e10.py`, `shots/e10b.py`, `shots/rt/an.cs`, `shots/rt/dump.cs`.
+
+**The theory that held:**
+
+1. **Size scales with picture size.** Each halving of the width and height divides the bytes by about 3 (1,685 → 561 → 170 KB a frame at the same step), not by 4. Smaller pictures have more detail per pixel.
+2. **Size scales with the step.** A step 4 times coarser divides the bytes by about 3.
+3. **H8, a step per level by each level's synthesis energy, holds.** A term at a coarse level spreads its error over many pixels. Giving each level a step of `s₀ / √(Eⱼ / E₁)` spreads the error evenly over the levels, which is the least picture error for the bytes. At the same size it gave 6 to 8 dB better pictures than one step for every level. At small sizes it beat a DCT picture (JPEG) of equal size outright:
+
+| Setting (scaled to the whole clip) | Size | Quality | DCT at that size |
+|-----------------------------------|-----:|--------:|-------:|
+| Quarter, step 0.032, one step | 82 MB | 29.0 dB | 28.1 dB |
+| **Quarter, step 0.032, by level** | **92 MB** | **34.5 dB** | 30.8 dB |
+| Quarter, step 0.064, by level | 51 MB | 30.6 dB | 14.0 dB |
+| Half, step 0.064, by level | 195 MB | 31.1 dB | 14.7 dB |
+| Half, step 0.032, by level | 340 MB | 34.9 dB | 28.2 dB |
+
+**The 100 MB target.** The clip as filmed fits in about 90 MB at quarter size, step 0.032 by level, 34.5 dB. At 30 frames a second there are 7 times more frames. Each change then spans 33 ms instead of 218 and should be much smaller, but that isn't measured yet. It needs a clip filmed with the new writer.
+
+**Built from it (version 5):** steps per level by synthesis energy, finest steps Y 0.032 and Cb, Cr 0.064. The front man is now just what a player needs to know the file: a quarter-size picture at the start, one every ten seconds, and the last one held to the end. The clip itself is the `.cdf97w` in the box.
+

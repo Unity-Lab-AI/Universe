@@ -39,9 +39,34 @@ namespace Universe.Render
     internal static class Cdf97wCodec
     {
         public const uint Magic = 0x57373943;                // 'C97W'
-        public const ushort Version = 4;
-        /// <summary>The quantising step of each plane: Y, Cb, Cr (about 40 dB on the tour's frames).</summary>
-        public static readonly float[] Step = { 0.004f, 0.008f, 0.008f };
+        public const ushort Version = 5;
+        /// <summary>The quantising step of each plane at the finest level: Y, Cb, Cr. Each coarser level's step is smaller by its own
+        /// weight (<see cref="LevelWeights"/>). Measured on the filmed tour (FRONTMAN-RESEARCH.md, E10): at a quarter of 4K about
+        /// 36 KB a frame at 34.5 dB, where one step for every level gave 29 dB at that size and a DCT picture 31.</summary>
+        public static readonly float[] Step = { 0.032f, 0.064f, 0.064f };
+        private static float[] _lw; private static int _lwW, _lwH;
+        /// <summary>Each position's share of its plane's step: one over the square root of how much picture energy a term at its level
+        /// spreads (an impulse there, rebuilt), against the finest level's. The error then lands evenly over every level (the rule that
+        /// gives the least picture error for the bytes), where one step for all had left the coarse levels, the ones the eye sees
+        /// most, as rough as the finest.</summary>
+        public static float[] LevelWeights(int pw, int ph)
+        {
+            lock (typeof(Cdf97wCodec))
+            {
+                if (_lw != null && _lwW == pw && _lwH == ph) return _lw;
+                var L = WaveletCoder.LevelMap(pw, ph); int top = 0; foreach (byte b in L) top = Math.Max(top, b);
+                var energy = new double[top + 1];
+                for (int lv = 1; lv <= top; lv++)
+                {
+                    int at = -1, n = 0; for (int i = 0; i < L.Length; i++) if (L[i] == lv && n++ == 0) at = i;
+                    int mid = -1, k = 0; for (int i = 0; i < L.Length && mid < 0; i++) if (L[i] == lv && k++ == n / 2) mid = i;
+                    var g = new double[pw * ph]; g[mid >= 0 ? mid : at] = 1; Wavelet97.Inverse(g, pw, ph);
+                    double e = 0; foreach (double v in g) e += v * v; energy[lv] = Math.Max(1e-12, e);
+                }
+                var w = new float[pw * ph]; for (int i = 0; i < w.Length; i++) w[i] = (float)(1 / Math.Sqrt(energy[L[i]] / energy[1]));
+                _lw = w; _lwW = pw; _lwH = ph; return w;
+            }
+        }
         public const int KeyEvery = 30;
 
         public static short Quantise(double v, float step) { double q = v / step; q = q < 0 ? Math.Ceiling(q) : Math.Floor(q); return (short)Math.Max(-32767, Math.Min(32767, q)); }
@@ -58,15 +83,17 @@ namespace Universe.Render
     {
         /// <summary>The box's own id: the .cdf97w inside an MP4.</summary>
         public static readonly byte[] BoxId = { 0x43, 0x39, 0x37, 0x57, 0x2D, 0x55, 0x6E, 0x69, 0x56, 0x73, 0x4D, 0x61, 0x74, 0x69, 0x63, 0x73 };   // "C97W-UniVsMatics"
-        private readonly Mp4Writer _mp4; private readonly Cdf97wWriter _eq; private readonly string _eqPath; private bool _done;
+        private readonly Mp4Writer _mp4; private readonly Cdf97wWriter _eq; private readonly string _eqPath; private bool _done; private long _shownAt = -1; private byte[] _lastRgb; private int _lastW, _lastH;
         public int Down { get { return _mp4.Down; } }
         public double Seconds { get { return _mp4.Seconds; } }
         public string Path { get { return _mp4.Path; } }
         public FrontmanWriter(string path, int w, int h)
         {
-            _mp4 = new Mp4Writer(path, w, h);
+            _mp4 = new Mp4Writer(path, w, h, 4);                                         // the front man is only what a player needs to know the file: a quarter-size picture now and then, never the clip itself
             _eqPath = path + ".cdf97w.part"; _eq = new Cdf97wWriter(_eqPath, w, h);
-            _eq.Solved = (rgb, sw, sh) => _mp4.Add(rgb, sw, sh);
+            // the front man: the first solved picture, then one every ten seconds (a player shows the clip's length and a picture; the
+            // clip itself is the .cdf97w in the box, played here); the last one shown is held to the end
+            _eq.Solved = (rgb, sw, sh) => { long now = System.Diagnostics.Stopwatch.GetTimestamp(); if (_shownAt < 0 || (now - _shownAt) >= System.Diagnostics.Stopwatch.Frequency * 10) { _shownAt = now; _mp4.Add(rgb, sw, sh); } _lastRgb = rgb; _lastW = sw; _lastH = sh; };
         }
         // the front man's frames are the equations solved into pixels: each frame goes to the .cdf97w writer only, and the picture
         // its terms rebuild to (the inverse CDF 9/7, the same sums the player runs) is what the MP4 is made of
@@ -75,7 +102,7 @@ namespace Universe.Render
         public void Dispose()
         {
             if (_done) return; _done = true;
-            _eq.Dispose(); _mp4.Dispose();                                                 // (the equations first: their last frames are still being solved into the MP4)
+            _eq.Dispose(); if (_lastRgb != null) _mp4.Add(_lastRgb, _lastW, _lastH); _mp4.Dispose();                                                 // (the equations first: their last frames are still being solved into the MP4)
             try
             {
                 long n = new System.IO.FileInfo(_eqPath).Length;
@@ -174,9 +201,9 @@ namespace Universe.Render
             var q = new short[3][];
             for (int c = 0; c < 3; c++)
             {
-                var qc = q[c] = new short[planes[c].Length]; float st = Cdf97wCodec.Step[c]; int pw = _pw;
-                if (Card(planes[c], true)) { var co = _f; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st); }); }
-                else { Wavelet97.Forward(planes[c], _pw, _ph); var co = planes[c]; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st); }); }
+                var qc = q[c] = new short[planes[c].Length]; float st = Cdf97wCodec.Step[c]; int pw = _pw; var lw = Cdf97wCodec.LevelWeights(_pw, _ph);
+                if (Card(planes[c], true)) { var co = _f; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
+                else { Wavelet97.Forward(planes[c], _pw, _ph); var co = planes[c]; Jobs.For(_ph, y => { for (int i = y * pw, e = i + pw; i < e; i++) qc[i] = Cdf97wCodec.Quantise(co[i], st * lw[i]); }); }
             }
             bool key = _prev == null || _frames % Cdf97wCodec.KeyEvery == 0;
             short[][] stored = q;
@@ -198,7 +225,7 @@ namespace Universe.Render
             var pl = new double[3][];
             for (int c = 0; c < 3; c++)
             {
-                var g = pl[c] = new double[_pw * _ph]; var a = q[c]; float st = Cdf97wCodec.Step[c]; for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st);
+                var g = pl[c] = new double[_pw * _ph]; var a = q[c]; float st = Cdf97wCodec.Step[c]; var lw = Cdf97wCodec.LevelWeights(_pw, _ph); for (int k = 0; k < g.Length; k++) g[k] = Cdf97wCodec.Value(a[k], st * lw[k]);
                 if (Card(g, false)) { var f = _f; for (int k = 0; k < g.Length; k++) g[k] = f[k]; } else Wavelet97.Inverse(g, _pw, _ph);
             }
             var rgb = new byte[_w * _h * 3]; int w = _w, pw = _pw;

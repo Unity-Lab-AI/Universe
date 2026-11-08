@@ -61,7 +61,7 @@ namespace Universe.Render
                     var planes = f.Item1;
                     // still over the whole clip's budget at the coarsest quality: this frame repeats the one before (all its blocks
                     // skipped, a few bytes), so the cap holds whatever the picture does; the time of every frame is kept
-                    if (_capPerFrame > 0 && !(g.Frames.Count == 0) && v.Quality >= 255 && OverFrames() > 30) planes = v.Recon();
+                    if (_capPerFrame > 0 && !(g.Frames.Count == 0) && v.Quality >= 255 && OverFrames() > 30) { planes = v.Recon(); v.NoFilterNext = true; }   // (unfiltered: the same picture exactly)
                     v.AddPrepared(planes, 33); g.Frames.Add(v.LastFrame); g.Keys.Add(v.LastKey); g.Times.Add(f.Item2); Interlocked.Decrement(ref _waiting);
                     if (_capPerFrame > 0)
                     {

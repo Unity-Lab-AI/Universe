@@ -633,3 +633,12 @@ A 9.5-minute clip held to the cap had 35% of its frames at the coarsest quality,
 | Coarsest quality, red's error | 3.8 | 0.3 |
 | Coarsest quality, a whole frame | 41 KB | 24 KB |
 
+### The front man's loop filter (2026-11-08)
+
+Block edges are smoothed as the decoder smooths them, and the filtered picture is what the next frame is predicted from. The filter's level follows the quantiser: none below about 70, about 25 at quality 120, the strongest from 200 on. Checked with Windows' own decoder: every frame the picture our writer says.
+
+| Filmed 4K frames, quality 120 | Without | With |
+|---|---|---|
+| Space | 47.0 dB, change frames 28 to 30 KB | 47.7 dB, 24 to 27 KB |
+| The busiest | 39.5 dB | 40.0 dB |
+

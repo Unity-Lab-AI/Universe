@@ -6,7 +6,7 @@
 // move by whole pixels too), coded as the specification codes it (its candidate list from the blocks around, NEARESTMV, NEARMV,
 // ZEROMV or NEWMV against the best candidate); a block with nothing left to code skipped; each block's transforms its own size
 // (32 x 32 at most) where it is smooth, 4 x 4s where it is busy (chosen block by block: TX_MODE_SELECT); the coefficients in
-// the specification's token tree with its default odds, no loop filter. Change frames are error resilient (each stands on the
+// the specification's token tree with its default odds; the loop filter run as the decoder runs it. Change frames are error resilient (each stands on the
 // frame before alone), so no motion of an older frame enters a candidate list.
 // The frame is cut into as many tile columns as the specification allows (8 at 4K), each coded on a core of its own, its contexts
 // kept to its own columns as a decoder keeps them; the forward transform separable, nothing made anew per block, so a 4K frame codes
@@ -93,7 +93,7 @@ namespace Universe.Render
             Y = new byte[_sbCols * 64 * _sbRows * 64]; Cb = new byte[Y.Length / 4]; Cr = new byte[Y.Length / 4];
             for (int p = 0; p < 3; p++) _prev[p] = new byte[p == 0 ? Y.Length : Cb.Length];
             _skips = new byte[_miRows * _miCols];
-            _busy = new float[_skips.Length]; _txs = new byte[_skips.Length];
+            _busy = new float[_skips.Length]; _txs = new byte[_skips.Length]; _msz = new byte[_skips.Length];
             _mvR = new short[_skips.Length]; _mvC = new short[_skips.Length]; _lastR = new short[_skips.Length]; _lastC = new short[_skips.Length]; _mode = new byte[_skips.Length];
             _qw = _fw / 4; _qh = _fh / 4; _qs = new byte[_qw * _qh]; _qr = new byte[_qw * _qh];
             // tile columns: as many as the specification allows (section 6.2.14), each coded on a core of its own
@@ -115,7 +115,7 @@ namespace Universe.Render
         const int ZeroMv = 12, NewMv = 13, NearestMv = 10, NearMv = 11;
         // how busy the picture is in each 8 x 8 (its luma's variance): a block stays whole, one transform its size, only where none of
         // its 8 x 8s is busier than the quantiser can carry smoothly
-        private readonly float[] _busy; private readonly byte[] _txs;              // (and each 8 x 8's transform size, for the next block's context)
+        private readonly float[] _busy; private readonly byte[] _txs, _msz;              // (and each 8 x 8's transform size, for the next block's context)
         /// <summary>A block is split where an 8 x 8 in it varies by more than this many of the quantiser's steps (its standard deviation).</summary>
         public static double BusySteps = 0.5;
         /// <summary>Blocks are split for being busy down to this size (bsl: 0 is 8 x 8, 1 is 16 x 16); a busy block of it or smaller
@@ -194,6 +194,10 @@ namespace Universe.Render
                 tiles[k] = new Tile(this, c0, c1).Code();
             });
 
+            // the loop filter over the whole picture, as the decoder runs it, before it is kept as the next frame's reference
+            _lvl = NoFilterNext ? 0 : FilterLevel >= 0 ? FilterLevel : LevelFor(_q); NoFilterNext = false;
+            LoopFilter();
+
             // the compressed header: transforms up to 32 x 32, each block's its own size, every default odds kept (each "update?" no)
             var ch = new Vp9Bool(); ch.Put(0, 128);
             ch.Lit(3, 2); ch.Lit(1, 1);                                                 // tx_mode TX_MODE_SELECT: each block's transform size its own
@@ -224,7 +228,7 @@ namespace Universe.Render
             if (!_key) { u.U(1, 0); u.U(1, 0); u.U(2, 1); }                            // no 1/8 motion; one filter, EIGHTTAP
             if (_key) { u.U(1, 0); u.U(1, 1); }                                        // no odds saved back; frame-parallel (error resilient: both so already)
             u.U(2, 0);                                                                 // context 0
-            u.U(6, 0); u.U(3, 0); u.U(1, 0);                                           // no loop filter
+            u.U(6, _lvl); u.U(3, 0); u.U(1, 0);                                        // the loop filter's level, sharpness 0, no deltas
             u.U(8, _q); u.U(1, 0); u.U(1, 0); u.U(1, 0);                               // the quantiser, no deltas
             u.U(1, 0);                                                                 // no segmentation
             for (int i = _minLog2; i < _tileLog2; i++) u.U(1, 1);                      // tile columns: as many as allowed
@@ -259,6 +263,100 @@ namespace Universe.Render
                 }
             });
         }
+
+        // ── the loop filter (section 8.8), exactly as the decoder runs it: superblock by superblock in raster order, each plane, its
+        // vertical edges then its horizontal ones, every edge of a block or a transform; the picture after it is what is shown and what
+        // the next frame is predicted from ──
+        /// <summary>The loop filter's level for the frames from here on (0 none .. 63); -1: worked out from the quantiser.</summary>
+        public static int FilterLevel = -1;
+        /// <summary>The next frame is written without the loop filter (a frame repeating the last one exactly).</summary>
+        public bool NoFilterNext;
+        private int _lvl;
+        // the level for a quantiser, measured on filmed frames with this writer (the level giving the picture nearest the frame filmed)
+        static int LevelFor(int q) { return Math.Max(0, Math.Min(63, q * 19 / 40 - 32)); }   // (measured: about 25 at quality 120, the strongest from 200 on; none below about 70)
+
+        void LoopFilter()
+        {
+            int lvl = _lvl; if (lvl <= 0) return;
+            int limit = Math.Max(1, lvl), blimit = 2 * (lvl + 2) + limit, thresh = lvl >> 4;
+            // (the three planes never touch one another: each filtered on a core of its own, in the order the decoder keeps for it)
+            Universe.Core.Jobs.For(3, plane =>
+            {
+                for (int row = 0; row < _miRows; row += 8)
+                    for (int col = 0; col < _miCols; col += 8)
+                        for (int pass = 0; pass < 2; pass++)
+                            FilterSuperblock(plane, pass, row, col, limit, blimit, thresh);
+            });
+        }
+
+        void FilterSuperblock(int plane, int pass, int row, int col, int limit, int blimit, int thresh)
+        {
+            int subX = plane > 0 ? 1 : 0, subY = subX, dx = pass == 0 ? 1 : 0, dy = 1 - dx, sub = pass == 0 ? subX : subY, edgeLen = 64 >> (pass == 0 ? subY : subX);
+            var buf = _rec[plane]; int S = plane == 0 ? Stride : Stride / 2;
+            for (int edge = 0; edge < (16 >> sub); edge++)
+                for (int i = 0; i < edgeLen; i++)
+                {
+                    int x, y;
+                    if (pass == 0) { x = col * 8 + edge * (4 << subX); y = row * 8 + (i << subY); }
+                    else { x = col * 8 + (i << subX); y = row * 8 + edge * (4 << subY); }
+                    // onScreen
+                    if (x >= 8 * _miCols || y >= 8 * _miRows || (pass == 0 && x == 0) || (pass == 1 && y == 0)) continue;
+                    int loopCol = ((x >> 3) >> subX) << subX, loopRow = ((y >> 3) >> subY) << subY, g = loopRow * _miCols + loopCol;
+                    int bsl = _msz[g], txs = _txs[g], txSz = plane > 0 ? Math.Min(txs, bsl) : txs;
+                    int sbBsl = sub == 0 ? bsl : Math.Max(1, bsl);
+                    bool skip = _skips[g] != 0, isIntra = _key;
+                    int span = 8 << sbBsl;
+                    bool isBlockEdge = pass == 0 ? x % span == 0 : y % span == 0;
+                    bool isTxEdge;
+                    if (pass == 1 && subX == 1 && (_miCols & 1) == 1 && (edge & 1) == 1 && x + 8 >= _miCols * 8) isTxEdge = false;
+                    else isTxEdge = edge % (1 << txSz) == 0;
+                    bool is32Edge = edge % 8 == 0;
+                    bool apply = isBlockEdge || (isTxEdge && isIntra) || (isTxEdge && !skip);
+                    if (!apply) continue;
+                    // the filter size (section 8.8.3)
+                    int baseSize = txSz == 0 && is32Edge ? 1 : Math.Min(2, txSz), fs = baseSize;
+                    if (pass == 0 && subX == 1 && baseSize == 2 && (x >> 3) == _miCols - 1) fs = 1;
+                    else if (pass == 1 && subY == 1 && baseSize == 2 && (y >> 3) == _miRows - 1) fs = 1;
+                    FilterSample(buf, S, x >> subX, y >> subY, dx, dy, fs, limit, blimit, thresh);
+                }
+        }
+
+        [ThreadStatic] static int[] _lfS, _lfF;
+        // the sample filtering process (section 8.8.5): the masks, then the narrow filter or the wide one of 8 or 16 taps
+        static void FilterSample(byte[] buf, int S, int x, int y, int dx, int dy, int fs, int limit, int blimit, int thresh)
+        {
+            int st = dy * S + dx, o = y * S + x;
+            var s = _lfS ?? (_lfS = new int[16]);                                      // s[8 + k]: q_k for k >= 0, p_(-k-1) for k < 0
+            int reach = fs == 2 ? 8 : 4;
+            for (int k = -reach; k < reach; k++) s[8 + k] = buf[o + k * st];
+            int p0 = s[7], p1 = s[6], p2 = s[5], p3 = s[4], q0 = s[8], q1 = s[9], q2 = s[10], q3 = s[11];
+            bool hev = Math.Abs(p1 - p0) > thresh || Math.Abs(q1 - q0) > thresh;
+            bool mask = Math.Abs(p3 - p2) > limit || Math.Abs(p2 - p1) > limit || Math.Abs(p1 - p0) > limit || Math.Abs(q1 - q0) > limit || Math.Abs(q2 - q1) > limit || Math.Abs(q3 - q2) > limit || Math.Abs(p0 - q0) * 2 + Math.Abs(p1 - q1) / 2 > blimit;
+            if (mask) return;                                                          // (filterMask 0: no filter)
+            bool flat = false, flat2 = false;
+            if (fs >= 1) flat = !(Math.Abs(p1 - p0) > 1 || Math.Abs(q1 - q0) > 1 || Math.Abs(p2 - p0) > 1 || Math.Abs(q2 - q0) > 1 || Math.Abs(p3 - p0) > 1 || Math.Abs(q3 - q0) > 1);
+            if (fs >= 2) flat2 = !(Math.Abs(s[0] - p0) > 1 || Math.Abs(s[15] - q0) > 1 || Math.Abs(s[1] - p0) > 1 || Math.Abs(s[14] - q0) > 1 || Math.Abs(s[2] - p0) > 1 || Math.Abs(s[13] - q0) > 1 || Math.Abs(s[3] - p0) > 1 || Math.Abs(s[12] - q0) > 1);
+            if (fs == 0 || !flat)
+            {
+                // the narrow filter (section 8.8.5.2)
+                int ps1 = p1 - 128, ps0 = p0 - 128, qs0 = q0 - 128, qs1 = q1 - 128;
+                int f = hev ? C4(ps1 - qs1) : 0; f = C4(f + 3 * (qs0 - ps0));
+                int f1 = C4(f + 4) >> 3, f2 = C4(f + 3) >> 3;
+                buf[o] = (byte)(C4(qs0 - f1) + 128); buf[o - st] = (byte)(C4(ps0 + f2) + 128);
+                if (!hev) { f = (f1 + 1) >> 1; buf[o + st] = (byte)(C4(qs1 - f) + 128); buf[o - 2 * st] = (byte)(C4(ps1 + f) + 128); }
+                return;
+            }
+            int log2 = fs == 1 || !flat2 ? 3 : 4, n = (1 << (log2 - 1)) - 1;
+            var F = _lfF ?? (_lfF = new int[16]);
+            for (int i = -n; i < n; i++)
+            {
+                int t = s[8 + i];
+                for (int j = -n; j <= n; j++) { int pp = i + j; if (pp < -(n + 1)) pp = -(n + 1); else if (pp > n) pp = n; t += s[8 + pp]; }
+                F[8 + i] = (t + (1 << (log2 - 1))) >> log2;
+            }
+            for (int i = -n; i < n; i++) buf[o + i * st] = (byte)F[8 + i];
+        }
+        static int C4(int v) { return v < -128 ? -128 : v > 127 ? 127 : v; }
 
         // ── one tile column: its own coder, its own left contexts, its scratch made once ──
         private sealed class Tile
@@ -366,7 +464,7 @@ namespace Universe.Render
                 int n8 = 1 << bsl;                                                     // (an inter block with nothing coded counts as skipped)
                 for (int y = 0; y < n8; y++) for (int x = 0; x < n8; x++) if (r + y < v._miRows && c + x < v._miCols)
                 {
-                    int g = (r + y) * v._miCols + c + x; v._skips[g] = (byte)skip; v._txs[g] = (byte)(!v._key && skip == 1 ? maxT : ytx);
+                    int g = (r + y) * v._miCols + c + x; v._skips[g] = (byte)skip; v._txs[g] = (byte)(!v._key && skip == 1 ? maxT : ytx); v._msz[g] = (byte)bsl;
                     v._mvR[g] = (short)(_dy * 8); v._mvC[g] = (short)(_dx * 8); v._mode[g] = (byte)mode;
                 }
                 for (int k = 0; k < n; k++)

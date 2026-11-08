@@ -70,17 +70,28 @@ namespace Universe.Render
         private Vp9Bool _bc; private bool _key;
 
         /// <summary>One frame (RGB, three bytes a pixel, top row first, <paramref name="srcW"/> wide), shown for <paramref name="ms"/>.</summary>
-        public void Add(byte[] rgb, int srcW, int srcH, uint ms)
+        public void Add(byte[] rgb, int srcW, int srcH, uint ms) { AddPrepared(Prepare(rgb, srcW, srcH), ms); }
+        /// <summary>A frame (RGB, top row first) as this writer's Y, Cb and Cr planes (studio range, 4:2:0, padded); it touches nothing
+        /// of the writer's state, so any thread may call it.</summary>
+        public byte[][] Prepare(byte[] rgb, int srcW, int srcH)
         {
-            int S = Stride, CS = S / 2;
-            _src[0] = new int[Y.Length]; _src[1] = new int[Cb.Length]; _src[2] = new int[Cr.Length];
+            int S = Stride, CS = S / 2; var pl = new[] { new byte[Y.Length], new byte[Cb.Length], new byte[Cr.Length] };
             for (int y = 0; y < _fh; y++) for (int x = 0; x < _fw; x++)
             {
                 int ox = Math.Min(srcW - 1, Math.Min(x, _w - 1) * srcW / _w), oy = Math.Min(srcH - 1, Math.Min(y, _h - 1) * srcH / _h), o = (oy * srcW + ox) * 3;
                 double r = rgb[o], g = rgb[o + 1], bb = rgb[o + 2];
-                _src[0][y * S + x] = Clip(16 + (65.738 * r + 129.057 * g + 25.064 * bb) / 256);
-                if ((x & 1) == 0 && (y & 1) == 0) { _src[1][(y / 2) * CS + x / 2] = Clip(128 + (-37.945 * r - 74.494 * g + 112.439 * bb) / 256); _src[2][(y / 2) * CS + x / 2] = Clip(128 + (112.439 * r - 94.154 * g - 18.285 * bb) / 256); }
+                pl[0][y * S + x] = (byte)Clip(16 + (65.738 * r + 129.057 * g + 25.064 * bb) / 256);
+                if ((x & 1) == 0 && (y & 1) == 0) { pl[1][(y / 2) * CS + x / 2] = (byte)Clip(128 + (-37.945 * r - 74.494 * g + 112.439 * bb) / 256); pl[2][(y / 2) * CS + x / 2] = (byte)Clip(128 + (112.439 * r - 94.154 * g - 18.285 * bb) / 256); }
             }
+            return pl;
+        }
+        /// <summary>The last frame written, as its bytes, and whether it was a whole one.</summary>
+        public byte[] LastFrame { get { return _frames.Count > 0 ? _frames[_frames.Count - 1] : null; } }
+        public bool LastKey { get { return _keys.Count > 0 && _keys[_keys.Count - 1]; } }
+        /// <summary>A frame already in this writer's planes (<see cref="Prepare"/>), shown for <paramref name="ms"/>.</summary>
+        public void AddPrepared(byte[][] planes, uint ms)
+        {
+            for (int p = 0; p < 3; p++) { var a = planes[p]; var d = _src[p] = new int[a.Length]; for (int i = 0; i < a.Length; i++) d[i] = a[i]; }
             _key = _count % KeyEvery == 0; _count++;
             _rec[0] = Y; _rec[1] = Cb; _rec[2] = Cr;
             if (!_key) for (int p = 0; p < 3; p++) _prev[p] = (byte[])_rec[p].Clone();   // (the reference: the frame before, as the decoder holds it)

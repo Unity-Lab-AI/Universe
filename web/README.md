@@ -5,7 +5,8 @@ A page that plays a `.cdf97w` clip in a browser, or inside a Discord call as an 
 ## What it plays
 
 - **A waveform clip** (`.cdf97w` version 8) plays as its pictures. The page unpacks each frame's wavelet terms on a worker thread, with the same range decoder and odds as the program. The graphics card then turns the terms into values, runs the inverse CDF 9/7 and converts the colour, all through WebGL 2. The weights come from the clip's own metadata. A changed frame is added onto the one before it. The clip loops.
-- **A clip of the universe itself** (`.cdf97w` version 9) holds no pixels: just a seed, the camera's track and the scene's calls. The page plays the track against the clip's own clock: the camera's path seen from above, its scale, the galaxy, star system and ground it was in, and the scene calls as they happened. The universe itself is made again from the seed by the program, so open the file in the program to fly it as it was filmed.
+- **A filmed `.cdf97w`** carries a picture track (our own VP9, in our own WebM layout), which the page plays as video. The universe itself is attached inside it, and "What the clip holds" shows its metadata.
+- **An older clip of the universe itself** (`.cdf97w` version 9, no picture track) holds no pixels: just a seed, the camera's track and the scene's calls. The page plays the track against the clip's own clock: the camera's path seen from above, its scale, the galaxy, star system and ground it was in, and the scene calls as they happened. The universe itself is made again from the seed by the program, so open the file in the program to fly it as it was filmed.
 
 ## Using it
 

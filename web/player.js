@@ -33,6 +33,34 @@ function readHeader(buf) {
   return { kind: 'wave', w, h, pw, ph, steps, meta, frames, weights };
 }
 
+// ── a .cdf97w that is our own WebM (a picture track any player shows): the universe's records carried inside as an attached file ──
+const ATTACH_NAME = 'universe.cdf97w';
+function isWebm(buf) { const b = new Uint8Array(buf, 0, 4); return b[0] === 0x1A && b[1] === 0x45 && b[2] === 0xDF && b[3] === 0xA3; }
+function findAttachment(buf, name) {
+  const d = new Uint8Array(buf); let at = 0;
+  const id = () => { const b = d[at++]; const n = b & 0x80 ? 1 : b & 0x40 ? 2 : b & 0x20 ? 3 : 4; let v = b; for (let k = 1; k < n; k++) v = v * 256 + d[at++]; return v; };
+  const vint = () => { const b = d[at++]; let n = 1, m = 0x80; while (n <= 8 && (b & m) === 0) { n++; m >>= 1; } let v = b & (m - 1); for (let k = 1; k < n; k++) v = v * 256 + d[at++]; return v; };
+  if (id() !== 0x1A45DFA3) return null; { const l = vint(); at += l; }
+  if (id() !== 0x18538067) return null; vint();
+  while (at < d.length) {
+    const e = id(), n = vint();
+    if (e === 0x1F43B675) return null;
+    if (e !== 0x1941A469) { at += n; continue; }
+    const end = at + n;
+    while (at < end) {
+      id(); const fl = vint(), fend = at + fl; let nm = null;
+      while (at < fend) {
+        const c = id(), cl = vint();
+        if (c === 0x466E) { nm = new TextDecoder().decode(d.subarray(at, at + cl)); at += cl; }
+        else if (c === 0x465C && nm === name) return buf.slice(at, at + cl);
+        else at += cl;
+      }
+    }
+    return null;
+  }
+  return null;
+}
+
 // ── the terms, unpacked (the exact reverse of WaveletCoder.Pack): an adaptive binary range coder, strip by strip ──
 function levelMap(pw, ph) {
   const L = new Uint8Array(pw * ph);
@@ -242,6 +270,16 @@ function page() {
   const note = s => { $('note').textContent = s; };
   async function open(buf, name) {
     if (stop) stop();
+    // our own WebM: its picture track played by the page's own video element; the universe's records read for what the clip holds
+    if (isWebm(buf)) {
+      const recs = findAttachment(buf, ATTACH_NAME);
+      const old = $('pic'), video = document.createElement('video'); video.id = 'pic'; video.loop = true; video.autoplay = true; video.muted = true; video.controls = true;
+      const url = URL.createObjectURL(new Blob([buf], { type: 'video/webm' })); video.src = url; old.replaceWith(video);
+      stop = () => { video.pause(); URL.revokeObjectURL(url); };
+      let what = 'its picture track';
+      if (recs) { try { const h = readHeader(recs); $('info').textContent = h.meta; const u = await readUniverse(recs, h); what += ' · inside it the universe itself: ' + u.points.length + ' camera points, ' + u.events.length + ' scene calls'; } catch (e) { what += ' (its records could not be read: ' + e.message + ')'; } }
+      note(name + ' · ' + what); return;
+    }
     let head; try { head = readHeader(buf); } catch (e) { note(name + ': ' + e.message); return; }
     const old = $('pic'), canvas = document.createElement('canvas'); canvas.id = 'pic'; old.replaceWith(canvas);
     $('info').textContent = head.meta;
@@ -278,7 +316,7 @@ function page() {
   }
   const openFile = file => file.arrayBuffer().then(b => open(b, file.name));
   $('file').onchange = e => { if (e.target.files[0]) openFile(e.target.files[0]); };
-  $('play').onclick = () => { paused = !paused; $('play').textContent = paused ? 'Play' : 'Pause'; };
+  $('play').onclick = () => { paused = !paused; $('play').textContent = paused ? 'Play' : 'Pause'; const v = $('pic'); if (v.tagName === 'VIDEO') { if (paused) v.pause(); else v.play(); } };
   $('meta').onclick = () => { const i = $('info'); i.style.display = i.style.display === 'block' ? 'none' : 'block'; };
   $('seek').oninput = e => { seekTo = e.target.value / 1000; };
   document.addEventListener('keydown', e => { if (e.code === 'Space') { $('play').click(); e.preventDefault(); } });
@@ -291,4 +329,4 @@ function page() {
 }
 
 // (the same sums, reachable from a check run outside a page)
-if (typeof module !== 'undefined') module.exports = { readHeader, levelMap, unpack, unpackStrip, readUniverse };
+if (typeof module !== 'undefined') module.exports = { readHeader, levelMap, unpack, unpackStrip, readUniverse, isWebm, findAttachment };

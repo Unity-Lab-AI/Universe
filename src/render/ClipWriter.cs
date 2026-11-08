@@ -45,7 +45,7 @@ namespace Universe.Render
         {
             path = System.IO.Path.ChangeExtension(path, Extension);
             if (Format == 1) return new Cdf97wWriter(path, w, h);                            // the .cdf97w: the waveforms and their metadata, nothing else
-            if (Format == 2) return new UniverseClipWriter(path);                            // the .cdf97w of the universe itself: the seed and the camera's track, no pixels
+            if (Format == 2) return new UniverseClipWriter(path, w, h);                            // the .cdf97w of the universe itself: the seed and the camera's track, no pixels
             return new Mp4Writer(path, w, h);
         }
     }
@@ -134,14 +134,24 @@ namespace Universe.Render
         public const ushort Version = 9; public const byte Kind = 1;
         private readonly System.IO.FileStream _file; private readonly System.IO.Compression.DeflateStream _z; private readonly System.IO.BinaryWriter _o;
         private readonly long _t0 = System.Diagnostics.Stopwatch.GetTimestamp(); private long _last = -1; private int _points;
-        public int Down { get { return 1; } }
+        public int Down { get; private set; }
         public string Path { get; private set; }
+        /// <summary>The picture track (our own VP9: what Media Player and a chat app show); null when the clip has none.</summary>
+        private readonly Vp9Track _video; private readonly string _part; private long _lastFrame = -1;
+        /// <summary>True when a frame is wanted for the picture track now (thirty a second at most).</summary>
+        public bool WantsFrame { get { return _video != null && (_lastFrame < 0 || (System.Diagnostics.Stopwatch.GetTimestamp() - _lastFrame) * 1000.0 / System.Diagnostics.Stopwatch.Frequency >= 28); } }
+        /// <summary>The name the clip of the universe itself is carried under inside the .cdf97w's WebM.</summary>
+        public const string AttachName = "universe.cdf97w";
         public double Seconds { get { return (System.Diagnostics.Stopwatch.GetTimestamp() - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
-        public UniverseClipWriter(string path)
+        /// <summary>A clip of the universe itself at <paramref name="path"/>; given the screen's size, it also films a picture track
+        /// (at most 1920 wide), and the .cdf97w is then our own WebM: the pictures any player shows, the universe's records attached.</summary>
+        public UniverseClipWriter(string path, int screenW = 0, int screenH = 0)
         {
-            Path = path;
+            Path = path; Down = 1;
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
-            _file = new System.IO.FileStream(path, System.IO.FileMode.Create, System.IO.FileAccess.Write);
+            if (screenW > 0 && screenH > 0) { Down = Math.Max(1, (screenW + 1919) / 1920); _video = new Vp9Track(screenW / Down, screenH / Down); }
+            _part = _video != null ? path + ".part" : path;                               // (the records gathered beside it while filming, then carried inside)
+            _file = new System.IO.FileStream(_part, System.IO.FileMode.Create, System.IO.FileAccess.Write);
             var h = new System.IO.BinaryWriter(_file);
             h.Write(Cdf97wCodec.Magic); h.Write(Version); h.Write(Kind);
             var meta = System.Text.Encoding.UTF8.GetBytes(Meta()); h.Write((ushort)meta.Length); h.Write(meta); h.Flush();
@@ -190,11 +200,24 @@ namespace Universe.Render
             if (_last >= 0 && (now - _last) * 1000.0 / System.Diagnostics.Stopwatch.Frequency < 28) return;
             _last = now; _o.Write((byte)1); _o.Write((uint)Ms()); world.WritePoint(_o); _points++;
         }
-        public void Add(byte[] rgb, int srcW, int srcH) { }                              // (no pixels: the universe draws them again)
+        /// <summary>A frame as filmed, for the picture track (the universe's own records need no pixels: it draws them again).</summary>
+        public void Add(byte[] rgb, int srcW, int srcH) { if (_video == null || !WantsFrame) return; _lastFrame = System.Diagnostics.Stopwatch.GetTimestamp(); _video.Add(rgb, srcW, srcH, (uint)Ms()); }
         public void Dispose()
         {
             if (Universe.Shell.MatterView.Recorded != null) Universe.Shell.MatterView.Recorded = null;
             try { _o.Flush(); _z.Dispose(); _file.Dispose(); } catch { }
+            if (_video == null) return;
+            // the .cdf97w: our own WebM, the picture track every player shows, the universe's records carried inside as an attached file
+            try
+            {
+                var frames = new System.Collections.Generic.List<byte[]>(); var keys = new System.Collections.Generic.List<bool>(); var times = new System.Collections.Generic.List<uint>();
+                _video.Finish(frames, keys, times);
+                var recs = System.IO.File.ReadAllBytes(_part);
+                WebmFile.Write(Path, "V_VP9", null, _video.Width, _video.Height, frames, times, keys, (uint)Ms(), recs, AttachName, "application/x-cdf97w");
+                System.IO.File.Delete(_part);
+                Universe.Program.WriteLog("cdf97w: " + frames.Count + " pictures in its track" + (_video.Dropped > 0 ? " (" + _video.Dropped + " let go while the coders were full)" : "") + ", the universe's records attached");
+            }
+            catch (Exception ex) { Universe.Program.WriteLog("cdf97w: its picture track could not be written (" + ex.Message + "); the universe's records are kept in " + _part); }
         }
     }
 

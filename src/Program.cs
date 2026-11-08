@@ -402,7 +402,7 @@ namespace Universe
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
                     if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
-                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { Universe.Render.ClipWriters.Seed = Seed; Universe.Render.ClipWriters.Tour = "grand-tour"; rec = OpenClip = new Universe.Render.UniverseClipWriter(System.IO.Path.ChangeExtension(recordTour, ".cdf97w")); recForTour = true; /* (a filmed tour is always the clip of the universe itself: the seed, the track, the scene; a few megabytes, never pictures; nothing written beside it) */ } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
+                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { Universe.Render.ClipWriters.Seed = Seed; Universe.Render.ClipWriters.Tour = "grand-tour"; rec = OpenClip = new Universe.Render.UniverseClipWriter(System.IO.Path.ChangeExtension(recordTour, ".cdf97w"), gpu.Width, gpu.Height); recForTour = true; /* (a filmed tour is always the clip of the universe itself: the seed, the track, the scene; a few megabytes, never pictures; nothing written beside it) */ } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
                     if (recForTour && world != null && !world.Touring && !(world.TourPaused && !world.TourFinished)) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
                     if (wantRecord)
                     {
@@ -420,7 +420,7 @@ namespace Universe
                     }
                     { var cr = rec as Universe.Render.ICardRecorder; bool onCard = cr != null && (rec is Universe.Render.Cdf97wWriter ? ((Universe.Render.Cdf97wWriter)rec).OnCard : rec is Universe.Render.FrontmanWriter && ((Universe.Render.FrontmanWriter)rec).OnCard); gpu.Recorder = onCard ? cr : null;   // (a .cdf97w worked out on the card inside the frame: the picture is never copied back for it)
                     if (frontman != null && rec == null && !wantShot && frontman.Wants(clock.Total) && !frontWanted) { frontWanted = true; gpu.GrabNext = true; gpu.GrabDown = frontman.Down(gpu.Width); }
-                    if (wantShot || (rec != null && !onCard && !(rec is Universe.Render.UniverseClipWriter))) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
+                    if (wantShot || (rec != null && !onCard && (!(rec is Universe.Render.UniverseClipWriter) || ((Universe.Render.UniverseClipWriter)rec).WantsFrame))) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
                     // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
                     gpu.CaptureHere();
                     if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);

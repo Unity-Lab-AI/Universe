@@ -560,3 +560,17 @@ The title shows the clip's progress.
 | Our H.264, with the colour's detail | 638 KB |
 
 **The comparison moved out of the game (2026-11-08).** It had been an entry in the game's View menu. It is a sample for showing the encoders, so it now opens on its own with `--encoders`, like the other sample sets.
+
+### The front man wired in: a .cdf97w Media Player plays (2026-11-08)
+
+- **The .cdf97w of the universe itself is now our own WebM.** It carries our VP9 picture track, at most 1920 wide. The universe's records (the seed, the camera's track, the scene calls, the metadata) are carried inside it as an attached file, which players pass by.
+- **Media Player, and any WebM player, show the pictures.** Our program reads the attached records and flies the universe from them. Our web page plays the pictures and reads the records.
+- **The track is coded in runs of 60 frames,** each starting whole, each on a thread of its own, so several cores keep up with thirty frames a second.
+- **Checked:** 120 frames through the track, none let go. Windows read all 120 from the .cdf97w (it reads the content, so no machine-wide setting is needed). The attached clip read back byte for byte.
+
+| Measured | |
+|---|---|
+| A changing 1080p frame, one core | about 150 ms |
+| The test's pictures | about 14 KB a frame |
+| 10 minutes at 1080p, at that rate | about 250 MB |
+

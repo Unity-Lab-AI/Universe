@@ -18,12 +18,21 @@ namespace Universe.Render
         /// <summary>True for a .cdf97w of the universe itself (version 9, kind 1).</summary>
         public static bool Is(string path)
         {
-            try { using (var r = new System.IO.BinaryReader(System.IO.File.OpenRead(path))) return r.BaseStream.Length > 7 && r.ReadUInt32() == Cdf97wCodec.Magic && r.ReadUInt16() == UniverseClipWriter.Version && r.ReadByte() == UniverseClipWriter.Kind; }
+            try { using (var f = Records(path)) { var r = new System.IO.BinaryReader(f); return f.Length > 7 && r.ReadUInt32() == Cdf97wCodec.Magic && r.ReadUInt16() == UniverseClipWriter.Version && r.ReadByte() == UniverseClipWriter.Kind; } }
             catch { return false; }
+        }
+        /// <summary>The universe's records of a .cdf97w: the file itself, or (the .cdf97w as our own WebM, a picture track any player
+        /// shows) the attached file carried inside it.</summary>
+        static System.IO.Stream Records(string path)
+        {
+            var f = System.IO.File.OpenRead(path);
+            var b = new byte[4]; f.Read(b, 0, 4); f.Position = 0;
+            if (b[0] != 0x1A || b[1] != 0x45 || b[2] != 0xDF || b[3] != 0xA3) return f;
+            using (f) { long n; long at = WebmFile.FindAttachment(f, UniverseClipWriter.AttachName, out n); if (at < 0) throw new InvalidOperationException("no clip of the universe inside"); f.Position = at; var d = new byte[n]; int got = 0; while (got < n) { int k = f.Read(d, got, (int)(n - got)); if (k <= 0) break; got += k; } return new System.IO.MemoryStream(d, 0, got); }
         }
         public UniverseClipReader(string path)
         {
-            using (var f = System.IO.File.OpenRead(path))
+            using (var f = Records(path))
             {
                 var h = new System.IO.BinaryReader(f);
                 if (h.ReadUInt32() != Cdf97wCodec.Magic || h.ReadUInt16() != UniverseClipWriter.Version || h.ReadByte() != UniverseClipWriter.Kind) throw new InvalidOperationException("not a clip of the universe itself");

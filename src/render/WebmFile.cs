@@ -16,8 +16,10 @@ namespace Universe.Render
         static void F64(List<byte> o, uint id, double v) { var b = BitConverter.GetBytes(v); Array.Reverse(b); El(o, id, new List<byte>(b)); }
 
         /// <summary>Writes the file: <paramref name="codec"/> (V_VP9, V_AV1), its private data (null: none), the frames with their
-        /// times in milliseconds and which are whole, and the clip's length.</summary>
-        public static void Write(string path, string codec, byte[] codecPrivate, int w, int h, IList<byte[]> frames, IList<uint> times, IList<bool> keys, uint lengthMs)
+        /// times in milliseconds and which are whole, and the clip's length; <paramref name="attachment"/> (null: none) carried as an
+        /// attached file named <paramref name="attachName"/> (players pass it by; our own program reads it). The file is written as
+        /// it goes, cluster by cluster, the segment's size set at the end.</summary>
+        public static void Write(string path, string codec, byte[] codecPrivate, int w, int h, IList<byte[]> frames, IList<uint> times, IList<bool> keys, uint lengthMs, byte[] attachment = null, string attachName = null, string attachMime = null)
         {
             var ebml = new List<byte>(); UInt(ebml, 0x4286, 1); UInt(ebml, 0x42F7, 1); UInt(ebml, 0x42F2, 4); UInt(ebml, 0x42F3, 8); Str(ebml, 0x4282, "webm"); UInt(ebml, 0x4287, 2); UInt(ebml, 0x4285, 2);
             var head = new List<byte>(); El(head, 0x1A45DFA3, ebml);
@@ -27,20 +29,71 @@ namespace Universe.Render
             if (codecPrivate != null) El(entry, 0x63A2, new List<byte>(codecPrivate));
             El(entry, 0xE0, video);
             var tracks = new List<byte>(); El(tracks, 0xAE, entry);
-            var seg = new List<byte>(); El(seg, 0x1549A966, info); El(seg, 0x1654AE6B, tracks);
-            var cues = new List<byte>();
-            int i0 = 0;
-            while (i0 < frames.Count)
+            using (var f = System.IO.File.Create(path))
             {
-                int i1 = i0 + 1; while (i1 < frames.Count && !keys[i1] && times[i1] - times[i0] < 30000) i1++;
-                var cl = new List<byte>(); UInt(cl, 0xE7, times[i0]);
-                for (int k = i0; k < i1; k++) { var sb = new List<byte>(); sb.Add(0x81); int rel = (int)(times[k] - times[i0]); sb.Add((byte)(rel >> 8)); sb.Add((byte)rel); sb.Add((byte)(keys[k] ? 0x80 : 0)); sb.AddRange(frames[k]); El(cl, 0xA3, sb); }
-                var tp = new List<byte>(); UInt(tp, 0xF7, 1); UInt(tp, 0xF1, (ulong)seg.Count);
-                var cp = new List<byte>(); UInt(cp, 0xB3, times[i0]); El(cp, 0xB7, tp); El(cues, 0xBB, cp);
-                El(seg, 0x1F43B675, cl); i0 = i1;
+                Action<List<byte>> put = l => f.Write(l.ToArray(), 0, l.Count);
+                put(head);
+                var sh = new List<byte>(); Id(sh, 0x18538067); put(sh); long sizeAt = f.Position; put(new List<byte>(new byte[8])); long body = f.Position;
+                var top = new List<byte>(); El(top, 0x1549A966, info); El(top, 0x1654AE6B, tracks); put(top);
+                if (attachment != null)
+                {
+                    // the attached file's header, then its bytes straight from the array (a clip's records can be megabytes)
+                    var fh = new List<byte>(); Str(fh, 0x466E, attachName ?? "clip"); Str(fh, 0x4660, attachMime ?? "application/octet-stream"); UInt(fh, 0x46AE, 1);
+                    var dataHead = new List<byte>(); Id(dataHead, 0x465C); Size8(dataHead, attachment.Length);
+                    long fileLen = fh.Count + dataHead.Count + attachment.Length;
+                    var ah = new List<byte>(); Id(ah, 0x1941A469); Size8(ah, 2 + 8 + fileLen); Id(ah, 0x61A7); Size8(ah, fileLen); ah.AddRange(fh); ah.AddRange(dataHead);
+                    put(ah); f.Write(attachment, 0, attachment.Length);
+                }
+                var cues = new List<byte>();
+                int i0 = 0;
+                while (i0 < frames.Count)
+                {
+                    int i1 = i0 + 1; while (i1 < frames.Count && !keys[i1] && times[i1] - times[i0] < 30000) i1++;
+                    var cl = new List<byte>(); UInt(cl, 0xE7, times[i0]);
+                    for (int k = i0; k < i1; k++) { var sb = new List<byte>(); sb.Add(0x81); int rel = (int)(times[k] - times[i0]); sb.Add((byte)(rel >> 8)); sb.Add((byte)rel); sb.Add((byte)(keys[k] ? 0x80 : 0)); sb.AddRange(frames[k]); El(cl, 0xA3, sb); }
+                    var tp = new List<byte>(); UInt(tp, 0xF7, 1); UInt(tp, 0xF1, (ulong)(f.Position - body));
+                    var cp = new List<byte>(); UInt(cp, 0xB3, times[i0]); El(cp, 0xB7, tp); El(cues, 0xBB, cp);
+                    var c = new List<byte>(); El(c, 0x1F43B675, cl); put(c); i0 = i1;
+                }
+                var cu = new List<byte>(); El(cu, 0x1C53BB6B, cues); put(cu);
+                long len = f.Position - body; f.Position = sizeAt; var sz = new List<byte>(); Size8(sz, len); put(sz);
             }
-            El(seg, 0x1C53BB6B, cues);
-            using (var f = System.IO.File.Create(path)) { f.Write(head.ToArray(), 0, head.Count); var s = new List<byte>(); El(s, 0x18538067, seg); f.Write(s.ToArray(), 0, s.Count); }
+        }
+
+        /// <summary>Where the attached file named <paramref name="name"/> starts in a WebM written by <see cref="Write"/>, and its length
+        /// (-1: none); read from the elements before the first cluster.</summary>
+        public static long FindAttachment(System.IO.Stream s, string name, out long length)
+        {
+            length = 0;
+            try
+            {
+                var r = new System.IO.BinaryReader(s); s.Position = 0;
+                Func<long> vint = () => { int b = r.ReadByte(), n = 1, m = 0x80; while (n <= 8 && (b & m) == 0) { n++; m >>= 1; } long v = b & (m - 1); for (int k = 1; k < n; k++) v = (v << 8) | r.ReadByte(); return v; };
+                Func<uint> id = () => { int b = r.ReadByte(); int n = (b & 0x80) != 0 ? 1 : (b & 0x40) != 0 ? 2 : (b & 0x20) != 0 ? 3 : 4; uint v = (uint)b; for (int k = 1; k < n; k++) v = (v << 8) | r.ReadByte(); return v; };
+                if (id() != 0x1A45DFA3) return -1; { long hl = vint(); s.Position += hl; }   // (the size read first: "Position += vint()" would read the position before the size)
+                if (id() != 0x18538067) return -1; vint();
+                while (s.Position < s.Length)
+                {
+                    uint e = id(); long n = vint();
+                    if (e == 0x1F43B675) return -1;                                         // (a cluster: no attachment before the frames)
+                    if (e != 0x1941A469) { s.Position += n; continue; }
+                    long end = s.Position + n;
+                    while (s.Position < end)
+                    {
+                        uint fe = id(); long fl = vint(); long fend = s.Position + fl; string nm = null;
+                        while (s.Position < fend)
+                        {
+                            uint c = id(); long cl = vint();
+                            if (c == 0x466E) nm = System.Text.Encoding.UTF8.GetString(r.ReadBytes((int)cl));
+                            else if (c == 0x465C && nm == name) { length = cl; return s.Position; }
+                            else s.Position += cl;
+                        }
+                    }
+                    return -1;
+                }
+            }
+            catch { }
+            return -1;
         }
     }
 }

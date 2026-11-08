@@ -24,7 +24,7 @@ namespace Universe.Shell
         private readonly ScaleHud _hud;
         private readonly MatterView _matter; private double _matterScale;     // below the ground's finest piece: how big the view is (km), 0 = not in the matter
         // the planet or moon you have come close to: its real ground, drawn in the same camera (-1: none)
-        private int _planet = -1; private PlanetTerrain _ground; private double _px, _py, _pz;   // its centre from the star, in universe units
+        private int _planet = -1; private PlanetTerrain _ground; private double _px, _py, _pz; private Extra _groundExtra;   // _planet -2: the ground is a small body's (_groundExtra), made by the same ground system a planet's is   // its centre from the star, in universe units
         private const double PlanetRange = 40;                // within 40 of its radii, the ground is made and drawn
         private static readonly int Stride = Marshal.SizeOf(typeof(StarVertex));
         private const int FarStars = 2500, NearStars = 150000;
@@ -60,6 +60,7 @@ namespace Universe.Shell
         // value in the kind's range, the same one its ground is lit by); moons turn once each orbit (one face to their planet)
         private double DayHours(int i)
         {
+            if (i < 0 || _system == null || i >= _system.Bodies.Count) return 8;   // (a small body: a few hours)
             var b = _system.Bodies[i];
             if (b.Parent >= 0 || b.Terrain == null) return Math.Max(1, b.Parent >= 0 ? b.Period * 8766 : 24);
             if (b.Locked) return Math.Max(1, b.Period * 8766);                          // tidally locked: it turns once each orbit, one face always to its star
@@ -1162,6 +1163,7 @@ namespace Universe.Shell
             foreach (var ex in _extras)
             {
                 if (ex.Shape.Length == 0 || !ShapeShown(ex, h)) continue;
+                if (_ground != null && _planet == -2 && ex == _groundExtra) continue;   // (its ground is made and drawn as a world's: the mesh would be a second stone over it)
                 if (_rockSolid == null) MakeSmallBodies();
                 double bx = RelX(ex), by = RelY(ex), bz = RelZ(ex), dx = bx - _ox, dy = by - _oy, dz = bz - _oz, bl = Math.Sqrt(bx * bx + by * by + bz * bz);
                 // its frame: +x toward its star (the anchor of the system you are in), spinning about that line
@@ -1722,25 +1724,42 @@ namespace Universe.Shell
         // make the ground of the body you have come close to, or let it go once you leave
         private void ChoosePlanet()
         {
-            if (_system == null) { DropPlanet(); return; }
+            // a small body you are at (an asteroid, a comet's nucleus, a Kuiper body, a rogue world) is a world like any: within forty
+            // of its radii its ground is made by the same ground system a planet's is, with its own shape, size, spin, minerals and
+            // elements, and everything from there down (the landing, the grains, a grain's face, the crystal, the atoms, the picks on
+            // its surface, the way out) is the one code a world uses: nothing special for rocks
+            var sb = _tKind == 6 && _tExtra != null && _tExtra.Shape.Length > 0 && !_tExtra.Hole && _tExtra.Mix != null && _tExtra.R > 0 ? _tExtra : null;
+            if (_system == null && sb == null) { DropPlanet(); return; }
             int best = -1; double bd = double.MaxValue;
-            for (int i = 0; i < _system.Bodies.Count; i++)
+            if (_system != null) for (int i = 0; i < _system.Bodies.Count; i++)
             {
                 double x, y, z; BodyPos(i, out x, out y, out z);
                 double d = Math.Sqrt((x - _ox) * (x - _ox) + (y - _oy) * (y - _oy) + (z - _oz) * (z - _oz)) / _system.Bodies[i].RadiusUnits;
                 if (d < bd) { bd = d; best = i; }
             }
+            if (sb != null) { double sx = RelX(sb) - _ox, sy = RelY(sb) - _oy, sz = RelZ(sb) - _oz, sd = Math.Sqrt(sx * sx + sy * sy + sz * sz) / sb.R; if (sd < bd) { bd = sd; best = -2; } }
             _cpBest = best; _cpBd = bd;
             if (bd > PlanetRange * 1.2) { DropPlanet(); return; }
-            if (best != _planet && bd < PlanetRange)
+            if ((best != _planet || (best == -2 && _groundExtra != sb)) && bd < PlanetRange)
             {
                 DropPlanet();
+                if (best == -2)
+                {
+                    _planet = -2; _groundExtra = sb; _spinRef = 0;
+                    uint sbSeed = (uint)(sb.Lines.Count > 1 ? sb.Lines[1].GetHashCode() : sb.Name.GetHashCode());
+                    _ground = new PlanetTerrain(_gpu.Device, "asteroid", sb.Name, sbSeed, false, sb.R / Units.Km(1)); _ground.MixId = sb.Mix;   // (its own radius, its own mix of minerals)
+                    ZoomLog("GROUND made for " + sb.Name + " (" + ScaleHud.Words(sb.R / Units.Km(1) * 2) + " across, mix " + sb.Mix + "), as a world's");
+                }
+                else
+                {
                 var b = _system.Bodies[best];
                 _planet = best;
                 _spinRef = Spin(best);                                                     // (its day as it is now: the light where its star really is)
                 _ground = new PlanetTerrain(_gpu.Device, b.Terrain ?? DeepView.TerrainKind(b.Kind), b.Kind, WorldSeed(best), false, b.RadiusUnits / Units.Km(1)) { Locked = b.Locked || (b.Parent < 0 && PlanetTerrain.TerrainKind(b.Terrain).Locked) };   // (a moon: its own regolith grains)
             }
-            if (_planet >= 0) BodyPos(_planet, out _px, out _py, out _pz);
+                }
+            if (_planet == -2 && _groundExtra != null) { _px = RelX(_groundExtra); _py = RelY(_groundExtra); _pz = RelZ(_groundExtra); }
+            else if (_planet >= 0) BodyPos(_planet, out _px, out _py, out _pz);
         }
 
         // the camera rides along with the planet or moon you picked (or are at) as it goes round its star
@@ -1773,7 +1792,11 @@ namespace Universe.Shell
         private int _cpBest = -1; private double _cpBd;                         // for the log: the nearest body in its own radii
         private double _spinRef;   // the world's spin when you came to it: its ground is held still and its sky turns by how far it has spun since
         private double SpunSince { get { return _ground != null && _planet >= 0 ? Spin(_planet) - _spinRef : 0; } }
-        private void DropPlanet() { if (_ground != null) { _ground.Dispose(); _ground = null; } _planet = -1; }
+        private void DropPlanet() { if (_ground != null) { _ground.Dispose(); _ground = null; } _planet = -1; _groundExtra = null; }
+        // the ground body's name for a card (a world's kind, or a small body's own name)
+        private string GroundKind() { return _planet == -2 && _groundExtra != null ? _groundExtra.Name.ToLowerInvariant() : _system != null && _planet >= 0 && _planet < _system.Bodies.Count ? _system.Bodies[_planet].Kind : "the ground"; }
+        // whether the pick is the body whose ground is made: the picked world, or the picked small body
+        private bool AtGroundBody() { return _ground != null && ((_tKind == 2 && _tIndex == _planet) || (_tKind == 6 && _planet == -2 && _tExtra != null && _tExtra == _groundExtra)); }
 
         // the top of what is under a direction, in km from the planet's radius: the sea's surface where there is sea and you are
         // above it; the sea bed once you are at the water (the dive: on down through it to the bed); else the real ground (a dry
@@ -2682,7 +2705,7 @@ namespace Universe.Shell
                 {
                     for (int q = 0; q < 40; q++) { double tm = (t0 + t1) * 0.5; if (above(tm) > 0) t0 = tm; else t1 = tm; }
                     double hx = x + dir.X * t1, hy = y + dir.Y * t1, hz = z + dir.Z * t1, l = Math.Sqrt(hx * hx + hy * hy + hz * hz);
-                    _tKind = 3; _tx = hx / l; _ty = hy / l; _tz = hz / l; _tName = "a spot on " + _system.Bodies[_planet].Kind; return;
+                    _tKind = 3; _tx = hx / l; _ty = hy / l; _tz = hz / l; _tName = "a spot on " + GroundKind(); return;
                 }
             }
             if (_system != null)
@@ -2854,7 +2877,7 @@ namespace Universe.Shell
             else if (_tKind >= 0 && _matterScale <= 0 && _spaceScale <= 0 && !(_pressed && _dragged) && !TourLooking && TargetFromCamera(out tdx, out tdy, out tdz, out trad))   // (in the matter or the gas, an earlier pick out in the world does not turn you)
             {
                 double l = Math.Sqrt(tdx * tdx + tdy * tdy + tdz * tdz);
-                if (l > 0 && _tKind == 2 && _tIndex == _planet && _ground != null)
+                if (l > 0 && AtGroundBody())
                 {
                     // coming down to the picked planet: from a tenth of its radius the view levels out from its middle toward
                     // its horizon (about 15 degrees below it), keeping the way you face, so you see the land ahead, not your feet
@@ -3139,7 +3162,7 @@ namespace Universe.Shell
                             _matter.SetNeutronCrust(dspot); _bodyUp = null; _spaceScale = 1e-3 / 0.6; _spaceTop = _spaceScale * 1.1;
                             ZoomLog("DIVE into the crust of " + exd.Name); return true;
                         }
-                        if (exd.Mix != null)
+                        if (exd.Mix != null && (exd.Shape.Length == 0 || _ground == null || _planet != -2))
                         {
                             double ux = -cxv / cl, uy = -cyv / cl, uz = -czv / cl;                 // from the body's middle to you: its surface here, under you
                             double sx = _ax - exd.X, sy = _ay - exd.Y, sz = _az - exd.Z, sl = Math.Sqrt(sx * sx + sy * sy + sz * sz);   // its star, for the light on the grains
@@ -3188,7 +3211,7 @@ namespace Universe.Shell
                         dir = new Vec3((float)(fdx / fl), (float)(fdy / fl), (float)(fdz / fl));
                         // at the picked planet's ground, the steps go by the height above the ground, all the way down;
                         // from afar, by the distance to just outside it
-                        bool atIt = _tKind == 2 && _tIndex == _planet && _ground != null;
+                        bool atIt = AtGroundBody();
                         reach = atIt ? AboveGround() : Math.Max(fl - (_tKind == 5 ? 0 : _tKind == 6 && _tExtra != null && _tExtra.Hole && _tExtra.Mass > 0 ? Units.Km(Physics.HorizonKm(_tExtra.Mass)) * 1.08 : frad * 1.2), fl * 1e-6);   // clusters and nebulae are clouds: flown into, not stopped at; a black hole: down to just outside its horizon
                     }
                 }
@@ -3287,7 +3310,7 @@ namespace Universe.Shell
         {
             var lk = Look; var upv = LevelUp(); var rt = Vec3.Cross(lk, ViewUp()).Normalized;
             // close over the picked world (under half its radius up) the view turns where you are, never circling the whole world
-            bool overIt = _ground != null && _tKind == 2 && _tIndex == _planet && AboveGround() / Units.Km(1) < _ground.Radius * 0.5;
+            bool overIt = AtGroundBody() && AboveGround() / Units.Km(1) < _ground.Radius * 0.5;
             for (int pass = 0; pass < 2; pass++)
             {
                 double ang = pass == 0 ? yawRad : pitchRad; if (Math.Abs(ang) < 1e-12) continue;
@@ -3345,7 +3368,7 @@ namespace Universe.Shell
         private double OnCourse() { double u = Math.Max(0, Math.Min(1, (0.12 - OffTarget()) / 0.08)); return u * u * (3 - 2 * u); }
         private double OffTarget()
         {
-            if (_tKind == 2 && _ground != null && _tIndex == _planet) return 0;          // (coming down to the picked world the view looks ahead to its horizon, not at its middle: that is on course)
+            if (AtGroundBody()) return 0;          // (coming down to the picked world the view looks ahead to its horizon, not at its middle: that is on course)
             if (_spaceScale > 0) return 0;                                               // (dived into a body or a hole: the zoom goes on wherever you look; the fall is watched looking back at the horizon)
             double dx, dy, dz, r; if (_tKind < 0 || !TargetFromCamera(out dx, out dy, out dz, out r)) return 0;
             double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l <= 0) return 0; var lk = Look;
@@ -4019,7 +4042,7 @@ namespace Universe.Shell
             if (_tKind == 5 && TargetFromCamera(out qx, out qy, out qz, out qr)) return Math.Max(1e-30, Math.Sqrt(qx * qx + qy * qy + qz * qz) / Units.Km(1));
             // on the tour, how far it is to what the tour goes to (the picked world's ground; anything else picked, itself), never
             // just the nearest thing (beside a black hole every other zoom would think itself already there)
-            if (_tour != null && _tKind == 2 && _tIndex == _planet && _ground != null) return Math.Max(1e-30, AboveGround()) / Units.Km(1);
+            if (_tour != null && AtGroundBody()) return Math.Max(1e-30, AboveGround()) / Units.Km(1);
             if (_tour != null && _tKind >= 0 && _farScale <= 0 && TargetFromCamera(out qx, out qy, out qz, out qr)) return Math.Max(1e-30, Math.Sqrt(qx * qx + qy * qy + qz * qz) / Units.Km(1));
             return Math.Max(1e-30, Math.Max(NearestDistance(), _farScale)) / Units.Km(1);   // zoomed out, the view is as wide as how far out you have pulled (out among the web a galaxy is always near)
         }
@@ -4294,7 +4317,7 @@ namespace Universe.Shell
                 double gh = _ground.Solid ? _ground.GroundAt(_tx, _ty, _tz) : 0;
                 bool sea = _ground.HasWater && gh < 0, ice = Math.Abs(_ty) > 0.86;
                 L.Add(sea ? "sea" : ice ? "ice" : "land"); 
-                L.Add("on: " + _system.Bodies[_planet].Kind);
+                L.Add("on: " + GroundKind());
                 L.Add("place: " + (Math.Asin(_ty) * 180 / Math.PI).ToString("0.#") + " lat, " + (Math.Atan2(_tz, _tx) * 180 / Math.PI).ToString("0.#") + " long");
                 L.Add(sea ? "depth: " + (-gh * 1000).ToString("N0") + " m of water" : "height: " + (gh * 1000).ToString("N0") + " m above the sea");
                 L.Add(sea ? "water over sand and mud" : ice ? "ice and packed snow" : gh > 3 ? "bare rock and scree" : gh > 1 ? "rock and thin soil" : "soil, sand and stone");
@@ -4457,12 +4480,12 @@ namespace Universe.Shell
             {
                 double pdx, pdy, pdz, prad; string picked = _tKind >= 0 && TargetFromCamera(out pdx, out pdy, out pdz, out prad) ? " · going to " + _tName + ", " + Units.Describe(Math.Max(0, Math.Sqrt(pdx * pdx + pdy * pdy + pdz * pdz) - prad)) + " away" : " · click something to go to it";
                 string where = _spaceScale > 0 ? "in " + _tName + ", " + ScaleHud.Words(_spaceScale * 0.6) + " from the point you dive into: " + _matter.Stage(_spaceScale)
-                    : _matterScale > 0 ? "at " + _system.Bodies[_planet].Kind + ", " + ScaleHud.Words(_matterScale * 0.6) + " above the ground: " + _matter.Stage(_matterScale)
-                    : _ground != null ? "at " + _system.Bodies[_planet].Kind + ", " + Units.Describe(AboveGround()) + " above the ground"
+                    : _matterScale > 0 ? "at " + GroundKind() + ", " + ScaleHud.Words(_matterScale * 0.6) + " above the ground: " + _matter.Stage(_matterScale)
+                    : _ground != null ? "at " + GroundKind() + ", " + Units.Describe(AboveGround()) + " above the ground"
                     : _system != null ? "in the system of a " + _system.StarName + " (" + _system.Bodies.Count + " planets and moons)"
                     : _near >= 0 ? (NearShare() > 0.5 ? "among the stars of " : "near ") + _galaxies[_near].Name : "among the galaxies";
                 double hr = LocalHour(); string when = " · time: " + TimeNames[TimeStep] + (hr >= 0 ? ", " + ((int)hr).ToString("00") + ":" + ((int)(hr % 1 * 60)).ToString("00") + " here" : "") + ClockWords() + GravityWords();
-                var lh = LayerHere(); if (lh != null) where = "inside " + (_system != null && _planet >= 0 ? _system.Bodies[_planet].Kind : "the giant") + ", in its " + lh.Name.ToLowerInvariant() + " (" + lh.Says + ")";
+                var lh = LayerHere(); if (lh != null) where = "inside " + (_system != null && _planet >= 0 ? GroundKind() : "the giant") + ", in its " + lh.Name.ToLowerInvariant() + " (" + lh.Says + ")";
                 { var sl = StarLayerHere(); if (sl != null && _spaceScale <= 0) { double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) / Units.Km(1), RK = StarRadiusNow / Units.Km(1); where = "inside the " + _system.StarName + ", " + ScaleHud.Words(RK - sdK) + " below its surface, in its " + sl.Name.ToLowerInvariant() + " (about " + LayerTempK(sl, sdK / RK).ToString("N0") + " K: " + sl.Says + ")"; } }
                 return PreviewText.AppName + " · " + where + when + picked + (_tour != null && _tourAt < _tour.Count ? " · tour: " + _tour[_tourAt].Name : "") + " · " + (_spaceScale > 0 || _matterScale > 0 || _tKind == 5 ? "looking at " + ScaleHud.Words(ViewDistanceKm()) + " away" : "nearest thing " + Units.Describe(NearestDistance()) + " away") + " · wheel: fly in or out toward the mouse · drag: circle the pick or look around · right click: clear the pick · W A S D Q E: fly · H: scale on or off · Esc: close · card " + (int)Math.Round(Window.GpuBusy * 100) + "% busy (GPU use " + (int)Math.Round(Window.GpuUse * 100) + "%)";
             }

@@ -110,13 +110,14 @@ namespace Universe.Gen
             Solid = tk.Solid; HasWater = tk.Water; HasClouds = tk.Clouds;
             CloudKm = tk.CloudKm; AirKm = tk.AirKm; AirR = tk.Air[0]; AirG = tk.Air[1]; AirB = tk.Air[2];
             _tk = tk; MixId = tk.Grains;                                                 // (the ground its matter is made of: its kind's grains)
+            _reliefScale = tk.ReliefOfRadius > 0 ? Radius * tk.ReliefOfRadius / 8.0 : 1;   // (a small body: its relief a share of its radius, the base relief being about eight kilometres on a world)
         }
 
         // ── each kind of world is a template in content/terrain.unt (none named in code): any number may be a range
         // (a..b) and any colour a range (r g b .. r g b); every world of the kind takes its own values from its seed, so no
         // two are the same, and the same seed always gives the same world ──
         public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
-            public double LandShare = 0.06, CloudShift, DayHours = 24, Tides = 0.5, Bands = 19, GreatStorm = 1;
+            public double LandShare = 0.06, CloudShift, DayHours = 24, Tides = 0.5, Bands = 19, GreatStorm = 1, ReliefOfRadius;   // ReliefOfRadius: the ground's relief as a share of the world's radius (a small body's lumps and craters); 0 for a world's own kilometres
             public bool Molten, Dunes, FrozenSea, SnowPatches, Locked, PolarIce = true, Dry, TropicalSoil, Life = true, ManyVolcanoes, Rivers = true, SeaFloorVolcanoes;
             public double VolcanoCount = 30; public string Grains;
             public double[][] Ground;                  // land colours by height: below h, r g b, and 1 if the ground's patchiness tints it
@@ -169,7 +170,7 @@ namespace Universe.Gen
             t.Solid = g("solid") != "no"; t.Water = g("water") == "yes"; t.Clouds = g("clouds") != "no";
             t.Air = c("air-colour", t.Air); t.Cloud = c("cloud-colour", t.Cloud); t.Rock = c("rock-colour", t.Rock);
             Func<string, bool, bool> yes = (k, f) => { var v = g(k); return v == "" ? f : v == "yes"; };
-            t.LandShare = d("land-share", 0.06); t.CloudShift = d("cloud-shift", 0); t.DayHours = d("day-hours", 24); t.Tides = d("tides", 0.5);
+            t.LandShare = d("land-share", 0.06); t.CloudShift = d("cloud-shift", 0); t.DayHours = d("day-hours", 24); t.Tides = d("tides", 0.5); t.ReliefOfRadius = d("relief-of-radius", 0);
             t.Bands = Math.Round(d("bands", 19)); t.GreatStorm = d("great-storm", 1);
             t.Molten = yes("molten", false); t.Dunes = yes("dunes", false); t.FrozenSea = yes("frozen-sea", false); t.SnowPatches = yes("snow-patches", false);
             t.Locked = yes("tidally-locked", false); t.PolarIce = yes("polar-ice", true); t.Dry = yes("dry", false); t.TropicalSoil = yes("tropical-soil", false);
@@ -266,6 +267,7 @@ namespace Universe.Gen
 
         /// <summary>Ground height in km above the sea for a unit direction, with the colour and glow of the surface there.
         /// <paramref name="layers"/> is how much fine detail to add (more when the camera is close).</summary>
+        private double _reliefScale = 1;
         public double Height(double x, double y, double z, int layers, out float r, out float g, out float b, out float glow)
         {
             if (Shell && Habitable)
@@ -273,7 +275,7 @@ namespace Universe.Gen
                 // the inside of the orb is a planet landscape turned inside out: the same working terrain as the planets,
                 // sized to the orb itself, so it curves up and around you with the star at the centre
                 _latOverride = 0.25;                                  // the star is overhead everywhere: no frozen poles
-                double hs = HeightBase(x, y, z, layers, out r, out g, out b, out glow);
+                double hs = HeightBase(x, y, z, layers, out r, out g, out b, out glow) * _reliefScale;
                 _latOverride = -1;
                 int biome = (int)(Fbm(x, y, z, _seed + 970u, 3, 3) * 8) % 8;   // regions with their own terraformed climate
                 float tv = (float)(0.85 + 0.3 * _tint);
@@ -309,7 +311,7 @@ namespace Universe.Gen
             double x2 = x, y2 = y, z2 = z, share = 1;
             if (Drift != null && Solid) Drift(ox, oy, oz, out x, out y, out z, out x2, out y2, out z2, out share, out edgeAt, out edgeKind);
             if (Drift != null && Solid) _latOverride = Math.Abs(oy);                // climate follows where the ground is now
-            double h = HeightBase(x, y, z, layers, out r, out g, out b, out glow);
+            double h = HeightBase(x, y, z, layers, out r, out g, out b, out glow) * _reliefScale;
             if (!Solid) { LastField = -1; return h; }
             h = Landforms(x, y, z, h, layers, ref r, ref g, ref b, ref glow);
             if (share < 1)
@@ -317,7 +319,7 @@ namespace Universe.Gen
                 // near a plate edge, the ground of both plates is blended, half and half right on the edge, so the two join
                 // smoothly instead of standing as a cliff
                 float r2, g2, b2, gl2;
-                double h2 = HeightBase(x2, y2, z2, layers, out r2, out g2, out b2, out gl2);
+                double h2 = HeightBase(x2, y2, z2, layers, out r2, out g2, out b2, out gl2) * _reliefScale;
                 h2 = Landforms(x2, y2, z2, h2, layers, ref r2, ref g2, ref b2, ref gl2);
                 float w = (float)share;
                 h = h * share + h2 * (1 - share); r = r * w + r2 * (1 - w); g = g * w + g2 * (1 - w); b = b * w + b2 * (1 - w); glow = glow * w + gl2 * (1 - w);

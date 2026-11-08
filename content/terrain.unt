@@ -364,3 +364,24 @@ interest: 1.5
 grains: ice
 makeup: a crust of ice; perhaps a dark sea of water beneath; no air
 density-g-cc: 1.9
+
+# a small body (an asteroid, a comet's nucleus, a Kuiper body): a world like any, made by the same ground system, with its radius from
+# the body and its grains from the body's own mix; its relief a share of its radius (lumps and craters), no air, no seas, no life
+@terrain asteroid
+name: A small body
+radius-km: 10
+solid: yes
+water: no
+clouds: no
+air-km: 0
+rock-colour: 0.46 0.43 0.4
+base-k: 180
+relief-of-radius: 0.18
+land-share: 1
+polar-ice: no
+life: no
+rivers: no
+volcano-count: 0
+day-hours: 6..30
+grains: asteroid-s
+

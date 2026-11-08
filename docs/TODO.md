@@ -155,6 +155,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The one zoom chain on every body, the world's own stops from a person's height to the quark and back, nothing left out on the asteroid or the comet:** (built: DNA-AND DESIGN 646; waits on the test) "what the fuck do u not undersatnad anbout unifying the zoom ins for all bodies" / "i dont believe you this is the 23rd time weve tried to fix it!"
 
+- [~] **A small body a world: its ground made by the same ground system a planet's is, nothing special for rocks:** (built: DNA-AND DESIGN 647; waits on the test) "start it then !!! FUCK!!!!!!!!!! YOU!!!!!!! YOU ARRE WASTING MY TIME!!!!!!! FUCKING DO IT!!!! HJESUS FUCKING CHRIST ALMIGHTY WHAT THE FUCK DO I HAVE TO DO TO GET YOUR ASS CODING"
+
 ---
 
 ## Pending

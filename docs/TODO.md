@@ -228,7 +228,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **Full 4K kept: steps a quarter above 1920 wide (89 % of stars), the .cdf97w version 7 as waveforms and metadata only, no H.264:** (built: DNA-AND DESIGN 692; waits on the test) "this is only viewable on 4k with pixel and star and zoom scale and shit tho" / "the H.264 is the probelm we only need the waveforms and the metadata and the conversion equation still needs more hypothestsiing and research and devising and invention"
 
-- [ ] **The conversion equation (how a media player turns the waveforms into pixels): C1 our terms as a JPEG 2000 codestream in Motion JPEG 2000, C2 a decoder installed on Windows, C3 a web player, C4 the change frames; next, C1 on one frame:** (research, DNA-AND DESIGN 692; reference/univsmatics/FRONTMAN-RESEARCH.md section 8) "the H.264 is the probelm we only need the waveforms and the metadata and the conversion equation still needs more hypothestsiing and research and devising and invention"
+- [ ] (C1 rejected: DNA-AND DESIGN 693, "WE DO NOT USE OTHER PEOPLES CODE SCRIPS FILES SOFTWARE CREATIONS WHAT THE FUCVK IS WRONG WITH YOU@!@@@@@@") **The conversion equation (how a media player turns the waveforms into pixels): C1 our terms as a JPEG 2000 codestream in Motion JPEG 2000, C2 a decoder installed on Windows, C3 a web player, C4 the change frames; next, C1 on one frame:** (research, DNA-AND DESIGN 692; reference/univsmatics/FRONTMAN-RESEARCH.md section 8) "the H.264 is the probelm we only need the waveforms and the metadata and the conversion equation still needs more hypothestsiing and research and devising and invention"
 
 ---
 

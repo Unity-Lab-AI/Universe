@@ -342,3 +342,5 @@ JPEG 2000's coder packs better, by 4 to 5 dB at equal size. Its rate control tra
 
 The next experiment is C1 on one frame: write our terms as a JPEG 2000 codestream, decode it with OpenJPEG, and check it reproduces our solved picture exactly.
 
+**C1 rejected (2026-11-08), on the creator's word: "WE DO NOT USE OTHER PEOPLES CODE SCRIPS FILES SOFTWARE CREATIONS WHAT THE FUCVK IS WRONG WITH YOU@!@@@@@@".** C1 rests on JPEG 2000, someone else's format, and its decoders, other people's software. It is not pursued, and no prototype of it is kept. The measurements E1 to E12 used outside tools (OpenCV with OpenJPEG, numpy) on the researcher's side only; the program never contained or used any of them. From here, measurements use the program's own code only.
+

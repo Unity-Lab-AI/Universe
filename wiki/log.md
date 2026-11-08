@@ -78,3 +78,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (a zoom below the hand-over ends only in the matter): DNA-AND DESIGN 667.
 - 2026-11-07 (the nebula clouds: six radii, the nearest six, built once): DNA-AND DESIGN 668.
 - 2026-11-07 (the nebula clouds dimmed, no white cores): DNA-AND DESIGN 669.
+- 2026-11-07 (the face's molecules bounded, the climb out drawn): DNA-AND DESIGN 670.

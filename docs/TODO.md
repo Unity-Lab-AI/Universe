@@ -196,6 +196,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The nebula clouds at a fifth of their brightness, no white cores:** (built: DNA-AND DESIGN 669; waits on the test) "asnmd they are too bright white in centers is goona melt a hole in my screen"
 
+- [~] **The things on the face bounded and far molecules each atom's cloud, so the crystal, the atoms and the electrons are drawn on the way out of a living world (they had met the frame's glow ceiling first, and the climb out was black):** (built: DNA-AND DESIGN 670; waits on the test) "the rise out of planet view skipped all the atoms and electrons and white black layers and shit and jsut poped out skipping it all on reverse zoom out of the planet from qwerk level it was all black till a couple layers of white black lattuses finally poped into from the blackness but the fucking zsoom out is holdsing face scale"
+
 ---
 
 ## Pending

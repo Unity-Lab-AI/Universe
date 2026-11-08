@@ -1073,7 +1073,7 @@ namespace Universe.Shell
 
         private void Add(List<StarVertex> l, double x, double y, double z, double size, float r, float g, float b, double s)
         {
-            if (l.Count >= 900000) return;                                                  // (a ceiling: a frame of millions of soft points had the card stop answering, the driver reset by Windows, the program gone with it)
+            if (l.Count >= 1500000) return;                                                  // (a ceiling: a frame of millions of soft points had the card stop answering, the driver reset by Windows, the program gone with it)
             x -= _fx; z -= _fz;                                                             // around the point you dive into
             double vx = x / s + _ex, vy = (y + _yOff - _fy) / s + _ey, vz = z / s + _ez, vs = size / s;        // view units: one unit = the scale; you are 0.6 above the surface under you
             if (Math.Abs(vx - _ex) > 60 || Math.Abs(vz - _ez) > 60 || vy - _ey < -60 || (vs < 2e-4 && size > 1e-20) || vs > 400) return;   // (electrons are points: kept as the smallest dot on screen)
@@ -1301,7 +1301,7 @@ namespace Universe.Shell
                 var st = _surf[t]; if (st.Life && !_lifeHere) continue;                     // living things only on a living world
                 if (st.Hi / s < 0.004 || st.Lo / s > 3) continue;                           // only at sizes where it shows
                 double cell = st.Hi * st.Cell; long n = (long)Math.Ceiling(2 * s / cell);
-                if (n > 40) continue;
+                if (n > 20) continue;   // (bounded: forty a side was a million glows of molecules before the crystal's own atoms were reached)
                 long ci0 = (long)Math.Floor(_fx / cell), cj0 = (long)Math.Floor(_fz / cell);
                 for (long i = ci0 - n; i <= ci0 + n; i++)
                     for (long j = cj0 - n; j <= cj0 + n; j++)
@@ -1325,6 +1325,14 @@ namespace Universe.Shell
                             double oh = st.Bond, half = st.Angle / 2 * Math.PI / 180, turn = Hash(i, j, 104, _seed) * Math.PI * 2;
                             double ball = 1 - Fade(s, AtomSpacing * 4, AtomSpacing * 2);               // close in, each atom becomes its own system
                             float cf = (float)Fade(s, AtomSpacing * 4, AtomSpacing * 2);
+                            // a molecule away from where you look: each atom its cloud at its size (as the lattice's atoms are drawn), its own system
+                            // only near the look (every molecule in reach had been its three atoms' full systems: a million glows before the crystal was reached)
+                            if (!NearLook(x, y, z, s) && (x - _fx) * (x - _fx) + (z - _fz) * (z - _fz) > s * s * 0.36)
+                            {
+                                float cw = (float)Math.Max(ball, cf) * 0.8f; LatticeCloud(glow, o, x, y, z, s, cw);
+                                for (int q = -1; q <= 1; q += 2) { double hx = q * oh * Math.Sin(half), hy = oh * Math.Cos(half); LatticeCloud(glow, hh, x + hx * Math.Cos(turn), y + hy * 0.5, z + hx * Math.Sin(turn), s, cw); }
+                                continue;
+                            }
                             if (ball > 0.03) AtomSystem(glow, o, x, y, z, s, _clock, i * 31 + j, (float)ball);
                             if (cf > 0.01 && NearLook(x, y, z, s)) Cloud(glow, o, x, y, z, s, _clock, i * 31 + j, cf);
                             for (int q = -1; q <= 1; q += 2)

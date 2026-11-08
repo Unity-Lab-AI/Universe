@@ -164,7 +164,7 @@ namespace Universe.Render
             Path = path; Down = frontMan ? 1 : (w > 1920 ? 2 : 1);                         // (the front man: the full size of the screen)
             _w = Math.Max(2, w / Down); _h = Math.Max(2, h / Down); _pw = Wavelet97.PadSide(_w); _ph = Wavelet97.PadSide(_h);
             System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
-            if (frontMan) _video = new Vp9Track(_w, _h, 120, true);
+            if (frontMan) _video = new Vp9Track(_w, _h, 30, true);                    // (quality 30: the stars points of light, no blocks round them; 120 had left the sky blocky)
             _part = frontMan ? path + ".part" : path;                                     // (the equations gathered beside it while filming, then carried inside)
             _file = new System.IO.FileStream(_part, System.IO.FileMode.Create, System.IO.FileAccess.Write); _o = new System.IO.BinaryWriter(_file);
             _o.Write(Magic); _o.Write(Cdf97wCodec.Version); _o.Write((ushort)_w); _o.Write((ushort)_h); _o.Write((ushort)_pw); _o.Write((ushort)_ph);

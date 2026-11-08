@@ -125,3 +125,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (logs kept across runs; every way out recorded): DNA-AND DESIGN 714.
 - 2026-11-08 (zooms never stuck off course; MP4 taken out): DNA-AND DESIGN 715, 716.
 - 2026-11-08 (the .cdf97w as designed: equations into our VP9 encoder, the front man for any player): DNA-AND DESIGN 717.
+- 2026-11-08 (the front man at quality 30): DNA-AND DESIGN 718.

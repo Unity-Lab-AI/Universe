@@ -588,3 +588,16 @@ The title shows the clip's progress.
 
 - **Checked:** 120 frames filmed. Inside were 120 frames of equations and 120 pictures in the front man. Windows read all 120, the last at 3966 ms.
 
+### The front man's quality (2026-11-08)
+
+Measured on a filmed 4K frame, against the frame as drawn:
+
+| VP9 quality | A whole 4K frame | Against the frame drawn | The stars |
+|---|---|---|---|
+| 120 | 213 KB | 37.7 dB | in blocks |
+| 60 | 389 KB | 40.3 dB | |
+| 30 | 436 KB | 41.3 dB | points of light, as drawn |
+| 15 | 557 KB | 41.4 dB | no better |
+
+The front man now codes at 30. It codes as fast as before, about 39 ms a 4K frame.
+

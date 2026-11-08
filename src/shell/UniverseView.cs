@@ -654,7 +654,7 @@ namespace Universe.Shell
         private double SnShellKmS(Sn sn, double years) { double v = sn.K.V; return years <= _snFreeYears ? v : v * 0.4 * Math.Pow(_snFreeYears / years, 0.6); }
         private static string Years(double y) { return y < 1 ? (y * 365.25).ToString("0") + " days" : y < 1000 ? y.ToString("0") + " years" : y < 1e6 ? (y / 1000).ToString("0.#") + " thousand years" : (y / 1e6).ToString("0.#") + " million years"; }
         private int _snLogTick = -1;   // (the log's clock for the tour's supernova: what its fireball is doing, twice a second)
-        private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf, _shellCrabBuf, _shellCasBuf; private int _snPointCap, _shellN; private StarSurface _fireSurf; private StarVertex[] _fireVerts;   // (_fireSurf: a fireball's face, drawn as a star's, coloured by its heat each frame)
+        private UploadBuffer _snPointBuf, _shellYoungBuf, _shellOldBuf, _fireBuf, _shellCrabBuf, _shellCasBuf, _ejectaBuf; private int _ejectaN; private int _snPointCap, _shellN; private StarSurface _fireSurf; private StarVertex[] _fireVerts;   // (_fireSurf: a fireball's face, drawn as a star's, coloured by its heat each frame)
         private void MakeShells()
         {
             // a shell of flung matter: a thin sphere of points, bunched into filaments (knots and streamers, as the real ones are), the
@@ -680,6 +680,15 @@ namespace Universe.Shell
             _shellOldBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellOldBuf.Write(old.ToArray(), _shellN);
             _shellCrabBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellCrabBuf.Write(crab.ToArray(), _shellN);
             _shellCasBuf = new UploadBuffer(_gpu.Device, (long)_shellN * Stride); _shellCasBuf.Write(cas.ToArray(), _shellN);
+            // the ejecta's cloud: the flung matter filling the shell, soft points through its volume (denser toward the edge, as matter
+            // swept up is), in hot gas's colours, so a young supernova is a ballooning cloud round its glowing face, never a bare star
+            var cloud = new List<StarVertex>(); var rngC = new Rng(0xC10DUL);
+            for (int k = 0; k < 2400; k++)
+            {
+                double u = rngC.NextDouble() * 2 - 1, a = rngC.NextDouble() * Math.PI * 2, sq = Math.Sqrt(1 - u * u), r = 0.35 + 0.65 * Math.Pow(rngC.NextDouble(), 0.4); float br = (float)(0.3 + 0.5 * rngC.NextDouble());
+                cloud.Add(new StarVertex { X = (float)(sq * Math.Cos(a) * r), Y = (float)(u * r), Z = (float)(sq * Math.Sin(a) * r), Size = 0.16f, R = 1f * br, G = 0.55f * br, B = 0.35f * br, A = 1 });
+            }
+            _ejectaN = cloud.Count; _ejectaBuf = new UploadBuffer(_gpu.Device, (long)_ejectaN * Stride); _ejectaBuf.Write(cloud.ToArray(), _ejectaN);
         }
         // the colour of a glowing surface by its heat (the usual blackbody look: orange at 3,000 K, white near 6,500, blue-white past 10,000)
         private static void Blackbody(double tK, out float r, out float g, out float b)
@@ -760,11 +769,14 @@ namespace Universe.Shell
                             var mf = Mat4.Identity; mf.M11 = mf.M22 = mf.M33 = (float)rPhot; mf.M41 = (float)ux; mf.M42 = (float)uy; mf.M43 = (float)uz;
                             DrawPoints(_fireBuf, n, mf * vp, right, up, 1f, 0f, w, h, time, 0, bright);
                         }
-                        if (rEj > rPhot * 1.5 && rEj / Math.Max(1e-30, d) * h > 2.5)
+                        if (rEj > rPhot * 1.2 && rEj / Math.Max(1e-30, d) * h > 2.5)
                         {
-                            // the ejecta's own edge, thin and glowing, racing out ahead of the glowing face (and all that is left once the fireball has thinned)
-                            float fade = (float)Math.Max(0.05, Math.Min(0.6, L / sn.K.Peak + 0.05));
+                            // the ejecta: the flung matter's cloud ballooning out round the glowing face, bright while the supernova shines
+                            // whatever its light is against its peak (its thin edge at a tenth had left a bare star with no cloud at every
+                            // stop), and its glowing edge racing out ahead; what is left once the fireball has thinned
+                            float fade = (float)Math.Max(L > 1e6 ? 0.85 : 0.2, Math.Min(0.9, L / sn.K.Peak + 0.1));
                             var m = Mat4.Identity; m.M11 = (float)rEj; m.M22 = (float)rEj; m.M33 = (float)rEj; m.M41 = (float)ux; m.M42 = (float)uy; m.M43 = (float)uz;
+                            DrawPoints(_ejectaBuf, _ejectaN, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade * 0.55f);
                             DrawPoints(_shellYoungBuf, _shellN, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade);
                         }
                     }
@@ -832,7 +844,7 @@ namespace Universe.Shell
             double endD = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving; bool tail = days > endD;
             _tRadius = sn.K.Leaves != "nothing" && (tail || years > 2) ? Units.Km(sn.K.Leaves == "magnetar" || sn.Mass < _snNsMax ? 12 : Physics.HorizonKm(sn.Mass) * 3)
                 : years > 2 ? Units.Km(SnShellLy(sn, years) * 9.4607e12)
-                : Units.Km(Math.Max(1e8, Math.Max(SnPhotKm(sn, days), days < sn.K.Rise ? SnEjectaKm(sn, Math.Min(days, 60)) * 0.5 : 0)));
+                : Units.Km(Math.Max(1e8, Math.Max(SnPhotKm(sn, days), SnEjectaKm(sn, days) * 0.5)));   // (the shots framed on the ballooning cloud, not only the face inside it)
         }
         // a click on one: the supernova going now nearest the line under the mouse, within about two degrees
         private bool ClickSupernova(Vec3 dir)

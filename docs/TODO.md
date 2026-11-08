@@ -149,6 +149,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The near plane never leaping out past a body you are beside, so the stone is not clipped away; every rock with a kind and a ground to dive onto:** (built: DNA-AND DESIGN 643; waits on the test) "same issue and i got picks directly before i didappears and directly after not a framwe skipped" / "i got pics"
 
+- [~] **A young supernova's ejecta a ballooning cloud round its face, bright while it shines, the shots framed on it:** (built: DNA-AND DESIGN 644; waits on the test) "one issue now when i told u to add super nova i see their gas explosions globes all over but every time the tour goes to a super nova its just a star with no cluad, wtf it even says it poped within the week so how the fuck and where is the balloning gas cloud of the super nova is not there whre the tours go to even tho it says it just blew a week ago which we can say as weeks fly by like seconds in this game" / "cant* say"
+
 ---
 
 ## Pending

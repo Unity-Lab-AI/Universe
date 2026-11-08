@@ -80,8 +80,8 @@ namespace Universe.Platform
             // the clip's format: an MP4 (any player) or a .cdf97w (the pictures as wavelet equations, played by this program)
             Child("STATIC", "Clip format", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
             _clipFormat = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipFormat, x + (int)(74 * s), y, cw - (int)(74 * s), (int)(300 * s), _small);
-            foreach (var nm in new[] { "MP4 (H.264 video: plays in any player)", ".cdf97w (the waveforms and their metadata: plays here)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
-            SendMessage(_clipFormat, CB_SETCURSEL, (IntPtr)(Settings.Get("clip-format", 0) >= 1 ? 1 : 0), IntPtr.Zero);
+            foreach (var nm in new[] { "MP4 (H.264 video: plays in any player)", ".cdf97w (the waveforms and their metadata: plays here)", ".cdf97w of the universe itself (the seed and the camera's track, no pixels: plays here at any size)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
+            SendMessage(_clipFormat, CB_SETCURSEL, (IntPtr)Math.Max(0, Math.Min(2, Settings.Get("clip-format", 0))), IntPtr.Zero);
             y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
@@ -131,7 +131,7 @@ namespace Universe.Platform
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
             RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
-            Settings.Set("clip-format", (int)SendMessage(_clipFormat, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) == 1 ? 1 : 0);
+            Settings.Set("clip-format", Math.Max(0, Math.Min(2, (int)SendMessage(_clipFormat, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero))));
             { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 1 : ci == 2 ? 2 : ci == 3 ? 4 : 0); }
             Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;

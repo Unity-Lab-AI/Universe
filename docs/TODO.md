@@ -236,6 +236,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [ ] **H15, the clip as the universe's own equations ("dark energy"): the seed and the camera's track in the universe's coordinates, scene events with exact arguments, replayed by our program at any size; one .cdf97w, a few hundred KB for ten minutes:** (designed: DNA-AND DESIGN 696; build: capture, replay, Play) "we have no resoluation and no fucking pixiles that means all kinds of possibilities... we could do this 100mb for 10 minutes easily as draws and infinate zoom only have to tep out side the visuals and work the data of the equations  we already can solve out all variables by arithmatic and can build the front man and its handler script for the cdf97w file to properlyspan patternized fractual universal "lets call it ;dark energy;" that is the universal mesh with fill calculous for the cordinateal syatem for plot location and 0,0,0Time stamp will be loaded in of the  of cam at 500mm scale"
 
+- [~] **H15 step 1: the universe clip recorded (the seed, a camera point each frame, every scene-setting call with its arguments, no pixels):** (built: DNA-AND DESIGN 697; step 2, the replay, next) "go"
+
 ---
 
 ## Pending

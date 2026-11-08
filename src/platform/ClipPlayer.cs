@@ -44,7 +44,7 @@ namespace Universe.Platform
                     if (r.ReadUInt32() != Cdf97wCodec.Magic) { long e; start = FrontmanWriter.Find(r.BaseStream, out e); if (start < 0) throw new InvalidOperationException("this file carries no equations"); len = e; }   // (an MP4 outside, the equations in its box)
                     r.BaseStream.Position = start;
                     if (r.ReadUInt32() != Cdf97wCodec.Magic) throw new InvalidOperationException("not a .cdf97w clip");
-                    if (r.ReadUInt16() != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)");
+                    { int ver = r.ReadUInt16(); if (ver == Universe.Render.UniverseClipWriter.Version) throw new InvalidOperationException("this is a clip of the universe itself (the seed and the camera's track): its playback, the universe made again and drawn along the track, is being built"); if (ver != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)"); }
                     w = r.ReadUInt16(); h = r.ReadUInt16(); pw = r.ReadUInt16(); ph = r.ReadUInt16(); r.ReadInt32(); steps = new[] { r.ReadSingle(), r.ReadSingle(), r.ReadSingle() }; { int ml = r.ReadUInt16(); r.ReadBytes(ml); }   // (the metadata: what made it, when, its seed and tour)
                     // every frame to the end of the file (a clip cut off before its count was written still plays to where it stops)
                     while (r.BaseStream.Position + 9 < len)

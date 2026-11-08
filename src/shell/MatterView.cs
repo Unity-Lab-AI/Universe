@@ -46,6 +46,22 @@ namespace Universe.Shell
         private ulong _seed; private bool _noGrains;
         // in space (a nebula's or cluster's gas) instead of a ground: its kind (0 globular cluster, 1 open cluster, 2 emission
         // nebula, 3 reflection nebula) and how far apart its atoms are (km)
+        /// <summary>Every call that sets the matter's scene, as it is made (the outermost only: a call made inside another is rebuilt
+        /// by replaying that one), with its exact arguments: the universe clip records them (src/render/ClipWriter.cs).</summary>
+        public static Action<string, object[]> Recorded; private static int _recDepth;
+        /// <summary>The calls that built the scene now shown, in order (a new ground, gas, plasma, crust or fall starts it afresh): a
+        /// clip begun mid-dive starts with these.</summary>
+        public static readonly List<KeyValuePair<string, object[]>> Scene = new List<KeyValuePair<string, object[]>>();
+        private static void Announce(string name, bool root, object[] args)
+        {
+            if (_recDepth > 0) return;
+            if (root) Scene.Clear();
+            Scene.Add(new KeyValuePair<string, object[]>(name, args));
+            if (Recorded != null) Recorded(name, args);
+        }
+        /// <summary>The matter view's own camera: where it looks (its focus) and where that focus is going.</summary>
+        public void WriteFocus(System.IO.BinaryWriter o) { o.Write(_fx); o.Write(_fy); o.Write(_fz); o.Write(_tfx); o.Write(_tfy); o.Write(_tfz); }
+        public void ReadFocus(System.IO.BinaryReader r) { _fx = r.ReadDouble(); _fy = r.ReadDouble(); _fz = r.ReadDouble(); _tfx = r.ReadDouble(); _tfy = r.ReadDouble(); _tfz = r.ReadDouble(); }
         private bool _space; private int _spaceKind; private double _gasSpacing = 1e-6;
         /// <summary>Into the gas of a nebula or a cluster: about 1,000 atoms a cubic centimetre in an emission nebula (one about every
         /// millimetre), fewer in a reflection nebula and between a cluster's stars; mostly hydrogen, about 9 in 100 helium, a trace of
@@ -53,7 +69,7 @@ namespace Universe.Shell
         public void SetSpace(int kind, ulong spot, double fromCentre) { SetSpace(kind, spot, fromCentre, null); }
         private SpaceGen.Part[] _gasParts;
         public void SetSpace(int kind, ulong spot, double fromCentre, SpaceGen.Part[] parts)
-        { Generation++;
+        { Announce("SetSpace", true, new object[] { kind, spot, fromCentre, parts }); _recDepth++; try { Generation++;
             _gasParts = parts; _bornSec = double.NaN;
             _space = true; _spaceKind = kind; _seed = spot; _mix = null; _mixId = "space"; _noGrains = true; _plasma = false;
             // denser at the middle: an emission nebula about 9,000 atoms a cubic centimetre at its centre down to about 100 at its edge,
@@ -62,7 +78,7 @@ namespace Universe.Shell
             double perCc = kind == 2 ? 300 * core : kind == 3 ? 100 * core : kind == 4 ? 1000 * core : kind == 5 ? 3 * core : kind == 6 ? 300 * core : 1;   // planetary nebulae up to tens of thousands, remnants thin and hot, dark clouds dense
             _gasSpacing = 1e-5 / Math.Pow(perCc, 1 / 3.0);                                   // km between atoms (a centimetre is 1e-5 km)
             _fx = _fz = _tfx = _tfz = _fy = _tfy = 0; _picked = null;
-        }
+        } finally { _recDepth--; } }
         // ── an air: going into a world with no ground (a giant's clouds), its own gases at their real density ──
         private readonly Dictionary<string, string[]> _gasAtoms = new Dictionary<string, string[]>(); private double _airPerCc = 2.5e19;
         /// <summary>Into an air (its make-up as the content gives it, e.g. "hydrogen 90%, helium 10%, methane 0.3%"): each
@@ -72,7 +88,7 @@ namespace Universe.Shell
         private List<KeyValuePair<string[], double>> _airMols; private double _airAbove;
         /// <summary>The air over this ground (the world's air make-up, as content gives it; none for a world without air).</summary>
         public void SetAirAbove(string air, double perCc = 0)
-        {
+        { Announce("SetAirAbove", false, new object[] { air, perCc }); _recDepth++; try {
             _airMols = null; if (string.IsNullOrEmpty(air)) return;
             var l = new List<KeyValuePair<string[], double>>(); double total = 0;
             foreach (var bit in air.Split(','))
@@ -85,7 +101,7 @@ namespace Universe.Shell
             if (total <= 0) return;
             for (int i = 0; i < l.Count; i++) l[i] = new KeyValuePair<string[], double>(l[i].Key, l[i].Value / total);
             _airMols = l; _airAbove = 1e-5 / Math.Pow(perCc > 0 ? perCc : _airPerCc, 1 / 3.0);   // (a liquid above, the sea over its bed: its own packing)
-        }
+        } finally { _recDepth--; } }
         private void AirAbove(List<StarVertex> glow, double s)
         {
             if (_airMols == null || _space || s > _airAbove * 14) return;
@@ -112,7 +128,7 @@ namespace Universe.Shell
         private int _viewH = 1080;                 // the view's height in pixels: what spans a pixel is drawn, what does not is not
         private bool _lifeHere;
         /// <summary>Whether this ground's world is alive (microbes on its grains).</summary>
-        public void SetLife(bool alive) { _lifeHere = alive; }
+        public void SetLife(bool alive) { Announce("SetLife", false, new object[] { alive }); _recDepth++; try { _lifeHere = alive; } finally { _recDepth--; } }
         private bool _plasma; private string _plasmaMake = "hydrogen 91.2%, helium 8.7%"; private double _plasmaPerCc = 1e17;
         /// <summary>Into a star's surface: its plasma (content/physics.unt star-plasma): bare nuclei of its elements in their
         /// shares, at its density, with free electrons darting between them (too hot for any atom to keep its electrons).</summary>
@@ -122,7 +138,7 @@ namespace Universe.Shell
         private string _plasmaWhere; private double _plasmaTempK;
         /// <summary>A star's plasma at a layer: its make-up there, its density (g/cc: the nuclei packed accordingly), the layer's name and its heat.</summary>
         public void SetPlasma(ulong spot, string makeup, double densityGcc, string where, double tempK)
-        { Generation++;
+        { Announce("SetPlasma", true, new object[] { spot, makeup, densityGcc, where, tempK }); _recDepth++; try { Generation++;
             var parts = new List<SpaceGen.Part>(); double total = 0;
             foreach (var bit in (makeup ?? _plasmaMake).Split(','))
             {
@@ -137,7 +153,7 @@ namespace Universe.Shell
             double perCc = _plasmaPerCc;
             if (densityGcc > 0) { double meanA = 0; foreach (var q in parts) { var el = El(q.El); meanA += q.Share * (el != null ? el.A : 1); } perCc = densityGcc * 6.022e23 / Math.Max(1, meanA); }   // nuclei a cubic centimetre, from the density and the mean mass of them
             _gasSpacing = 1e-5 / Math.Pow(perCc, 1 / 3.0);
-        }
+        } finally { _recDepth--; } }
         public bool InSpace { get { return _space; } }
         /// <summary>Goes up by one every time the matter is set afresh (a ground, a gas, a plasma, a hole, a crust): what was made for one dive is known not to be this one's.</summary>
         public int Generation;
@@ -145,9 +161,9 @@ namespace Universe.Shell
         /// <summary>A neutron star's crust: iron nuclei packed in a lattice (about a hundred million grams a cubic centimetre: the nuclei
         /// a hundredth of an atom's width apart), electrons racing between them; the same drawing as a star's plasma, at that spacing.</summary>
         public void SetNeutronCrust(ulong spot)
-        { Generation++;
+        { Announce("SetNeutronCrust", true, new object[] { spot }); _recDepth++; try { Generation++;
             SetPlasma(spot, "iron 100%"); _spaceKind = 13; _gasSpacing = 1e-15;
-        }
+        } finally { _recDepth--; } }
         private double _holeRs, _holeMass, _fallTau, _fallRate = 1, _fallSpeed;   // the fall's own clock: your proper time since the horizon, how fast it is shown against real time, your speed inward
         public void SetFallClock(double tau, double rate, double speedC) { _fallTau = tau; _fallRate = rate; _fallSpeed = speedC; }
         private double _fallShare;
@@ -164,9 +180,9 @@ namespace Universe.Shell
         /// <summary>The hole's spin, a share of the most it could have: frame dragging twists the fall's funnel (content/physics.unt @law frame-dragging).</summary>
         public double HoleSpin { get { return _holeSpin; } }
         public void SetHole(ulong spot, double rsKm, double massSol, double spin, double wayInKm)
-        { Generation++;
+        { Announce("SetHole", true, new object[] { spot, rsKm, massSol, spin, wayInKm }); _recDepth++; try { Generation++;
             SetSpace(12, spot, 0, null); _holeRs = rsKm; _holeMass = massSol; _holeSpin = spin; _wayInKm = wayInKm; _gasSpacing = 1e-40;
-        }
+        } finally { _recDepth--; } }
         // the singularity: its whole mass in a point with no size at all, as far as the laws we have can say; drawn, once the zoom
         // is down at the quarks' size, as quarks pressed into a ball a third of the view wide at every size on down (a point: however
         // far in you go it is the same), all three colour charges, picked like any quark; above that size, nothing: the fall is black
@@ -247,7 +263,7 @@ namespace Universe.Shell
             return L.ToArray();
         }
         public void SetAir(string air, ulong spot)
-        {
+        { Announce("SetAir", false, new object[] { air, spot }); _recDepth++; try {
             _airText = air ?? "";
             var parts = new List<SpaceGen.Part>(); double total = 0;
             foreach (var bit in (air ?? "").Split(','))
@@ -263,7 +279,7 @@ namespace Universe.Shell
             foreach (var q in parts) q.Share /= total;
             SetSpace(10, spot, 0, parts.ToArray());
             _gasSpacing = 1e-5 / Math.Pow(_airPerCc, 1 / 3.0);                           // about 3.4 nm between molecules at one bar
-        }
+        } finally { _recDepth--; } }
         private Element GasAtom(long i, long j, long k)
         {
             double u = Hash(i, j, k + 90, _seed);
@@ -569,13 +585,13 @@ namespace Universe.Shell
         /// <summary>What the ground at this spot is made of: its kind, whether it is under water or ice, and its colour; and
         /// the spot (a seed), so the same place always holds the same grains.</summary>
         public void Set(string planetKind, bool sea, bool ice, float r, float g, float b, ulong spot)
-        { _bornSec = double.NaN; Generation++;
+        { Announce("Set", true, new object[] { planetKind, sea, ice, r, g, b, spot }); _recDepth++; try { _bornSec = double.NaN; Generation++;
             string id = sea ? "sea" : ice ? "ice" : planetKind;
             if (!_mixes.ContainsKey(id)) id = "desert";
             _space = false; _spaceKind = 0; _mixId = id; _mix = _mixes.ContainsKey(id) ? _mixes[id] : null; _seed = spot;
             _fx = _fz = _tfx = _tfz = _fy = _tfy = 0; _picked = null;
             double gk; Grain = _grainKm.TryGetValue(id, out gk) ? gk : 3e-7; _noGrains = Grain <= 0; if (_noGrains) Grain = 3e-7;   // the sea has no grains
-        }
+        } finally { _recDepth--; } }
 
         private static double Hash(long i, long j, long k, ulong seed)
         {
@@ -592,12 +608,12 @@ namespace Universe.Shell
         /// <summary>The planet the matter is on: its radius (km), the spot's unit direction, its grains (the mix and seed its
         /// ground uses) and the land's slope there (east and north, km per km), so the grains are the planet's own.</summary>
         public void SetGround(double radiusKm, double dx, double dy, double dz, string mixId, ulong grainSeed, double slopeE, double slopeN)
-        {
+        { Announce("SetGround", false, new object[] { radiusKm, dx, dy, dz, mixId, grainSeed, slopeE, slopeN }); _recDepth++; try {
             _gm = Universe.Gen.GrainField.For(mixId); _gseed = grainSeed; _R = radiusKm; _sx = dx; _sy = dy; _sz = dz; _he = slopeE; _hn = slopeN;
             Universe.Gen.GrainField.Axes(dx, dy, dz, out _ax, out _ay, out _az, out _nx, out _ny, out _nz);
             _grains.Clear(); _gcx = double.NaN; _gcx2 = double.NaN;
             if (_gm != null && !_noGrains) { Grain = _gm.Size; }
-        }
+        } finally { _recDepth--; } }
         // the grains within reach of (cx, cz), where they lie in the matter's frame (east, up, north from the spot), cached
         private double _gcx2 = double.NaN, _gcz2, _greach2; private readonly List<GrainRec> _gnear2 = new List<GrainRec>();
         private List<GrainRec> NearGrains(double cx, double cz, double reach)

@@ -43,8 +43,8 @@ namespace Universe.Render
             catch { return false; }
         }
         /// <summary>The clip format picked (View > Clip format, or the start page): 0 MP4, 1 .cdf97w, 2 an MP4 carrying the .cdf97w (the front man).</summary>
-        public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? 1 : 0; } }   // (2, the separate front-man format, is the .cdf97w now)
-        public static string Extension { get { return Format == 1 ? ".cdf97w" : ".mp4"; } }
+        public static int Format { get { int f = Universe.Platform.Settings.Get("clip-format", 0); return f == 1 || f == 2 ? f : 0; } }   // 0 MP4, 1 the .cdf97w of waveforms, 2 the .cdf97w of the universe itself
+        public static string Extension { get { return Format >= 1 ? ".cdf97w" : ".mp4"; } }
         /// <summary>The graphics card the .cdf97w's wavelet runs on (set once the renderer is made; none: the processor).</summary>
         public static IntPtr Device;
         /// <summary>The universe's seed and the tour being filmed, for a clip's metadata (null: none).</summary>
@@ -56,6 +56,7 @@ namespace Universe.Render
         {
             path = System.IO.Path.ChangeExtension(path, Extension);
             if (Format == 1) return new Cdf97wWriter(path, w, h);                            // the .cdf97w: the waveforms and their metadata, nothing else
+            if (Format == 2) return new UniverseClipWriter(path);                            // the .cdf97w of the universe itself: the seed and the camera's track, no pixels
             return new Mp4Writer(path, w, h);
         }
     }
@@ -133,6 +134,79 @@ namespace Universe.Render
         // version 3: the terms packed by the wavelet coder (src/render/WaveletCoder.cs), 1.4 to 1.75 times smaller than Deflate was
         public static byte[] Pack(short[][] planes, int pw, int ph) { return WaveletCoder.Pack(planes, pw, ph); }
         public static void Unpack(byte[] data, short[][] into, int pw, int ph) { WaveletCoder.Unpack(data, into, pw, ph); }
+    }
+
+    /// <summary>The clip as the universe itself (FRONTMAN-RESEARCH.md section 11): no pixels. The seed, then the camera's track through
+    /// the universe's own coordinates (the "dark energy" mesh, 0,0,0 and the clip's time stamp its origin), a point a frame, and every
+    /// call that set the matter's scene with its exact arguments; the program makes the universe again from the seed and draws each
+    /// point, at any size. Version 9, kind 1; the records packed with Deflate.</summary>
+    internal sealed class UniverseClipWriter : IClipWriter
+    {
+        public const ushort Version = 9; public const byte Kind = 1;
+        private readonly System.IO.FileStream _file; private readonly System.IO.Compression.DeflateStream _z; private readonly System.IO.BinaryWriter _o;
+        private readonly long _t0 = System.Diagnostics.Stopwatch.GetTimestamp(); private long _last = -1; private int _points;
+        public int Down { get { return 1; } }
+        public string Path { get; private set; }
+        public double Seconds { get { return (System.Diagnostics.Stopwatch.GetTimestamp() - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
+        public UniverseClipWriter(string path)
+        {
+            Path = path;
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(path)));
+            _file = new System.IO.FileStream(path, System.IO.FileMode.Create, System.IO.FileAccess.Write);
+            var h = new System.IO.BinaryWriter(_file);
+            h.Write(Cdf97wCodec.Magic); h.Write(Version); h.Write(Kind);
+            var meta = System.Text.Encoding.UTF8.GetBytes(Meta()); h.Write((ushort)meta.Length); h.Write(meta); h.Flush();
+            _z = new System.IO.Compression.DeflateStream(_file, System.IO.Compression.CompressionMode.Compress, true); _o = new System.IO.BinaryWriter(_z);
+            // the scene already built when the clip begins (a clip begun mid-dive), then every call from here on
+            foreach (var c in Universe.Shell.MatterView.Scene) Event(c.Key, c.Value, 0);
+            Universe.Shell.MatterView.Recorded = (n, a) => Event(n, a, Ms());
+        }
+        private long Ms() { return (System.Diagnostics.Stopwatch.GetTimestamp() - _t0) * 1000L / System.Diagnostics.Stopwatch.Frequency; }
+        private static string Meta()
+        {
+            return "format: cdf97w " + Version + " universe\n" +
+                "what: the clip as the universe itself; no pixels. The universe is made again from the seed and each camera point drawn, at any size\n" +
+                "mesh: the universe's own coordinates (the dark energy mesh); a point's plot location is its anchor plus its offset, in the universe's units; time from the clip's own 0\n" +
+                "point: record 1: milliseconds (u32), anchor x y z, offset x y z (doubles), forward x y z, up x y z (floats), far scale, space scale, space top, matter scale (doubles), the universe's clock in years (double), the matter view's focus x y z and its target x y z (doubles), then as a check the galaxy, the star system and the ground made round it (int32 each)\n" +
+                "event: record 2: milliseconds (u32), the call's name (string), its argument count (byte), each argument as a type letter (d double, f float, u ulong, i int, b bool, s string, n none, p parts: a count, then name, element, share, r, g, b) and its value\n" +
+                "packing: the records after this block, Deflate\n" +
+                (ClipWriters.Seed.HasValue ? "seed: " + ClipWriters.Seed.Value + "\n" : "") + (ClipWriters.Tour != null ? "tour: " + ClipWriters.Tour + "\n" : "") +
+                "program: " + Universe.Shell.PreviewText.AppName + " " + Universe.Shell.PreviewText.Version + "\nfilmed: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "\n";
+        }
+        private void Event(string name, object[] args, long ms)
+        {
+            if (_o == null) return;
+            _o.Write((byte)2); _o.Write((uint)ms); _o.Write(name); _o.Write((byte)args.Length);
+            foreach (var a in args)
+            {
+                if (a == null) _o.Write('n');
+                else if (a is double) { _o.Write('d'); _o.Write((double)a); }
+                else if (a is float) { _o.Write('f'); _o.Write((float)a); }
+                else if (a is ulong) { _o.Write('u'); _o.Write((ulong)a); }
+                else if (a is int) { _o.Write('i'); _o.Write((int)a); }
+                else if (a is bool) { _o.Write('b'); _o.Write((bool)a); }
+                else if (a is string) { _o.Write('s'); _o.Write((string)a); }
+                else if (a is Universe.Gen.SpaceGen.Part[])
+                {
+                    var ps = (Universe.Gen.SpaceGen.Part[])a; _o.Write('p'); _o.Write(ps.Length);
+                    foreach (var p in ps) { _o.Write(p.Name ?? ""); _o.Write(p.El ?? ""); _o.Write(p.Share); _o.Write(p.R); _o.Write(p.G); _o.Write(p.B); }
+                }
+                else { _o.Write('s'); _o.Write(a.ToString()); }
+            }
+        }
+        /// <summary>The camera's point for this frame (once each frame the universe has drawn; thirty a second at most).</summary>
+        public void Point(Universe.Shell.UniverseView world)
+        {
+            long now = System.Diagnostics.Stopwatch.GetTimestamp();
+            if (_last >= 0 && (now - _last) * 1000.0 / System.Diagnostics.Stopwatch.Frequency < 28) return;
+            _last = now; _o.Write((byte)1); _o.Write((uint)Ms()); world.WritePoint(_o); _points++;
+        }
+        public void Add(byte[] rgb, int srcW, int srcH) { }                              // (no pixels: the universe draws them again)
+        public void Dispose()
+        {
+            if (Universe.Shell.MatterView.Recorded != null) Universe.Shell.MatterView.Recorded = null;
+            try { _o.Flush(); _z.Dispose(); _file.Dispose(); } catch { }
+        }
     }
 
     /// <summary>The front man: an MP4 every player plays, carrying the .cdf97w of the same frames in a private top-level box

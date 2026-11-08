@@ -2965,6 +2965,18 @@ namespace Universe.Shell
             if (kind >= 0 && !_hud.Visible) { _hud.Visible = true; MenuChanged = true; }   // (a click that picks something shows its card: cards hidden with H come back for it)
         }
 
+        /// <summary>One camera point of the universe clip: the plot location (the anchor and the offset from it), the facing, the four
+        /// scales (out to the cosmic web, the space round a body, the matter's depth), the universe's clock, the matter view's own
+        /// camera, and, as a check, which galaxy, star system and ground were made round it.</summary>
+        public void WritePoint(System.IO.BinaryWriter o)
+        {
+            o.Write(_ax); o.Write(_ay); o.Write(_az); o.Write(_ox); o.Write(_oy); o.Write(_oz);
+            o.Write((float)_fx); o.Write((float)_fy); o.Write((float)_fz); o.Write(_camUp.X); o.Write(_camUp.Y); o.Write(_camUp.Z);
+            o.Write(_farScale); o.Write(_spaceScale); o.Write(_spaceTop); o.Write(_matterScale); o.Write(_simYears);
+            _matter.WriteFocus(o);
+            o.Write(_near); o.Write(_sysStar); o.Write(_planet);
+        }
+
         public bool Update(Input input, double dt, int w, int h)
         {
             Mark();

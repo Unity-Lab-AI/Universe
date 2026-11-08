@@ -441,3 +441,11 @@ The universe's pieces load at their own pace, so replay waits for each event's s
 1. Capture: the camera point and the scene events, written to a `.cdf97w` (format: `universe`).
 2. Replay: the handler, with events, camera, waiting on loading, and the self-check.
 3. Then the start page's Play and the menu, and the docs.
+
+**H15 step 1 built (2026-11-08): recording.** A third clip format, "the .cdf97w of the universe itself" (version 9, kind 1). It holds:
+- the header and a metadata block that describes every record;
+- a camera point each frame, 30 a second at most: the anchor and offset, the facing, the four scales, the universe's clock, the matter view's focus and its target, and the galaxy, system and ground as a check, 141 bytes;
+- every scene-setting call of the matter view as it's made, with its exact arguments.
+
+The calls are `Set`, `SetGround`, `SetSpace`, `SetPlasma`, `SetNeutronCrust`, `SetHole`, `SetAir`, `SetAirAbove` and `SetLife`. Only the outermost call is recorded: a call made inside another is rebuilt when that one is replayed. The matter view keeps the calls that built the scene now shown, so a clip begun mid-dive starts with them. Everything after the metadata is packed with Deflate. No pixels are taken back from the card while it records. Next: step 2, the replay.
+

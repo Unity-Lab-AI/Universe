@@ -305,7 +305,7 @@ namespace Universe
                 if (clickAt >= 0 && clock.Total >= clickAt) { window.Input.MouseX = (int)(clickX * gpu.Width); window.Input.MouseY = (int)(clickY * gpu.Height); window.Input.LeftClicked = true; clickAt = -1; }
                 window.Input.Glide(clock.Delta, window.Input.IsDown(0x11));      // the wheel glides in smoothly; hold Ctrl: eight times as fast, in every view
                 if (showElements && window.Input.WasPressed(0x1B)) showElements = false;   // Escape: back from the periodic table to the universe, where you were
-                if (world != null && !showElements) { if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); }
+                if (world != null && !showElements) { if (!world.Update(window.Input, clock.Delta, gpu.Width, gpu.Height)) window.Close(); var uc = rec as Universe.Render.UniverseClipWriter; if (uc != null && !(recForTour && (world.TourPaused || world.Loading))) uc.Point(world); }   // (the universe clip: the camera's point each frame, no pixels)
                 else if (style != null) style.Update(window.Input, clock.Delta, gpu.Width, gpu.Height);
                 else if (microbes != null) microbes.Update(window.Input, clock.Delta);
                 else if (elements != null) elements.Update(window.Input, clock.Delta);
@@ -406,7 +406,7 @@ namespace Universe
                         gpu.Grabbed = null;
                     }
                     { var cr = rec as Universe.Render.ICardRecorder; bool onCard = cr != null && (rec is Universe.Render.Cdf97wWriter ? ((Universe.Render.Cdf97wWriter)rec).OnCard : rec is Universe.Render.FrontmanWriter && ((Universe.Render.FrontmanWriter)rec).OnCard); gpu.Recorder = onCard ? cr : null;   // (a .cdf97w worked out on the card inside the frame: the picture is never copied back for it)
-                    if (wantShot || (rec != null && !onCard)) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
+                    if (wantShot || (rec != null && !onCard && !(rec is Universe.Render.UniverseClipWriter))) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
                     // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
                     gpu.CaptureHere();
                     if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);

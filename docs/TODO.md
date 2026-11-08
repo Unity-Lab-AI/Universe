@@ -167,6 +167,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The small body's ground lives by distance like a planet's, the camera rides with it, the stand stop no longer drops it:** (built: DNA-AND DESIGN 652; waits on the test) "SAME FUCKING ASTROID PROBLEM I TOOK PICS JEXSUS CRISTE THE 40th fucking attempt at fixing one fucking thing" / "idk write some code to catch the fucking issue" / "id rather u figure it out tho"
 - [~] **The tour's supernova target its live place (moved onto a real star once the galaxy is made), so the shots fly to the cloud, not to where it was picked from afar:** (built: DNA-AND DESIGN 653; waits on the test) "the super nova fly by went back to be just a star so u dint code it properly to persist the gas clauds correctly"
 
+- [~] **The small body's ground centred where the body is now, after the orbital ride, so it no longer shakes and the landing comes:** (built: DNA-AND DESIGN 654; waits on the test) "something is uup, the astroid is shaking violently i tried to picture it shaking but without video its hard to capture but i tried to take pics u can see these were consectuve back to back pics and you can see the great variation in where it is at any one momment the astroid is just shaking violently and wmoving back and forth not keeping focus and the tour froze, i left it open if u can get anything from thew app, its still shaking"
+
 ---
 
 ## Pending

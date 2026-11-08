@@ -1359,7 +1359,15 @@ namespace Universe.Shell
             // you are at moves you with it, so you stay beside it, or on its ground, as it goes round (at a minute a second an
             // asteroid at three AU would leave you in half a second)
             if (_tKind != 6 || _tExtra == null) _tSpot = null;
-            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && ((ex != _tExtra && ex != _groundExtra) || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == _tExtra || ex == _groundExtra) { _ox += ex.OffX - ex.LOffX; _oy += ex.OffY - ex.LOffY; _oz += ex.OffZ - ex.LOffZ; } } }   // (a held spin let go once you are off the body; the camera rides with the body picked or the body whose ground you are on)
+            // the one body the camera rides with: the body picked, else the body whose ground you are on (never both: were they two
+            // objects for one body the camera would move twice its step a frame and run off it)
+            var rider = _tExtra != null && _tExtra.Orbits && _extras.Contains(_tExtra) ? _tExtra : _groundExtra;
+            foreach (var ex in _extras) { if (!double.IsNaN(ex.SpinHold) && ((ex != _tExtra && ex != _groundExtra) || _spaceScale <= 0)) ex.SpinHold = double.NaN; if (ex.Orbits) { Orbit(ex); if (ex == rider) { _ox += ex.OffX - ex.LOffX; _oy += ex.OffY - ex.LOffY; _oz += ex.OffZ - ex.LOffZ; } } }   // (a held spin let go once you are off the body)
+            // the small body's ground has its centre where the body is NOW, after it has moved on its orbit and you with it: taken
+            // once a frame before the move, the ground was drawn one orbital step behind the stone (at a minute a second tens of km,
+            // and a different step every frame), so it flapped about by tens of km, the height above it jumped, and the zoom down to
+            // it chased a point that was never there and froze
+            if (_planet == -2 && _groundExtra != null) { _px = RelX(_groundExtra); _py = RelY(_groundExtra); _pz = RelZ(_groundExtra); }
             if (key == _extraKey) return; _extraKey = key; _extras.Clear();
             // the compact remnants of this galaxy's past supernovae: a neutron star (from a star of eight to about twenty solar masses) or a
             // stellar black hole (heavier) born at each one's middle, from the blast; the ones near you, picked like any body

@@ -117,7 +117,7 @@ namespace Universe
             { int sci = Array.IndexOf(args, "--scale"); int pct; if (sci >= 0 && sci + 1 < args.Length && int.TryParse(args[sci + 1], out pct)) { window.RenderScale = pct / 100.0; window.Resized = false; } }   // --scale <percent>: render scale
             window.Input.IgnoreReal = smokeMs >= 0;          // timed checks never take the person's keyboard or mouse
             Gpu gpu;
-            try { gpu = new Gpu(window.Handle, window.RenderWidth, window.RenderHeight); Universe.Render.ClipWriters.Device = gpu.Device; }   // (the .cdf97w's wavelet runs on the same card)
+            try { gpu = new Gpu(window.Handle, window.RenderWidth, window.RenderHeight); Universe.Render.ClipWriters.Device = gpu.Device; var g0 = gpu; Universe.Render.ClipWriters.BeforeCardRelease = () => { g0.Recorder = null; g0.WaitIdle(); }; }   // (the .cdf97w's wavelet runs on the same card)
             catch (Exception ex) { WriteLog("gpu error · " + ex.Message); window.Close(); return 2; }
             // the default sharpness from the graphics card: cards with little video memory of their own start softer, so they stay smooth
             if (Array.IndexOf(args, "--scale") < 0 && gpu.AdapterMemoryMB > 0 && gpu.AdapterMemoryMB < 3000)
@@ -405,7 +405,8 @@ namespace Universe
                         if (rec != null && gpu.GrabW == gpu.Width / Math.Max(1, rec.Down) && !(recForTour && world != null && (world.TourPaused || world.Loading))) { try { rec.Add(gpu.Grabbed, gpu.GrabW, gpu.GrabH); } catch (Exception ex) { WriteLog("record error · " + ex.Message); rec.Dispose(); rec = null; } }
                         gpu.Grabbed = null;
                     }
-                    if (wantShot || rec != null) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
+                    { var cr = rec as Universe.Render.ICardRecorder; bool onCard = cr != null && (rec is Universe.Render.Cdf97wWriter ? ((Universe.Render.Cdf97wWriter)rec).OnCard : rec is Universe.Render.FrontmanWriter && ((Universe.Render.FrontmanWriter)rec).OnCard); gpu.Recorder = onCard ? cr : null;   // (a .cdf97w worked out on the card inside the frame: the picture is never copied back for it)
+                    if (wantShot || (rec != null && !onCard)) { gpu.GrabNext = true; gpu.GrabDown = wantShot ? 1 : rec.Down; } }   // (a screenshot at full size; a clip at its own, half each way on a big screen)
                     // the frame's picture is taken here, before the REC notice goes on: the notice shows on screen (as a camcorder's) and stays out of the clip and the screenshot
                     gpu.CaptureHere();
                     if (rec != null && world != null && !showElements) world.DrawRec(gpu.Width, gpu.Height, clock.Total, rec.Seconds);

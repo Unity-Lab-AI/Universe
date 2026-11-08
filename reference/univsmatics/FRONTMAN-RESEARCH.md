@@ -296,3 +296,11 @@ So it can be trusted to predict other settings. Scripts: `shots/e10.py`, `shots/
 
 **Built from it (version 5):** steps per level by synthesis energy, finest steps Y 0.032 and Cb, Cr 0.064. The front man is now just what a player needs to know the file: a quarter-size picture at the start, one every ten seconds, and the last one held to the end. The clip itself is the `.cdf97w` in the box.
 
+### The `.cdf97w` made inside the frame (2026-11-08)
+
+Before this, every clip frame stalled the card and copied the whole picture back to the processor: about 33 MB a frame at 4K. Now `src/render/CardClip.cs` records the clip's work into the frame's own command list, right where the frame is drawn. The finished picture is copied into a buffer beside it on the card. One compute pass splits it into Y, Cb and Cr at the clip's size, reflect-padded to 64. The wavelet then runs rows and columns for each plane, and a last pass quantises every term by its plane's step weighted for its level.
+
+Only the whole-number terms come back, a frame later, once the card has finished that frame anyway. The picture never comes back and the game never waits. The packing, an arithmetic coder that has to run in order, is the only part on the processor.
+
+Checked outside the game with no window. A known 1280 × 720 picture at half size went through the card: all 14,788 nonzero terms matched the processor's exactly, with not one differing. The frame took 14 ms on the card, shader compile included. Without a card, or if it refuses, the picture comes to the processor as before.
+

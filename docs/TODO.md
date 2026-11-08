@@ -218,6 +218,10 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The .cdf97w version 5 (a step per wavelet level, coarser steps: the filmed clip would be about 90 MB at quarter size) and the front man as only what a player needs:** (built: DNA-AND DESIGN 687; waits on the test: film at Quarter) "put it into the hypothetisis reasses and and work out the theroy" / "maybe do a check see the legnth and size of the one clip we have and do a tshort test of what thhe short test would scale to and properly figure that the hypothesis holdes and equations solve" / "the the frontman is just the meta data" / "we want small files a 10m video should be like 100mb"
 
+- [~] **The .cdf97w made on the card inside the frame (no picture copied back, the game never waiting for the clip):** (built: DNA-AND DESIGN 688; waits on the test) "yeah wtf? we just need the recorder to tie directly inot the universe so ther is no back build and side car recorder" / "i like both and number 2 is very very important"
+
+- [ ] **The clip as the universe itself: the seed, the camera's path and the clock, replayed live in the program:** (next, after DNA-AND DESIGN 688) "yeah wtf? we just need the recorder to tie directly inot the universe so ther is no back build and side car recorder" / "i like both and number 2 is very very important"
+
 ---
 
 ## Pending

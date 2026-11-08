@@ -5,6 +5,14 @@ using System.Runtime.InteropServices;
 
 namespace Universe.Render
 {
+    /// <summary>A clip worked out on the card inside each frame (src/render/CardClip.cs, through the .cdf97w writer).</summary>
+    internal interface ICardRecorder
+    {
+        bool WantsFrame();
+        void Record(IntPtr list, IntPtr backBuffer, int width, int height);
+        void Collect();
+    }
+
     internal sealed class Gpu : IDisposable
     {
         private const int FrameCount = 2;
@@ -218,6 +226,8 @@ namespace Universe.Render
             // here, before the frame's commands are recorded again, is it waited for, so the processor and the card work at once
             // instead of taking turns
             if (_pending != 0) { WaitFor(_pending); _pending = 0; ReadTiming(); }
+            _recorded = false;
+            if (Recorder != null) { try { Recorder.Collect(); } catch (Exception ex) { Universe.Program.WriteLog("clip on the card: " + ex.Message); Recorder = null; } }   // (the last frame is done: its terms are read, the game never having waited for them)
             Com.Check(_allocReset(_allocator), "Allocator.Reset");
             Com.Check(_listReset(_list, _allocator, IntPtr.Zero), "CommandList.Reset");
             var toTarget = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
@@ -247,8 +257,21 @@ namespace Universe.Render
         private bool _capturedEarly; private string _earlyCapture; private bool _earlyGrab; private IntPtr _earlyRB; private uint _earlyPitch;
         /// <summary>Takes the frame's picture now, as it stands, for a screenshot or a clip's frame wanted this frame: what is drawn after
         /// this (the REC notice) shows on screen and stays out of the picture. EndFrame reads it back as usual.</summary>
+        /// <summary>A clip made on the card, inside the frame (the .cdf97w): asked once a frame whether it wants this one, it records its
+        /// work into the frame's own list from the finished picture; what the card worked out is collected once that frame is done.</summary>
+        public ICardRecorder Recorder;
+        private bool _recorded;
+        private void RecordForClip()
+        {
+            if (_recorded || Recorder == null) return; _recorded = true;
+            try { if (Recorder.WantsFrame()) Recorder.Record(_list, _backBuffers[_frameIndex], Width, Height); }
+            catch (Exception ex) { Universe.Program.WriteLog("clip on the card: " + ex.Message); Recorder = null; }
+        }
+        /// <summary>Waits until the card has finished everything handed to it (before a clip's buffers on the card are let go).</summary>
+        public void WaitIdle() { WaitForGpu(); }
         public void CaptureHere()
         {
+            RecordForClip();
             if (_capturedEarly || (CaptureNext == null && !GrabNext)) return;
             _earlyCapture = CaptureNext; CaptureNext = null; _earlyGrab = GrabNext; GrabNext = false;
             CopyBack(out _earlyRB, out _earlyPitch); _capturedEarly = true;
@@ -277,6 +300,7 @@ namespace Universe.Render
             IntPtr readback = IntPtr.Zero; uint pitch = 0;
             if (_capturedEarly) { capture = _earlyCapture; grab = _earlyGrab; readback = _earlyRB; pitch = _earlyPitch; _capturedEarly = false; }
             else if (capture != null || grab) CopyBack(out readback, out pitch);
+            RecordForClip();
             var toPresent = new D3D12.TransitionBarrier { Resource = _backBuffers[_frameIndex], Subresource = 0xFFFFFFFF,
                 StateBefore = D3D12.RESOURCE_STATE_RENDER_TARGET, StateAfter = D3D12.RESOURCE_STATE_PRESENT };
             _barrier(_list, 1, ref toPresent);

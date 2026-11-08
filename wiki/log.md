@@ -88,3 +88,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the .cdf97w version 2: quantised, whole frames and changes, Deflate): DNA-AND DESIGN 677.
 - 2026-11-08 (E2: H1 true, no use): DNA-AND DESIGN 678.
 - 2026-11-08 (E3: H3 fails): DNA-AND DESIGN 679.
+- 2026-11-08 (E4: H2 no win on the recorded tour): DNA-AND DESIGN 680.

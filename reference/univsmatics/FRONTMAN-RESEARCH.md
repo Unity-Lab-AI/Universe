@@ -184,3 +184,27 @@ Setup: frames at 120, 240 and 480 s, 480 wide, luma only. Each frame is cut into
 Across all 15 runs, the energy-set steps were never better than one step by more than 0.2 dB. They were up to 2 dB worse, with a few more stars kept at 120 s and fewer at 240 s.
 
 **H3 fails.** A star is a strong detail term, so energy-set steps give its block a coarse step, and that drowns the star. A single step already treats every block alike. Nothing to build. The steps stay uniform per plane, as in the `.cdf97w` version 2. E4 is next. It needs the camera recorded per frame while filming.
+
+### E4 — H2, the change between frames taken along the motion (2026-11-08)
+
+Setup: eight frames from each of four places in the tour (30 a second, 480 wide), the `.cdf97w` version 2 quantising, Deflate. Each frame's change is coded two ways: in place, as the program does now, and after moving the last shown frame along the motion. The motion is one vector per 16 × 16 block, rounded to a quarter pixel as H.264 does, measured from the frames by dense optical flow. That's the best case for what exact camera motion could supply. Script: `shots/e4.py`.
+
+| Place | Change in place | Change after moving + vectors |
+|------:|------:|------:|
+| 30 s | 133.4 KB | 132.1 + 0.15 KB |
+| 120 s | 52.3 KB | 56.6 + 0.11 KB |
+| 240 s | 48.0 KB | 46.6 + 0.12 KB |
+| 480 s | 28.7 KB | 31.7 + 0.05 KB |
+
+**H2 shows no win here.** Moving along the motion saves 1 to 3 % in two places and costs 8 to 10 % in two. Two reasons:
+
+- **Wavelet terms don't shift cleanly.** A picture moved by a fraction of a pixel has different terms at every level, so a moved prediction leaves a change about as large as the picture's own.
+- **The source has flicker of its own.** The recorded tour is already an H.264 file, and its block noise changes every frame. At step 0.004 that noise is coded too, and no motion removes it.
+
+The second reason means a clean test needs frames the program filmed itself as a `.cdf97w`, not frames decoded from an MP4. Exact camera vectors could only beat the measured flow by the little the flow got wrong, so building camera logging isn't supported by this. The in-place change stays.
+
+### Where the numbers leave the front man
+
+- The front man is a plain H.264 picture, which the program's MP4 writer already makes. The smallest file that plays everywhere is that MP4 alone.
+- Carrying the `.cdf97w` inside it in a private box costs the `.cdf97w`'s own size on top: 1.2 to 6 times the MP4 at 480 wide.
+- E5 builds that combined file, so one file plays in every player as the MP4 and in this program as the equations.

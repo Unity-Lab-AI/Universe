@@ -216,7 +216,7 @@ namespace Universe
                 world.StartTour(Universe.Platform.Launcher.ReplayTour ?? "grand-tour");
                 if (Universe.Platform.Launcher.RecordTour && Universe.Platform.Launcher.ReplayTour == null)
                 {
-                    // filmed: the whole tour as an MP4 clip in the captures folder, finished when the tour ends
+                    // filmed: the whole tour as the clip of the universe itself in the captures folder, finished when the tour ends
                     try { System.IO.Directory.CreateDirectory(Universe.Platform.Launcher.Captures); } catch { }
                     recordTour = System.IO.Path.Combine(Universe.Platform.Launcher.Captures, "tour " + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".mp4");
                 }
@@ -402,7 +402,7 @@ namespace Universe
                     if (inp.WasPressed(0x78)) wantRecord = true;
                     if (inp.WasPressed('T') && world != null && !world.Touring) wantTour = true;
                     if (wantTour && world != null) { if (world.Touring) world.StopTour(); else if (world.TourPaused) world.ResumeTour(); else world.StartTour("grand-tour"); wantTour = false; menuDirty = true; }
-                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { Universe.Render.ClipWriters.Seed = Seed; Universe.Render.ClipWriters.Tour = "grand-tour"; rec = OpenClip = Universe.Render.ClipWriters.Open(recordTour, gpu.Width, gpu.Height); recForTour = true; Universe.Render.ClipWriters.WriteUniverse(rec.Path, Seed, "grand-tour"); } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
+                    if (recordTour != null && world != null && world.Touring && rec == null && !recForTour) { try { Universe.Render.ClipWriters.Seed = Seed; Universe.Render.ClipWriters.Tour = "grand-tour"; rec = OpenClip = new Universe.Render.UniverseClipWriter(System.IO.Path.ChangeExtension(recordTour, ".cdf97w")); recForTour = true; /* (a filmed tour is always the clip of the universe itself: the seed, the track, the scene; a few megabytes, never pictures; nothing written beside it) */ } catch (Exception ex) { WriteLog("record error · " + ex.Message); recordTour = null; } }
                     if (recForTour && world != null && !world.Touring && !(world.TourPaused && !world.TourFinished)) { if (rec != null) { rec.Dispose(); WriteLog("clip saved · " + rec.Path); rec = null; } recForTour = false; recordTour = null; menuDirty = true; }
                     if (wantRecord)
                     {

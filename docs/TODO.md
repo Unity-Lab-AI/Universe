@@ -253,6 +253,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **Our own H.264 front man's colour detail (chroma AC), checked with Windows' decoder:** (built: DNA-AND DESIGN 709; waits on the test) "okay get to it all u have a big back log"
 - [x] **The encoders' comparison taken out of the game; it opens on its own as a sample with --encoders:** (done: DNA-AND DESIGN 710) "u oover lkayed the test sampler into the fucking game!@!!!! WHY!!!!" / "take it out use logic why would i wasnt that in ther that was for showing the samples of the encoders"
 - [x] **Three stacked galaxy samples drawn over the universe, see-through and moving with the camera; the views' draw chain put right:** (done: DNA-AND DESIGN 711) "therer are three stacked galaxy samples on ther screen i can see past and moves with how i move"
+- [x] **A filmed tour is always the clip of the universe itself (a few megabytes), and no .cdf97u side file beside it:** (done: DNA-AND DESIGN 712; waits on the test) "the clip got made but looks like we failed its 3 G not 100M" / "yes"
 
 ---
 

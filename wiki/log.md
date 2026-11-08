@@ -120,3 +120,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (our own H.264 front man's colour detail, chroma AC): DNA-AND DESIGN 709.
 - 2026-11-08 (the encoders' comparison taken out of the game; a sample on its own): DNA-AND DESIGN 710.
 - 2026-11-08 (the sample galaxies drawn over the universe; put right): DNA-AND DESIGN 711.
+- 2026-11-08 (a filmed tour is always the clip of the universe itself; no side file): DNA-AND DESIGN 712.

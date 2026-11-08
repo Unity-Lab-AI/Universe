@@ -233,7 +233,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
 | **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark, and back out; a star's system with an asteroid of its belt and a comet seen close on the way; about a quarter of an hour in all |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
-| **Film it** | Tick **Film the tour** on the landing page; the **Clips** list plays them back |
+| **Film it** | Tick **Film the tour** on the landing page: the clip is the universe itself (its seed, the camera's track and the scene), a few megabytes; the **Clips** list plays them back |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |
 
 ---

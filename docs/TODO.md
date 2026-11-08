@@ -266,6 +266,7 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [~] **The clip size dropdown back: Full (4K on a 4K screen), Half, Quarter:** (built: DNA-AND DESIGN 721; waits on the test) "still no 4k option dropdown wi"
 - [~] **The clip held under 850 MB for 10 minutes (one rate-control account for the whole clip):** (built: DNA-AND DESIGN 722; waits on the test) "okay, huh clip is 1.21Gb so its a bit too big"
 - [~] **The tour held at 100 micrometres on a world's ground: the tour's zooms now fly along the view, not the resting mouse:** (built: DNA-AND DESIGN 723; waits on the test) "tour got hung at 100 micrometers on planet fall"
+- [~] **No atoms on the pull-out from the quark: zooms out of the matter now look back down:** (built: DNA-AND DESIGN 724; waits on the test) "like no attoms form quuark pull out"
 - [ ] **A graphics card hang after 12 minutes of filming at 4K: cause to be found** (seen: DNA-AND DESIGN 722)
 
 ---

@@ -2229,6 +2229,10 @@ namespace Universe.Shell
                         _tourRate += (aim - _tourRate) * (1 - Math.Exp(-dt * 1.5));
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
+                        // a zoom back out of the matter (and on up off the ground, to a kilometre) looks down at what it leaves, eased back to
+                        // the way the dive came in (85 degrees down): the circling at the electron, the nucleus and the quark had left the view
+                        // facing wherever it stopped, often across or up into the dark, and the atoms, the crystal and the grain went by unseen
+                        if (sign < 0 && _ground != null && _spaceScale <= 0 && (_matterScale > 0 || AboveGround() < Units.Km(1))) TourPitchToward(-85 * Math.PI / 180, 1 - Math.Exp(-dt * 1.2));
                         // never stuck off course: a zoom that finds what it flies to away from the look (a glide before it flew on past the
                         // spot it picked, and left it behind) turns the view toward it, eased, and moves again once it is on course (it had
                         // sat still for good: the wheel held at nothing while off course, and nothing turning the look back)

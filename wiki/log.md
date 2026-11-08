@@ -64,3 +64,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the landing page's seed field takes the typing, no refusing beep): DNA-AND DESIGN 651.
 - 2026-11-07 (the small body's ground by distance, the supernova target live): DNA-AND DESIGN 652, 653.
 - 2026-11-07 (the small body's ground centred after the ride, no shaking): DNA-AND DESIGN 654.
+- 2026-11-07 (rule: the tour is a gimmick over the program's own code): DNA-AND DESIGN 655.

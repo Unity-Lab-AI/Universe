@@ -127,3 +127,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the .cdf97w as designed: equations into our VP9 encoder, the front man for any player): DNA-AND DESIGN 717.
 - 2026-11-08 (the front man at quality 30): DNA-AND DESIGN 718.
 - 2026-11-08 (the front man under 850 MB for 10 minutes, the universe's equations inside): DNA-AND DESIGN 719.
+- 2026-11-08 (the simulation in a player: probed, not built): DNA-AND DESIGN 720.

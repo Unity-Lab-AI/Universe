@@ -224,6 +224,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The .cdf97w as one media file: equations made on the card, solved back to pixels on the card, the H.264 video of the solved pixels outside and the equations in its box; .cdf97w registered as video:** (built: DNA-AND DESIGN 690; waits on the test) "do i need to fucking design the proper pathing for the (GPU)cdf>pixelequations>(GPU)hard write to file reverse solved equation cdf97q to pixel>>>>(output)= cdf97w+reverse solved pixil equation//meta data as media file[.cdf97w]" / "and we need to make sure sending the file in discord and other serves like face book the equations properly meta data them as media player files"
 
+- [~] **Full size keeping up: the packing in 16 strips a plane, terms two to a word on the card, the reading on the packer's thread:** (built: DNA-AND DESIGN 691; waits on the test) "i want full tho, didnt we solve the problem by doing it all on the gpu and proply solving the and creating and devising the correct eqautions"
+
 ---
 
 ## Pending

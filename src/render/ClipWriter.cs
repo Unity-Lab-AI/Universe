@@ -64,7 +64,7 @@ namespace Universe.Render
     internal static class Cdf97wCodec
     {
         public const uint Magic = 0x57373943;                // 'C97W'
-        public const ushort Version = 5;
+        public const ushort Version = 6;
         /// <summary>The quantising step of each plane at the finest level: Y, Cb, Cr. Each coarser level's step is smaller by its own
         /// weight (<see cref="LevelWeights"/>). Measured on the filmed tour (FRONTMAN-RESEARCH.md, E10): at a quarter of 4K about
         /// 36 KB a frame at 34.5 dB, where one step for every level gave 29 dB at that size and a DCT picture 31.</summary>
@@ -189,7 +189,7 @@ namespace Universe.Render
         public Action<byte[], int, int> Solved;
         private GpuWavelet _gw;                                                         // the wavelet on the graphics card (null: on the processor)
         private CardClip _card;                                                         // the whole frame worked out on the card, inside the frame (null: the frames come here as pictures)
-        private readonly System.Collections.Concurrent.BlockingCollection<Tuple<short[][], long, byte[]>> _terms = new System.Collections.Concurrent.BlockingCollection<Tuple<short[][], long, byte[]>>(4);
+        private readonly System.Collections.Concurrent.BlockingCollection<int> _terms = new System.Collections.Concurrent.BlockingCollection<int>(2);
         /// <summary>How often (seconds) the terms are solved back into a picture for <see cref="Solved"/> (0: every frame).</summary>
         public double SolveEvery = 0; private long _solvedAt = -1;
         /// <summary>True when the frames are worked out on the card inside each frame (the renderer then never copies the picture back).</summary>
@@ -221,7 +221,7 @@ namespace Universe.Render
             // the packing, the one part on the processor: the card's terms (or, without the card, the pictures) in the order they came
             _encoder = new System.Threading.Thread(() =>
             {
-                if (_card != null) { foreach (var f in _terms.GetConsumingEnumerable()) { try { Store(f.Item1, f.Item2, f.Item3); } catch { } } }
+                if (_card != null) { foreach (int slot in _terms.GetConsumingEnumerable()) { try { short[][] q; byte[] rgb; long ms; _card.Read(slot, out q, out rgb, out ms); Store(q, ms, rgb); } catch { } } }   // (read from the card's memory here, never on the game's thread)
                 else foreach (var f in _queue.GetConsumingEnumerable()) { try { Encode(f.Item1, f.Item2, f.Item3, f.Item4); } catch { } }
             }) { IsBackground = true, Name = "cdf97w packer" };
             _encoder.Start();
@@ -249,7 +249,7 @@ namespace Universe.Render
             long now = System.Diagnostics.Stopwatch.GetTimestamp();
             if (_card.Record(list, backBuffer, width, height, (now - _t0) * 1000L / System.Diagnostics.Stopwatch.Frequency)) _last = now;
         }
-        public void Collect() { if (_card != null) _card.Collect((q, ms, rgb) => _terms.TryAdd(Tuple.Create(q, ms, rgb))); }   // (the packer behind: that frame let go, the clip keeps its timing)
+        public void Collect() { if (_card != null) { var c = _card; c.Collect(s => { if (_terms.IsAddingCompleted || !_terms.TryAdd(s)) c.Release(s); }); } }   // (the packer behind: that frame let go, the clip keeps its timing)
 
         private void Encode(byte[] rgb, int srcW, int srcH, long ms)
         {

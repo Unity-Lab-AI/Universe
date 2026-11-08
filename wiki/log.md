@@ -99,3 +99,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the .cdf97w made on the card inside the frame): DNA-AND DESIGN 688.
 - 2026-11-08 (the clip as the universe itself, .cdf97u, for tours): DNA-AND DESIGN 689.
 - 2026-11-08 (the .cdf97w as one media file: solved on the card, video outside, equations inside, registered as video): DNA-AND DESIGN 690.
+- 2026-11-08 (full size keeping up: 16 strips, packed terms, reading off the game thread): DNA-AND DESIGN 691.

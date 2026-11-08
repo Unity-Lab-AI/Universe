@@ -79,7 +79,7 @@ namespace Universe.Render
         /// <summary>How many strips of rows each plane is cut into: each strip coded on its own, every strip of every plane at once on
         /// the processor's cores (one stream had taken 130 ms a 1080p frame on one core; a strip starts its learning afresh, which costs
         /// about a percent).</summary>
-        public const int Strips = 4;
+        public const int Strips = 16;
 
         /// <summary>Packs the planes' quantised terms (each <paramref name="pw"/> × <paramref name="ph"/>): a count of streams, each stream's
         /// length, then the streams, one for each strip of each plane.</summary>

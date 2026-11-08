@@ -2342,7 +2342,7 @@ namespace Universe.Shell
                         // while it looks (what it wants still being made round you, or none there at all) it never sits still: it looks
                         // round slowly, eased in, and goes on after a few seconds at most
                         if (!got && _ground == null) TourTurn(4 * _shotDir * Math.PI / 180 * dt * Math.Min(1, _tourT / 1.5), 0);   // (out in space only: by a world, among its stones and grains, it holds still)
-                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 3 : 5))
+                        if (got || _tourT > (st.Target == "asteroid" || st.Target == "comet" ? 2 : 2.5))   // (a pick that has not come in a couple of seconds is not coming: no five-second waits)
                         {
                             done = true; _pickFailed = !got && st.Target != "none"; if (got) _tourVisited++;
                             ZoomLog("TOUR pick " + st.Target + (got ? ": " + _tName + " (kind " + _tKind + ")" : " FAILED after " + _tourT.ToString("0.0") + " s: " + _extras.Count + " bodies round you, " + _localCount + " stars, system " + (_system != null ? "open" : "none") + ", galaxy " + _near + "; its stops are skipped"));

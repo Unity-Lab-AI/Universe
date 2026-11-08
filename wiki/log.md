@@ -56,3 +56,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the ghost discs gone, the dive's state logged): DNA-AND DESIGN 642.
 - 2026-11-07 (the near plane beside a body, every rock a kind): DNA-AND DESIGN 643.
 - 2026-11-07 (a young supernova's ejecta a ballooning cloud): DNA-AND DESIGN 644.
+- 2026-11-07 (the small bodies' descents in the world's layers, the atom chain once, the tour quicker): DNA-AND DESIGN 645.

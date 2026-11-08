@@ -25,7 +25,7 @@ do: shot
 to-radii: 6
 sweep: 70
 rise: 15
-seconds: 9
+seconds: 5
 caption: We begin beside a galaxy, a hundred billion stars turning in the dark
 
 @stop leave
@@ -33,13 +33,13 @@ do: shot
 to-km: 5e21
 rise: 20
 max-rate: 0.35
-seconds: 8
+seconds: 5
 caption: Pulling back: every point of light out here is a whole galaxy; the far ones redden, their light stretched by the space it crossed
 
 @stop web
 do: orbit
 turn: 4
-seconds: 10
+seconds: 6
 caption: The cosmic web, shaped by dark matter's gravity: galaxies along filaments and walls, round vast thin voids. {horizon}
 
 @stop choose-galaxy
@@ -54,7 +54,7 @@ to-radii: 8
 sweep: 20
 rise: 10
 max-rate: 0.45
-seconds: 8
+seconds: 5
 caption: Across the universe: billions of light-years, straight to one galaxy far away among a hundred billion
 
 @stop round-galaxy
@@ -62,7 +62,7 @@ do: shot
 to-radii: 3
 sweep: 100
 rise: -20
-seconds: 10
+seconds: 6
 caption: A hundred billion stars round a giant black hole
 
 @stop bh
@@ -76,7 +76,7 @@ to-radii: 60
 sweep: 30
 rise: 10
 max-rate: 0.5
-seconds: 8
+seconds: 5
 caption: Down to the black hole at its heart, one that is feeding
 
 @stop disc
@@ -85,7 +85,7 @@ to-radii: 10
 sweep: 60
 rise: 40
 max-rate: 0.4
-seconds: 10
+seconds: 6
 caption: Its accretion disc: gas on its own orbits, the inner ones round fastest, sheared into spirals; white-hot inside, red at the rim; stars swept round it on tight ellipses
 
 @stop skim
@@ -94,7 +94,7 @@ to-radii: 14
 sweep: 150
 rise: 3
 max-rate: 0.3
-seconds: 12
+seconds: 7
 caption: Skimming it in the plane of its disc: a feeding one's gas at a good share of light speed, brighter on the side coming at you, a star torn into a stream and swallowed; a quiet one a black disc in its ring of bent light
 
 @stop lens
@@ -103,7 +103,7 @@ to-radii: 4
 sweep: 90
 rise: -45
 max-rate: 0.4
-seconds: 10
+seconds: 6
 caption: Edge on, its gravity bends the light behind it into a thin ring round its shadow (the photon ring), and a feeding one's disc's far side up and over it
 
 @stop horizon
@@ -112,7 +112,7 @@ to-radii: 2.5
 sweep: 50
 rise: 10
 max-rate: 0.35
-seconds: 9
+seconds: 5
 caption: The shadow, two and a half times the horizon across: light itself is caught here, and nothing inside gets out
 
 @stop to-horizon
@@ -121,7 +121,7 @@ to-radii: 0.45
 sweep: 140
 rise: -25
 max-rate: 0.25
-seconds: 16
+seconds: 10
 caption: Down to the horizon itself: the disc all round, the sky bent into a ring, the shadow growing to fill the view; the well's graph marks the way down
 
 @stop fall
@@ -134,7 +134,7 @@ caption: In through the horizon, looking back at it: the well itself round you, 
 @stop singularity
 do: orbit
 turn: 6
-seconds: 8
+seconds: 5
 caption: The singularity: its whole mass in a point with no size at all, as far as the laws we have can say; quarks pressed closer than anything, until those laws give out
 
 @stop out-of-hole
@@ -150,7 +150,7 @@ to-radii: 200
 sweep: 40
 rise: 25
 max-rate: 0.5
-seconds: 9
+seconds: 5
 caption: {hole}
 
 @stop supernova
@@ -164,7 +164,7 @@ to-radii: 10
 sweep: 30
 rise: 10
 max-rate: 0.6
-seconds: 10
+seconds: 6
 caption: {supernova}
 
 @stop round-supernova
@@ -173,7 +173,7 @@ to-radii: 5
 sweep: 100
 rise: 20
 max-rate: 0.4
-seconds: 9
+seconds: 5
 caption: Brighter than a hundred million stars for weeks: its light fades over months, its shell flies on for a hundred thousand years, and what its core became stays
 
 @stop choose-star
@@ -186,7 +186,7 @@ do: shot
 to-km: 2e9
 sweep: 20
 max-rate: 0.5
-seconds: 8
+seconds: 5
 caption: Out to one star among them
 
 @stop round-system
@@ -194,7 +194,7 @@ do: shot
 to-km: 8e8
 sweep: 100
 rise: 30
-seconds: 10
+seconds: 6
 caption: The star, and the worlds born round it, each on its own tilted orbit
 
 @stop asteroid
@@ -215,28 +215,51 @@ do: shot
 to-radii: 3
 sweep: 120
 rise: 15
-seconds: 8
+seconds: 5
 caption: {body}
 
 @stop onto-asteroid
 do: zoom
 rate: 0.5
+until-km: 0.002
+caption: Onto its surface: its own ground, of its own kind's minerals (the card says which); down to where a person would stand
+
+@stop asteroid-to-grains
+do: zoom
+rate: 0.4
+until-km: 2e-6
+through: yes
+caption: The ground breaks into stones, then grains of dust
+
+@stop asteroid-choose-grain
+do: pick
+target: grain
+caption: One grain
+
+@stop asteroid-to-face
+do: zoom
+rate: 0.45
 until-km: 2e-9
 through: yes
-caption: Onto its surface: its own ground, of its own kind's minerals (the card says which), grains of dust and stone
+caption: Onto one grain, a crystal of one mineral
 
-@stop asteroid-atoms
+@stop asteroid-choose-spot
+do: pick
+target: spot
+caption: A spot on its face
+
+@stop asteroid-to-crystal
 do: zoom
 rate: 0.5
 until-km: 6e-12
-caption: Down to its atoms: the elements its minerals hold, the traces among them
+caption: Down to its atoms, in a pattern repeated billions of times
 
 @stop asteroid-round-crystal
 do: arc
 rate: 0
 until-km: 0
 turn: 15
-seconds: 24
+seconds: 14
 caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
 
 @stop asteroid-into-lattice
@@ -251,7 +274,7 @@ caption: Down among them
 do: fly
 rate: 0.6
 turn: 3
-seconds: 10
+seconds: 6
 caption: Through the lattice: row on row of atoms, each bonded to its neighbours
 
 @stop asteroid-choose-atom
@@ -270,107 +293,8 @@ do: arc
 rate: 0.03
 until-km: 2.5e-13
 turn: 14
-seconds: 26
-caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
-
-@stop asteroid-through-electrons
-do: zoom
-rate: 0.3
-until-km: 5e-14
-pan: 12
-caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
-
-@stop asteroid-inner-shells
-do: orbit
-turn: 15
-seconds: 24
-caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
-
-@stop asteroid-to-neighbour
-do: pick
-target: bonded-atom
-caption: Its neighbour
-
-@stop asteroid-across-bond
-do: arc
-rate: 0
-until-km: 0
-turn: 8
-seconds: 9
-caption: Across the bond to its neighbour: atoms share their outer electrons
-
-@stop asteroid-choose-electron
-do: pick
-target: electron
-caption: One electron
-
-@stop asteroid-to-electron
-do: zoom
-rate: 0.35
-until-km: 2.5e-14
-pan: 8
-caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
-
-@stop asteroid-follow-electron
-do: orbit
-turn: 12
 seconds: 16
-caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
-
-@stop asteroid-choose-nucleus
-do: pick
-target: nucleus
-caption: The nucleus
-
-@stop asteroid-to-nucleus
-do: zoom
-rate: 0.45
-until-km: 3e-17
-caption: Inward: an atom is almost all empty space
-
-@stop asteroid-round-nucleus
-do: arc
-rate: 0
-until-km: 0
-turn: 24
-seconds: 7
-caption: Its nucleus: protons and neutrons bound by the strong force
-
-@stop asteroid-choose-proton
-do: pick
-target: proton
-caption: A proton
-
-@stop asteroid-to-proton
-do: zoom
-rate: 0.35
-until-km: 2.5e-18
-caption: Into a single proton
-
-@stop asteroid-round-proton
-do: arc
-rate: 0
-until-km: 0
-turn: 20
-seconds: 6
-caption: Three quarks in a storm of gluons
-
-@stop asteroid-choose-quark
-do: pick
-target: quark
-caption: A quark
-
-@stop asteroid-to-quark
-do: zoom
-rate: 0.35
-until-km: 6e-19
-caption: One quark
-
-@stop asteroid-at-quark
-do: orbit
-turn: 8
-seconds: 9
-caption: The smallest thing we know
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
 
 @stop asteroid-let-go
 do: pick
@@ -385,7 +309,7 @@ caption: Back out through the atom, the crystal, the grain
 
 @stop off-asteroid
 do: zoom
-rate: -1.6
+rate: -0.7
 until-km: 1e40
 out: yes
 caption: Back out to its surface, and its sky
@@ -401,7 +325,7 @@ to-km: 4e5
 sweep: 30
 rise: 10
 max-rate: 0.5
-seconds: 8
+seconds: 5
 caption: A comet falling past its star, its tails streaming away from it
 
 @stop near-comet
@@ -409,28 +333,51 @@ do: shot
 to-radii: 15
 sweep: 90
 rise: -10
-seconds: 9
+seconds: 5
 caption: Into its coma: gas and dust boiling off a dark nucleus of ice
 
 @stop onto-comet
 do: zoom
 rate: 0.5
+until-km: 0.002
+caption: Onto its surface: its own ground, of its own kind's minerals (the card says which); down to where a person would stand
+
+@stop comet-to-grains
+do: zoom
+rate: 0.4
+until-km: 2e-6
+through: yes
+caption: The ground breaks into stones, then grains of dust
+
+@stop comet-choose-grain
+do: pick
+target: grain
+caption: One grain
+
+@stop comet-to-face
+do: zoom
+rate: 0.45
 until-km: 2e-9
 through: yes
-caption: Onto its surface: its own ground, of its own kind's minerals (the card says which), grains of dust and stone
+caption: Onto one grain, a crystal of one mineral
 
-@stop comet-atoms
+@stop comet-choose-spot
+do: pick
+target: spot
+caption: A spot on its face
+
+@stop comet-to-crystal
 do: zoom
 rate: 0.5
 until-km: 6e-12
-caption: Down to its atoms: the elements its minerals hold, the traces among them
+caption: Down to its atoms, in a pattern repeated billions of times
 
 @stop comet-round-crystal
 do: arc
 rate: 0
 until-km: 0
 turn: 15
-seconds: 24
+seconds: 14
 caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
 
 @stop comet-into-lattice
@@ -445,7 +392,7 @@ caption: Down among them
 do: fly
 rate: 0.6
 turn: 3
-seconds: 10
+seconds: 6
 caption: Through the lattice: row on row of atoms, each bonded to its neighbours
 
 @stop comet-choose-atom
@@ -464,107 +411,8 @@ do: arc
 rate: 0.03
 until-km: 2.5e-13
 turn: 14
-seconds: 26
-caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
-
-@stop comet-through-electrons
-do: zoom
-rate: 0.3
-until-km: 5e-14
-pan: 12
-caption: In among its electrons: each a point on its path; the nucleus a spark at the middle, a hundred thousand times smaller than the atom
-
-@stop comet-inner-shells
-do: orbit
-turn: 15
-seconds: 24
-caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
-
-@stop comet-to-neighbour
-do: pick
-target: bonded-atom
-caption: Its neighbour
-
-@stop comet-across-bond
-do: arc
-rate: 0
-until-km: 0
-turn: 8
-seconds: 9
-caption: Across the bond to its neighbour: atoms share their outer electrons
-
-@stop comet-choose-electron
-do: pick
-target: electron
-caption: One electron
-
-@stop comet-to-electron
-do: zoom
-rate: 0.35
-until-km: 2.5e-14
-pan: 8
-caption: In to one electron, as to a comet: it has no size anyone has found, so this glow is the size we give it; the nucleus a spark far off
-
-@stop comet-follow-electron
-do: orbit
-turn: 12
 seconds: 16
-caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
-
-@stop comet-choose-nucleus
-do: pick
-target: nucleus
-caption: The nucleus
-
-@stop comet-to-nucleus
-do: zoom
-rate: 0.45
-until-km: 3e-17
-caption: Inward: an atom is almost all empty space
-
-@stop comet-round-nucleus
-do: arc
-rate: 0
-until-km: 0
-turn: 24
-seconds: 7
-caption: Its nucleus: protons and neutrons bound by the strong force
-
-@stop comet-choose-proton
-do: pick
-target: proton
-caption: A proton
-
-@stop comet-to-proton
-do: zoom
-rate: 0.35
-until-km: 2.5e-18
-caption: Into a single proton
-
-@stop comet-round-proton
-do: arc
-rate: 0
-until-km: 0
-turn: 20
-seconds: 6
-caption: Three quarks in a storm of gluons
-
-@stop comet-choose-quark
-do: pick
-target: quark
-caption: A quark
-
-@stop comet-to-quark
-do: zoom
-rate: 0.35
-until-km: 6e-19
-caption: One quark
-
-@stop comet-at-quark
-do: orbit
-turn: 8
-seconds: 9
-caption: The smallest thing we know
+caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
 
 @stop comet-let-go
 do: pick
@@ -579,7 +427,7 @@ caption: Back out through the atom, the crystal, the grain
 
 @stop off-comet
 do: zoom
-rate: -1.6
+rate: -0.7
 until-km: 1e40
 out: yes
 caption: Back out to its surface, and its sky
@@ -594,7 +442,7 @@ do: shot
 to-km: 2e9
 sweep: 20
 max-rate: 0.5
-seconds: 8
+seconds: 5
 caption: Across light-years to another star
 
 @stop round-star-2
@@ -602,7 +450,7 @@ do: shot
 to-km: 8e8
 sweep: 100
 rise: 25
-seconds: 9
+seconds: 5
 caption: Another system, its worlds on their own orbits
 
 @stop choose-planet
@@ -616,7 +464,7 @@ to-radii: 5
 sweep: 30
 rise: 5
 max-rate: 0.5
-seconds: 8
+seconds: 5
 caption: Down to one of its worlds
 
 @stop round-planet
@@ -624,7 +472,7 @@ do: shot
 to-radii: 2.5
 sweep: 120
 rise: 10
-seconds: 10
+seconds: 6
 caption: Seas, land, clouds and a thin shell of air
 
 @stop choose-land
@@ -642,7 +490,7 @@ caption: Down through the air to the land
 do: glide
 rate: 0.5
 turn: 3
-seconds: 8
+seconds: 5
 caption: Hills raised by moving plates, valleys worn by water
 
 @stop to-head-height
@@ -660,20 +508,20 @@ caption: Standing
 do: look
 tilt: 55
 turn: 1.5
-seconds: 10
+seconds: 6
 caption: Look up: {sky}
 
 @stop sky
 do: orbit
 turn: 3
-seconds: 12
+seconds: 7
 caption: {sky}
 
 @stop look-down
 do: look
 tilt: -85
 turn: 1.5
-seconds: 9
+seconds: 5
 caption: And down: there is as much below us as above
 
 @stop to-grains
@@ -711,7 +559,7 @@ do: arc
 rate: 0
 until-km: 0
 turn: 15
-seconds: 24
+seconds: 14
 caption: A full turn among the atoms of the crystal: its lattice repeated billions of times, the same on every side of you
 
 @stop into-lattice
@@ -726,7 +574,7 @@ caption: Down among them
 do: fly
 rate: 0.6
 turn: 3
-seconds: 10
+seconds: 6
 caption: Through the lattice: row on row of atoms, each bonded to its neighbours
 
 @stop choose-atom
@@ -745,7 +593,7 @@ do: arc
 rate: 0.03
 until-km: 2.5e-13
 turn: 14
-seconds: 26
+seconds: 16
 caption: Round the atom: a tiny nucleus, its electrons round it, each in its own orbital's shape, the paths slowly turning
 
 @stop through-electrons
@@ -758,7 +606,7 @@ caption: In among its electrons: each a point on its path; the nucleus a spark a
 @stop inner-shells
 do: orbit
 turn: 15
-seconds: 24
+seconds: 14
 caption: A full turn through the inner shells, held tightest and moving fastest: an atom is almost all empty space, and the same behind you as ahead
 
 @stop to-neighbour
@@ -771,7 +619,7 @@ do: arc
 rate: 0
 until-km: 0
 turn: 8
-seconds: 9
+seconds: 5
 caption: Across the bond to its neighbour: atoms share their outer electrons
 
 @stop choose-electron
@@ -789,7 +637,7 @@ caption: In to one electron, as to a comet: it has no size anyone has found, so 
 @stop follow-electron
 do: orbit
 turn: 12
-seconds: 16
+seconds: 10
 caption: Riding beside it as it goes round, the view circling: a new path every time round, as an electron has no path of its own, only a cloud of where it may be
 
 @stop choose-nucleus
@@ -844,7 +692,7 @@ caption: One quark
 @stop at-quark
 do: orbit
 turn: 8
-seconds: 9
+seconds: 5
 caption: The smallest thing we know
 
 @stop let-go
@@ -885,5 +733,5 @@ caption: Out to the cosmic web, galaxies by the million
 @stop end
 do: orbit
 turn: 4
-seconds: 16
+seconds: 10
 caption: The same universe at every scale, from the cosmic web to a quark. {seen}

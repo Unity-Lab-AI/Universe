@@ -151,6 +151,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **A young supernova's ejecta a ballooning cloud round its face, bright while it shines, the shots framed on it:** (built: DNA-AND DESIGN 644; waits on the test) "one issue now when i told u to add super nova i see their gas explosions globes all over but every time the tour goes to a super nova its just a star with no cluad, wtf it even says it poped within the week so how the fuck and where is the balloning gas cloud of the super nova is not there whre the tours go to even tho it says it just blew a week ago which we can say as weeks fly by like seconds in this game" / "cant* say"
 
+- [~] **The asteroid's and comet's descents in the world's own layers, the atom's long chain once on the world, the way out at the pace of the way in, less waiting and circling:** (built: DNA-AND DESIGN 645; waits on the test) "i tolkk lots of pics it never made it to ground level and whole zomme levels were zommed into well not on the surface and a bunch of layer zooms are are missing like grains and all their layers and even the atom level after 2nanometers i just see white dots at 2um and i dont remember seeing that on the planet zoom in" / "and we dont need the whole hour long atom waits when we have to do it all again on the planet" / "too mauch waiting around and pauses and too many orbits of objects" / "look at the pics i just took the whole zoom out skipped everything even tho the zoom in skipped it all too"
+
 ---
 
 ## Pending

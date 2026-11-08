@@ -72,3 +72,4 @@ Append-only. Newest at the bottom.
 - 2026-11-07 (the shot's pace eased; the ground under the camera never culled, the ground probe): DNA-AND DESIGN 660, 661.
 - 2026-11-07 (nebulae close up as clouds of their own gas): DNA-AND DESIGN 662.
 - 2026-11-07 (the tour: the asteroid seen not dived into, the nebula out): DNA-AND DESIGN 663.
+- 2026-11-07 (a star whose system is open is the target at its real place): DNA-AND DESIGN 664.

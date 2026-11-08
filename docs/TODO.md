@@ -184,6 +184,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The tour: the asteroid seen, not dived into; the nebula out of it:** (built: DNA-AND DESIGN 663; waits on the test) "what the fuck this thing was suuppose to max out at five minutes and u keep adding shit to the tour" / "kllets not dive into the astreoid that save alot of time" / "and i never said do a gas cloud fly by" / "m,ake those changes i said and dont worry about the time just make thosae adjustment"
 
+- [~] **A star whose system is open is the target at its real place and radius, so the zoom ends at its face and the dive comes:** (built: DNA-AND DESIGN 664; waits on the test) "i took some pics when it failed and had nothing in view talking about shit that wasnt happening in view"
+
 ---
 
 ## Pending

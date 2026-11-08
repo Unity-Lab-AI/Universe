@@ -601,3 +601,14 @@ Measured on a filmed 4K frame, against the frame as drawn:
 
 The front man now codes at 30. It codes as fast as before, about 39 ms a 4K frame.
 
+### The .cdf97w: the front man under a cap, the universe's own equations inside (2026-11-08)
+
+- **Measured on a 12.7 s 4K clip:** the per-frame wavelet terms took 641 MB and the front man 249 MB. For ten minutes that is about 30 GB and 12 GB.
+- **The compact equations are the universe's own:** the seed, the camera's track and the scene's calls. They make every frame again exactly, in about 1 MB for ten minutes. The .cdf97w now carries those inside its front man, and no longer stores the per-frame wavelet terms.
+- **The front man is capped at 850 MB for ten minutes at 4K.** Each run of 60 frames is held to its budget, its quality coarsened when it runs over and eased back toward 30 when under.
+
+| Checked: 120 4K frames | |
+|---|---|
+| Each frame | 47 KB against the cap's 48 |
+| Ten minutes at that rate | 835 MB |
+

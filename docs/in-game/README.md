@@ -43,7 +43,7 @@ A **click**, the **wheel** or a **key** pauses the tour, and a note on screen sa
 | Control | What it does |
 |---|---|
 | **F12** | A screenshot (PNG) |
-| **F9** | Start or stop recording a clip: a `.cdf97w` in the captures folder. Its **front man** plays in any video player: each frame's CDF 9/7 equations, worked out on the graphics card as the frame is drawn, are solved back into pixels and coded by our own VP9 writer, at the screen's full size, thirty frames a second, every frame kept (while it films, the game waits for the clip, so it may run slower than real time). The **equations** and their metadata ride inside the same file, and this program plays them. While it records a red REC with the clip's length blinks at the top of the screen, as on a camcorder; it stays out of the clip |
+| **F9** | Start or stop recording a clip: a `.cdf97w` in the captures folder. Its **front man** plays in any video player: the frames as drawn, coded by our own VP9 writer at the screen's full size, every frame kept, held under 850 MB for ten minutes at 4K (while it films, the game waits for the clip, so it may run slower than real time). Inside it ride **the universe's own equations**: the seed, the camera's track and the scene; this program makes the universe again from them and flies the clip through it. While it records a red REC with the clip's length blinks at the top of the screen, as on a camcorder; it stays out of the clip |
 
 Both go in the `captures` folder. On the landing page, tick **Film the tour** to record the whole tour as the same kind of `.cdf97w`. The **Clips** list plays what you have filmed, and **Open folder** shows where it is.
 

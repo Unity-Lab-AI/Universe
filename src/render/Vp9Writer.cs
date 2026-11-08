@@ -63,8 +63,8 @@ namespace Universe.Render
             return false;
         }
 
-        private readonly string _path; private readonly int _w, _h, _fw, _fh, _miCols, _miRows, _sbCols, _sbRows, _q, _tileLog2, _minLog2;
-        private readonly int _dcq, _acq;
+        private readonly string _path; private readonly int _w, _h, _fw, _fh, _miCols, _miRows, _sbCols, _sbRows, _tileLog2, _minLog2;
+        private int _q, _dcq, _acq;
         /// <summary>The picture a player shows for the last frame written (Y, then Cb, then Cr), as the decoder rebuilds it; rows of
         /// <see cref="Stride"/> (Y) and <see cref="Stride"/>/2 (Cb, Cr).</summary>
         public byte[] Y, Cb, Cr;
@@ -125,6 +125,8 @@ namespace Universe.Render
             });
             return pl;
         }
+        /// <summary>The quantiser index for the frames from here on (1 finest .. 255 coarsest): the rate control's dial.</summary>
+        public int Quality { get { return _q; } set { _q = Math.Max(1, Math.Min(255, value)); _dcq = Vp9Tables.DcQLookup[_q]; _acq = Vp9Tables.AcQLookup[_q]; } }
         /// <summary>The last frame written, as its bytes, and whether it was a whole one.</summary>
         public byte[] LastFrame { get { return _last; } }
         public bool LastKey { get { return _lastKey; } }

@@ -20,11 +20,15 @@ namespace Universe.Render
         public int Height { get { return _h; } }
         public int Dropped { get; private set; }
 
-        private readonly bool _noDrop;
+        private readonly bool _noDrop; private readonly double _capPerFrame;
+        /// <summary>The front man's cap: 850 MB for ten minutes (about 1.42 MB a second), at 4K or any size.</summary>
+        public const double CapBytesPerSecond = 850.0 * 1024 * 1024 / 600;
         /// <param name="noDrop">Never let a frame go: the one adding waits while the coders are full.</param>
-        public Vp9Track(int w, int h, int qIndex = 120, bool noDrop = false)
+        /// <param name="capBytesPerSecond">Above 0: each run of frames held to this many bytes a second of the clip (thirty frames),
+        /// its quality raised frame by frame when it runs over and brought back toward <paramref name="qIndex"/> when under.</param>
+        public Vp9Track(int w, int h, int qIndex = 120, bool noDrop = false, double capBytesPerSecond = 0)
         {
-            _w = w & ~1; _h = h & ~1; _q = qIndex; _noDrop = noDrop; _shape = new Vp9Writer(null, _w, _h, _q);
+            _w = w & ~1; _h = h & ~1; _q = qIndex; _noDrop = noDrop; _capPerFrame = capBytesPerSecond / 30; _shape = new Vp9Writer(null, _w, _h, _q);
             _maxWaiting = noDrop ? 48 : Run * Math.Max(2, Math.Min(6, Environment.ProcessorCount - 2));   // (frames held at most: a few runs' worth; never letting one go, 48, under 600 MB at 4K, then the game waits)
             // the intake: each frame turned into the coder's planes off the game's thread, then handed to its run
             _intaker = new Thread(() =>
@@ -48,7 +52,20 @@ namespace Universe.Render
             g.Worker = new Thread(() =>
             {
                 var v = new Vp9Writer(null, _w, _h, _q) { KeyEvery = int.MaxValue, KeepFrames = false };
-                foreach (var f in g.In.GetConsumingEnumerable()) { v.AddPrepared(f.Item1, 33); g.Frames.Add(v.LastFrame); g.Keys.Add(v.LastKey); g.Times.Add(f.Item2); Interlocked.Decrement(ref _waiting); }
+                // the rate control: the run's bytes against its budget so far (a whole first frame allowed eight frames' worth); over by
+                // more than two frames' worth, the quality coarsened at once in proportion; under, eased back toward the finest asked for
+                double spent = 0, budget = _capPerFrame * 7; int k = 0;
+                foreach (var f in g.In.GetConsumingEnumerable())
+                {
+                    v.AddPrepared(f.Item1, 33); g.Frames.Add(v.LastFrame); g.Keys.Add(v.LastKey); g.Times.Add(f.Item2); Interlocked.Decrement(ref _waiting);
+                    if (_capPerFrame > 0)
+                    {
+                        spent += v.LastFrame.Length; budget += _capPerFrame; k++;
+                        double over = (spent - budget) / _capPerFrame;
+                        if (over > 2) v.Quality = v.Quality + (int)Math.Min(64, 4 + over * 4);
+                        else if (over < -2 && v.Quality > _q) v.Quality = Math.Max(_q, v.Quality - 4);
+                    }
+                }
             }) { IsBackground = true, Name = "front man coder", Priority = ThreadPriority.BelowNormal };
             g.Worker.Start();
         }

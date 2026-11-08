@@ -112,3 +112,34 @@ What it shows:
 - **The equations themselves are the size problem.** At these tolerances, one frame's equations are 10 to 30 times bigger than a DCT picture of the same frame. A full-size `.cdf97w` recorded at these tolerances is very large.
 - **So the smallest file is the front man alone, with an empty box (H4's limit).** The program rebuilds the equations from the picture when it loads it. They're then the equations of what was shown, not the exact ones. Carrying the exact ones costs 10 to 30 times the picture.
 - **Next:** measure how the equation size falls as the tolerance loosens (Uni Vs Matics' defaults are 0.015, 0.022, 0.022), and the PSNR at each step, against a DCT copy of the same size. Then E2.
+
+### E1b — looser tolerances (2026-11-08)
+
+The same frames, Uni Vs Matics keep-and-pack, against a DCT picture (JPEG) no bigger than the equations. Script: `shots/e1b.py`.
+
+| Frame | Tolerance (Y) | Equations | Their PSNR | DCT at that size, PSNR |
+|------:|------:|------:|------:|------:|
+| 240 s | 0.006 | 452 KB | 59.9 dB | 41.3 dB (q95, 33 KB) |
+| 240 s | 0.015 | 374 KB | 50.8 dB | 41.3 dB |
+| 240 s | 0.03 | 286 KB | 45.0 dB | 41.3 dB |
+| 240 s | 0.06 | 210 KB | 39.1 dB | 41.3 dB |
+
+Loosening the tolerance shrinks the equations slowly. Even at 0.06 they're still about six times the size of a q95 DCT picture that looks better. What weighs is the packing: about 3.3 bytes a kept term (LEB128 positions and Int16 values), with no entropy coding.
+
+### E1c — the same wavelet, entropy-packed (2026-11-08)
+
+Every coefficient is quantised with one uniform step (a dead zone, so most become zero), then packed with LZMA as a stand-in for a real entropy coder. Script: `shots/e1c.py`.
+
+| Frame | Step | Packed equations | PSNR | DCT at the same size |
+|------:|------:|------:|------:|------:|
+| 240 s | 0.004 | 75 KB | 40.7 dB | 62 KB, 43.2 dB |
+| 240 s | 0.016 | 35 KB | 35.7 dB | 33 KB, 41.3 dB |
+| 480 s | 0.004 | 65 KB | 41.4 dB | 52 KB, 43.3 dB |
+| 30 s | 0.004 | 162 KB | 38.8 dB | 132 KB, 38.1 dB |
+
+What it shows:
+
+- **Packing cuts the equations 5 to 10 times.** At 240 s they go from 452 KB to 35 to 75 KB, now the same order as the DCT picture.
+- **They still trail the DCT picture at equal size**, by 2 to 6 dB. LZMA is a general-purpose packer that knows nothing about wavelets. JPEG 2000 uses this same CDF 9/7 wavelet with a wavelet-aware entropy coder (bit planes, context modelling) and beats JPEG at equal size. So the gap is the coder, not the equations.
+- **New hypothesis H6:** a wavelet-aware entropy coder for the `.cdf97w` (zerotree or bit-plane coding with contexts, as in JPEG 2000) brings a frame's equations to the size of an H.264 intra frame or below. Combined with H2's inter-frame terms carried over from the last frame, that's the path to a small `.cdf97w` on its own.
+- **For the program now:** the `.cdf97w` writer should drop the per-term Int16 packing for uniform quantisation plus entropy coding. That's the one change these numbers support today.

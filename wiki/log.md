@@ -84,3 +84,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the .cdf97w clip: writer, start-page and View format pick, in-program player): DNA-AND DESIGN 673.
 - 2026-11-08 (the front-man equation research written up): DNA-AND DESIGN 674.
 - 2026-11-08 (E1 of the front-man research measured): DNA-AND DESIGN 675.
+- 2026-11-08 (E1b and E1c: the packing, not the wavelet, is the size): DNA-AND DESIGN 676.

@@ -162,7 +162,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **No art** | No pictures, no textures, no models, no sound files. Every galaxy, star, world, cloud, stone, grain and atom is worked out from its seed, every frame |
 | **No build tools** | One command, and the C# compiler that is already inside every copy of Windows. That is the whole toolchain |
 | **Our own formats** | The content format, the wavelet engine, the icon drawer, the installer, the document viewer, the PNG and GIF writers: ours |
-| **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, Media Foundation to pack a clip as MP4, the framework's Deflate inside a PNG. Nothing from anywhere else |
+| **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, the framework's Deflate inside a PNG and the universe clip's records. Nothing from anywhere else |
 
 About 21,800 lines of C# and shader code in 65 files, and about 11,400 lines of templates in 30. That is the whole thing.
 
@@ -213,7 +213,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
-| **F12 · F9** | A screenshot · start or stop a clip (Clip format on the landing page or under View: MP4; .cdf97w, the clip as CDF 9/7 waveforms and their metadata, worked out on the graphics card as each frame is drawn; or the .cdf97w of the universe itself, no pixels: the seed and the camera's track, a few hundred KB for ten minutes, drawn again at any size (Play on the start page, or a double-click in Explorer, makes the universe again from its seed and flies the clip through it); a filmed tour also leaves a .cdf97u, its seed and tour in a few lines, that Play flies again through the same universe; Clip size there too: auto, full, half or quarter of the screen; in a smaller clip the text is drawn larger, so it reads) |
+| **F12 · F9** | A screenshot · start or stop a clip. Every clip is a `.cdf97w` (Clip format on the landing page or under View): the universe itself, a picture track any video player plays with the universe inside it, flown again here; or its waveforms, the pictures as CDF 9/7 equations, played here |
 
 A `.cdf97w` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`. A waveform clip plays as its pictures. A clip of the universe itself plays as its camera track and scene, and the program flies it in full.
 

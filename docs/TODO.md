@@ -256,6 +256,9 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 - [x] **A filmed tour is always the clip of the universe itself (a few megabytes), and no .cdf97u side file beside it:** (done: DNA-AND DESIGN 712; waits on the test) "the clip got made but looks like we failed its 3 G not 100M" / "yes"
 - [~] **The .cdf97w plays in Media Player: our own WebM, our VP9 picture track, the universe's records attached inside:** (built: DNA-AND DESIGN 713; waits on the test) "okay  why did my cdf79w not open in media player?" / "i only want the cdf79w file to play in media player" / "i thought that was all the encoders and shit we made" / "i thought that was all the encoders we made"
 - [~] **The program closing on its own while a menu was used: the logs now keep the run before, sit beside the exe, and record every way out, every menu and every slow frame:** (built: DNA-AND DESIGN 714; waits on the next time it happens) "the watchdog kicked me again when in menu can u figure that out"
+- [~] **The tour stuck at 1.5 km over the ground: every zoom off course now turns toward what it flies to and goes on:** (built: DNA-AND DESIGN 715; waits on the test) "it got stuck at 500M i took a screenshot"
+- [x] **MP4 taken out of the program and its docs: every clip a .cdf97w:** (done: DNA-AND DESIGN 716) "thats not our cdf97w file that was suppose to play in any media file and what the fuck is MP4 doing in my shit we dont use other peoples creations this is the 4th time telling you"
+- [ ] **The .cdf97w that plays in any media player: what it is to be:** (asked: DNA-AND DESIGN 716) "thats not our cdf97w file that was suppose to play in any media file and what the fuck is MP4 doing in my shit we dont use other peoples creations this is the 4th time telling you"
 
 ---
 

@@ -204,7 +204,7 @@ internal static class Setup
                     box.Text = "Delete my old " + what + " (" + files.Length + " file" + (files.Length == 1 ? "" : "s") + ", " + (bytes / 1048576.0).ToString("N0") + " MB)";
                     box.Checked = on; box.Location = new Point(28, y); box.AutoSize = true; _pages[6].Controls.Add(box); y += 30;
                 };
-                offer(_clearClips, Directory.Exists(caps) ? Directory.GetFiles(caps, "*.mp4") : new string[0], "clips", true);
+                offer(_clearClips, Directory.Exists(caps) ? Directory.GetFiles(caps) : new string[0], "clips", true);
                 offer(_clearShots, Directory.Exists(caps) ? Directory.GetFiles(caps, "*.png") : new string[0], "screenshots", false);
                 offer(_clearSettings, Directory.Exists(SettingsDir) ? Directory.GetFiles(SettingsDir, "*", SearchOption.AllDirectories) : new string[0], "settings (back to how it starts)", false);
             }
@@ -281,7 +281,7 @@ internal static class Setup
                 {
                     // what was chosen to be deleted from the earlier copy: its clips, its screenshots, its settings
                     string caps = Path.Combine(dir, "captures");
-                    if (_clearClips.Checked && Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps, "*.mp4")) { try { File.Delete(c); } catch { } }
+                    if (_clearClips.Checked && Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps)) { try { File.Delete(c); } catch { } }
                     if (_clearShots.Checked && Directory.Exists(caps)) foreach (var c in Directory.GetFiles(caps, "*.png")) { try { File.Delete(c); } catch { } }
                     if (_clearSettings.Checked) try { if (Directory.Exists(SettingsDir)) Directory.Delete(SettingsDir, true); } catch { }
                 }

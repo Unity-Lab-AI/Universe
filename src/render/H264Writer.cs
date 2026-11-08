@@ -3,7 +3,8 @@
 // macroblock is skipped (the decoder copies it). Each coded macroblock is Intra16x16 with DC prediction: its 16 luma DCs through
 // the Hadamard, each 4 x 4's 15 detail terms through the core transform; its colour the same way, the chroma DC set through the
 // 2 x 2 Hadamard and each chroma 4 x 4's 15 detail terms (the colour's detail, version 2). The writer keeps the decoder's own
-// reconstruction (it predicts from it), so what a player shows is known here exactly. The MP4 boxes around it are ours too.
+// reconstruction (it predicts from it), so what a player shows is known here exactly. It writes no file: the encoders' sample
+// measures its bytes and shows its picture.
 using System;
 using System.Collections.Generic;
 
@@ -420,43 +421,7 @@ namespace Universe.Render
         static int Clip(double v) { int i = (int)(v + 0.5); return i < 0 ? 0 : i > 255 ? 255 : i; }
         static int Clip255(int v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
 
-        // ── the MP4 boxes, ours ──
-        static void Be32(List<byte> o, long v) { o.Add((byte)(v >> 24)); o.Add((byte)(v >> 16)); o.Add((byte)(v >> 8)); o.Add((byte)v); }
-        static void Be16(List<byte> o, int v) { o.Add((byte)(v >> 8)); o.Add((byte)v); }
-        static List<byte> Box(string t, params List<byte>[] parts) { var o = new List<byte>(); int n = 8; foreach (var p in parts) n += p.Count; Be32(o, n); foreach (char c in t) o.Add((byte)c); foreach (var p in parts) o.AddRange(p); return o; }
-        static List<byte> L(params byte[] b) { return new List<byte>(b); }
-        static List<byte> Zeros(int n) { return new List<byte>(new byte[n]); }
-        public void Dispose()
-        {
-            const int ts = 1000; uint dur = 0; foreach (var d in _durations) dur += d;
-            var ftyp = Box("ftyp", L((byte)'i', (byte)'s', (byte)'o', (byte)'m'), L(0, 0, 2, 0), L((byte)'i', (byte)'s', (byte)'o', (byte)'m', (byte)'a', (byte)'v', (byte)'c', (byte)'1'));
-            var mdatBody = new List<byte>(); foreach (var s in _samples) mdatBody.AddRange(s);
-            long mdatStart = ftyp.Count + 8;
-            var mvhd = new List<byte>(); Be32(mvhd, 0); Be32(mvhd, 0); Be32(mvhd, 0); Be32(mvhd, ts); Be32(mvhd, dur); Be32(mvhd, 0x00010000); Be16(mvhd, 0x0100); mvhd.AddRange(Zeros(10)); Matrix(mvhd); mvhd.AddRange(Zeros(24)); Be32(mvhd, 2);
-            var tkhd = new List<byte>(); Be32(tkhd, 3); Be32(tkhd, 0); Be32(tkhd, 0); Be32(tkhd, 1); Be32(tkhd, 0); Be32(tkhd, dur); tkhd.AddRange(Zeros(8)); Be16(tkhd, 0); Be16(tkhd, 0); Be16(tkhd, 0); Be16(tkhd, 0); Matrix(tkhd); Be32(tkhd, _w << 16); Be32(tkhd, _h << 16);
-            var mdhd = new List<byte>(); Be32(mdhd, 0); Be32(mdhd, 0); Be32(mdhd, 0); Be32(mdhd, ts); Be32(mdhd, dur); Be16(mdhd, 0x55C4); Be16(mdhd, 0);
-            var hdlr = new List<byte>(); Be32(hdlr, 0); Be32(hdlr, 0); foreach (char c in "vide") hdlr.Add((byte)c); hdlr.AddRange(Zeros(12)); foreach (char c in "front man") hdlr.Add((byte)c); hdlr.Add(0);
-            var vmhd = new List<byte>(); Be32(vmhd, 1); vmhd.AddRange(Zeros(8));
-            var dref = new List<byte>(); Be32(dref, 0); Be32(dref, 1); var url = Box("url ", L(0, 0, 0, 1)); dref.AddRange(url);
-            var avcC = new List<byte>(); avcC.Add(1); avcC.Add(_sps[0]); avcC.Add(_sps[1]); avcC.Add(_sps[2]); avcC.Add(0xFF); avcC.Add(0xE1);
-            var spsN = Bits.Escape(Prepend(0x67, _sps)); Be16(avcC, spsN.Length); avcC.AddRange(spsN); avcC.Add(1); var ppsN = Bits.Escape(Prepend(0x68, _pps)); Be16(avcC, ppsN.Length); avcC.AddRange(ppsN);
-            var avc1 = new List<byte>(); avc1.AddRange(Zeros(6)); Be16(avc1, 1); avc1.AddRange(Zeros(16)); Be16(avc1, _w); Be16(avc1, _h); Be32(avc1, 0x00480000); Be32(avc1, 0x00480000); Be32(avc1, 0); Be16(avc1, 1); avc1.AddRange(Zeros(32)); Be16(avc1, 0x18); Be16(avc1, 0xFFFF); avc1.AddRange(Box("avcC", avcC));
-            var stsd = new List<byte>(); Be32(stsd, 0); Be32(stsd, 1); stsd.AddRange(Box("avc1", avc1));
-            var stts = new List<byte>(); Be32(stts, 0); Be32(stts, _durations.Count); foreach (var d in _durations) { Be32(stts, 1); Be32(stts, Math.Max(1, d)); }
-            var stsc = new List<byte>(); Be32(stsc, 0); Be32(stsc, 1); Be32(stsc, 1); Be32(stsc, _samples.Count); Be32(stsc, 1);
-            var stsz = new List<byte>(); Be32(stsz, 0); Be32(stsz, 0); Be32(stsz, _samples.Count); foreach (var s in _samples) Be32(stsz, s.Length);
-            var stco = new List<byte>(); Be32(stco, 0); Be32(stco, 1); Be32(stco, mdatStart);
-            var stss = new List<byte>(); Be32(stss, 0); int nk = 0; foreach (var k in _keys) if (k) nk++; Be32(stss, nk); for (int i = 0; i < _keys.Count; i++) if (_keys[i]) Be32(stss, i + 1);   // the whole frames, where a player can start
-            var stbl = Box("stbl", Box("stsd", stsd), Box("stts", stts), Box("stss", stss), Box("stsc", stsc), Box("stsz", stsz), Box("stco", stco));
-            var minf = Box("minf", Box("vmhd", vmhd), Box("dinf", Box("dref", dref)), stbl);
-            var moov = Box("moov", Box("mvhd", mvhd), Box("trak", Box("tkhd", tkhd), Box("mdia", Box("mdhd", mdhd), Box("hdlr", hdlr), minf)));
-            using (var f = System.IO.File.Create(_path))
-            {
-                var hdr = new List<byte>(); Be32(hdr, 8 + mdatBody.Count); foreach (char c in "mdat") hdr.Add((byte)c);
-                f.Write(ftyp.ToArray(), 0, ftyp.Count); f.Write(hdr.ToArray(), 0, 8); f.Write(mdatBody.ToArray(), 0, mdatBody.Count); f.Write(moov.ToArray(), 0, moov.Count);
-            }
-        }
-        static byte[] Prepend(byte b, byte[] a) { var o = new byte[a.Length + 1]; o[0] = b; Array.Copy(a, 0, o, 1, a.Length); return o; }
-        static void Matrix(List<byte> o) { Be32(o, 0x00010000); Be32(o, 0); Be32(o, 0); Be32(o, 0); Be32(o, 0x00010000); Be32(o, 0); Be32(o, 0); Be32(o, 0); Be32(o, 0x40000000); }
+        /// <summary>Nothing to close: the writer keeps its frames' bytes and its reconstruction (it writes no file).</summary>
+        public void Dispose() { }
     }
 }

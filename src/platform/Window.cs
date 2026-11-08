@@ -106,11 +106,11 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
             Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (in captures, in the clip format below)\tF9");
             {
-                // the clip's format: an MP4 (any player), or a .cdf97w (the pictures as CDF 9/7 wavelet equations; this program plays it)
-                IntPtr fmtMenu = Win32.CreatePopupMenu(); int cf = Settings.Get("clip-format", 0);
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf < 1 ? Win32.MF_CHECKED : 0), (IntPtr)CmdClipFormatBase, "MP4 (H.264 video: plays in any player)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w (the clip as CDF 9/7 waveforms and their metadata: plays in this program)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 2 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 2), ".cdf97w of the universe itself (the seed and the camera's track, no pixels: plays here at any size)");
+                // the clip's format: both a .cdf97w; the universe itself (its picture track any video player plays, the universe inside),
+                // or its waveforms (the pictures as CDF 9/7 equations, played by this program)
+                IntPtr fmtMenu = Win32.CreatePopupMenu(); int cf = Universe.Render.ClipWriters.Format;
+                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 2 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 2), ".cdf97w of the universe itself (its pictures play in any video player; the universe inside plays here)");
+                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w of waveforms (the pictures as CDF 9/7 equations: plays in this program)");
                 Win32.AppendMenu(view, Win32.MF_POPUP, fmtMenu, "Clip format");
             }
             {

@@ -49,8 +49,7 @@ namespace Universe.Shell
             for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) { int i = y * pw + x, o = (y * w + x) * 3; double Y = rec[0][i], cb = rec[1][i] - 0.5, cr = rec[2][i] - 0.5; ours[o] = B8(Y + 1.402 * cr); ours[o + 1] = B8(Y - 0.344136 * cb - 0.714136 * cr); ours[o + 2] = B8(Y + 1.772 * cb); }
             tiles.Add(new Tile { Name = ".cdf97w (ours)", Rgb = ours, Bytes = Cdf97wCodec.Pack(q, pw, ph).Length, Db = Db(rgb, ours) });
             // H.264: our own writer, one whole frame, and its own reconstruction (what a player shows), back to RGB
-            string tmp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "front-man-compare.mp4");
-            var hw = new H264Writer(tmp, w, h);
+            var hw = new H264Writer(null, w, h);
             hw.Add(rgb, w, h, 33); long hb = hw.Bytes; int YW = (w + 15) / 16 * 16, CWd = YW / 2;
             var h264 = new byte[w * h * 3];
             for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)

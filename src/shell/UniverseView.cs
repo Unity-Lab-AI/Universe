@@ -2229,6 +2229,18 @@ namespace Universe.Shell
                         _tourRate += (aim - _tourRate) * (1 - Math.Exp(-dt * 1.5));
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
                         input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
+                        // never stuck off course: a zoom that finds what it flies to away from the look (a glide before it flew on past the
+                        // spot it picked, and left it behind) turns the view toward it, eased, and moves again once it is on course (it had
+                        // sat still for good: the wheel held at nothing while off course, and nothing turning the look back)
+                        if (OnCourse() < 1 && !(_spaceScale > 0 && _matter.SpaceKind == 12) && _tKind >= 0)
+                        {
+                            double tdx, tdy, tdz, trad;
+                            if (TargetFromCamera(out tdx, out tdy, out tdz, out trad))
+                            {
+                                double tl = Math.Sqrt(tdx * tdx + tdy * tdy + tdz * tdz), k = 1 - Math.Exp(-dt * 0.8); var lk = Look;
+                                if (tl > 0) SetLook(lk.X + (tdx / tl - lk.X) * k, lk.Y + (tdy / tl - lk.Y) * k, lk.Z + (tdz / tl - lk.Z) * k);
+                            }
+                        }
                         if (_spaceScale > 0 && _matter.SpaceKind == 12)
                         {
                             // the fall, on the tour: looking up at the sky through the mouth as you enter (from the first frame, no easing

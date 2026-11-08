@@ -123,3 +123,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (a filmed tour is always the clip of the universe itself; no side file): DNA-AND DESIGN 712.
 - 2026-11-08 (the .cdf97w as our own WebM with a VP9 picture track for Media Player, the universe attached): DNA-AND DESIGN 713.
 - 2026-11-08 (logs kept across runs; every way out recorded): DNA-AND DESIGN 714.
+- 2026-11-08 (zooms never stuck off course; MP4 taken out): DNA-AND DESIGN 715, 716.

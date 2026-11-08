@@ -14,7 +14,7 @@
   plain text in the content folder. Change them, add your own, and build
   universes for your own games and simulations.
 
-  Built from nothing: no engine, no libraries, no art, 1.5 MB installed,
+  Built from nothing: no engine, no libraries, no art, 1.6 MB installed,
   MIT licensed. Take it for any project that needs a universe.
 
 

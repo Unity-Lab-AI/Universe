@@ -12,7 +12,7 @@
 
 > **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.7 MB, from GitHub")** (0.7 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.5 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
 
-<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.5 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
+<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.6 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
 <p align="center">
   <a href="docs/COMPARED.md" title="Size, scope and performance against the other universe programs">Against the field</a>
@@ -99,10 +99,10 @@ Rename it, swap the icon, change the content, and `release.cmd` makes your insta
 
 | | |
 |---|---|
-| **Download** | 0.72 MB installer |
-| **The program** | 1.14 MB |
-| **Every template** | 0.32 MB of plain text |
-| **Everything installed** | 1.5 MB (2.3 MB with the uninstaller) |
+| **Download** | 0.74 MB installer |
+| **The program** | 1.21 MB |
+| **Every template** | 0.30 MB of plain text |
+| **Everything installed** | 1.6 MB (2.3 MB with the uninstaller) |
 | **What it holds** | About 100 billion galaxies of about 100 billion stars each: some 10²² stars, every one with its own worlds, and every world down to its grains and their atoms |
 
 That's less than one photo from a phone. It fits because **nothing in it is stored. Everything is grown.**
@@ -115,7 +115,7 @@ That's less than one photo from a phone. It fits because **nothing in it is stor
 | **Only what you can see** | Galaxies are made in the regions round you, stars in the cubes round you, ground in pieces finer the closer you are, atoms round the point you dive into. What you leave behind is let go, and made again if you return |
 | **The graphics card does the work** | The fine detail, the stars' colours, the web of galaxies' light are worked out on the card for each pixel, every frame, instead of being loaded from disk |
 
-So the 1.5 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
+So the 1.6 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
 
 ### Against the field
 
@@ -164,7 +164,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **Our own formats** | The content format, the wavelet engine, the icon drawer, the installer, the document viewer, the PNG and GIF writers: ours |
 | **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, Media Foundation to pack a clip as MP4, the framework's Deflate inside a PNG. Nothing from anywhere else |
 
-About 20,500 lines of C# and shader code in 61 files, and about 12,400 lines of templates in 30. That is the whole thing.
+About 21,800 lines of C# and shader code in 65 files, and about 11,400 lines of templates in 30. That is the whole thing.
 
 ---
 

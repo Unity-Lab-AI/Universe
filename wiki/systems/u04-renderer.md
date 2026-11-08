@@ -1,8 +1,8 @@
 ---
 title: U4 · Renderer
 status: verified
-sources: [src/render/D3D12.cs, Com.cs, Gpu.cs, Pipeline.cs, MeshPipeline.cs, Draw.cs, GpuLog.cs, PngWriter.cs, GifWriter.cs, Mp4Writer.cs, src/shell/UniverseView.cs, ScaleHud.cs]
-last-verified: 1591b7f
+sources: [src/render/D3D12.cs, Com.cs, Gpu.cs, Pipeline.cs, MeshPipeline.cs, Draw.cs, GpuLog.cs, PngWriter.cs, GifWriter.cs, Mp4Writer.cs, CardClip.cs, src/shell/UniverseView.cs, ScaleHud.cs]
+last-verified: 16bbc1c
 ---
 
 # U4 · Renderer
@@ -21,7 +21,7 @@ last-verified: 1591b7f
 | The scale and the cards | A bar of a round length in the program's own letters; one card at a time, short lines, between the tour's bars; the pick's ring | `ScaleHud.cs` |
 | GPU use and render scale | The card's time measured each frame and the detail turned to hold the share chosen (10 to 90%); drawing at 50 to 200% of the window | `Gpu.cs`, `Window.cs`, `Program.cs` |
 | The strongest card | At start the card with the most video memory of its own is taken; small cards start at a lower render scale | `Gpu.PickAdapter` |
-| Captures | PNG (chunks, filters, checksums), GIF (palette, LZW), MP4 (Media Foundation, 30 a second, rate control by quality, the clip's size against the screen) | `PngWriter.cs`, `GifWriter.cs`, `Mp4Writer.cs` |
+| Captures | PNG (chunks, filters, checksums), GIF (palette, LZW), MP4 (Media Foundation, 30 a second, rate control by quality, the clip's size against the screen), .cdf97w (our own: the frame split, the dyadic CDF 9/7 and the quantising in compute shaders inside the frame's own command list, only the terms read back a frame later) | `PngWriter.cs`, `GifWriter.cs`, `Mp4Writer.cs`, `CardClip.cs` |
 
 Display safety: windowed only, vsync, no display change, a watchdog on timed runs.
 

@@ -232,6 +232,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The .cdf97w version 8: the dyadic layout (about 7 dB better), Full at step 0.016 (43 of 46 stars), and the metadata carrying the full waveforms-to-pixels equations:** (built: DNA-AND DESIGN 694; waits on the test) "okay back to making the equations" / "the cdf97 waveforms equations to pixels is the equations we need" / "then we need the correct meta data"
 
+- [~] **Every doc re-measured and set: sizes, line and file counts, the captures row, the wiki pages on clips; the unused card wavelet file removed:** (built: DNA-AND DESIGN 695) "do we need to update all docs? and retoucnh up thing like filesizes everywhere"
+
 ---
 
 ## Pending

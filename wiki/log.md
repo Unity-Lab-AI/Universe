@@ -130,3 +130,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (the simulation in a player: probed, not built): DNA-AND DESIGN 720.
 - 2026-11-08 (the clip size dropdown back): DNA-AND DESIGN 721.
 - 2026-11-08 (the clip held under 850 MB): DNA-AND DESIGN 722.
+- 2026-11-08 (the tour's zooms fly along the view): DNA-AND DESIGN 723.

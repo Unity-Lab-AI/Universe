@@ -3383,8 +3383,10 @@ namespace Universe.Shell
             }
             if (input.Wheel != 0)
             {
-                // fly along the line under the mouse, by a share of the distance to the nearest thing: slower as it comes close, never ending
-                var dir = MouseRay(input.MouseX, input.MouseY, w, h);
+                // fly along the line under the mouse, by a share of the distance to the nearest thing: slower as it comes close, never ending;
+                // the tour's own zooms fly along the view itself (where the mouse happened to rest had steered them: with nothing picked
+                // after standing on the ground, the zoom down to the grains crept sideways at the height of a hair and never came down)
+                var dir = Touring && !TourPaused ? Look : MouseRay(input.MouseX, input.MouseY, w, h);
                 double fdx, fdy, fdz, frad;
                 if (_tKind >= 0 && TargetFromCamera(out fdx, out fdy, out fdz, out frad))
                 {

@@ -240,6 +240,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [x] (taken back: DNA-AND DESIGN 699) **MP4 for sharing: about 100 MB for ten minutes (1.33 megabits a second average, at most 1920 wide), plays in Discord:** (built: DNA-AND DESIGN 698; waits on the test) "but we still neew out 100mb video clips that can play on discord"
 
+- [ ] **The front man, our own encoders for H.264, VP9 and AV1, measured for which carries our CDF 9/7 equations best (the translator equation), the metadata and the universe clip behind it; H.264 first:** (research and build, DNA-AND DESIGN 700) "we make a fucking front man gold fish head" / "all three and see which maskes a bettrer translator equation that we can use inline with metadata and the frontman"
+
 ---
 
 ## Pending

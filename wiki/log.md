@@ -108,3 +108,4 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (H15 step 1: the universe clip recorded): DNA-AND DESIGN 697.
 - 2026-11-08 (MP4 for sharing, about 100 MB for ten minutes): DNA-AND DESIGN 698.
 - 2026-11-08 (MP4 for sharing taken back: other people's formats): DNA-AND DESIGN 699.
+- 2026-11-08 (the front man: our own H.264, VP9 and AV1 encoders, opened): DNA-AND DESIGN 700.

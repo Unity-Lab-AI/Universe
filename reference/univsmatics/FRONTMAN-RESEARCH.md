@@ -449,3 +449,35 @@ The universe's pieces load at their own pace, so replay waits for each event's s
 
 The calls are `Set`, `SetGround`, `SetSpace`, `SetPlasma`, `SetNeutronCrust`, `SetHole`, `SetAir`, `SetAirAbove` and `SetLife`. Only the outermost call is recorded: a call made inside another is rebuilt when that one is replayed. The matter view keeps the calls that built the scene now shown, so a clip begun mid-dive starts with them. Everything after the metadata is packed with Deflate. No pixels are taken back from the card while it records. Next: step 2, the replay.
 
+
+## 12. The front man: a translator equation into H.264, VP9 and AV1, all three written in our own code (opened 2026-11-08)
+
+The creator's words: "all three and see which maskes a bettrer translator equation that we can use inline with metadata and the frontman".
+
+**The task.** Discord's own player reads H.264, VP9 and AV1. For each, write our own encoder, every line ours with no library and no Windows encoder, to serve as the `.cdf97w`'s front man. It shows a picture in a chat app's player while the metadata and the universe clip ride behind it for our player. Then measure which format our CDF 9/7 terms translate into best: the least picture lost in the crossing, and the fewest bytes.
+
+**What each format is inside, and how our terms would cross into it:**
+
+| | H.264 | VP9 | AV1 |
+|---|---|---|---|
+| Picture blocks | 16 × 16 macroblocks; 4 × 4 and 8 × 8 integer DCT | 4 × 4 to 32 × 32; DCT and ADST | 4 × 4 to 64 × 64, rectangles too; DCT, ADST, flipped ADST and identity |
+| Packing | CAVLC (simple) or CABAC | a boolean arithmetic coder with set odds | a multi-symbol arithmetic coder with learned odds |
+| Prediction | 9 intra directions; motion at a quarter pixel | 10 intra directions; motion at an eighth | 56 intra directions, palette, intra block copy; motion at an eighth with warping |
+| Closest to our equations | none; a straight DCT | none; DCT and ADST | **film grain synthesis**: noise rebuilt from a few parameters instead of stored, as a fill is; the identity transform keeps single-pixel points (stars) as they are |
+| Containers | MP4 | WebM (Matroska) | MP4 or WebM |
+| An encoder of our own, simplest valid version | smallest: intra-only frames, CAVLC, the DC predictor | middle | largest: its syntax is the longest of the three |
+
+**The translator equation.** All three rebuild a picture as blocks of transform terms. Ours is a wavelet over the whole picture. The crossing:
+1. Rebuild our picture from our terms with the inverse CDF 9/7.
+2. Cut it into the format's blocks.
+3. Take each block's transform: the DCT or ADST, or for AV1 the identity transform where a block holds a star.
+4. Quantise with the format's own step.
+
+The measure is the same for all three: the picture's quality after the crossing against our solved picture, and the front man's bytes for ten minutes.
+
+**Order of work:**
+1. H.264 first. Its smallest valid encoder (intra frames, CAVLC, the DC predictor) is the shortest to write, and every chat app reads it. It gives a working front man and the first numbers.
+2. Then VP9.
+3. Then AV1, whose film grain and identity transform are the most likely to carry the stars and the shimmer for few bytes.
+
+Each container (MP4, WebM) also gets written by our own code.

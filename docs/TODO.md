@@ -202,6 +202,8 @@ The program is built in the DNA-AND tree and synced here (`universe-sync.cmd`); 
 
 - [~] **The Uni Vs Matics equations and builders pulled into `reference/univsmatics/` for the `.c97` clip (pictures only, no sound, no packaging; the program writes it and plays it, no separate player):** (built: DNA-AND DESIGN 672; the clip writer and player themselves are not built yet) "so goahead and pull any docs and shit u need or make sure own for equations and builders and stuff for import into Universe folder and project of anything and everything we need to hit the ground running on building this equation to propely have smal none infinity zoome just image no sound no extra packaging just a new file type called something not used by others like .cdf97w idnot know that seem long" / "and how do we play clips should we use our own player" / "or its just code in the app no need for another player"
 
+- [~] **The clip filmed can be a .cdf97w (the pictures as CDF 9/7 wavelet equations, no sound), picked on the start page or under View > Clip format, played in the program's own window:** (built: DNA-AND DESIGN 673; waits on the test; the transforms on the processor, compute shaders next) "no i need the fucking clip i make to be a .cdf97w not wait to properly write the equations"
+
 ---
 
 ## Pending

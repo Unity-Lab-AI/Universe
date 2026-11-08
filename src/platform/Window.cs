@@ -62,7 +62,7 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220, CmdClipFormatBase = 225;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
@@ -104,7 +104,14 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING | (Touring ? Win32.MF_CHECKED : 0), (IntPtr)CmdTour, "Panoramic tour (galaxies down to the quarks)\tT");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdElements, "The periodic table (all 118 elements, each as it really is; Escape comes back)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
-            Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (MP4 video, in captures)\tF9");
+            Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (in captures, in the clip format below)\tF9");
+            {
+                // the clip's format: an MP4 (any player), or a .cdf97w (the pictures as CDF 9/7 wavelet equations; this program plays it)
+                IntPtr fmtMenu = Win32.CreatePopupMenu(); int cf = Settings.Get("clip-format", 0);
+                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf != 1 ? Win32.MF_CHECKED : 0), (IntPtr)CmdClipFormatBase, "MP4 (H.264 video: plays in any player)");
+                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w (the pictures as wavelet equations, no sound: plays in this program)");
+                Win32.AppendMenu(view, Win32.MF_POPUP, fmtMenu, "Clip format");
+            }
             {
                 // the clip's size against the screen: smaller clips for sharing (a quarter of the pixels is about a quarter of the file)
                 IntPtr clipMenu = Win32.CreatePopupMenu(); int cd = Settings.Get("clip-down", 0);

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace Universe.Render
 {
-    internal sealed class Mp4Writer : IDisposable
+    internal sealed class Mp4Writer : IClipWriter
     {
         [DllImport("ole32.dll")] private static extern int CoInitializeEx(IntPtr reserved, uint flags);
         [DllImport("mfplat.dll")] private static extern int MFStartup(uint version, uint flags);
@@ -49,11 +49,11 @@ namespace Universe.Render
         private IntPtr _writer; private uint _stream; private readonly int _w, _h; private long _lastTicks = -1, _t0; private bool _started;
         /// <summary>Every how many pixels of the screen the clip keeps one: 2 on a screen wider than 1920 (a 4K screen films at
         /// about 1080p), so filming never slows the game.</summary>
-        public readonly int Down;
+        public int Down { get; private set; }
         // the frames go to the encoder on a thread of its own (the game never waits on it); if it falls behind, a frame is let go
         private readonly System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long, long>> _queue = new System.Collections.Concurrent.BlockingCollection<Tuple<byte[], int, int, long, long>>(3);
         private System.Threading.Thread _encoder;
-        public readonly string Path;
+        public string Path { get; private set; }
         /// <summary>How long the clip has run, in seconds (for the REC notice).</summary>
         public double Seconds { get { return _lastTicks < 0 ? 0 : (_lastTicks - _t0) / (double)System.Diagnostics.Stopwatch.Frequency; } }
 

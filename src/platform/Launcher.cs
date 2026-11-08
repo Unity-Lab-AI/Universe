@@ -30,11 +30,11 @@ namespace Universe.Platform
         private const uint WM_CLOSE = 0x10, WM_CHAR = 0x102, WM_SETFONT = 0x30, WM_COMMAND = 0x111, EM_SETSEL = 0xB1, EN_MAXTEXT = 0x0501, WM_CTLCOLORSTATIC = 0x138, WM_CTLCOLOREDIT = 0x133, BM_GETCHECK = 0xF0, BM_SETCHECK = 0xF1;
         private const uint CB_SETDROPPEDWIDTH = 0x160, CB_RESETCONTENT = 0x14B, CB_ADDSTRING = 0x143, CB_SETCURSEL = 0x14E, CB_GETCURSEL = 0x147, EM_SETCUEBANNER = 0x1501, EM_LIMITTEXT = 0xC5;
         private const uint Back = 0x140C0A, Ink = 0xF2EEEA, Dim = 0xB4AAA0;                 // (colours as 0x00BBGGRR)
-        private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14, IdSeed = 15;
+        private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14, IdSeed = 15, IdClipFormat = 16;
 
         private static Win32.WndProc _proc; private static bool _registered;
-        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
-        private static Choice? _done; private static Action _guide;
+        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _clipFormat, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
+        private static Choice? _done; private static Action _guide, _alive;
         /// <summary>The tour is to be filmed (an MP4 clip into the captures folder): ticked on the page.</summary>
         public static bool RecordTour;
         /// <summary>Where screenshots and clips go: the captures folder beside the program.</summary>
@@ -43,7 +43,7 @@ namespace Universe.Platform
         /// <summary>Shows the landing page over <paramref name="owner"/> until Begin, the tour or Quit; the seed typed (null: chosen at random).</summary>
         public static Choice Run(IntPtr owner, Action openGuide, Action alive, out ulong? seed)
         {
-            _guide = openGuide; _done = null; seed = null;
+            _guide = openGuide; _alive = alive; _done = null; seed = null;
             var inst = Win32.GetModuleHandle(null);
             _brush = CreateSolidBrush(Back);
             if (!_registered)
@@ -54,7 +54,7 @@ namespace Universe.Platform
                 Win32.RegisterClassEx(ref wc); _registered = true;
             }
             float s = Math.Max(1f, SafeDpi(owner) / 96f);
-            int W = (int)(560 * s), H = (int)(700 * s), sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1);
+            int W = (int)(560 * s), H = (int)(744 * s), sw = Win32.GetSystemMetrics(0), sh = Win32.GetSystemMetrics(1);
             _wnd = Win32.CreateWindowEx(0, Universe.Shell.PreviewText.AppName.Replace("-", "") + "Landing", Universe.Shell.PreviewText.AppName, WS_CAPTION | WS_SYSMENU | WS_VISIBLE, (sw - W) / 2, (sh - H) / 2, W, H, owner, IntPtr.Zero, inst, IntPtr.Zero);
             _big = CreateFont(-(int)(46 * s), 0, 0, 0, 300, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI Light");
             _font = CreateFont(-(int)(16 * s), 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 5, 0, "Segoe UI");
@@ -68,12 +68,18 @@ namespace Universe.Platform
             Child("BUTTON", "Random", WS_TABSTOP, IdRandom, x + cw - (int)(100 * s), y, (int)(100 * s), row, _font); y += row + (int)(22 * s);
             Child("BUTTON", "Begin", BS_DEFPUSHBUTTON | WS_TABSTOP, IdBegin, x, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font);
             Child("BUTTON", "Take the tour", WS_TABSTOP, IdTour, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font); y += (int)(48 * s) + (int)(8 * s);
-            _record = Child("BUTTON", "Film the tour (an MP4 clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small);
+            _record = Child("BUTTON", "Film the tour (a clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small);
             // the clip's size against the screen (the same choice as View > Clip size in flight): auto, full, half or a quarter
             Child("STATIC", "Clip size", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
             _clipSize = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipSize, x + (int)(74 * s), y, (cw - (int)(12 * s)) / 2 - (int)(74 * s), (int)(300 * s), _small);
             foreach (var nm in new[] { "Auto (full up to 1920 wide, half above)", "Full (the screen's size)", "Half (about a quarter of the file)", "Quarter (about a sixteenth)" }) SendMessage(_clipSize, CB_ADDSTRING, IntPtr.Zero, nm);
             { int cd = Settings.Get("clip-down", 0); SendMessage(_clipSize, CB_SETCURSEL, (IntPtr)(cd == 1 ? 1 : cd == 2 ? 2 : cd == 4 ? 3 : 0), IntPtr.Zero); }
+            y += row + (int)(10 * s);
+            // the clip's format: an MP4 (any player) or a .cdf97w (the pictures as wavelet equations, played by this program)
+            Child("STATIC", "Clip format", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
+            _clipFormat = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipFormat, x + (int)(74 * s), y, cw - (int)(74 * s), (int)(300 * s), _small);
+            foreach (var nm in new[] { "MP4 (H.264 video: plays in any player)", ".cdf97w (the pictures as wavelet equations, no sound: plays here)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
+            SendMessage(_clipFormat, CB_SETCURSEL, (IntPtr)(Settings.Get("clip-format", 0) == 1 ? 1 : 0), IntPtr.Zero);
             y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
@@ -122,6 +128,7 @@ namespace Universe.Platform
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
             RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
+            Settings.Set("clip-format", (int)SendMessage(_clipFormat, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) == 1 ? 1 : 0);
             { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 1 : ci == 2 ? 2 : ci == 3 ? 4 : 0); }
             Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;
@@ -140,12 +147,12 @@ namespace Universe.Platform
             {
                 if (System.IO.Directory.Exists(Captures))
                 {
-                    var f = System.IO.Directory.GetFiles(Captures, "*.mp4"); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
+                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.mp4"), System.IO.Directory.GetFiles(Captures, "*.cdf97w"))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
                 }
             }
             catch { }
             if (_clipFiles.Length == 0) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, "none yet (Film the tour, or F9 in flight)");
-            foreach (var f in _clipFiles) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, System.IO.Path.GetFileNameWithoutExtension(f));
+            foreach (var f in _clipFiles) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, System.IO.Path.GetFileName(f));
             SendMessage(_clips, CB_SETCURSEL, IntPtr.Zero, IntPtr.Zero);
         }
         private static uint SafeDpi(IntPtr h) { try { return GetDpiForWindow(h); } catch { return 96; } }
@@ -164,9 +171,9 @@ namespace Universe.Platform
                 else if (id == IdGuide && _guide != null) _guide();
                 else if (id == IdPlay)
                 {
-                    // the clip chosen, in Windows' own video player
+                    // the clip chosen: an MP4 in Windows' own video player, a .cdf97w in this program's own (no other player reads it)
                     int i = (int)SendMessage(_clips, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero);
-                    if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1);
+                    if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) { if (ClipPlayer.Plays(_clipFiles[i])) ClipPlayer.Play(_wnd, _clipFiles[i], _alive); else ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1); }
                 }
                 else if (id == IdFolder) { try { System.IO.Directory.CreateDirectory(Captures); } catch { } ShellExecute(_wnd, "open", Captures, null, null, 1); }
                 else if (id == IdRandom) { var r = (ulong)DateTime.UtcNow.Ticks ^ BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0); Win32.SetWindowText(_seed, (r % 10000000000000000000UL).ToString()); SetFocus(_seed); SendMessage(_seed, EM_SETSEL, IntPtr.Zero, (IntPtr)(-1)); }   // (the focus back in the field with the number selected: typing replaces it, instead of the button holding the focus and every digit refused)

@@ -80,7 +80,7 @@ namespace Universe.Platform
             // the clip's format: an MP4 (any player) or a .cdf97w (the pictures as wavelet equations, played by this program)
             Child("STATIC", "Clip format", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
             _clipFormat = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipFormat, x + (int)(74 * s), y, cw - (int)(74 * s), (int)(300 * s), _small);
-            foreach (var nm in new[] { "MP4 (H.264 video: plays in any player)", ".cdf97w (the equations, and a video of them solved: players play it, here the equations)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
+            foreach (var nm in new[] { "MP4 (H.264 video: plays in any player)", ".cdf97w (the waveforms and their metadata: plays here)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
             SendMessage(_clipFormat, CB_SETCURSEL, (IntPtr)(Settings.Get("clip-format", 0) >= 1 ? 1 : 0), IntPtr.Zero);
             y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder

@@ -45,7 +45,7 @@ namespace Universe.Platform
                     r.BaseStream.Position = start;
                     if (r.ReadUInt32() != Cdf97wCodec.Magic) throw new InvalidOperationException("not a .cdf97w clip");
                     if (r.ReadUInt16() != Cdf97wCodec.Version) throw new InvalidOperationException("an older .cdf97w (film it again)");
-                    w = r.ReadUInt16(); h = r.ReadUInt16(); pw = r.ReadUInt16(); ph = r.ReadUInt16(); r.ReadInt32(); steps = new[] { r.ReadSingle(), r.ReadSingle(), r.ReadSingle() };
+                    w = r.ReadUInt16(); h = r.ReadUInt16(); pw = r.ReadUInt16(); ph = r.ReadUInt16(); r.ReadInt32(); steps = new[] { r.ReadSingle(), r.ReadSingle(), r.ReadSingle() }; { int ml = r.ReadUInt16(); r.ReadBytes(ml); }   // (the metadata: what made it, when, its seed and tour)
                     // every frame to the end of the file (a clip cut off before its count was written still plays to where it stops)
                     while (r.BaseStream.Position + 9 < len)
                     {

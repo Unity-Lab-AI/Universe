@@ -109,7 +109,7 @@ namespace Universe.Platform
                 // the clip's format: an MP4 (any player), or a .cdf97w (the pictures as CDF 9/7 wavelet equations; this program plays it)
                 IntPtr fmtMenu = Win32.CreatePopupMenu(); int cf = Settings.Get("clip-format", 0);
                 Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf < 1 ? Win32.MF_CHECKED : 0), (IntPtr)CmdClipFormatBase, "MP4 (H.264 video: plays in any player)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf >= 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w (the equations, and a video of them solved: players play it, this program the equations)");
+                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf >= 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w (the clip as CDF 9/7 waveforms and their metadata: plays in this program)");
                 Win32.AppendMenu(view, Win32.MF_POPUP, fmtMenu, "Clip format");
             }
             {

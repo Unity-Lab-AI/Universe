@@ -304,3 +304,41 @@ Only the whole-number terms come back, a frame later, once the card has finished
 
 Checked outside the game with no window. A known 1280 × 720 picture at half size went through the card: all 14,788 nonzero terms matched the processor's exactly, with not one differing. The frame took 14 ms on the card, shader compile included. Without a card, or if it refuses, the picture comes to the processor as before.
 
+### E11 — stars at full 4K (2026-11-08)
+
+On the filmed clip's frame 600 (3840 × 2024), a star counts if its pixel is brighter than all eight neighbours by 30 levels. It counts as kept if one is still within a pixel of it after the round trip. The steps are set by level. Script: `shots/e11.py`.
+
+| Finest step (Y) | Whole frame | Quality | Stars kept of 47 |
+|------:|------:|------:|------:|
+| 0.032 | 869 KB | 34.6 dB | 30 (64 %) |
+| 0.016 | 1,361 KB | 38.8 dB | 35 (74 %) |
+| 0.008 | 2,025 KB | 44.2 dB | 42 (89 %) |
+
+A 4K picture's single-pixel stars live in its finest terms. Built: above 1920 wide the steps are a quarter (0.008), and at or below it they stay 0.032.
+
+### The `.cdf97w` is waveforms and metadata only (version 7)
+
+On the creator's word, the H.264 part is gone. The file is now three things: the header, a metadata block (the program, when it was filmed, its size, frames a second, how the waveform is made, and the seed and tour for a tour), then the frames of waveforms. The installer no longer marks `.cdf97w` as an MP4 video.
+
+## 8. The conversion equation — how a media player turns the waveforms into pixels (open)
+
+**The constraint, unchanged.** A player runs only the decoders it ships with or has installed. A file can't hand it new code. So the waveforms have to reach the screen through a decoder the player already has, or one we install.
+
+**E12 — JPEG 2000 is the same wavelet (2026-11-08).** JPEG 2000's lossy mode uses the same CDF 9/7 lifting and the same YCbCr split. It quantises with a dead zone and a step per subband, which is what the `.cdf97w`'s per-level steps are. VLC, ffmpeg, MPV and anything built on OpenJPEG decode it, and Motion JPEG 2000 (`.mj2`) is its video form. Measured on the same frame, by OpenJPEG at equal sizes (script `shots/e12.py`):
+
+| Size | JPEG 2000: quality, stars | `.cdf97w`: quality, stars |
+|------:|------:|------:|
+| ~1.36 MB | 43.8 dB, 27 of 47 | 38.8 dB, 35 of 47 |
+| ~0.9 MB | 38.6 dB, 14 of 47 | 34.6 dB, 30 of 47 |
+
+JPEG 2000's coder packs better, by 4 to 5 dB at equal size. Its rate control trades single bright points away for average error, so it keeps up to half as many stars. Ours keeps them.
+
+**Hypotheses to work on:**
+
+- **C1, a transcode to JPEG 2000.** Each frame's own quantised terms are written as a JPEG 2000 codestream. The same wavelet, the same colour split and the same per-level steps map one to one onto its subbands, so no picture is re-encoded and our stars survive. Only the packing changes, to JPEG 2000's bit-plane coder, which E12 suggests is no bigger. Frames go in Motion JPEG 2000. Plays in VLC, ffmpeg and MPV. Not in Windows Media Player, browsers or Discord's inline player. To build: JPEG 2000's tier-1 coder (bit planes with context modelling) and tier-2 (packets), then the MJ2 boxes.
+- **C2, a decoder installed on Windows.** A Media Foundation decoder for `.cdf97w`, registered by the installer, so Windows' own players and Explorer thumbnails decode the waveforms directly. Windows only.
+- **C3, a player for the web.** The inverse wavelet, the coder and the colour step in a page (JavaScript or WebAssembly, as Uni Vs Matics already does for stills). It plays anywhere a page opens, including a project site, with no install.
+- **C4, keeping the frames between whole frames.** C1 and C2 decode whole frames. JPEG 2000 has no changes-between-frames, so a C1 file stores every frame whole and is larger. Either C1 accepts that, or the change frames are carried in a way a JPEG 2000 decoder ignores and our player uses.
+
+The next experiment is C1 on one frame: write our terms as a JPEG 2000 codestream, decode it with OpenJPEG, and check it reproduces our solved picture exactly.
+

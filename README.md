@@ -32,6 +32,25 @@
 
 ![The grand tour: from the cosmic web into a galaxy, to a comet, down to a world, its ground and the face of a grain](docs/img/journey.gif "The grand tour, recorded in the game")
 
+## Watch it
+
+Five stretches of one filmed tour, each played as it was flown (press the player's full-screen button to watch it large).
+
+<table><tr>
+<td width="50%"><video src="docs/media/across-the-universe.webm" controls muted loop playsinline width="100%" title="Across the universe"></video><br><b>Across the universe.</b> Out through the cosmic web, past galaxy after galaxy, closing on the first. <a href="docs/media/across-the-universe.webm" title="Across the universe, the video file">▶ the video</a></td>
+<td width="50%"><video src="docs/media/into-the-black-hole.webm" controls muted loop playsinline width="100%" title="Into the black hole"></video><br><b>Into the black hole.</b> Down the galaxy's middle and into its black hole, the sky squeezed into its mouth. <a href="docs/media/into-the-black-hole.webm" title="Into the black hole, the video file">▶ the video</a></td>
+</tr></table>
+
+<table><tr>
+<td width="50%"><video src="docs/media/planetfall.webm" controls muted loop playsinline width="100%" title="Planetfall"></video><br><b>Planetfall.</b> Down onto a world, the ground under you, then into the face of a grain. <a href="docs/media/planetfall.webm" title="Planetfall, the video file">▶ the video</a></td>
+<td width="50%"><video src="docs/media/into-the-atom.webm" controls muted loop playsinline width="100%" title="Into the atom"></video><br><b>Into the atom.</b> Through an atom's electron clouds to its nucleus, a proton, and a quark. <a href="docs/media/into-the-atom.webm" title="Into the atom, the video file">▶ the video</a></td>
+</tr></table>
+
+<table><tr>
+<td width="50%"><video src="docs/media/out-across-the-universe.webm" controls muted loop playsinline width="100%" title="Out across the universe"></video><br><b>Out across the universe.</b> Up off the world, out of its star system and away past the galaxies. <a href="docs/media/out-across-the-universe.webm" title="Out across the universe, the video file">▶ the video</a></td>
+</tr></table>
+
+
 *The grand tour, as the program records it: from the cosmic web into a galaxy, past its stars, to a comet, down to a world, its ground and the face of one grain.*
 
 Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and one grows into an island of stars. Keep going.

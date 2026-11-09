@@ -36,58 +36,26 @@
 
 Five stretches of one filmed tour, each played as it was flown (press the player's full-screen button to watch it large).
 
-<table><tr>
-<td width="50%"><video src="docs/media/across-the-universe.webm" controls muted loop playsinline width="100%" title="Across the universe"></video><br><b>Across the universe.</b> Out through the cosmic web, past galaxy after galaxy, closing on the first. <a href="docs/media/across-the-universe.webm" title="Across the universe, the video file">▶ the video</a></td>
-<td width="50%"><video src="docs/media/into-the-black-hole.webm" controls muted loop playsinline width="100%" title="Into the black hole"></video><br><b>Into the black hole.</b> Down the galaxy's middle and into its black hole, the sky squeezed into its mouth. <a href="docs/media/into-the-black-hole.webm" title="Into the black hole, the video file">▶ the video</a></td>
-</tr></table>
+**Across the universe.** Out through the cosmic web, past galaxy after galaxy, closing on the first.
 
-<table><tr>
-<td width="50%"><video src="docs/media/planetfall.webm" controls muted loop playsinline width="100%" title="Planetfall"></video><br><b>Planetfall.</b> Down onto a world, the ground under you, then into the face of a grain. <a href="docs/media/planetfall.webm" title="Planetfall, the video file">▶ the video</a></td>
-<td width="50%"><video src="docs/media/into-the-atom.webm" controls muted loop playsinline width="100%" title="Into the atom"></video><br><b>Into the atom.</b> Through an atom's electron clouds to its nucleus, a proton, and a quark. <a href="docs/media/into-the-atom.webm" title="Into the atom, the video file">▶ the video</a></td>
-</tr></table>
+https://github.com/user-attachments/assets/f5d5b96c-b4d3-4b18-ac16-2ffa0cfe0fbc
 
-<table><tr>
-<td width="50%"><video src="docs/media/out-across-the-universe.webm" controls muted loop playsinline width="100%" title="Out across the universe"></video><br><b>Out across the universe.</b> Up off the world, out of its star system and away past the galaxies. <a href="docs/media/out-across-the-universe.webm" title="Out across the universe, the video file">▶ the video</a></td>
-</tr></table>
+**Into the black hole.** Down the galaxy's middle and into its black hole, the sky squeezed into its mouth.
 
+https://github.com/user-attachments/assets/aaee4d09-5d91-4ba8-a19b-361733e569f4
 
-*The grand tour, as the program records it: from the cosmic web into a galaxy, past its stars, to a comet, down to a world, its ground and the face of one grain.*
+**Planetfall.** Down onto a world, the ground under you, then into the face of a grain.
 
-Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and one grows into an island of stars. Keep going.
+https://github.com/user-attachments/assets/b324cbfa-dfbd-4d61-96e4-c5bcff5f0a97
 
-| You are | What you see |
-|---|---|
-| **Among the galaxies** | 100 billion of them, strung along filaments and walls round great empty voids |
-| **Inside a galaxy** | A hundred billion stars, made round you as you fly |
-| **At a star** | Its worlds, moons, belts and comets swinging round it |
-| **Over a world** | Seas, mountains, clouds, ice caps, volcanoes, rings |
-| **Under the sea** | Down through the water, the light dying with depth, to the bed and its silt |
-| **On the ground** | Stones, then grains, then the steps of a crystal's face |
-| **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them; a star's layers from its photosphere down to its core, each its own plasma; a giant's core, a neutron star's crust, a nebula's gas |
+**Into the atom.** Through an atom's electron clouds to its nucleus, a proton, and a quark.
 
-Straight from the grand tour, as the program records it (the frame counter and the card are its own):
+https://github.com/user-attachments/assets/c7143e5b-391d-4f35-9920-6c34a88941c3
 
-<table>
-<tr>
-<td width="33%"><img src="docs/img/screens/galaxy.jpg" alt="A galaxy seen edge-on from among its stars, another beyond it" title="Among the stars of a galaxy"><br><b>Among the stars of a galaxy</b></td>
-<td width="33%"><img src="docs/img/screens/web.jpg" alt="The cosmic web: every point a galaxy, strung along filaments round the voids" title="The cosmic web"><br><b>The cosmic web</b></td>
-<td width="33%"><img src="docs/img/screens/giant.jpg" alt="A banded gas giant, seen from the asteroid belt beyond it" title="A gas giant from its belt"><br><b>A gas giant from its belt</b></td>
-</tr>
-<tr>
-<td width="33%"><img src="docs/img/screens/comet.jpg" alt="A comet near its star: its coma and tails, gas and dust boiling off" title="A comet near its star"><br><b>A comet near its star</b></td>
-<td width="33%"><img src="docs/img/screens/world.jpg" alt="A temperate world: seas, land, clouds and a thin shell of air" title="A temperate world"><br><b>A temperate world</b></td>
-<td width="33%"><img src="docs/img/screens/ground.jpg" alt="Grains of the ground, a few hundred micrometres across" title="On the ground"><br><b>On the ground</b></td>
-</tr>
-<tr>
-<td width="33%"><img src="docs/img/screens/lattice.jpg" alt="Inside a crystal: its atoms on their real lattice, 200 picometres across" title="Inside a crystal"><br><b>Inside a crystal</b></td>
-<td width="33%"><img src="docs/img/screens/nucleus.jpg" alt="A nucleus: its protons and neutrons, two femtometres across" title="A nucleus"><br><b>A nucleus</b></td>
-<td width="33%"><img src="docs/img/screens/quark.jpg" alt="Three quarks in a storm of gluons, 200 attometres across" title="The quarks"><br><b>The quarks</b></td>
-</tr>
-</table>
+**Out across the universe.** Up off the world, out of its star system and away past the galaxies.
 
-> **No loading screens along the way.** One camera across about 42 factors of ten, and you can turn round anywhere and fly all the way back out. Below the quark the zoom in simply goes on: there is no floor.
+https://github.com/user-attachments/assets/7c437893-42eb-4039-ae33-116f7edaf0ea
 
----
 
 ## Two things in one
 

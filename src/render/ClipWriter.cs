@@ -156,7 +156,7 @@ namespace Universe.Render
         public const string AttachName = "universe.cdf97w";
         public double Seconds { get { return _clipMs / 1000; } }
         /// <summary>A clip of the universe itself at <paramref name="path"/>; given the screen's size, it also films a picture track
-        /// (at most 1920 wide), and the .cdf97w is then our own WebM: the pictures any player shows, the universe's records attached.</summary>
+        /// (at the clip size chosen: the screen's full size by default), and the .cdf97w is then our own WebM: the pictures any player shows, the universe's records attached.</summary>
         public UniverseClipWriter(string path, int screenW = 0, int screenH = 0)
         {
             Path = path; Down = 1;

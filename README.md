@@ -202,7 +202,7 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **T · R** | The grand tour: start or carry on · start again |
 | **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w.webm` whose front man plays in any video player (Clip size: Full, 4K on a 4K screen, or Half or Quarter; under 850 MB for ten minutes at 4K), with the universe's own equations inside (the seed, the camera's track, the scene), flown again here |
 
-A `.cdf97w` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`: its front man as video.
+A `.cdf97w.webm` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`: its front man as video.
 
 The **Time** menu has **Always day**, on to start with; turn it off for true day and night. It also has **Gravity**: turn it off and every body goes straight on at its speed, every star is blown apart by its own pressure, and a galaxy's stars fly off on their tangents. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, the clip's size, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 

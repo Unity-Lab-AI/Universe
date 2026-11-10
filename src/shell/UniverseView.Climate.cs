@@ -90,6 +90,8 @@ namespace Universe.Shell
             double land = _saltOf == i ? _saltLand : 0.29;
             return SaltGPerKg() * Math.Max(0.33, Math.Sqrt(land / 0.29));
         }
+        private double _basW = -1, _basE = -1, _basLat = 99, _basLon = 99; private object _basFor;
+        private double _funnel = 1, _funLat = 99, _funLon = 99; private object _funFor;
         private void SeaLines(List<string> L, int i, double latRad, double depthM)
         {
             {
@@ -133,7 +135,8 @@ namespace Universe.Shell
                     // the spot, the shortest way across of four (north-south, east-west and the two diagonals), each side out to five degrees;
                     // against an open sea's 500 km, at most four times more (Fundy's 16 m)
                     double funnel = 1;
-                    if (_ground != null && _planet == i)
+                    if (_ground != null && _planet == i && Math.Abs(latRad - _funLat) < 1e-3 && Math.Abs(Math.Atan2(_tz, _tx) - _funLon) < 1e-3 && ReferenceEquals(_funFor, _ground)) funnel = _funnel;   // (found once for the spot, not every frame)
+                    else if (_ground != null && _planet == i)
                     {
                         double la0 = latRad, lo0 = Math.Atan2(_tz, _tx), Rk = R / 1000, least = double.MaxValue;
                         for (int a2 = 0; a2 < 4; a2++)
@@ -152,6 +155,7 @@ namespace Universe.Shell
                             if (shut) least = Math.Min(least, across);
                         }
                         if (least < 500) funnel = Math.Min(4, Math.Sqrt(500 / Math.Max(1, least)));
+                        _funnel = funnel; _funLat = latRad; _funLon = Math.Atan2(_tz, _tx); _funFor = _ground;
                     }
                     now *= funnel;
                     L.Add("the sea now " + (now >= 0 ? "+" : "") + now.ToString("0.##") + " m, " + (rate > 0 ? "rising" : "falling") + (nextH > 0 ? "; high water in about " + nextH.ToString("0.#") + " hours" : "") + (green > 1.05 ? " (raised " + green.ToString("0.#") + " times coming into " + depthM.ToString("N0") + " m of water)" : "") + (funnel > 1.05 ? " (and " + funnel.ToString("0.#") + " times more by the narrowing of the water here)" : ""));
@@ -164,7 +168,8 @@ namespace Universe.Shell
             // western shore runs fast poleward there (westward intensification, Stommel 1948, Munk 1950: the Gulf Stream, the Kuroshio), slow
             // toward the equator along its eastern shore and across its middle
             double west = -1, east = -1;
-            if (_ground != null && _planet == i)
+            if (_ground != null && _planet == i && Math.Abs(latRad - _basLat) < 1e-3 && Math.Abs(Math.Atan2(_tz, _tx) - _basLon) < 1e-3 && ReferenceEquals(_basFor, _ground)) { west = _basW; east = _basE; }   // (found once for the spot)
+            else if (_ground != null && _planet == i)
             {
                 double cy = Math.Sin(latRad), cr = Math.Cos(latRad), lon0 = Math.Atan2(_tz, _tx);
                 for (int sd = -1; sd <= 1; sd += 2)
@@ -173,6 +178,7 @@ namespace Universe.Shell
                         double lo = lon0 + sd * k * Math.PI / 180; if (_ground.GroundAt(cr * Math.Cos(lo), cy, cr * Math.Sin(lo)) > 0) { if (sd < 0) west = k; else east = k; break; }
                     }
             }
+            if (_ground != null && _planet == i) { _basW = west; _basE = east; _basLat = latRad; _basLon = Math.Atan2(_tz, _tx); _basFor = _ground; }
             string current;
             if (lat < 15 || lat > 65 || west < 0 || east < 0) current = "about 0.1 to 0.3 m/s toward the " + way;
             else

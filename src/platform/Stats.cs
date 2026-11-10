@@ -25,6 +25,15 @@ namespace Universe.Platform
         /// <summary>The lines shown under the frames a second (the card's blocky letters: capitals, digits, . , : % ( ) + - /); none until the first sample.</summary>
         public static string[] Lines = new string[0];
 
+        // ── the processor's time by part (each part's milliseconds a frame, over the last half second), so a slow frame says what made it
+        // slow: on the stats card (its five biggest) and in the log when a frame takes over 50 ms ──
+        private static readonly System.Collections.Generic.Dictionary<string, double> _parts = new System.Collections.Generic.Dictionary<string, double>();
+        public static long Now() { return Stopwatch.GetTimestamp(); }
+        /// <summary>Adds the time since t0 (from Now()) to a part of the frame.</summary>
+        public static void Part(string name, long t0) { double ms = (Stopwatch.GetTimestamp() - t0) * 1000.0 / Stopwatch.Frequency, v; _parts.TryGetValue(name, out v); _parts[name] = v + ms; }
+        /// <summary>The biggest parts of the processor's frame over the last half second, ms a frame.</summary>
+        public static string PartsLine = "";
+        private static double _logAt;
         private static long _wallAt, _cpuAt; private static double _cpuSum, _gpuSum; private static int _n;
 
         /// <summary>Once a frame: the card's time on the last frame, whether the ground is in view and how many of its pieces
@@ -59,6 +68,14 @@ namespace Universe.Platform
                 if (vm != null && vm.Length == 2 && vm[1] > 0) g += ", " + Gb(vm[0]) + " of " + Gb(vm[1]);
                 lines.Add(g);
                 if (!string.IsNullOrEmpty(Phases)) lines.Add("CPU by phase: " + Phases);
+                {
+                    var top = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, double>>(_parts); top.Sort((x, y) => y.Value.CompareTo(x.Value));
+                    var sb = new System.Text.StringBuilder(); for (int i = 0; i < top.Count && i < 5; i++) { if (i > 0) sb.Append(", "); sb.Append(top[i].Key.Replace("'", "") + " " + (top[i].Value / Math.Max(1, _n)).ToString("0.0")); }
+                    PartsLine = sb.ToString(); if (PartsLine.Length > 0) lines.Add("CPU parts (ms): " + PartsLine);
+                    double clockS = now / (double)Stopwatch.Frequency;
+                    if (cpuMs > 50 && clockS - _logAt > 2) { _logAt = clockS; Universe.Program.WriteLog("slow frame: CPU " + cpuMs.ToString("0.0") + " ms, GPU " + gpuAvg.ToString("0.0") + " ms; parts (ms a frame): " + PartsLine); }
+                    _parts.Clear();
+                }
                 if (!string.IsNullOrEmpty(card)) lines.Add(card.Length > 38 ? card.Substring(0, 38) : card);
                 lines.Add("detail " + Math.Round(Window.Detail * 100) + "%" + (atGround && backlog > 0 ? ", " + backlog + " ground pieces waiting" : ""));
                 Lines = lines.ToArray();

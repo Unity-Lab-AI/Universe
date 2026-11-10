@@ -17,7 +17,17 @@ namespace Universe.Render
         [UnmanagedFunctionPointer(CallingConvention.StdCall)] private delegate int RemovedReasonFn(IntPtr self);
 
         /// <summary>What is being drawn now (set before each part of the frame): each draw is recorded under it.</summary>
-        public static string Pass = "";
+        /// <summary>The pass being drawn (for this log); each change also clocks the processor's time on the pass before it (the stats card's CPU parts).</summary>
+        public static string Pass
+        {
+            get { return _pass; }
+            set { if (_passAt != 0 && !string.IsNullOrEmpty(_pass)) Universe.Platform.Stats.Part(_pass, _passAt); _pass = value ?? ""; _passAt = Universe.Platform.Stats.Now(); }
+        }
+        private static string _pass = ""; private static long _passAt;
+        /// <summary>Ends the frame's last pass (its time to the stats) and starts the next frame's count with the view's own work.</summary>
+        public static void FrameStart(string first) { Pass = first; }
+        /// <summary>Ends the frame's last pass: its time to the stats, nothing counted until the next pass is named.</summary>
+        public static void FrameEnd() { Pass = ""; _passAt = 0; }
         private static List<string> _frame = new List<string>(), _submitted = new List<string>();
         private static readonly Dictionary<ulong, KeyValuePair<long, string>> _buffers = new Dictionary<ulong, KeyValuePair<long, string>>();
 

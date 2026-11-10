@@ -747,7 +747,7 @@ namespace Universe.Shell
                         // shape goes, the grains themselves take over below that, drawn over the ground from a centimetre up and as the matter
                         // below): it split on down to microbe size under the overlay, a queue of a thousand pieces in flight for detail the
                         // grains already covered, and the frame rate went with it
-                        var gmx = _ground.Solid && cr > 0 ? _ground.GrainMix(y / cr) : null;
+                        var gmx = _ground.Solid && cr > 0 ? _ground.GrainMix(x / cr, y / cr, z / cr) : null;
                         _ground.FinestEdgeKm = gmx != null && gmx.Size > 0 ? Math.Max(1e-7, gmx.Size * 2) : 0;
                     }
                     _ground.Draw(_meshes, x, y, z, view, kproj, time, 3.0 * Math.Max(1, h / 600.0) * Math.Max(0.3, Math.Min(3, Math.Sqrt(Window.Detail))), fogKm, fr, fg, fb, 0, 0, w, h, 400);   // detail scales with the GPU use

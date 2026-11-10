@@ -86,7 +86,7 @@ A galaxy holds about a hundred billion stars, and the program keeps a sample of 
 Anything that would take the whole universe to work out is worked out only where you are, at the detail your view needs, so any one view is easily made:
 
 - **Small streams:** a fine drainage map of the ground round you, forty times your height across, made in the background: streams from about half a square kilometre drained, ponds in the hollows.
-- **Ice ages:** each world's ice line from its own climate, swayed by its orbit's cycles (100,000, 405,000, 41,000 and 23,000 years), the ground remade as the ice moves.
+- **Ice ages:** each world's ice line from its own climate, swayed by its orbit's cycles (100,000, 405,000, 41,000 and 23,000 years), the ground remade as the ice moves. The line is never a circle: land and high ground hold ice nearer the equator, warm currents push the sea ice back and cold shores let it out, and its edge is ragged at every size, as Earth's caps are; every other band drawn by latitude has the same natural edge.
 - **Galaxies colliding:** the galaxy you are near and its nearest neighbour fall together by their pulls, their stars stepped through both, so the tails, the bridge and the merger come of the physics.
 - **Stars born and ageing:** every star round you its own mass and age, through its main sequence, giant and remnant; a nebula's stars switching on as they are born; flares on the star of the system you are at.
 - **Seas:** upwelling and the deep water forming, the tide raised in shallows and narrowing bays, each world's own salt from its land, the western boundary currents and the upwellings drawn on the water.

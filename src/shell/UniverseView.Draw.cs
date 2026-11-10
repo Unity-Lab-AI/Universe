@@ -246,7 +246,7 @@ namespace Universe.Shell
                     if (_nebBufs.Count >= 512)
                     {
                         long old = -1; int oldest = int.MaxValue; foreach (var kv in _nebUsed) if (kv.Value < oldest) { oldest = kv.Value; old = kv.Key; }
-                        if (old >= 0) { _nebBufs[old].Dispose(); _nebBufs.Remove(old); _nebNs.Remove(old); _nebUsed.Remove(old); UploadBuffer ob; if (_nebStarBufs.TryGetValue(old, out ob)) { if (ob != null) ob.Dispose(); _nebStarBufs.Remove(old); _nebStarNs.Remove(old); } }
+                        if (old >= 0) { _nebBufs[old].Dispose(); _nebBufs.Remove(old); _nebNs.Remove(old); _nebUsed.Remove(old); UploadBuffer ob; if (_nebStarBufs.TryGetValue(old, out ob)) { if (ob != null) ob.Dispose(); _nebStarBufs.Remove(old); _nebStarNs.Remove(old); } _nebStarBirth.Remove(old); }
                     }
                     var recs = NebulaRecords(fk, fq.Length > 5 ? fq[5] : 0.5, g.Seed ^ (ulong)(q * 2654435761L));
                     n = recs.Count; buf = new UploadBuffer(_gpu.Device, (long)Math.Max(1, n) * Stride); if (n > 0) buf.Write(recs.ToArray(), n);
@@ -262,14 +262,20 @@ namespace Universe.Shell
                     if (!_nebStarBufs.TryGetValue(key, out sb))
                     {
                         var st = NebulaStars(fk, g.Seed ^ (ulong)(q * 2654435761L)); sn = st.Count;
+                        // each young star's birth (from three million years before the start to three after, by its seed), the list in that order
+                        var births = new double[sn]; var rngB = new Rng(g.Seed ^ (ulong)(q * 2654435761L) ^ 0xB1B1UL);
+                        for (int bi = 0; bi < sn; bi++) births[bi] = fk == 4 ? -1e12 : (rngB.NextDouble() - 0.5) * 6e6;
+                        var idx = new int[sn]; for (int bi = 0; bi < sn; bi++) idx[bi] = bi; Array.Sort(births, idx);
+                        var sorted = new List<StarVertex>(sn); foreach (int bi in idx) sorted.Add(st[bi]); st = sorted; _nebStarBirth[key] = births;
                         sb = sn > 0 ? new UploadBuffer(_gpu.Device, (long)sn * Stride) : null; if (sb != null) sb.Write(st.ToArray(), sn);
                         _nebStarBufs[key] = sb; _nebStarNs[key] = sn;
                     }
-                    sn = _nebStarNs[key]; if (sb != null && sn > 0) DrawPoints(sb, sn, m * vp, right, up, 1f, 0.0012f, w, h, time);
+                    sn = _nebStarNs[key]; double[] bt; if (_nebStarBirth.TryGetValue(key, out bt)) { int born = 0; while (born < bt.Length && bt[born] <= _simYears) born++; sn = Math.Min(sn, born); }   // (only the stars born by now: new ones lighting up as time goes on)
+                    if (sb != null && sn > 0) DrawPoints(sb, sn, m * vp, right, up, 1f, 0.0012f, w, h, time);
                 }
             }
         }
-        private readonly Dictionary<long, UploadBuffer> _nebStarBufs = new Dictionary<long, UploadBuffer>(); private readonly Dictionary<long, int> _nebStarNs = new Dictionary<long, int>();
+        private readonly Dictionary<long, double[]> _nebStarBirth = new Dictionary<long, double[]>(); private readonly Dictionary<long, UploadBuffer> _nebStarBufs = new Dictionary<long, UploadBuffer>(); private readonly Dictionary<long, int> _nebStarNs = new Dictionary<long, int>();
         private static List<StarVertex> NebulaStars(int kind, ulong seed)
         {
             var l = new List<StarVertex>(); uint ns = (uint)(seed ^ (seed >> 32));
@@ -345,6 +351,7 @@ namespace Universe.Shell
         {
             _lastDrawTime = time;
             WorldInside();                                                               // (the inside of the world you are at, at work with the game's time)
+            ChooseCollision(); StepCollision();                                          // (the galaxy you are near and its neighbour falling together: UniverseView.Collision.cs)
             {
                 // the zoom log's census at every tenfold in the matter: what there was to pick at that size (a size with nothing real in it shows)
                 double ms = _spaceScale > 0 ? _spaceScale : _matterScale; int dec = ms > 0 ? (int)Math.Floor(Math.Log10(ms)) : int.MinValue;
@@ -414,7 +421,8 @@ namespace Universe.Shell
             {
                 // the rest of the universe's galaxies, a glow along the cosmic web (remade without the near ones as you move far)
                 if (double.IsNaN(_glowAtX) || _glowReady != null || (Math.Abs(_cx - _glowAtX) + Math.Abs(_cy - _glowAtY) + Math.Abs(_cz - _glowAtZ) > _nearUnits * 0.25 && time - _glowAtT > 0.5)) { MakeGlow(); _glowAtT = time; }   // (only to start it, take it in when made, or make it again far away: the card sifts it each frame)
-                var gm = Mat4.Identity; gm.M41 = (float)-_cx; gm.M42 = (float)-_cy; gm.M43 = (float)-_cz;
+                // drawn at the true distances now: its places from you stretched by the scale factor (all of the web far past galaxies' bound groups)
+                float sa = (float)ScaleNow; var gm = Mat4.Identity; gm.M11 = gm.M22 = gm.M33 = sa; gm.M41 = (float)-_cx * sa; gm.M42 = (float)-_cy * sa; gm.M43 = (float)-_cz * sa;
                 float webFade = (float)Math.Max(0, Math.Min(1, (0.98 - within) / 0.45)); webFade = webFade * webFade * (3 - 2 * webFade);   // (inside a galaxy the web's points are not drawn: its sky shows the other galaxies themselves, made in full round you)
                 webFade *= (float)Math.Min(1, (System.Diagnostics.Stopwatch.GetTimestamp() - _glowCameAt) / (2.0 * System.Diagnostics.Stopwatch.Frequency));   // (newly made: faded in over two seconds)
             Render.GpuLog.Pass = "the web's light";
@@ -430,6 +438,7 @@ namespace Universe.Shell
             {
                 // every galaxy is one field of its own stars: the near one shows more of them as it grows on screen, each point
                 // a little smaller so the galaxy's glow stays the same; the first stars are always the same ones, so nothing swaps
+                if (CollisionDraws(i)) continue;                                         // (drawn by the collision, its stars where their pulls have carried them)
                 var g = _galaxies[i]; int count = StarsShown(i);
                 if (i != _near)
                 {
@@ -456,10 +465,11 @@ namespace Universe.Shell
                 // (its light at a third of a full point a pixel on the average: its dense heart glows, its thin rim fades to nothing, so
                 // from afar it is a soft shape in its own colours with a fine edge, never a solid white disc or a white spiral icon)
                 float crowd = (float)Math.Max(0.015, Math.Min(1, Math.PI * gpx * gpx / (count * dotPx * dotPx) * 0.35)) * nearF * (i == _near ? 1f : others);
-                var pg = Placement(g); float drift = GalaxyDrift(g, ref pg);
+                var pg = Placement(g); Stretched(ref pg); float drift = GalaxyDrift(g, ref pg);
                 float trad; float turnD = GalaxyTurn(g, pg, out trad);
                 DrawPoints(buf, count, pg * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f, 0, 0, 0, 0, 0, drift, 0, turnD, trad);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
             }
+            if (!skyHidden) DrawCollision(vp, right, up, w, h, time);
             double inside = InsideShare();
             {
                 // every galaxy's clusters and nebulae, for the 8 nearest within about 60 of their sizes (one made new each frame at most)
@@ -518,9 +528,9 @@ namespace Universe.Shell
                 if (_cstarV.Length < _cstars.Count) _cstarV = new StarVertex[_cstars.Count + 1024];
                 for (int q = 0; q < _cstars.Count; q++)
                 {
-                    var cs = _cstars[q]; bool old = cs[3] == 0; double t = cs[4];
+                    var cs = _cstars[q]; bool old = cs[3] == 0; double t = cs[4]; double cdx, cdy, cdz; ClusterDrift(q, old, out cdx, out cdy, out cdz);   // (gravity off: flown on in its cluster)
                     float r = old ? (t < 0.4 ? 1f : 1f) : 0.7f, g2 = old ? (t < 0.4 ? 0.55f : 0.85f) : 0.82f, b2 = old ? (t < 0.4 ? 0.3f : 0.6f) : 1f;
-                    _cstarV[q] = new StarVertex { X = (float)((cs[0] - _ax) - _ox), Y = (float)((cs[1] - _ay) - _oy), Z = (float)((cs[2] - _az) - _oz), Size = (float)Units.Km(696000 * (old && t < 0.1 ? 20 : 1)), R = r, G = g2, B = b2, A = 1 };
+                    _cstarV[q] = new StarVertex { X = (float)((cs[0] + cdx - _ax) - _ox), Y = (float)((cs[1] + cdy - _ay) - _oy), Z = (float)((cs[2] + cdz - _az) - _oz), Size = (float)Units.Km(696000 * (old && t < 0.1 ? 20 : 1)), R = r, G = g2, B = b2, A = 1 };
                 }
                 if (_cstarBuf == null || _cstarBuf.Bytes < (long)_cstars.Count * Stride) { if (_cstarBuf != null) _cstarBuf.Dispose(); _cstarBuf = new UploadBuffer(_gpu.Device, (long)(_cstars.Count + 1024) * Stride); }
                 _cstarBuf.Write(_cstarV, _cstars.Count);
@@ -555,10 +565,16 @@ namespace Universe.Shell
                         {
                             var v = _localList[k]; v.A = 1; { double ddx, ddy, ddz; LocalDrift(k, out ddx, out ddy, out ddz); v.X += (float)ddx; v.Y += (float)ddy; v.Z += (float)ddz; }   // (gravity off: flown on from its place at its own speed)
                             double wx = v.X * pm.M11 + v.Y * pm.M21 + v.Z * pm.M31 + pm.M41, wy = v.X * pm.M12 + v.Y * pm.M22 + v.Z * pm.M32 + pm.M42, wz = v.X * pm.M13 + v.Y * pm.M23 + v.Z * pm.M33 + pm.M43;
-                            double d2 = Math.Max(1e-30, wx * wx + wy * wy + wz * wz), lum = k < _localKind.Count && _localKind[k] >= 0 && _localKind[k] < _kinds.Count ? _kinds[_localKind[k]].Lum : 1;
+                            int born = k < _localKind.Count ? _localKind[k] : -1, now = LocalKindNow(k, born);   // (its life: on its main sequence, a giant, or what it left: UniverseView.Lives.cs)
+                            if (now != born && born >= 0 && born < _kinds.Count)
+                            {
+                                if (now < 0) { v.R = 0; v.G = 0; v.B = 0; }                     // (a black hole: gone from sight)
+                                else { var nk = _kinds[now]; v.R = nk.R; v.G = nk.G; v.B = nk.B; v.Size *= (float)(nk.RadiusSol / Math.Max(1e-9, _kinds[born].RadiusSol)); }
+                            }
+                            double d2 = Math.Max(1e-30, wx * wx + wy * wy + wz * wz), lum = now >= 0 && now < _kinds.Count ? _kinds[now].Lum : born >= 0 && born < _kinds.Count && now == born ? _kinds[born].Lum : 0;
                             double mag = -26.74 - 2.5 * Math.Log10(Math.Max(1e-60, lum * au * au / d2));
                             float kb = lf * (float)Math.Min(1, Math.Pow(10, -0.2 * (mag + 1)));
-                            if (k < _localKind.Count && _localKind[k] >= 0 && _localKind[k] < _kinds.Count) { double sw = KindSwell(_kinds[_localKind[k]]); if (sw > 1) { v.Size *= (float)sw; kb *= (float)(1 / (sw * sw)); } }   // (gravity off: blown apart by its own pressure, bigger and thinner)
+                            if (now >= 0 && now < _kinds.Count) { double sw = KindSwell(_kinds[now]); if (sw > 1) { v.Size *= (float)sw; kb *= (float)(1 / (sw * sw)); } }   // (gravity off: blown apart by its own pressure, bigger and thinner)
                             v.R *= kb; v.G *= kb; v.B *= kb; if (_localDead.Contains(k)) { v.R = 0; v.G = 0; v.B = 0; } _localDrawn[k] = v;   // (a star that died in a supernova: gone)
                         }
                         _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
@@ -587,7 +603,17 @@ namespace Universe.Shell
                         bool off = Flown && yrs > _gravityOffYear;
                         double tt = off ? _gravityOffYear : yrs, th = (rate * tt) % (2 * Math.PI), ct = Math.Cos(th), snt = Math.Sin(th);
                         px0 = st[i].X * ct - st[i].Z * snt; pz0 = st[i].X * snt + st[i].Z * ct;
-                        if (off) { double fl = rate * OffYears; double vx = -pz0, vz = px0; px0 += vx * fl; pz0 += vz * fl; }
+                        if (off)
+                        {
+                            double fl = rate * OffYears, vx = -pz0 * rate, vz = px0 * rate; px0 += vx * OffYears; pz0 += vz * OffYears;
+                            if (Window.GravityOn && !double.IsNaN(_gravityOnYear) && yrs > _gravityOnYear)
+                            {
+                                // gravity back: from where it flew to, at the speed it had, falling back on its new orbit round the star (an
+                                // ellipse if still bound, flying free if it went past twice its old distance: the universal Kepler path)
+                                double nx, ny, nz, nvx, nvy, nvz; Kepler.Propagate(GU * Math.Max(0.01, _system.MassSol), px0, 0, pz0, vx, 0, vz, yrs - _gravityOnYear, out nx, out ny, out nz, out nvx, out nvy, out nvz);
+                                px0 = nx; pz0 = nz;
+                            }
+                        }
                     }
                     v.X = (float)(px0 - _ox); v.Y = (float)(st[i].Y - _oy); v.Z = (float)(pz0 - _oz); v.R *= stFade; v.G *= stFade; v.B *= stFade; _staticShifted[i] = v;
                 }
@@ -642,6 +668,7 @@ namespace Universe.Shell
                     var m = Mat4.Identity; m.M11 = m.M22 = m.M33 = (float)R; m.M41 = (float)-_ox; m.M42 = (float)-_oy; m.M43 = (float)-_oz;
                     DrawPoints(_surfBuf, n, m * vp, right, up, 1f, 0f, w, h, time, 0, swellDim);
                     DrawPoints(_coronaBuf, _starCorona.Length, m * vp, right, up, 1f, 0f, w, h, time, 0, swellDim);
+                    { int nf = Flares(toEye); if (nf > 0) { if (_flareBuf == null) _flareBuf = new UploadBuffer(_gpu.Device, 64L * Stride); _flareBuf.Write(_flareV, nf); DrawPoints(_flareBuf, nf, m * vp, right, up, 1f, 0f, w, h, time, 0, swellDim); } }   // (its flares, where they face you: UniverseView.Lives.cs)
                 }
                 {
                     // inside the star: nothing is seen but its own glow, in the colour of the heat of the layer you are in (the plasma's own

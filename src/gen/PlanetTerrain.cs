@@ -111,6 +111,17 @@ namespace Universe.Gen
             if (radiusKm > 0) Radius = radiusKm;
             Solid = tk.Solid; HasWater = tk.Water; HasClouds = tk.Clouds;
             CloudKm = tk.CloudKm; AirKm = tk.AirKm; AirR = tk.Air[0]; AirG = tk.Air[1]; AirB = tk.Air[2];
+            if (tk.AirBar > 0 && AirB >= AirR)                                     // (a clear air's: a dusty one's sky is its dust's light, as Mars's butterscotch, kept as its kind gives it)
+            {
+                // the air above you by its pressure: its kind's colour is its make-up's (blue for a clear air, butterscotch for a dusty one),
+                // its light scattered as the column's depth through it, Rayleigh's at red, green and blue (Earth's 0.05, 0.097, 0.21 at one
+                // bar) times its pressure; the sky's light as one less e to the minus that depth, set against Earth's, so a thin air (Mars's
+                // 6 thousandths of a bar) is dark by day and a thick one (Venus's 92) saturates toward white
+                double[] tau = { 0.05, 0.097, 0.21 }; double[] c = { AirR, AirG, AirB }; double top = 0;
+                for (int k = 0; k < 3; k++) { c[k] *= (1 - Math.Exp(-tau[k] * tk.AirBar)) / (1 - Math.Exp(-tau[k])); top = Math.Max(top, c[k]); }
+                if (top > 1) for (int k = 0; k < 3; k++) c[k] /= top;
+                AirR = (float)c[0]; AirG = (float)c[1]; AirB = (float)c[2];
+            }
             _tk = tk; MixId = tk.Grains;                                                 // (the ground its matter is made of: its kind's grains)
             _reliefScale = tk.ReliefOfRadius > 0 ? Radius * tk.ReliefOfRadius / 8.0 : 1;   // (a small body: its relief a share of its radius, the base relief being about eight kilometres on a world)
         }
@@ -347,7 +358,9 @@ namespace Universe.Gen
         /// regolith); the same grains the matter view goes into.</summary>
         public string MixId;
         public ulong GrainSeed { get { return (ulong)_seed * 0x9E3779B97F4A7C15UL + 0x6A1u; } }
-        public GrainField.Mix GrainMix(double y) { if (!Solid) return null; if (Math.Abs(y) > 0.86 && GrainField.For("ice") != null) return GrainField.For("ice"); return GrainField.For(MixId ?? Kind) ?? GrainField.For("desert"); }   // (the same choice the matter view makes)
+        /// <summary>Where its permanent ice begins (the sine of the latitude): its climate's, moving with its ice ages (src/gen/Climate.cs); 0.86 until it is worked out.</summary>
+        public double IceSin = 0.86;
+        public GrainField.Mix GrainMix(double y) { if (!Solid) return null; if (Math.Abs(y) > IceSin && GrainField.For("ice") != null) return GrainField.For("ice"); return GrainField.For(MixId ?? Kind) ?? GrainField.For("desert"); }   // (the same choice the matter view makes)
         // the ground's finest detail: the top of its grains, coming in as the detail grows finer than a couple of grains, so
         // zooming in, the ground itself breaks into its grains (each its own mineral, shape and shade), never a layer laid over it
         private double Grains(double x, double y, double z, double h, int layers, ref float r, ref float g, ref float b, float glow)
@@ -576,7 +589,7 @@ namespace Universe.Gen
             }
             if (h < 0)
             {
-                if (lat > 0.9 && _tk.PolarIce) { r = 0.85f; g = 0.9f; b = 0.95f; return 0.002; }   // sea ice near the poles, floating on top
+                if (lat > Math.Min(0.995, IceSin + 0.04) && _tk.PolarIce) { r = 0.85f; g = 0.9f; b = 0.95f; return 0.002; }   // sea ice near the poles, floating on top
                 if (_tk.Locked)
                 {
                     // the twilight ring keeps its water painted on (no separate sea surface on this world)
@@ -710,6 +723,26 @@ namespace Universe.Gen
         }
 
         private double _volcano, _vent, _river; private bool _activeVent; private volatile Drainage _drain; private readonly object _drainLock = new object();
+        // the small streams round where you are (src/gen/LocalDrainage.cs): made in the background for the span asked, kept until another is asked
+        private volatile LocalDrainage _local; private volatile bool _localMaking;
+        /// <summary>Asks for the small streams round a place (a direction from the world's middle) over a span (km): made in the
+        /// background, a new one only once the view has moved a quarter of the span or its span changed threefold.</summary>
+        public void AskStreams(double x, double y, double z, double spanKm)
+        {
+            if (!Solid || !_tk.Rivers || _localMaking) return; var l = _local; double cl = Math.Sqrt(x * x + y * y + z * z); if (cl <= 0) return;
+            if (l != null)
+            {
+                double dot = (x * l.Cx + y * l.Cy + z * l.Cz) / cl, movedKm = Math.Acos(Math.Max(-1, Math.Min(1, dot))) * Radius;
+                if (movedKm < l.SpanKm * 0.25 && spanKm > l.SpanKm / 3 && spanKm < l.SpanKm * 3) return;
+            }
+            _localMaking = true; double fx = x, fy = y, fz = z, span = Math.Max(0.2, Math.Min(4000, spanKm));
+            System.Threading.ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try { _local = new LocalDrainage(fx, fy, fz, span, Radius, (dx, dy, dz, layers) => { float r1, g1, b1, gl1; return HeightBase(dx, dy, dz, layers, out r1, out g1, out b1, out gl1); }); System.Threading.Interlocked.Increment(ref Generation); }   // (the ground remade with its streams, swapped in whole when ready, as any change of its shape)
+                catch (Exception) { }
+                finally { _localMaking = false; }
+            });
+        }
 
         private double Landforms(double x, double y, double z, double h, int layers, ref float r, ref float g, ref float b, ref float glow)
         {
@@ -751,6 +784,14 @@ namespace Universe.Gen
                     r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2];                  // river water, or a dry bed (terrain.unt)
                 }
                 else if (rv < 0) _river = -1;                                             // the river banks
+                var loc = _local; double st, pond;
+                if (_river <= 0 && loc != null && loc.StreamAt(x, y, z, h, out st, out pond))
+                {
+                    // the small streams round where you are, finer than the world's map: brooks, rills, ponds
+                    if (!double.IsNaN(pond)) { h = pond; _river = 1; r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2]; }
+                    else if (st > 0) { _river = st; h -= 0.0005 * st; r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2]; }
+                    else if (st < 0 && _river == 0) _river = -1;
+                }
             }
             return h;
         }
@@ -765,7 +806,7 @@ namespace Universe.Gen
         {
             double lat = _latOverride >= 0 ? _latOverride : Math.Abs(y), land = _land, mtn = _mtn;
             if (HasWater && h < -0.0001 && lat < 0.9) return FieldIndex("ocean-water");
-            if (lat > 0.86 + 0.05 * _tint || _tk.FrozenSea && h <= 0.0001) return FieldIndex("ice-field");
+            if (lat > IceSin + 0.05 * _tint || _tk.FrozenSea && h <= 0.0001) return FieldIndex("ice-field");
             if (_vent > 0.3) { r = 0.95f; g = 0.85f; b = 0.15f; if (_activeVent) { r = 1f; g = 0.42f; b = 0.08f; } return FieldIndex("volcanic-sulfide"); }   // yellow sulfur crust
             if (_volcano > 0.25) { if (Spot(x, y, z, 2, 30, 0.55)) { r = 0.85f; g = 0.55f; b = 0.2f; } return FieldIndex("epithermal"); }   // hot-spring stains
             if (_river < 0) { if (Spot(x, y, z, 7, 200, 0.62)) { r = 0.9f; g = 0.78f; b = 0.3f; } return FieldIndex("placer"); }   // glints of gold in the banks
@@ -858,6 +899,41 @@ namespace Universe.Gen
         [ThreadStatic] private static double _cellAtLeast;
         /// <summary>The ground's height (km above the sea) with its grains worked out no finer than <paramref name="cellKm"/>:
         /// for asking how high the ground is under you (a thirtieth of your height is all that can matter), fast.</summary>
+        // ── the ocean's currents drawn on its water, as they show from above: a map of its basins made once (each latitude a ring of 720
+        // points round the world, one pass along it finding every stretch of sea between its coasts), each sea point's share of the way
+        // across its basin from its western shore; a gyre's water heaped against its western shore runs fast and warm poleward there
+        // (westward intensification: the Gulf Stream, the Kuroshio), a deep warm blue; along a subtropical eastern shore the deep cold
+        // water rises (Ekman's transport), and at the equator where the trade winds part the water, greener with the life it feeds ──
+        private float[] _basin; private readonly object _basinLock = new object(); private const int BasinW = 720, BasinH = 360;
+        private void MakeBasins()
+        {
+            var m = new float[BasinW * BasinH]; var land = new bool[BasinW]; float rr, gg, bb, ll;
+            for (int j = 0; j < BasinH; j++)
+            {
+                double lat = ((j + 0.5) / BasinH - 0.5) * Math.PI, cy = Math.Sin(lat), cr = Math.Cos(lat); bool any = false;
+                for (int i = 0; i < BasinW; i++) { double lo = (i + 0.5) / BasinW * 2 * Math.PI - Math.PI; land[i] = Height(cr * Math.Cos(lo), cy, cr * Math.Sin(lo), 8, out rr, out gg, out bb, out ll) > 0; any |= land[i]; }
+                if (!any) { for (int i = 0; i < BasinW; i++) m[j * BasinW + i] = -1; continue; }
+                // two passes round the ring (twice, so it wraps): the steps back to the last coast, and on to the next
+                var wd = new int[BasinW]; var ed = new int[BasinW]; int run = 0;
+                for (int q = 0; q < 2 * BasinW; q++) { int i = q % BasinW; run = land[i] ? 0 : run + 1; wd[i] = run; }
+                run = 0; for (int q = 2 * BasinW - 1; q >= 0; q--) { int i = q % BasinW; run = land[i] ? 0 : run + 1; ed[i] = run; }
+                for (int i = 0; i < BasinW; i++) m[j * BasinW + i] = land[i] ? -1 : wd[i] / (float)(wd[i] + ed[i]);
+            }
+            _basin = m;
+        }
+        private void SeaTint(double x, double y, double z, ref float r, ref float g, ref float b)
+        {
+            if (_basin == null) lock (_basinLock) if (_basin == null) MakeBasins();
+            double l = Math.Sqrt(x * x + y * y + z * z), lat = Math.Asin(Math.Max(-1, Math.Min(1, y / l))), lo = Math.Atan2(z, x);
+            int j = Math.Max(0, Math.Min(BasinH - 1, (int)((lat / Math.PI + 0.5) * BasinH))), i = Math.Max(0, Math.Min(BasinW - 1, (int)((lo + Math.PI) / (2 * Math.PI) * BasinW)));
+            float share = _basin[j * BasinW + i]; if (share < 0) return; double la = Math.Abs(lat) * 180 / Math.PI;
+            // the western boundary current: within the basin's westmost tenth, 15 to 45 degrees, strongest at its middle
+            double wbc = la > 15 && la < 45 ? Math.Max(0, 1 - share / 0.1) * Math.Sin((la - 15) / 30 * Math.PI) : 0;
+            // the upwellings: the eastmost tenth from 15 to 40 degrees, and within 5 degrees of the equator
+            double up = Math.Max(la > 15 && la < 40 ? Math.Max(0, (share - 0.9) / 0.1) : 0, la < 5 ? 1 - la / 5 : 0);
+            r = (float)(r * (1 - 0.3 * wbc)); g = (float)(g * (1 - 0.15 * wbc) + 0.07 * up); b = (float)(b * (1 + 0.25 * wbc) - 0.04 * up);
+        }
+
         public double GroundAt(double x, double y, double z, double cellKm) { _cellAtLeast = cellKm; try { return GroundAt(x, y, z); } finally { _cellAtLeast = 0; } }
         public double GroundAt(double x, double y, double z)
         {
@@ -1042,6 +1118,7 @@ namespace Universe.Gen
                     else if (layer == Water)
                     {
                         h = 0; r = 0.04f; g = 0.18f; bl = 0.34f; gl = 0; al = 0.72f;
+                        if (HasWater) SeaTint(x, y, z, ref r, ref g, ref bl);
                         // water only where the ground is really below the sea; over land it is hidden under the ground
                         float r0, g0, b0, gl0;
                         double ground = Height(x, y, z, layers, out r0, out g0, out b0, out gl0);

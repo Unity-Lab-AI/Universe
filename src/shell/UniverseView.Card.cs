@@ -104,11 +104,11 @@ namespace Universe.Shell
                 var g = _galaxies[_tIndex];
                 L.Add(g.Name); L.Add("id: G-" + (g.Seed & 0xFFFFFF).ToString("X6"));
                 L.Add("type: " + g.Type); L.Add("width: about " + Units.Describe(g.Scale));
-                L.Add("stars: about 100 billion"); L.Add("distance: " + Units.Describe(dist));
+                L.Add("stars: about 100 billion"); L.Add("distance: " + Units.Describe(dist)); ExpansionLines(L, dist);
                 { var sc = Supernovae(g, _tIndex == _near); int going = 0; foreach (var sn in sc.Events) { double yrs = _simYears - sn.T; if (yrs >= 0 && yrs * 365.25 < 150) going++; } L.Add("supernovae: about " + (SnRate(g) * 100).ToString("0.#") + " a century here" + (going > 0 ? "; " + going + " going now" : "; none going now")); }
                 if (_darkMatter > 0) { L.Add("mass: about " + (1e11 / (1 - _darkMatter)).ToString("0.#E+0") + " solar masses, " + (_darkMatter * 100).ToString("0") + "% of it dark matter"); L.Add("its stars orbit at a flat " + _rimSpeed.ToString("0") + " km/s out to its rim, held by the dark halo (without it they would slow outward like planets)"); }
             }
-            else if (_tKind == 1 && _tSn != null && _tName == "a supernova") SupernovaCard(L, dist);
+            else if (_tKind == 1 && _tSn != null && _tName == SnName(_tSn)) SupernovaCard(L, dist);
             else if (SwarmPicked) SwarmCard(L, dist);
             else if (PartPicked) HolePartCard(L, dist);
             else if (_tKind == 1)
@@ -132,7 +132,7 @@ namespace Universe.Shell
                         L.Add("relativity: its light redshifted " + ShiftWords(zS) + " climbing out; surface clocks slower by the same");
                         var lays = StarLayersFor(SystemStarId()); if (lays.Count > 0) { var nm = new List<string>(); foreach (var l in lays) nm.Add(l.Name.ToLowerInvariant()); L.Add("layers: " + string.Join(", ", nm.ToArray())); }
                         var sl = StarLayerHere(); if (sl != null) { double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) / Units.Km(1), RK = StarRadiusNow / Units.Km(1); L.Add("inside: " + ScaleHud.Words(RK - sdK) + " down, its " + sl.Name.ToLowerInvariant() + ", about " + LayerTempK(sl, sdK / RK).ToString("N0") + " K, " + DensityWords(LayerDensity(sl, sdK / RK))); }
-                        if (!Window.GravityOn) L.Add("gravity off " + Years(Math.Max(0, _simYears - _gravityOffYear)) + ": " + (StarSwell >= 100 ? StarSwell.ToString("N0") : StarSwell.ToString("0.#")) + " times its size, growing " + (StarSwellSpeedKmS()).ToString("N0") + " km/s");
+                        if (Flown) L.Add((Window.GravityOn ? "gravity back on, after it was off " : "gravity off ") + Years(Math.Max(0, OffYears)) + ": " + (StarSwell >= 100 ? StarSwell.ToString("N0") : StarSwell.ToString("0.#")) + " times its size, growing " + (StarSwellSpeedKmS()).ToString("N0") + " km/s");
                     }
                     L.Add("planets and moons: " + sy.Bodies.Count + " (" + sy.Planets + " planets)");
                     L.Add("habitable zone: " + (sy.HabitableAu * 0.75).ToString("0.##") + " to " + (sy.HabitableAu * 1.4).ToString("0.##") + " AU");
@@ -194,6 +194,7 @@ namespace Universe.Shell
                 else L.Add("orbit: " + Km(b.OrbitUnits) + " from its planet" + (b.Ecc >= 0.05 ? ", " + (b.Ecc < 0.25 ? "oval" : "a long ellipse") + " (eccentricity " + b.Ecc.ToString("0.00") + ")" : ""));
                 bool here = _ground != null && _planet == _tIndex;
                 foreach (var m in MakeUp(b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water)) L.Add(m);
+                WorldGravityLines(L, b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water);   // (gravity off: what it does to this world)
                 if (!b.Giant) foreach (var m in InsideWords(b.Terrain ?? DeepView.TerrainKind(b.Kind), null, WorldSeed(_tIndex) + 1UL)) L.Add(m);   // (its layers to its middle, and its whole make-up by element)
                 { string sc = ScorchWords(_ax, _ay, _az); if (sc != null) L.Add("scorched: " + sc); }
                 if (here) { L.Add("air: " + (_ground.AirKm > 0 ? "about " + _ground.AirKm.ToString("0") + " km deep" : "none") + (_ground.HasClouds ? ", clouds" : "")); }
@@ -267,6 +268,7 @@ namespace Universe.Shell
                 L.Add("distance: " + Units.Describe(dist));
             }
             { var w = HereWords(); if (w != null && L.Count > 0) L.Insert(1, w); }   // (where you are in the one tree, under its name)
+            if (L.Count > 0) GravityLines(L);                                                 // (gravity off: what it is doing here)
             return L;
         }
 

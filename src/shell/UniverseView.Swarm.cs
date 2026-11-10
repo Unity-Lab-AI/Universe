@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Universe.Core;
 using Universe.Gen;
+using Universe.Platform;
 using Universe.Render;
 
 namespace Universe.Shell
@@ -19,6 +20,14 @@ namespace Universe.Shell
 
         // where star k of a hole's swarm is now, against the camera (universe units), and its place in the hole's own frame (horizon radii)
         private bool SwarmStarAt(Extra ex, HoleParts hp, int k, double time, out double x, out double y, out double z)
+        {
+            // with gravity off: from where it was at that moment, straight on at its velocity there (as the card moves it)
+            double off = !Flown ? 0 : Math.Max(1e-3, _lastDrawTime - _gravityOffWatch);
+            if (off <= 0) return SwarmStarRaw(ex, hp, k, time, out x, out y, out z);
+            double x0, y0, z0, x1, y1, z1; bool ok = SwarmStarRaw(ex, hp, k, time - off, out x0, out y0, out z0) & SwarmStarRaw(ex, hp, k, time - off + 0.01, out x1, out y1, out z1);
+            double fl = OffWatchFlight; x = x0 + (x1 - x0) / 0.01 * fl; y = y0 + (y1 - y0) / 0.01 * fl; z = z0 + (z1 - z0) / 0.01 * fl; return ok;
+        }
+        private bool SwarmStarRaw(Extra ex, HoleParts hp, int k, double time, out double x, out double y, out double z)
         {
             x = y = z = 0; if (hp == null || hp.SwarmRecs == null || k < 0 || k >= hp.SwarmRecs.Length) return false;
             var s = hp.SwarmRecs[k]; float t = (float)(time + ex.Turn * 10), K = hp.K;

@@ -32,7 +32,8 @@ namespace Universe.Shell
         private List<string> MatterCard()
         {
             var L = _matter.Card(); var w = HereWords(); if (w != null && L.Count > 0) L.Insert(1, w);
-            if (L.Count > 0) { var dw = new List<string>(); DepthWords(dw); L.InsertRange(Math.Min(2, L.Count), dw); }   // (below the ground: the layer, how deep, its heat and pressure)
+            if (L.Count > 0) { var dw = new List<string>(); DepthWords(dw); L.InsertRange(Math.Min(2, L.Count), dw); }
+            if (L.Count > 0) GravityLines(L);                                                 // (gravity off: what it is doing here)   // (below the ground: the layer, how deep, its heat and pressure)
             return L;
         }
     }

@@ -9,7 +9,7 @@ namespace Universe.Gen
 {
     internal sealed class StarKind
     {
-        public string Id, Name; public float R, G, B; public double Weight; public double Lum = 1;   // Lum: its light in solar units, R^2 (T / 5772 K)^4 from its kind's radius and temperature (content/stars.unt)
+        public string Id, Name; public float R, G, B; public double Weight; public double Lum = 1, RadiusSol = 1, MassSol = 1;   // RadiusSol, MassSol: the middle of its kind's ranges (content/stars.unt)   // Lum: its light in solar units, R^2 (T / 5772 K)^4 from its kind's radius and temperature (content/stars.unt)
         public bool Remnant;     // a dead star (white dwarf, neutron star, pulsar, magnetar): found among old stars, not young ones
     }
 
@@ -44,7 +44,8 @@ namespace Universe.Gen
                 float r, g, b; ColorFor(e, out r, out g, out b);
                 bool remnant = e.Get("remnant", "no") == "yes";                        // from the data (stars.unt)
                 double lum = 1, r0, r1, t0, t1; if (e.TryRange("radius-sol", out r0, out r1) && e.TryRange("temp-k", out t0, out t1) && r0 > 0 && t0 > 0) { double rs = Math.Sqrt(r0 * r1), tk = Math.Sqrt(t0 * t1); lum = rs * rs * Math.Pow(tk / 5772, 4); }   // (the middle of its kind's ranges)
-                list.Add(new StarKind { Id = e.Id, Name = e.Name, R = r, G = g, B = b, Weight = ShareWeight(e.Get("share-of-stars", "common")), Remnant = remnant, Lum = lum });
+                double rsol = 1, msol = 1, m0, m1; if (e.TryRange("radius-sol", out r0, out r1) && r0 > 0) rsol = Math.Sqrt(r0 * r1); if (e.TryRange("mass-sol", out m0, out m1) && m0 > 0) msol = Math.Sqrt(m0 * m1); else msol = Math.Pow(Math.Max(1e-4, lum), 1 / 3.5);   // (none given: the main sequence's mass from its light, L ~ M^3.5)
+                list.Add(new StarKind { Id = e.Id, Name = e.Name, R = r, G = g, B = b, Weight = ShareWeight(e.Get("share-of-stars", "common")), Remnant = remnant, Lum = lum, RadiusSol = rsol, MassSol = msol });
             }
             if (list.Count == 0) list.Add(new StarKind { Id = "g-type", Name = "G", R = 1, G = 0.95f, B = 0.8f, Weight = 1 });
             return list;

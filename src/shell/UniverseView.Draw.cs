@@ -456,7 +456,8 @@ namespace Universe.Shell
                 // from afar it is a soft shape in its own colours with a fine edge, never a solid white disc or a white spiral icon)
                 float crowd = (float)Math.Max(0.015, Math.Min(1, Math.PI * gpx * gpx / (count * dotPx * dotPx) * 0.35)) * nearF * (i == _near ? 1f : others);
                 var pg = Placement(g); float drift = GalaxyDrift(g, ref pg);
-                DrawPoints(buf, count, pg * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f, 0, 0, 0, 0, 0, drift);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
+                float trad; float turnD = GalaxyTurn(g, pg, out trad);
+                DrawPoints(buf, count, pg * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f, 0, 0, 0, 0, 0, drift, 0, turnD, trad);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
             }
             double inside = InsideShare();
             {
@@ -551,11 +552,12 @@ namespace Universe.Shell
                         double au = Units.Au(1);
                         for (int k = 0; k < _localCount; k++)
                         {
-                            var v = _localList[k]; v.A = 1;
+                            var v = _localList[k]; v.A = 1; { double ddx, ddy, ddz; LocalDrift(k, out ddx, out ddy, out ddz); v.X += (float)ddx; v.Y += (float)ddy; v.Z += (float)ddz; }   // (gravity off: flown on from its place at its own speed)
                             double wx = v.X * pm.M11 + v.Y * pm.M21 + v.Z * pm.M31 + pm.M41, wy = v.X * pm.M12 + v.Y * pm.M22 + v.Z * pm.M32 + pm.M42, wz = v.X * pm.M13 + v.Y * pm.M23 + v.Z * pm.M33 + pm.M43;
                             double d2 = Math.Max(1e-30, wx * wx + wy * wy + wz * wz), lum = k < _localKind.Count && _localKind[k] >= 0 && _localKind[k] < _kinds.Count ? _kinds[_localKind[k]].Lum : 1;
                             double mag = -26.74 - 2.5 * Math.Log10(Math.Max(1e-60, lum * au * au / d2));
                             float kb = lf * (float)Math.Min(1, Math.Pow(10, -0.2 * (mag + 1)));
+                            if (k < _localKind.Count && _localKind[k] >= 0 && _localKind[k] < _kinds.Count) { double sw = KindSwell(_kinds[_localKind[k]]); if (sw > 1) { v.Size *= (float)sw; kb *= (float)(1 / (sw * sw)); } }   // (gravity off: blown apart by its own pressure, bigger and thinner)
                             v.R *= kb; v.G *= kb; v.B *= kb; if (_localDead.Contains(k)) { v.R = 0; v.G = 0; v.B = 0; } _localDrawn[k] = v;   // (a star that died in a supernova: gone)
                         }
                         _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
@@ -577,7 +579,15 @@ namespace Universe.Shell
                 for (int i = 0; i < st.Length; i++)
                 {
                     var v = st[i]; double px0 = st[i].X, pz0 = st[i].Z; float rate = sr != null && i < sr.Length ? sr[i] : 0;
-                    if (rate != 0) { double th = (rate * yrs) % (2 * Math.PI), ct = Math.Cos(th), snt = Math.Sin(th); px0 = st[i].X * ct - st[i].Z * snt; pz0 = st[i].X * snt + st[i].Z * ct; }
+                    if (rate != 0)
+                    {
+                        // with gravity off, each piece of rubble goes straight on along its tangent at its orbital speed (rate times its
+                        // distance) from where it was when gravity went; else round the star at its Kepler rate
+                        bool off = Flown && yrs > _gravityOffYear;
+                        double tt = off ? _gravityOffYear : yrs, th = (rate * tt) % (2 * Math.PI), ct = Math.Cos(th), snt = Math.Sin(th);
+                        px0 = st[i].X * ct - st[i].Z * snt; pz0 = st[i].X * snt + st[i].Z * ct;
+                        if (off) { double fl = rate * OffYears; double vx = -pz0, vz = px0; px0 += vx * fl; pz0 += vz * fl; }
+                    }
                     v.X = (float)(px0 - _ox); v.Y = (float)(st[i].Y - _oy); v.Z = (float)(pz0 - _oz); v.R *= stFade; v.G *= stFade; v.B *= stFade; _staticShifted[i] = v;
                 }
                 // the belt's points dimmed by how many share its patch of screen (as a galaxy's stars are): from afar three thousand
@@ -610,6 +620,7 @@ namespace Universe.Shell
                         double ratio = Math.Max(1e-60, _system.Luminosity * p * (Rb / dps) * (Rb / dps) * Math.Max(0, q) * (au / dcp) * (au / dcp)), mag = -26.74 - 2.5 * Math.Log10(ratio);
                         float k = (float)Math.Min(1, Math.Pow(10, -0.2 * (mag + 1)));
                         _bodyVerts[i].R *= k; _bodyVerts[i].G *= k; _bodyVerts[i].B *= k;
+                        { double sw = WorldSwell(bd); if (sw > 1) { _bodyVerts[i].Size *= (float)sw; float th = (float)(1 / (sw * sw)); _bodyVerts[i].R *= th; _bodyVerts[i].G *= th; _bodyVerts[i].B *= th; } }   // (gravity off: a giant swollen and thinned by its own pressure)
                     }
                 }
                 if (_ground != null && _planet >= 0 && _planet + 1 < _bodyCount)   // (a small body's world has no glow among the system's bodies: its slot is not a planet's; indexed at slot minus one it had crashed the first frame its ground was made)
@@ -880,7 +891,7 @@ namespace Universe.Shell
             return _webMatch;
         }
         private readonly List<KeyValuePair<double, int>> _nebNear = new List<KeyValuePair<double, int>>(), _galOrder = new List<KeyValuePair<double, int>>(); private readonly Dictionary<int, double[]> _nebAt = new Dictionary<int, double[]>();
-        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0, float drift = 0, int perRecord = 0)
+        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0, float drift = 0, int perRecord = 0, float turn = 0, float turnRadius = 0)
         {
             if (buf == null || count <= 0) return;
             float b = bright * _sky; if (b <= 0.003f) return;
@@ -891,7 +902,8 @@ namespace Universe.Shell
             c[24] = (float)time; c[25] = sizeScale; c[26] = style; c[27] = 4; c[28] = w; c[29] = h; c[30] = minSize; c[31] = maxSize; c[32] = 1 - Math.Min(1, b); c[34] = drift;   /* (gravity off: how far a galaxy's stars have flown, in their own frame) */
             c[36] = _lens[0]; c[37] = _lens[1]; c[38] = _lens[2]; c[39] = _lens[3]; c[40] = w / (float)Math.Max(1, h);
             c[43] = _web[0]; c[44] = _web[1]; c[45] = _web[2]; c[46] = _web[3]; c[47] = _web[4];   // the web's light, sifted on the card (0: not the web)
-            if (holeK > 0) { c[33] = holeK; c[35] = holeMode; c[43] = 0; c[44] = hx; c[45] = hy; c[46] = hz; c[47] = 0; }   // a feeding black hole's parts: moved on the card in its own frame (the pace, which part, where the camera is in that frame)
+            if (holeK > 0) { c[33] = holeK; c[35] = holeMode; c[43] = 0; c[44] = hx; c[45] = hy; c[46] = hz; c[47] = !Flown ? 0 : (float)Math.Max(1e-3, _lastDrawTime - _gravityOffWatch); c[19] = !Flown ? 0 : (float)Math.Max(0, OffWatchFlight); }   // (gravity off: the watched seconds since, so its parts fly straight on)   // a feeding black hole's parts: moved on the card in its own frame (the pace, which part, where the camera is in that frame)
+            if (turn != 0) { c[23] = turn; c[19] = turnRadius; }   // (a disc galaxy turning: Pipeline.cs up.w, right.w)
             if (perRecord > 0) { c[41] = 1; c[42] = perRecord; count *= perRecord; }   // (each record grown into its points on the card)
             _dots.Draw(buf, count, c, 0, 0, w, h);
         }

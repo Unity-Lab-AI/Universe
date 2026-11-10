@@ -27,11 +27,11 @@ namespace Universe.Render
 cbuffer C : register(b0)
 {
     row_major float4x4 viewProj;
-    float4 right;   // xyz camera right
-    float4 up;      // xyz camera up
+    float4 right;   // xyz camera right; w: a hole's parts, how long they flew with gravity off (0: still flying, webA.w)
+    float4 up;      // xyz camera up; w: a disc galaxy's turn so far, the distance at its rim speed (its own units; 0 none)
     float4 misc;    // x time, y size scale, z style (0 glow, otherwise faceted)
     float4 screen;  // x width, y height (of this tile, in pixels), z minimum size per unit of distance, w maximum (0: none)
-    float4 extra;   // x: how much dimmer (0 full bright, 1 gone), so things fade in and out, never switch; z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on); z: gravity off, how far each star has flown (0: gravity on)
+    float4 extra;   // x: how much dimmer (0 full bright, 1 gone); y: a hole's inner orbit pace; z: gravity off, how far each galaxy star has flown (0: never off); w: which part of a hole
     float4 lensA;   // a black hole's light bending: xy where it is on screen (-1..1), z its Einstein ring (same units, up the screen), w its distance
     float4 lensB;   // x: width over height of the screen; y: 1 = orbital clouds (each record an orbital, its points placed here); z: points per orbital; w: the web's fade distance (0: not the web)
     float4 webA;    // the cosmic web's light, sifted here on the card: xyz where you are (in the points' own frame), w how near round you is left out (the galaxies made in full stand there; it fades in over half again past that, as they fade out)
@@ -57,6 +57,14 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
     uint rec = iid, sub = 0;
     if (lensB.y > 0.5) { uint per = max(1u, (uint)lensB.z); rec = iid / per; sub = iid % per; }
     Star s = stars[rec];
+    if (up.w != 0 && extra.y == 0)
+    {
+        // a disc galaxy turning (the flat rotation curve its dark matter gives): each star round its middle at the rim speed, so by an
+        // angle of the distance travelled over its radius (up.w that distance, in the galaxy's own units), the inner ones round
+        // faster and the arms winding; less the turn of where you are (right.w your radius), as you ride round with your own stars
+        float rr = max(1e-4, length(s.pos.xz)), an = up.w / rr - (right.w > 0 ? up.w / right.w : 0), ca = cos(an), sa = sin(an);
+        s.pos.xz = float2(s.pos.x * ca - s.pos.z * sa, s.pos.x * sa + s.pos.z * ca);
+    }
     if (extra.z != 0)
     {
         // gravity switched off: a galaxy's stars fly off on their tangents at the speed they circled at (a disc), or every way
@@ -153,48 +161,57 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         // a feeding black hole's own things, in its own frame (its disc level, its horizon's radius 1), each worked out here
         // every frame: extra.y the pace of the inner orbit, extra.w which record this is (1 the disc's gas, 2 a star on its
         // orbit round the hole, 3 a star torn into a stream); webA.xyz where the camera is in that frame
-        float t = misc.x, K = extra.y;
-        if (extra.w < 1.5)
+        // with gravity switched off (webA.w: the watched seconds since), every point goes on from where it was at that moment at the
+        // velocity it had there, straight (worked out from its own motion over a hundredth of a second): the disc's gas off its
+        // circles, the swarm's stars off their ellipses, the torn star's stream flying apart
+        float offS = webA.w, K = extra.y; Star sKeep = s, sAt = s; float3 pA = s.pos, pB = s.pos;
+        for (int hp = 0; hp < (offS > 0 ? 2 : 1); hp++)
         {
-            // the disc's gas: each point on its own circular orbit, the inner ones round many times faster (Kepler: the rate
-            // falls as r^1.5), so the disc shears into spiral streams and never turns as one plate
-            float r = max(1.5, length(s.pos.xz)), a0 = atan2(s.pos.z, s.pos.x), ang = a0 + K * t / pow(r, 1.5);
-            float3 p = float3(cos(ang) * r, s.pos.y, sin(ang) * r);
-            // the gas moves at a good share of light speed (v/c = sqrt(1/(2r)) on a circular orbit, 0.4c at the inner edge), so
-            // the side coming toward you is brightened and the side going away dimmed (Doppler beaming, as the Event Horizon
-            // Telescope saw): the disc is always lopsided
-            float3 tang = float3(-sin(ang), 0, cos(ang)); float beta = sqrt(0.5 / r);
-            float3 toCam = normalize(webA.xyz - p); float gam = 1 / sqrt(1 - beta * beta), dop = 1 / (gam * (1 - beta * dot(tang, toCam)));
-            s.color.rgb *= clamp(dop * dop * dop, 0.25, 4.0);     // (lopsided, as the Event Horizon Telescope saw it, but never a missing half)
-            s.pos = p;
+        s = sKeep; float t = offS > 0 ? misc.x - offS + hp * 0.01 : misc.x;
+            if (extra.w < 1.5)
+            {
+                // the disc's gas: each point on its own circular orbit, the inner ones round many times faster (Kepler: the rate
+                // falls as r^1.5), so the disc shears into spiral streams and never turns as one plate
+                float r = max(1.5, length(s.pos.xz)), a0 = atan2(s.pos.z, s.pos.x), ang = a0 + K * t / pow(r, 1.5);
+                float3 p = float3(cos(ang) * r, s.pos.y, sin(ang) * r);
+                // the gas moves at a good share of light speed (v/c = sqrt(1/(2r)) on a circular orbit, 0.4c at the inner edge), so
+                // the side coming toward you is brightened and the side going away dimmed (Doppler beaming, as the Event Horizon
+                // Telescope saw): the disc is always lopsided
+                float3 tang = float3(-sin(ang), 0, cos(ang)); float beta = sqrt(0.5 / r);
+                float3 toCam = normalize(webA.xyz - p); float gam = 1 / sqrt(1 - beta * beta), dop = 1 / (gam * (1 - beta * dot(tang, toCam)));
+                s.color.rgb *= clamp(dop * dop * dop, 0.25, 4.0);     // (lopsided, as the Event Horizon Telescope saw it, but never a missing half)
+                s.pos = p;
+            }
+            else if (extra.w < 2.5)
+            {
+                // a star on its own orbit round the hole (as the S stars round the Milky Way's heart, swept round at thousands of km a
+                // second): its ellipse in its record (x the semi-major axis, y the eccentricity, z its phase, size its orientation),
+                // Kepler's equation solved here, so it rushes through the close end and crawls through the far
+                float a = s.pos.x, e = s.pos.y, M = s.pos.z + K * t * 3.0 / pow(a, 1.5);
+                float E = M; for (int i = 0; i < 6; i++) E -= (E - e * sin(E) - M) / (1 - e * cos(E));
+                float x = a * (cos(E) - e), z = a * sqrt(1 - e * e) * sin(E);
+                uint seed = asuint(s.size); float inc = oh01(seed, 1u) * 1.4 - 0.7, node = oh01(seed, 2u) * 6.2832, peri = oh01(seed, 3u) * 6.2832;
+                float cp = cos(peri), sp = sin(peri); float x1 = x * cp - z * sp, z1 = x * sp + z * cp;
+                float ci = cos(inc), si = sin(inc); float y2 = z1 * si, z2 = z1 * ci;
+                float cn = cos(node), sn = sin(node);
+                s.pos = float3(x1 * cn - z2 * sn, y2, x1 * sn + z2 * cn); s.size = 0.9;
+            }
+            else
+            {
+                // a star torn apart: it came too close, and the hole's pull on its near side so outdid the pull on its far side that it was
+                // stretched along its orbit into a stream of gas (a tidal disruption), winding in round the hole and feeding the disc,
+                // hotter and bluer as it falls. Each point is a share of the way along the stream, and the stream flows: the star's
+                // remains at its head, its gas drawn out behind and down
+                float s0 = frac(s.pos.x - K * t * 0.0035), r = 3.2 + 90 * exp(-s0 * 3.4), ang = -s0 * 6.2832 * 2.4 + 0.9;   // (winding in the way the disc turns: its angle grows as it falls)
+                float wide = 0.25 + 4 * s0 * s0;                                                   // (thin at the star, spreading as it winds in)
+                float3 p = float3(cos(ang) * r, s.pos.y * wide, sin(ang) * r) + float3(-sin(ang), 0, cos(ang)) * s.pos.z * wide * 2;
+                float head = exp(-s0 * 14);                                                        // (the star's remains: a bright knot at the head)
+                s.color.rgb = lerp(float3(1, 0.85, 0.55), float3(0.7, 0.8, 1), s0) * s.color.r * (0.35 + 1.4 * s0 + 2.5 * head);
+                s.size = s.size * (0.6 + 2 * s0) + head * 1.5; s.pos = p;
+            }
+        if (hp == 0) { sAt = s; pA = s.pos; } else pB = s.pos;
         }
-        else if (extra.w < 2.5)
-        {
-            // a star on its own orbit round the hole (as the S stars round the Milky Way's heart, swept round at thousands of km a
-            // second): its ellipse in its record (x the semi-major axis, y the eccentricity, z its phase, size its orientation),
-            // Kepler's equation solved here, so it rushes through the close end and crawls through the far
-            float a = s.pos.x, e = s.pos.y, M = s.pos.z + K * t * 3.0 / pow(a, 1.5);
-            float E = M; for (int i = 0; i < 6; i++) E -= (E - e * sin(E) - M) / (1 - e * cos(E));
-            float x = a * (cos(E) - e), z = a * sqrt(1 - e * e) * sin(E);
-            uint seed = asuint(s.size); float inc = oh01(seed, 1u) * 1.4 - 0.7, node = oh01(seed, 2u) * 6.2832, peri = oh01(seed, 3u) * 6.2832;
-            float cp = cos(peri), sp = sin(peri); float x1 = x * cp - z * sp, z1 = x * sp + z * cp;
-            float ci = cos(inc), si = sin(inc); float y2 = z1 * si, z2 = z1 * ci;
-            float cn = cos(node), sn = sin(node);
-            s.pos = float3(x1 * cn - z2 * sn, y2, x1 * sn + z2 * cn); s.size = 0.9;
-        }
-        else
-        {
-            // a star torn apart: it came too close, and the hole's pull on its near side so outdid the pull on its far side that it was
-            // stretched along its orbit into a stream of gas (a tidal disruption), winding in round the hole and feeding the disc,
-            // hotter and bluer as it falls. Each point is a share of the way along the stream, and the stream flows: the star's
-            // remains at its head, its gas drawn out behind and down
-            float s0 = frac(s.pos.x - K * t * 0.0035), r = 3.2 + 90 * exp(-s0 * 3.4), ang = -s0 * 6.2832 * 2.4 + 0.9;   // (winding in the way the disc turns: its angle grows as it falls)
-            float wide = 0.25 + 4 * s0 * s0;                                                   // (thin at the star, spreading as it winds in)
-            float3 p = float3(cos(ang) * r, s.pos.y * wide, sin(ang) * r) + float3(-sin(ang), 0, cos(ang)) * s.pos.z * wide * 2;
-            float head = exp(-s0 * 14);                                                        // (the star's remains: a bright knot at the head)
-            s.color.rgb = lerp(float3(1, 0.85, 0.55), float3(0.7, 0.8, 1), s0) * s.color.r * (0.35 + 1.4 * s0 + 2.5 * head);
-            s.size = s.size * (0.6 + 2 * s0) + head * 1.5; s.pos = p;
-        }
+        if (offS > 0) { float flightS = right.w > 0 ? right.w : offS; s = sAt; s.pos = pA + (pB - pA) / 0.01 * flightS; }   // (gravity back on: held where it flew to, not yet falling back)
         {
             // the hole's own things seen past it: what lies within its shadow's cone is hidden by the shadow (the light from the far side
             // that reaches you round the hole is the background lens's work: its ring for light from well behind)

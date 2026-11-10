@@ -159,7 +159,7 @@ About 21,800 lines of C# and shader code in 65 files, and about 11,400 lines of 
 
 | Force | What it does here |
 |---|---|
-| **Gravity** | Orbits follow Kepler's law, each body's speed from its orbit. Every world and moon has its mass from its size and its kind's density; a body's card gives its mass, the pull at its ground, its escape speed, and its pull where you are. Turn gravity off in the Time menu and watch what it was holding. Black holes have real horizons and bend the light behind them, and their shadow is the size the law gives from where you stand. Relativity turns each orbit's closest point round its star, and slows clocks in a gravity well: your own clock against far clocks is in the title wherever you are, a world's card gives the microseconds a day its pull costs the ground's clocks and a satellite's gain, and at a horizon your clock stops against far clocks |
+| **Gravity** | A live force in the system you are at: every planet and moon pulling on the others and on its star, moment by moment, so orbits shift and tug; every world and moon has its mass from its size and its kind's density; a body's card gives its mass, the pull at its ground, its escape speed. Disc galaxies turn; space stretches |
 | **Electromagnetism** | Electrons in their real shells and orbitals, bonds as shared electrons, stars the colour of their heat |
 | **Strong force** | Packs every nucleus, and glues the quarks in every proton and neutron |
 | **Weak force** | Decides which nuclei are stable, and the rest decay before your eyes: each unstable atom goes at its own moment by its half-life, its alpha or electron flung out, and the card says what it has become |
@@ -242,7 +242,7 @@ Universe is a 0.1 preview of a program that is finished in its shape and growing
 
 | | |
 |---|---|
-| **Gravity as a live force** | Orbits shaped moment by moment by every body's pull (today every orbit follows Kepler's law exactly; the switch to turn gravity off is in) |
+| **Gravity as a live force everywhere** | The open system's orbits are shaped moment by moment; the small bodies, other systems and a galaxy's stars falling back once gravity returns are next |
 | **The fields** | The fields that particles are waves in, below the quarks' points |
 | **Light below its wavelength** | Today the grain's face goes to greys there, as an electron microscope sees; a true rendering of light that small is for later |
 | **The waveform everywhere** | The CDF 9/7 waveform carrying every field from the cosmic web to the microbes: gas and star fields, the ground itself, clouds, stars' surfaces |

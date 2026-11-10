@@ -18,7 +18,7 @@ namespace Universe.Shell
         private sealed class Sn { public double T, X, Y, Z, Ux, Uy, Uz, Mass; public int Kind; public Galaxy G; public SnKind K; public bool Ia { get { return K.Leaves == "nothing"; } } }   // T: when, in years of the game's time; X Y Z in its galaxy's frame; U: in the universe
         private sealed class SnKind { public string Id, Name, Leaves, Says; public double Share, Peak, Rise, Plateau, Halving, Tail, V, PeakK = 6000, OwnRate, RemLo, RemHi; public float R = 1, G = 1, B = 1; }   // OwnRate: its own rate a year in a galaxy of a hundred billion stars (0: a share of the supernovae's); RemLo..RemHi: what it leaves, solar masses
         private readonly List<SnKind> _snKinds = new List<SnKind>();
-        private sealed class SnCache { public long From = long.MaxValue, To = long.MinValue; public bool Full; public readonly List<Sn> Events = new List<Sn>(); }
+        private sealed class SnCache { public long From = long.MaxValue, To = long.MinValue; public bool Full; public long SeenNow = long.MinValue; public bool SeenFull; public int SeenVer = -1; public readonly List<Sn> Events = new List<Sn>(); }
         private readonly Dictionary<ulong, SnCache> _snCache = new Dictionary<ulong, SnCache>();
         private double _snRate = 3, _snCc = 0.7, _snCcPeak = 5e8, _snIaPeak = 4e9, _snCcRise = 10, _snIaRise = 18, _snPlateau = 100, _snCcV = 5000, _snIaV = 10000, _snFreeYears = 300, _snRemnantYears = 1e5, _snNsMax = 20; private bool _snLoaded;
         private Sn _tSn;                                                                   // the supernova picked (its card, the tour's words)
@@ -78,6 +78,8 @@ namespace Universe.Shell
             if (!_snLoaded) LoadSupernovaLaw();
             SnCache c; if (!_snCache.TryGetValue(g.Seed, out c)) { c = new SnCache(); _snCache[g.Seed] = c; }
             long now = (long)Math.Floor(_simYears), from = full ? now - (long)_snRemnantYears : now - 2, to = now + 1;
+            if (c.SeenNow == now && c.SeenFull == full && (!full || c.SeenVer == _localVersion)) return c;   // (the same year as last frame: nothing new, nothing to let go)
+            c.SeenNow = now; c.SeenFull = full; c.SeenVer = _localVersion;
             // time run on past the whole window since it was last made (the faster times: a frame can be millions of years): made afresh
             // for the window alone, never year by year through all that lies between
             if (c.From != long.MaxValue && (to - c.To > to - from + 1 || to < c.From)) { c.Events.Clear(); c.From = long.MaxValue; c.To = long.MinValue; c.Full = false; }

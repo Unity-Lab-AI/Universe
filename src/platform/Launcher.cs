@@ -33,9 +33,9 @@ namespace Universe.Platform
         private const int IdBegin = 1, IdTour = 2, IdGuide = 3, IdQuit = 4, IdRandom = 5, IdFps = 6, IdInvert = 7, IdDrag = 8, IdRecord = 9, IdClips = 10, IdPlay = 11, IdFolder = 12, IdStats = 13, IdClipSize = 14, IdSeed = 15, IdClipFormat = 16;
 
         private static Win32.WndProc _proc; private static bool _registered;
-        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _clipFormat, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
+        private static IntPtr _wnd, _seed, _fps, _stats, _invert, _drag, _record, _clips, _clipSize, _brush, _font, _big, _small; private static string[] _clipFiles = new string[0];
         private static Choice? _done; private static Action _guide, _alive;
-        /// <summary>The tour is to be filmed (an MP4 clip into the captures folder): ticked on the page.</summary>
+        /// <summary>The tour is to be filmed (a .cdf97w into the captures folder): ticked on the page.</summary>
         public static bool RecordTour;
         /// <summary>A universe clip (.cdf97u) chosen to play: its tour, flown again through the universe made from its seed (null: none).</summary>
         public static string ReplayTour; private static ulong? _replaySeed;
@@ -73,17 +73,11 @@ namespace Universe.Platform
             Child("BUTTON", "Begin", BS_DEFPUSHBUTTON | WS_TABSTOP, IdBegin, x, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font);
             Child("BUTTON", "Take the tour", WS_TABSTOP, IdTour, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, (int)(48 * s), _font); y += (int)(48 * s) + (int)(8 * s);
             _record = Child("BUTTON", "Film the tour (a clip)", BS_AUTOCHECKBOX | WS_TABSTOP, IdRecord, x + (cw + (int)(12 * s)) / 2, y, (cw - (int)(12 * s)) / 2, row, _small);
-            // the clip's size against the screen (the same choice as View > Clip size in flight): auto, full, half or a quarter
+            // the clip's size against the screen (the same choice as View > Clip size in flight): full (4K on a 4K screen), half or a quarter
             Child("STATIC", "Clip size", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
             _clipSize = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipSize, x + (int)(74 * s), y, (cw - (int)(12 * s)) / 2 - (int)(74 * s), (int)(300 * s), _small);
-            foreach (var nm in new[] { "Auto (full up to 1920 wide, half above)", "Full (the screen's size)", "Half (about a quarter of the file)", "Quarter (about a sixteenth)" }) SendMessage(_clipSize, CB_ADDSTRING, IntPtr.Zero, nm);
-            { int cd = Settings.Get("clip-down", 0); SendMessage(_clipSize, CB_SETCURSEL, (IntPtr)(cd == 1 ? 1 : cd == 2 ? 2 : cd == 4 ? 3 : 0), IntPtr.Zero); }
-            y += row + (int)(10 * s);
-            // the clip's format: an MP4 (any player) or a .cdf97w (the pictures as wavelet equations, played by this program)
-            Child("STATIC", "Clip format", 0, 0, x, y + (int)(6 * s), (int)(70 * s), row, _small);
-            _clipFormat = Child("COMBOBOX", "", CBS_DROPDOWNLIST | WS_TABSTOP | WS_VSCROLL, IdClipFormat, x + (int)(74 * s), y, cw - (int)(74 * s), (int)(300 * s), _small);
-            foreach (var nm in new[] { "MP4 (H.264 video: plays in any player)", ".cdf97w (the waveforms and their metadata: plays here)", ".cdf97w of the universe itself (the seed and the camera's track, no pixels: plays here at any size)" }) SendMessage(_clipFormat, CB_ADDSTRING, IntPtr.Zero, nm);
-            SendMessage(_clipFormat, CB_SETCURSEL, (IntPtr)Math.Max(0, Math.Min(2, Settings.Get("clip-format", 0))), IntPtr.Zero);
+            foreach (var nm in new[] { "Full: the screen's size (4K on a 4K screen)", "Half: half the width and height (about a quarter of the pixels)", "Quarter: a quarter each way (about a sixteenth)" }) SendMessage(_clipSize, CB_ADDSTRING, IntPtr.Zero, nm);
+            { int cd = Universe.Render.ClipWriters.Down; SendMessage(_clipSize, CB_SETCURSEL, (IntPtr)(cd == 2 ? 1 : cd == 4 ? 2 : 0), IntPtr.Zero); }
             y += row + (int)(10 * s);
             // the clips filmed so far, newest first: play one, or open their folder
             Child("STATIC", "Clips", 0, 0, x, y + (int)(6 * s), (int)(60 * s), row, _small);
@@ -132,9 +126,7 @@ namespace Universe.Platform
             Settings.Set("show-stats", SendMessage(_stats, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("invert-up-down", SendMessage(_invert, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1);
             Settings.Set("drag-speed", (int)SendMessage(_drag, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero) + 1);
-            RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour);
-            Settings.Set("clip-format", Math.Max(0, Math.Min(2, (int)SendMessage(_clipFormat, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero))));
-            { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 1 : ci == 2 ? 2 : ci == 3 ? 4 : 0); }
+            RecordTour = SendMessage(_record, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero) == (IntPtr)1; Settings.Set("film-tour", RecordTour); { int ci = (int)SendMessage(_clipSize, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero); Settings.Set("clip-down", ci == 1 ? 2 : ci == 2 ? 4 : 1); }
             Window.LandingOpen = false; Win32.DestroyWindow(_wnd); _wnd = IntPtr.Zero; SetForegroundWindow(owner);
             return _done.Value;
         }
@@ -152,7 +144,7 @@ namespace Universe.Platform
             {
                 if (System.IO.Directory.Exists(Captures))
                 {
-                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.mp4"), System.Linq.Enumerable.Concat(System.IO.Directory.GetFiles(Captures, "*.cdf97w"), System.IO.Directory.GetFiles(Captures, "*.cdf97u")))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
+                    var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.Linq.Enumerable.Where(System.IO.Directory.GetFiles(Captures, "*.cdf97w*"), Universe.Platform.ClipPlayer.Plays), System.IO.Directory.GetFiles(Captures, "*.cdf97u"))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
                 }
             }
             catch { }
@@ -176,7 +168,7 @@ namespace Universe.Platform
                 else if (id == IdGuide && _guide != null) _guide();
                 else if (id == IdPlay)
                 {
-                    // the clip chosen: an MP4 in Windows' own video player, a .cdf97w in this program's own (no other player reads it)
+                    // the clip chosen: played here (the universe made again from its seed, or the waveforms in this program's own player)
                     int i = (int)SendMessage(_clips, CB_GETCURSEL, IntPtr.Zero, IntPtr.Zero);
                     if (i >= 0 && i < _clipFiles.Length && System.IO.File.Exists(_clipFiles[i])) {
                         ulong us; string ut;

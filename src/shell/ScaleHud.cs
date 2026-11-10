@@ -265,6 +265,19 @@ namespace Universe.Shell
             c2[0] = m.M11; c2[5] = m.M22; c2[10] = m.M33; c2[12] = m.M41; c2[13] = m.M42; c2[14] = m.M43; c2[15] = m.M44; c2[18] = 1; c2[22] = 1;
             pipes.Solid.Draw(buf, arr.Length, c2, 0, 0, w, h);
         }
+        /// <summary>Lines in the tour's lower bar, from <paramref name="x"/> to the right edge: wrapped to the bar's whole width, so a
+        /// caption is a line or two along the foot of the picture, never a paragraph over the middle of it; cut short if still too tall.</summary>
+        public void DrawBarText(MeshPipes pipes, IList<string> lines, double x, int w, int h, float barFrac, float fade)
+        {
+            float px = Math.Max(1, h / 540f) * TextScale, adv = 6.6f * px;
+            int wrap = WrapAt; float top = CardTop, bottom = CardBottom;
+            try
+            {
+                WrapAt = Math.Max(38, (int)((w - x - 16 * px) / adv)); CardTop = h * (1 - barFrac) + 2; CardBottom = h - 2;
+                DrawCard(pipes, lines, x, CardTop, w, h, fade);
+            }
+            finally { WrapAt = wrap; CardTop = top; CardBottom = bottom; }
+        }
         public void DrawCard(MeshPipes pipes, IList<string> lines, double x, double y, int w, int h, float fade) { _fade = fade; try { DrawCard(pipes, lines, x, y, w, h); } finally { _fade = 1; } }
         private float _fade = 1;
         public void DrawCard(MeshPipes pipes, IList<string> lines, double x, double y, int w, int h)

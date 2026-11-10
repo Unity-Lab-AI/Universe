@@ -498,7 +498,7 @@ Still coarse: no AC terms yet, so a 4 × 4 patch is one value. Every frame is wh
 
 ### The front man compared, side by side (2026-11-08)
 
-View > Front man compared (`src/shell/FrontmanCompare.cs`). Over the universe, live, it shows three tiles:
+The encoders' sample (`src/shell/FrontmanCompare.cs`, opened on its own with `--encoders`, never part of the game). Over the universe, live, it shows the tiles:
 - the frame as drawn, taken at about 960 wide;
 - the same frame through the `.cdf97w`'s own sums (dyadic CDF 9/7, steps by subband, our coder) as a whole frame, solved back;
 - the same frame through our own H.264 writer as a whole frame, its own reconstruction: exactly what a chat app's player shows.
@@ -514,4 +514,144 @@ Each tile carries its bytes for the frame and its quality against the frame as d
 The title shows the clip's progress.
 
 **H15 step 3 built: the handover.** The installer registers `.cdf97w` to the program. Double-clicked, a clip of the universe itself plays straight away, made again from its seed. A waveform clip plays in the program's own player, then the start page opens. The start page's Play does the same.
+
+### VP9 front man, version 1: from the published specification (2026-11-08)
+
+- **Written from the specification's text,** its rules and its fixed tables (the default coefficient odds, the scans, the bands, the Pareto table, the quantiser tables), read by our own parse of the document. Every line of the writer is ours, and so is the WebM container round it.
+- **Whole frames** (one every 30): each 64 × 64 superblock is one block, split only at the frame's edges. DC prediction, 4 × 4 transforms, the coefficients in the token tree with the default odds, no loop filter.
+- **Change frames:** every block predicted from the frame before, with no motion. A block with nothing left after quantising is skipped, and the decoder copies it.
+- **Checked with Windows' own VP9 decoder** at 1920 × 1080 and 3840 × 2160. Every frame decoded, whole and change frames, at about 45 dB against our writer's reconstruction. That is the same picture; the gap is the colour conversion's rounding.
+
+| Three 4K frames (a whole one, an unchanged one, a changed one) | Bytes |
+|---|---|
+| Our VP9 | 358 KB |
+| Our H.264 | 576 KB |
+
+### AV1 front man, version 1: from the published specification (2026-11-08)
+
+- **The specification read by our own code.** The document's text was pulled with our own zlib parse. Its body font is drawn in hex codes, read through the font's own character map. Its code is drawn twice, so each table's words were checked in pairs and halved. 138 fixed tables came out whole, each count checked against its dimensions.
+- **The symbol coder is ours:** its writing side is the exact reverse of the specification's reading (section 8.2).
+- **Blocks:** the frame is padded to a multiple of 32. Each 64 × 64 superblock is four 32 × 32 blocks, each with one 32 × 32 luma transform and two 16 × 16 chroma ones. Our exact inverse transforms match the float cosine transform within rounding.
+- **Whole frames** (one every 30) are DC-predicted. **Change frames:** every block is an inter block on the last frame with no motion. A block with nothing left after quantising is skipped, and the decoder copies it.
+- **Checked with Windows' own AV1 decoder** at 1920 × 1080 and 3840 × 2160. Every frame decoded, whole and change frames, at about 44 to 45 dB against our writer's reconstruction: the same picture. Windows shows the padded rows (2176 for 2160).
+
+| Three 4K frames (a whole one, an unchanged one, a changed one) | Bytes |
+|---|---|
+| Our VP9 | 358 KB |
+| Our AV1 | 429 KB |
+| Our H.264 | 576 KB |
+
+### The player for the web and a Discord Activity (2026-11-08)
+
+- **Our own page** (`web/index.html`, `web/player.js`) plays a `.cdf97w` in a browser, or inside a Discord call as an Activity.
+- **A waveform clip** plays as its pictures. A worker thread unpacks the terms with the program's own range decoder and odds. The graphics card (WebGL 2) turns them into values, runs the inverse dyadic CDF 9/7 and converts the colour. The weights come from the clip's metadata.
+- **Checked against our C# decode** on a clip the program's own coder made from the filmed frames. Every term of all 8 frames was identical. The last frame, rebuilt in the page's pass order, was identical pixel for pixel.
+- **A clip of the universe itself** holds no pixels. The page plays its track: the camera's path, its scale, the scene and the calls. The universe itself is made again from the seed by the program.
+
+### H.264 front man, version 2: the colour's detail (2026-11-08)
+
+- **Each chroma 4 × 4** goes through the core transform. Its DC joins the plane's chroma DC set (the 2 × 2 Hadamard). Its other 15 terms are quantised and coded with CAVLC, the table picked by the counts of the chroma blocks to its left and above.
+- **The macroblock's type** carries the colour's pattern: DC only, or the detail terms too when any is left.
+- **Checked with Windows' own decoder** at 1920 × 1080 (three quality settings) and 3840 × 2160. Every frame decoded. All three colours of Windows' picture match our writer's own at about 44.4 dB: the same picture, the gap the colour conversion's rounding.
+
+| Three 4K frames | Bytes |
+|---|---|
+| Our H.264, colour DC only | 583 KB |
+| Our H.264, with the colour's detail | 638 KB |
+
+**The comparison moved out of the game (2026-11-08).** It had been an entry in the game's View menu. It is a sample for showing the encoders, so it now opens on its own with `--encoders`, like the other sample sets.
+
+### The front man wired in: a .cdf97w Media Player plays (2026-11-08)
+
+- **The .cdf97w of the universe itself is now our own WebM.** It carries our VP9 picture track, at most 1920 wide. The universe's records (the seed, the camera's track, the scene calls, the metadata) are carried inside it as an attached file, which players pass by.
+- **Media Player, and any WebM player, show the pictures.** Our program reads the attached records and flies the universe from them. Our web page plays the pictures and reads the records.
+- **The track is coded in runs of 60 frames,** each starting whole, each on a thread of its own, so several cores keep up with thirty frames a second.
+- **Checked:** 120 frames through the track, none let go. Windows read all 120 from the .cdf97w (it reads the content, so no machine-wide setting is needed). The attached clip read back byte for byte.
+
+| Measured | |
+|---|---|
+| A changing 1080p frame, one core | about 150 ms |
+| The test's pictures | about 14 KB a frame |
+| 10 minutes at 1080p, at that rate | about 250 MB |
+
+### The .cdf97w as designed: the equations feed the encoder, the encoder hands the front man to the player (2026-11-08)
+
+- **One kind of clip.** Each frame's CDF 9/7 equations are worked out on the graphics card as the frame is drawn, then solved back into pixels on the card in the same frame. Our own VP9 writer codes those pixels into the front man, the picture track any video player plays. The equations and their metadata ride inside the same file, our own WebM, as an attached file.
+- **No frame let go.** While a clip films, the game's clock moves a fixed thirty frames a second, and the game waits for the clip when the card or the coders are behind.
+- **VP9 writer, version 2:** each frame is cut into as many tile columns as VP9 allows, and each is coded on its own core. The forward transform is separable, and nothing is made anew per block.
+
+| VP9 writer | A frame |
+|---|---|
+| 1080p, version 1 | about 150 ms |
+| 1080p, version 2 | about 17 ms |
+| 4K, version 2 | about 40 ms |
+
+- **Checked:** 120 frames filmed. Inside were 120 frames of equations and 120 pictures in the front man. Windows read all 120, the last at 3966 ms.
+
+### The front man's quality (2026-11-08)
+
+Measured on a filmed 4K frame, against the frame as drawn:
+
+| VP9 quality | A whole 4K frame | Against the frame drawn | The stars |
+|---|---|---|---|
+| 120 | 213 KB | 37.7 dB | in blocks |
+| 60 | 389 KB | 40.3 dB | |
+| 30 | 436 KB | 41.3 dB | points of light, as drawn |
+| 15 | 557 KB | 41.4 dB | no better |
+
+The front man now codes at 30. It codes as fast as before, about 39 ms a 4K frame.
+
+### The .cdf97w: the front man under a cap, the universe's own equations inside (2026-11-08)
+
+- **Measured on a 12.7 s 4K clip:** the per-frame wavelet terms took 641 MB and the front man 249 MB. For ten minutes that is about 30 GB and 12 GB.
+- **The compact equations are the universe's own:** the seed, the camera's track and the scene's calls. They make every frame again exactly, in about 1 MB for ten minutes. The .cdf97w now carries those inside its front man, and no longer stores the per-frame wavelet terms.
+- **The front man is capped at 850 MB for ten minutes at 4K.** Each run of 60 frames is held to its budget, its quality coarsened when it runs over and eased back toward 30 when under.
+
+| Checked: 120 4K frames | |
+|---|---|
+| Each frame | 47 KB against the cap's 48 |
+| Ten minutes at that rate | 835 MB |
+
+### The front man's motion (2026-11-08)
+
+The clip was blocky in flight because our VP9 writer had no motion: every change frame was predicted from the same place in the frame before. Over the cap, the rate control then coarsened the quality as far as it goes. The writer now searches each block's motion and codes it as the specification does. Checked with Windows' own decoder on eight filmed 4K frames in a row: every frame is the picture our writer says.
+
+| A 4K change frame | Without motion | With motion |
+|---|---|---|
+| A flight through space, quality 120 | 74 to 99 KB, 44.8 dB | 44 to 54 KB, 45.3 dB |
+| The busiest frames, quality 120 | 837 to 858 KB | 522 to 536 KB |
+| Time to code | about 40 ms | about 105 to 170 ms |
+
+### The front man's transforms, each block's own size (2026-11-08)
+
+A 9.5-minute clip held to the cap had 35% of its frames at the coarsest quality, where red came out about 4 too high (blacks maroon). The waste was every block described in 4 x 4 pieces. Each block's transform is now its own size, 4 x 4 to 32 x 32, chosen block by block. Checked with Windows' own decoder: every frame the picture our writer says.
+
+| Filmed 4K frames | Before | Now |
+|---|---|---|
+| Space, quality 120, a whole frame | 213 KB, 44.9 dB | 178 KB, 47.0 dB |
+| Space, quality 120, a change frame | 44 to 54 KB, 45.3 dB | 24 to 30 KB, 47.0 dB |
+| Coarsest quality, red's error | 3.8 | 0.3 |
+| Coarsest quality, a whole frame | 41 KB | 24 KB |
+
+### The front man's loop filter (2026-11-08)
+
+Block edges are smoothed as the decoder smooths them, and the filtered picture is what the next frame is predicted from. The filter's level follows the quantiser: none below about 70, about 25 at quality 120, the strongest from 200 on. Checked with Windows' own decoder: every frame the picture our writer says.
+
+| Filmed 4K frames, quality 120 | Without | With |
+|---|---|---|
+| Space | 47.0 dB, change frames 28 to 30 KB | 47.7 dB, 24 to 27 KB |
+| The busiest | 39.5 dB | 40.0 dB |
+
+### The front man's motion from the equations (2026-11-08)
+
+Each frame the camera as the universe's equations have it goes with the frame into the encoder. From the camera now and the camera before, the encoder works out where every block was (the view's turn, and its zoom toward what it looks at) and only refines that, instead of searching the pixels. On filmed 4K frames turned and zoomed by known amounts, a change frame came out 8 to 20% smaller. Next: the encoder on the graphics card, so no picture comes back to the processor.
+
+### The front man coded on the graphics card (2026-11-08)
+
+The encoder is part of the program and writes the front man into the .cdf97w; every player already has the decoder. The front man is now coded on the graphics card inside each frame: the planes, the motion from the camera's equations, the blocks and transforms, the whole-number inverse and the loop filter, exactly as a player rebuilds them. Only the decisions and coefficients come back; the processor only writes them into the stream. Checked with Windows' own decoder giving back its planes: every luma sample the same as the card's.
+
+| A 4K frame | On the processor | On the card |
+|---|---|---|
+| A change frame | 250 to 300 ms | 18 to 25 ms on the card, 2 to 13 ms to write |
+| A whole frame (one in sixty) | about 280 ms | 130 to 150 ms on the card |
 

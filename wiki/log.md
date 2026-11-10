@@ -113,3 +113,23 @@ Append-only. Newest at the bottom.
 - 2026-11-08 (our own H.264 front man: change frames and detail terms): DNA-AND DESIGN 702.
 - 2026-11-08 (the front man compared, side by side): DNA-AND DESIGN 703.
 - 2026-11-08 (the universe clip played back and handed over): DNA-AND DESIGN 704.
+- 2026-11-08 (VP9 and AV1 specs may be read for our own encoders): DNA-AND DESIGN 705.
+- 2026-11-08 (our own VP9 front man from the specification, key and change frames, our WebM): DNA-AND DESIGN 706.
+- 2026-11-08 (our own AV1 front man from the specification, key and change frames, one WebM writer): DNA-AND DESIGN 707.
+- 2026-11-08 (our own .cdf97w player for the web and a Discord Activity, web/): DNA-AND DESIGN 708.
+- 2026-11-08 (our own H.264 front man's colour detail, chroma AC): DNA-AND DESIGN 709.
+- 2026-11-08 (the encoders' comparison taken out of the game; a sample on its own): DNA-AND DESIGN 710.
+- 2026-11-08 (the sample galaxies drawn over the universe; put right): DNA-AND DESIGN 711.
+- 2026-11-08 (a filmed tour is always the clip of the universe itself; no side file): DNA-AND DESIGN 712.
+- 2026-11-08 (the .cdf97w as our own WebM with a VP9 picture track for Media Player, the universe attached): DNA-AND DESIGN 713.
+- 2026-11-08 (logs kept across runs; every way out recorded): DNA-AND DESIGN 714.
+- 2026-11-08 (zooms never stuck off course; MP4 taken out): DNA-AND DESIGN 715, 716.
+- 2026-11-08 (the .cdf97w as designed: equations into our VP9 encoder, the front man for any player): DNA-AND DESIGN 717.
+- 2026-11-08 (the front man at quality 30): DNA-AND DESIGN 718.
+- 2026-11-08 (the front man under 850 MB for 10 minutes, the universe's equations inside): DNA-AND DESIGN 719.
+- 2026-11-08 (the simulation in a player: probed, not built): DNA-AND DESIGN 720.
+- 2026-11-08 (the clip size dropdown back): DNA-AND DESIGN 721.
+- 2026-11-08 (the clip held under 850 MB): DNA-AND DESIGN 722.
+- 2026-11-08 (the tour's zooms fly along the view): DNA-AND DESIGN 723.
+- 2026-11-08 (the pull-out looks down): DNA-AND DESIGN 724.
+- 2026-11-08 (clips named name.cdf97w.webm, shown as video in Discord and every player): DESIGN 725.

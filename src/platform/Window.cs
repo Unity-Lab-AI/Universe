@@ -62,9 +62,9 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdFrontman = 232, CmdClipBase = 220, CmdClipFormatBase = 225;   // clip size i (0 auto, 1 full, 2 half, 4 quarter) is CmdClipBase + i
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220;   // clip size d (1 full, 2 half, 4 quarter) is CmdClipBase + d
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
-        public static bool Recording, Touring, FrontmanOn;
+        public static bool Recording, Touring;
         /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
         public static bool GravityOn = true;
         /// <summary>The landing page is up (the game's own close button then quits from it); and its close was pressed.</summary>
@@ -102,22 +102,13 @@ namespace Universe.Platform
             Win32.AppendMenu(view, Win32.MF_STRING | (Settings.Get("show-stats", true) ? Win32.MF_CHECKED : 0), (IntPtr)CmdStats, "Show GPU and CPU stats (time a frame, cores, memory)");
             Win32.AppendMenu(view, Win32.MF_SEPARATOR, IntPtr.Zero, null);
             Win32.AppendMenu(view, Win32.MF_STRING | (Touring ? Win32.MF_CHECKED : 0), (IntPtr)CmdTour, "Panoramic tour (galaxies down to the quarks)\tT");
-            Win32.AppendMenu(view, Win32.MF_STRING | (FrontmanOn ? Win32.MF_CHECKED : 0), (IntPtr)CmdFrontman, "Front man compared (the frame, our .cdf97w and our H.264 side by side, with their sizes and quality)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdElements, "The periodic table (all 118 elements, each as it really is; Escape comes back)");
             Win32.AppendMenu(view, Win32.MF_STRING, (IntPtr)CmdShot, "Screenshot (PNG, in captures)\tF12");
-            Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (in captures, in the clip format below)\tF9");
+            Win32.AppendMenu(view, Win32.MF_STRING | (Recording ? Win32.MF_CHECKED : 0), (IntPtr)CmdRecord, "Record a clip (a .cdf97w in captures: its front man plays in any video player, its equations inside)	F9");
             {
-                // the clip's format: an MP4 (any player), or a .cdf97w (the pictures as CDF 9/7 wavelet equations; this program plays it)
-                IntPtr fmtMenu = Win32.CreatePopupMenu(); int cf = Settings.Get("clip-format", 0);
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf < 1 ? Win32.MF_CHECKED : 0), (IntPtr)CmdClipFormatBase, "MP4 (H.264 video: plays in any player)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 1 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 1), ".cdf97w (the clip as CDF 9/7 waveforms and their metadata: plays in this program)");
-                Win32.AppendMenu(fmtMenu, Win32.MF_STRING | (cf == 2 ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipFormatBase + 2), ".cdf97w of the universe itself (the seed and the camera's track, no pixels: plays here at any size)");
-                Win32.AppendMenu(view, Win32.MF_POPUP, fmtMenu, "Clip format");
-            }
-            {
-                // the clip's size against the screen: smaller clips for sharing (a quarter of the pixels is about a quarter of the file)
-                IntPtr clipMenu = Win32.CreatePopupMenu(); int cd = Settings.Get("clip-down", 0);
-                int[] downs = { 0, 1, 2, 4 }; string[] names = { "Auto (full size up to 1920 wide, half above that)", "Full (the screen's size)", "Half (half the width and height: about a quarter of the file)", "Quarter (about a sixteenth of the file)" };
+                // the clip's size against the screen: full (4K on a 4K screen), half or a quarter (a quarter of the pixels, about a quarter of the file)
+                IntPtr clipMenu = Win32.CreatePopupMenu(); int cd = Universe.Render.ClipWriters.Down;
+                int[] downs = { 1, 2, 4 }; string[] names = new[] { "Full: the screen's size (4K on a 4K screen)", "Half: half the width and height (about a quarter of the pixels)", "Quarter: a quarter each way (about a sixteenth)" };
                 for (int i = 0; i < downs.Length; i++) Win32.AppendMenu(clipMenu, Win32.MF_STRING | (cd == downs[i] ? Win32.MF_CHECKED : 0), (IntPtr)(CmdClipBase + downs[i]), names[i]);
                 Win32.AppendMenu(view, Win32.MF_POPUP, clipMenu, "Clip size");
             }
@@ -163,7 +154,9 @@ namespace Universe.Platform
         }
         public static volatile bool InSizeMove; // the game is held still on purpose: window moved or resized, or a pop-up is open
         public static volatile bool InMenu;     // a menu is open: Windows runs its own loop while it is, and the game's main loop waits (not a hang)
-        public static volatile int ModalIdleTick; // the clock's last tick inside any modal loop of Windows' (a menu, a dialog, a message box): WM_ENTERIDLE comes while one waits
+        public static volatile int ModalIdleTick;
+        /// <summary>When the last menu opened or closed (for the log of a safety exit).</summary>
+        public static volatile string LastMenuNote; // the clock's last tick inside any modal loop of Windows' (a menu, a dialog, a message box): WM_ENTERIDLE comes while one waits
 
         /// <summary><paramref name="quiet"/>: a short automatic check. It opens small in the bottom-right corner and does not
         /// take the keyboard, so it never gets in the way of the window the player is using.</summary>
@@ -242,10 +235,11 @@ namespace Universe.Platform
             if (msg == Win32.WM_COMMAND) { MenuCommand = (int)((long)wParam & 0xFFFF); return IntPtr.Zero; }
             if (msg == Win32.WM_ENTERSIZEMOVE) InSizeMove = true;
             if (msg == Win32.WM_EXITSIZEMOVE) InSizeMove = false;
-            if (msg == 0x211) { InMenu = true; ModalIdleTick = Environment.TickCount; }      // WM_ENTERMENULOOP: a menu held open is not a hang (the watchdog had shut the program down after six seconds of one)
-            if (msg == 0x212) InMenu = false;                                                 // WM_EXITMENULOOP
+            if (msg == 0x211) { InMenu = true; ModalIdleTick = Environment.TickCount; LastMenuNote = "a menu opened at " + DateTime.Now.ToString("HH:mm:ss"); Universe.Program.WriteLog("menu opened"); }      // WM_ENTERMENULOOP: a menu held open is not a hang (the watchdog had shut the program down after six seconds of one)
+            if (msg == 0x212) { InMenu = false; LastMenuNote = "the last menu closed at " + DateTime.Now.ToString("HH:mm:ss"); Universe.Program.WriteLog("menu closed"); }                                                 // WM_EXITMENULOOP
             if (msg == 0x121) ModalIdleTick = Environment.TickCount;                           // WM_ENTERIDLE: inside a menu's, a dialog's or a message box's own loop, waiting on the user
-            if (msg == 0x10 && LandingOpen) { CloseAsked = true; return IntPtr.Zero; }   // the window's own close while the landing page is up: Quit
+            if (msg == 0x10 && LandingOpen) { CloseAsked = true; return IntPtr.Zero; }
+            if (msg == 0x10) Universe.Program.WriteLog("the window was asked to close (its close button, Alt+F4, or Windows)");   // the window's own close while the landing page is up: Quit
             if (msg == Win32.WM_DESTROY)
             {
                 Win32.PostQuitMessage(0);

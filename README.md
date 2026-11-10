@@ -10,9 +10,9 @@
   <a href="https://git.unityailab.com/GFourteen/Universe/releases" title="The same release on Unity AI Lab Git"><b>Unity AI Lab Git</b></a>
 </p>
 
-> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.7 MB, from GitHub")** (0.7 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.6 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
+> **Get it in one minute.** The current release is **0.1.0**. Download **[Universe-Setup-0.1.0.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-Setup-0.1.0.exe "The installer, 0.8 MB, from GitHub")** (0.8 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.0/Universe-0.1.0-windows.zip "Universe-0.1.0-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.8 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
 
-<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.6 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
+<p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.8 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
 <p align="center">
   <a href="docs/COMPARED.md" title="Size, scope and performance against the other universe programs">Against the field</a>
@@ -32,43 +32,30 @@
 
 ![The grand tour: from the cosmic web into a galaxy, to a comet, down to a world, its ground and the face of a grain](docs/img/journey.gif "The grand tour, recorded in the game")
 
-*The grand tour, as the program records it: from the cosmic web into a galaxy, past its stars, to a comet, down to a world, its ground and the face of one grain.*
+## Watch it
 
-Pull back and galaxies are pinpoints on the **cosmic web**. Roll the wheel and one grows into an island of stars. Keep going.
+Five stretches of one filmed tour, each played as it was flown (press the player's full-screen button to watch it large).
 
-| You are | What you see |
-|---|---|
-| **Among the galaxies** | 100 billion of them, strung along filaments and walls round great empty voids |
-| **Inside a galaxy** | A hundred billion stars, made round you as you fly |
-| **At a star** | Its worlds, moons, belts and comets swinging round it |
-| **Over a world** | Seas, mountains, clouds, ice caps, volcanoes, rings |
-| **Under the sea** | Down through the water, the light dying with depth, to the bed and its silt |
-| **On the ground** | Stones, then grains, then the steps of a crystal's face |
-| **In the matter** | Atoms, their electrons, the nucleus, its protons and neutrons, and the **quarks** inside them; a star's layers from its photosphere down to its core, each its own plasma; a giant's core, a neutron star's crust, a nebula's gas |
+**Across the universe.** Out through the cosmic web, past galaxy after galaxy, closing on the first.
 
-Straight from the grand tour, as the program records it (the frame counter and the card are its own):
+https://github.com/user-attachments/assets/f5d5b96c-b4d3-4b18-ac16-2ffa0cfe0fbc
 
-<table>
-<tr>
-<td width="33%"><img src="docs/img/screens/galaxy.jpg" alt="A galaxy seen edge-on from among its stars, another beyond it" title="Among the stars of a galaxy"><br><b>Among the stars of a galaxy</b></td>
-<td width="33%"><img src="docs/img/screens/web.jpg" alt="The cosmic web: every point a galaxy, strung along filaments round the voids" title="The cosmic web"><br><b>The cosmic web</b></td>
-<td width="33%"><img src="docs/img/screens/giant.jpg" alt="A banded gas giant, seen from the asteroid belt beyond it" title="A gas giant from its belt"><br><b>A gas giant from its belt</b></td>
-</tr>
-<tr>
-<td width="33%"><img src="docs/img/screens/comet.jpg" alt="A comet near its star: its coma and tails, gas and dust boiling off" title="A comet near its star"><br><b>A comet near its star</b></td>
-<td width="33%"><img src="docs/img/screens/world.jpg" alt="A temperate world: seas, land, clouds and a thin shell of air" title="A temperate world"><br><b>A temperate world</b></td>
-<td width="33%"><img src="docs/img/screens/ground.jpg" alt="Grains of the ground, a few hundred micrometres across" title="On the ground"><br><b>On the ground</b></td>
-</tr>
-<tr>
-<td width="33%"><img src="docs/img/screens/lattice.jpg" alt="Inside a crystal: its atoms on their real lattice, 200 picometres across" title="Inside a crystal"><br><b>Inside a crystal</b></td>
-<td width="33%"><img src="docs/img/screens/nucleus.jpg" alt="A nucleus: its protons and neutrons, two femtometres across" title="A nucleus"><br><b>A nucleus</b></td>
-<td width="33%"><img src="docs/img/screens/quark.jpg" alt="Three quarks in a storm of gluons, 200 attometres across" title="The quarks"><br><b>The quarks</b></td>
-</tr>
-</table>
+**Into the black hole.** Down the galaxy's middle and into its black hole, the sky squeezed into its mouth.
 
-> **No loading screens along the way.** One camera across about 42 factors of ten, and you can turn round anywhere and fly all the way back out. Below the quark the zoom in simply goes on: there is no floor.
+https://github.com/user-attachments/assets/aaee4d09-5d91-4ba8-a19b-361733e569f4
 
----
+**Planetfall.** Down onto a world, the ground under you, then into the face of a grain.
+
+https://github.com/user-attachments/assets/b324cbfa-dfbd-4d61-96e4-c5bcff5f0a97
+
+**Into the atom.** Through an atom's electron clouds to its nucleus, a proton, and a quark.
+
+https://github.com/user-attachments/assets/c7143e5b-391d-4f35-9920-6c34a88941c3
+
+**Out across the universe.** Up off the world, out of its star system and away past the galaxies.
+
+https://github.com/user-attachments/assets/7c437893-42eb-4039-ae33-116f7edaf0ea
+
 
 ## Two things in one
 
@@ -99,10 +86,10 @@ Rename it, swap the icon, change the content, and `release.cmd` makes your insta
 
 | | |
 |---|---|
-| **Download** | 0.74 MB installer |
-| **The program** | 1.21 MB |
+| **Download** | 0.80 MB installer |
+| **The program** | 1.40 MB |
 | **Every template** | 0.30 MB of plain text |
-| **Everything installed** | 1.6 MB (2.3 MB with the uninstaller) |
+| **Everything installed** | 1.8 MB (2.6 MB with the uninstaller) |
 | **What it holds** | About 100 billion galaxies of about 100 billion stars each: some 10²² stars, every one with its own worlds, and every world down to its grains and their atoms |
 
 That's less than one photo from a phone. It fits because **nothing in it is stored. Everything is grown.**
@@ -115,7 +102,7 @@ That's less than one photo from a phone. It fits because **nothing in it is stor
 | **Only what you can see** | Galaxies are made in the regions round you, stars in the cubes round you, ground in pieces finer the closer you are, atoms round the point you dive into. What you leave behind is let go, and made again if you return |
 | **The graphics card does the work** | The fine detail, the stars' colours, the web of galaxies' light are worked out on the card for each pixel, every frame, instead of being loaded from disk |
 
-So the 1.6 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
+So the 1.8 MB is the **recipe**, not the meal: the rules of the universe, and the code that follows them.
 
 ### Against the field
 
@@ -162,7 +149,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **No art** | No pictures, no textures, no models, no sound files. Every galaxy, star, world, cloud, stone, grain and atom is worked out from its seed, every frame |
 | **No build tools** | One command, and the C# compiler that is already inside every copy of Windows. That is the whole toolchain |
 | **Our own formats** | The content format, the wavelet engine, the icon drawer, the installer, the document viewer, the PNG and GIF writers: ours |
-| **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, Media Foundation to pack a clip as MP4, the framework's Deflate inside a PNG. Nothing from anywhere else |
+| **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, the framework's Deflate inside a PNG and the universe clip's records. Nothing from anywhere else |
 
 About 21,800 lines of C# and shader code in 65 files, and about 11,400 lines of templates in 30. That is the whole thing.
 
@@ -213,7 +200,9 @@ Every law's numbers are in `content/physics.unt`. **Change them, and you change 
 | **H** | The scale bar and info cards, on or off (picking something brings them back) |
 | **B** | Among atoms: glide across the bond to the next one |
 | **T · R** | The grand tour: start or carry on · start again |
-| **F12 · F9** | A screenshot · start or stop a clip (Clip format on the landing page or under View: MP4; .cdf97w, the clip as CDF 9/7 waveforms and their metadata, worked out on the graphics card as each frame is drawn; or the .cdf97w of the universe itself, no pixels: the seed and the camera's track, a few hundred KB for ten minutes, drawn again at any size (Play on the start page, or a double-click in Explorer, makes the universe again from its seed and flies the clip through it); a filmed tour also leaves a .cdf97u, its seed and tour in a few lines, that Play flies again through the same universe; Clip size there too: auto, full, half or quarter of the screen; in a smaller clip the text is drawn larger, so it reads) |
+| **F12 · F9** | A screenshot · start or stop a clip: a `.cdf97w.webm` whose front man plays in any video player (Clip size: Full, 4K on a 4K screen, or Half or Quarter; under 850 MB for ten minutes at 4K), with the universe's own equations inside (the seed, the camera's track, the scene), flown again here |
+
+A `.cdf97w.webm` clip also plays in a web browser, or in a Discord call as an Activity, through the player page in `web/`: its front man as video.
 
 The **Time** menu has **Always day**, on to start with; turn it off for true day and night. It also has **Gravity**: turn it off and every body goes straight on at its speed, every star is blown apart by its own pressure, and a galaxy's stars fly off on their tangents. **View** has drag speed, FPS with the GPU and CPU stats, render scale, GPU use, the clip's size, and **the periodic table**: all 118 elements, each shown as it really is at a temperature and pressure you set (the arrow keys), a click on any for its details; Escape brings you back to where you were. **Help** has every guide, and **Help > Documents** lists them all, what each is made of and when to read it.
 
@@ -231,7 +220,7 @@ A film of the scale of things, from the cosmic web down to a quark and all the w
 | **A supernova** | On the way out it finds a supernova going in the galaxies round you (else the youngest remnant): the fireball or the shell, and what was born at its middle |
 | **A world, down to its quarks** | A world's seas, land and air from orbit, down to the ground, a grain of it, the crystal's lattice, one atom, its electrons, its nucleus and a quark, and back out; a star's system with an asteroid of its belt and a comet seen close on the way; about a quarter of an hour in all |
 | **Pause any time** | A click, the wheel or a key; a note says why. **T** carries on, **R** starts again |
-| **Film it** | Tick **Film the tour** on the landing page; the **Clips** list plays them back |
+| **Film it** | Tick **Film the tour** on the landing page: the clip is a `.cdf97w.webm` whose front man plays in any video player, the universe's equations inside; the **Clips** list flies it again here |
 | **Write your own** | A tour is a plain-text list of camera moves (`content/tours/grand-tour.unt`) |
 
 ---

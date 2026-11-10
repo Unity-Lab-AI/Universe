@@ -364,7 +364,7 @@ namespace Universe.Shell
             bool molten = mglow > 0.5;                                                    // glowing molten ground: the matter there is melt
             // under the sea the matter is the sea bed (the ocean mix: silt, sand, the sea floor's minerals), with the water above it
 
-            _matter.TempK = molten ? 1400 : _ground.Traits.BaseK;                        // (the ground's temperature: its kind's, content/terrain.unt base-k; molten rock about 1,100 to 1,200 C)
+            { double gk = GroundHereK(); _matter.TempK = molten ? 1400 : gk > 0 ? gk : _ground.Traits.BaseK; }   // (the ground's temperature here: its star, its orbit, its air's greenhouse and its latitude, UniverseView.Climate.cs)                        // (the ground's temperature: its kind's, content/terrain.unt base-k; molten rock about 1,100 to 1,200 C)
             _matter.Set(molten ? "melt" : sea ? "ocean" : OwnMix(_ground.MixId ?? _ground.Kind, DepthLayers() != null && DepthLayers().Count > 0 ? DepthLayers()[0].Id : "crust"), false, ice && !sea, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
             // the planet's own grains, on the land's slope here: the same ones its ground is the top of
             {

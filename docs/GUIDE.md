@@ -378,6 +378,9 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 | How bright each planet, moon and star is from where you are | their apparent magnitude in `UniverseView.Draw` (`src/shell/UniverseView.Draw.cs`) |
 | Gravity as a live force, and gravity off | `src/gen/SystemGravity.cs`, `src/shell/UniverseView.Gravity.cs` |
 | Novae, kilonovae and supernovae | `content/physics.unt` `@supernova` (a kind with `rate-a-year` has its own rate, `remnant-mass-sol` what it leaves, `leaves: white-dwarf` for a nova), `src/shell/UniverseView.Supernovae.cs` |
+| A world's temperatures, air by height, seas, tides and currents | `src/gen/Climate.cs`, `src/shell/UniverseView.Climate.cs` |
+| Rivers and lakes | `src/gen/Drainage.cs` (a world's rain run downhill, made once for the world) |
+| The inside of the world you are at, at work | `src/sim/PlanetCore.cs`, `src/sim/PlanetPlates.cs`, run by `UniverseView.WorldInside` |
 | Where you are, from the universe down | the one tree: `src/core/Thing.cs`, `UniverseView.Here` (`src/shell/UniverseView.Tree.cs`), `MatterView.Below` (`src/shell/MatterView.Tree.cs`) |
 
 **The rules that keep it a toolkit:**

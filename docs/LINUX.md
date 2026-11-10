@@ -25,7 +25,7 @@
 3. Download the **zip** (not the installer) from the releases page, unpack it anywhere, and run the script inside it:
 
 ```
-unzip Universe-0.1.0-windows.zip -d universe
+unzip Universe-0.1.1-windows.zip -d universe
 cd universe
 chmod +x run-on-linux.sh
 ./run-on-linux.sh

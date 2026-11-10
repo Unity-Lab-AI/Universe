@@ -14,6 +14,10 @@
 # cloud-shift: more cloud (+) or less (-). day-hours: how long its day is. tides: how strong its tides are (Earth 0.5).
 # Giants: bands (how many belts across), band-dark and band-light (belts and zones), great-storm (one great red storm, 1)
 #   or storm-colour (its storms, e.g. Neptune's dark ones). river-colour: rivers, or dry river beds.
+# air-bar: its air's pressure at the ground, in bar (Earth 1.013, Mars 0.006, Venus 92); none for a world with no air.
+# optical-depth: how thick its air is to the heat its ground gives off (infrared): its greenhouse, the ground at T_e (1 + 0.75 tau)^(1/4)
+#   (a grey atmosphere, Eddington's approximation; Earth 0.83: 255 K to 288 K; Mars 0.06; Venus about 140, 230 K to about 740 K);
+#   a world with no air none.
 # albedo: how much of its star's light it sends back toward the star (its geometric albedo; Earth 0.37, the Moon 0.12, Mars 0.17,
 #   Jupiter 0.54, Uranus and Neptune about 0.47, Europa 0.67, hot Jupiters under 0.1, dark asteroids 0.05 to 0.25): with its size,
 #   its distance from its star and from you and its phase, how bright it shows.
@@ -59,6 +63,8 @@ band-light: 0.96 0.88 0.78
 day-hours: 10..40
 
 @terrain temperate
+air-bar: 1.013
+optical-depth: 0.83
 albedo: 0.37
 name: A temperate world
 water: yes
@@ -86,6 +92,8 @@ moon-weight: 0.3
 density-g-cc: 5.5
 
 @terrain ocean
+air-bar: 1.013
+optical-depth: 0.83
 albedo: 0.3
 name: An ocean world
 radius-km: 7400
@@ -116,6 +124,8 @@ moon-weight: 0.4
 density-g-cc: 4.8
 
 @terrain desert
+air-bar: 0.006
+optical-depth: 0.06
 albedo: 0.25
 name: A desert world
 radius-km: 5100
@@ -187,6 +197,8 @@ moon-weight: 0.6
 density-g-cc: 6.0
 
 @terrain snowball
+air-bar: 1.0
+optical-depth: 0.83
 albedo: 0.7
 name: A snowball world
 radius-km: 5900
@@ -220,6 +232,8 @@ moon-weight: 1
 density-g-cc: 4.6
 
 @terrain tidally-locked
+air-bar: 1.0
+optical-depth: 0.83
 albedo: 0.3
 # (a look for samples only: any world close enough to its star is locked by its orbit, physics.unt tidal-lock)
 name: A tidally locked world

@@ -14,6 +14,9 @@
 # cloud-shift: more cloud (+) or less (-). day-hours: how long its day is. tides: how strong its tides are (Earth 0.5).
 # Giants: bands (how many belts across), band-dark and band-light (belts and zones), great-storm (one great red storm, 1)
 #   or storm-colour (its storms, e.g. Neptune's dark ones). river-colour: rivers, or dry river beds.
+# albedo: how much of its star's light it sends back toward the star (its geometric albedo; Earth 0.37, the Moon 0.12, Mars 0.17,
+#   Jupiter 0.54, Uranus and Neptune about 0.47, Europa 0.67, hot Jupiters under 0.1, dark asteroids 0.05 to 0.25): with its size,
+#   its distance from its star and from you and its phase, how bright it shows.
 # rock-colour: steep bare rock. base-k: its temperature from its star alone, before any greenhouse (Earth 255 K).
 # Templates: every number may be a range (a..b) and every colour a range (r g b .. r g b); each world of a kind takes its
 #   own value in each range from its seed, so no two worlds of a kind are the same, and a seed always gives the same world.
@@ -37,6 +40,7 @@
 # Spec: docs/CONTENT-FORMAT.md · content/planets.unt
 
 @terrain default
+albedo: 0.3
 name: An Earth-like world
 radius-km: 6371
 solid: yes
@@ -55,6 +59,7 @@ band-light: 0.96 0.88 0.78
 day-hours: 10..40
 
 @terrain temperate
+albedo: 0.37
 name: A temperate world
 water: yes
 tropical-soil: yes
@@ -81,6 +86,7 @@ moon-weight: 0.3
 density-g-cc: 5.5
 
 @terrain ocean
+albedo: 0.3
 name: An ocean world
 radius-km: 7400
 water: yes
@@ -110,6 +116,7 @@ moon-weight: 0.4
 density-g-cc: 4.8
 
 @terrain desert
+albedo: 0.25
 name: A desert world
 radius-km: 5100
 cloud-km: 6
@@ -144,6 +151,7 @@ moon-weight: 1.5
 density-g-cc: 5.3
 
 @terrain lava
+albedo: 0.1
 name: A lava world
 radius-km: 4300
 cloud-km: 12
@@ -179,6 +187,7 @@ moon-weight: 0.6
 density-g-cc: 6.0
 
 @terrain snowball
+albedo: 0.7
 name: A snowball world
 radius-km: 5900
 cloud-km: 5
@@ -211,6 +220,7 @@ moon-weight: 1
 density-g-cc: 4.6
 
 @terrain tidally-locked
+albedo: 0.3
 # (a look for samples only: any world close enough to its star is locked by its orbit, physics.unt tidal-lock)
 name: A tidally locked world
 radius-km: 6700
@@ -226,6 +236,7 @@ river-colour: 0.46 0.4 0.35
 density-g-cc: 5.4
 
 @terrain gas-giant
+albedo: 0.54
 name: A gas giant
 radius-km: 69911
 solid: no
@@ -256,6 +267,7 @@ rings-colour: 0.9 0.84 0.72
 density-g-cc: 1.33
 
 @terrain ice-giant
+albedo: 0.47
 name: An ice giant
 radius-km: 24622
 solid: no
@@ -287,6 +299,7 @@ rings-colour: 0.55 0.58 0.62
 density-g-cc: 1.64
 
 @terrain hot-jupiter
+albedo: 0.1
 name: A hot Jupiter
 radius-km: 95000
 solid: no
@@ -318,6 +331,7 @@ name: A Dyson shell's inner land
 clouds: no
 
 @terrain moon
+albedo: 0.12
 name: A rocky moon
 label: Moon
 forms: moon
@@ -342,6 +356,7 @@ makeup: rock and dust, iron-poor; no air; craters from strikes
 density-g-cc: 3.3
 
 @terrain icy-moon
+albedo: 0.67
 name: An icy moon
 label: Icy moon
 forms: moon
@@ -368,6 +383,7 @@ density-g-cc: 1.9
 # a small body (an asteroid, a comet's nucleus, a Kuiper body): a world like any, made by the same ground system, with its radius from
 # the body and its grains from the body's own mix; its relief a share of its radius (lumps and craters), no air, no seas, no life
 @terrain asteroid
+albedo: 0.15
 name: A small body
 radius-km: 10
 solid: yes

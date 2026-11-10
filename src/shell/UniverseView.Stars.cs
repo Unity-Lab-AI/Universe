@@ -334,6 +334,9 @@ namespace Universe.Shell
         {
             double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z);
             double e, n;
+            _matter.TempK = 0;                                                             // (set below where the place's temperature is known)
+            _matter.Enclosed = _depthKm > 0 && _ground.Solid && DepthLayer() != null;   // (below the ground: inside the rock, its crystal round you every way)
+            if (_matter.Enclosed && SetDepthMatter(x / r, y / r, z / r)) return;   // below the ground: the layer you are in (UniverseView.Depth.cs)
             if (_matterSpot != ulong.MaxValue && _matterPlanet == _planet) { MatterOffset(out e, out n); if (e * e + n * n < 5e-4 * 5e-4) { _matter.Follow(e, n); return; } }   // within half a metre: the same grains, passing by
             if (!_ground.Solid)
             {
@@ -354,7 +357,9 @@ namespace Universe.Shell
             float mr0, mg0, mb0, mglow; _ground.Height(x / r, y / r, z / r, 30, out mr0, out mg0, out mb0, out mglow);
             bool molten = mglow > 0.5;                                                    // glowing molten ground: the matter there is melt
             // under the sea the matter is the sea bed (the ocean mix: silt, sand, the sea floor's minerals), with the water above it
-            _matter.Set(molten ? "melt" : sea ? "ocean" : _ground.MixId ?? _ground.Kind, false, ice && !sea, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
+
+            _matter.TempK = molten ? 1400 : _ground.Traits.BaseK;                        // (the ground's temperature: its kind's, content/terrain.unt base-k; molten rock about 1,100 to 1,200 C)
+            _matter.Set(molten ? "melt" : sea ? "ocean" : OwnMix(_ground.MixId ?? _ground.Kind, DepthLayers() != null && DepthLayers().Count > 0 ? DepthLayers()[0].Id : "crust"), false, ice && !sea, sea ? 0.2f : 0.58f, sea ? 0.4f : 0.5f, sea ? 0.6f : 0.4f, spot);
             // the planet's own grains, on the land's slope here: the same ones its ground is the top of
             {
                 double ux = x / r, uy = y / r, uz = z / r, ex, ey, ez, nx, ny, nz; GrainField.Axes(ux, uy, uz, out ex, out ey, out ez, out nx, out ny, out nz);

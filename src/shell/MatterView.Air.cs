@@ -81,7 +81,7 @@ namespace Universe.Shell
             }
             if (total <= 0) { parts.Add(new SpaceGen.Part("hydrogen", "H", 1, 1, 1, 1)); total = 1; }
             foreach (var q in parts) q.Share /= total;
-            SetSpace(11, spot, 0, parts.ToArray()); _plasma = true; _plasmaWhere = where; _plasmaTempK = tempK;
+            SetSpace(11, spot, 0, parts.ToArray()); _plasma = true; _plasmaWhere = where; _plasmaTempK = tempK; if (tempK > 0) TempK = tempK;
             double perCc = _plasmaPerCc;
             if (densityGcc > 0) { double meanA = 0; foreach (var q in parts) { var el = El(q.El); meanA += q.Share * (el != null ? el.A : 1); } perCc = densityGcc * 6.022e23 / Math.Max(1, meanA); }   // nuclei a cubic centimetre, from the density and the mean mass of them
             _gasSpacing = 1e-5 / Math.Pow(perCc, 1 / 3.0);
@@ -245,6 +245,8 @@ namespace Universe.Shell
                 double cov, rad; if (!double.TryParse(e.Get("covalent-a", ""), fs, ci, out cov)) cov = 1.5;
                 if (!double.TryParse(e.Get("atomic-a", ""), fs, ci, out rad)) rad = cov;
                 _elements[sym] = new Element { Symbol = sym, Name = e.Name, Z = z, A = a, R = cr, G = cg, B = cb, Radius = rad * 1e-13, Cov = cov * 1e-13, Chi = TryD(e.Get("electronegativity", "0"), 0), Shells = Shells(z), HalfLifeS = HalfLifeSeconds(e.Get("half-life", "")), Decays = e.Get("decays", ""), MadeIn = e.Get("made-in", "") };
+                { double ia; int ic; if (double.TryParse(e.Get("ionic-a", ""), fs, ci, out ia) && int.TryParse(e.Get("ion-charge", "0").Replace("+", ""), out ic)) { _elements[sym].Ionic = ia * 1e-13; _elements[sym].Charge = ic; } }   // (its common ion: content/elements.unt, Shannon 1976)
+                { double ev; if (double.TryParse(e.Get("ionise-ev", ""), fs, ci, out ev)) _elements[sym].IonEv = ev; }   // (its first ionisation energy, NIST)
                 _byZ[z] = _elements[sym];
             }
             foreach (var e in content.OfKind("minerals.unt", "mineral"))
@@ -382,6 +384,36 @@ namespace Universe.Shell
             // its nucleus: a clear sharp point of light in its element's own colour, so the crystal's pattern reads at a glance
             // (each kind of atom in its own place); its true size once close enough to show it
             Add(glow, x, y, z, Math.Max(NucleusRadius(e), s * 0.003), (0.5f + 0.5f * e.R) * f, (0.5f + 0.5f * e.G) * f, (0.5f + 0.5f * e.B) * f, s);
+        }
+        // the one atom model at every size (Universe DESIGN 740): an atom as its electron density, one record the card spreads into
+        // its electrons' cloud (Pipeline.cs, code 7: r^2 e^(-2r/a) out past its radius, so neighbours' outer electrons overlap into the
+        // solid's sea of them), its light kept by its size on screen; its nucleus a mark once the atom is big enough to hold one
+        // how far an atom's electrons reach in this mineral: its own size where it shares them, its ion's where it gives or takes them
+        // (an ionic bond), in proportion to its ionic character against its most different neighbour (Pauling: 1 - e^(-dchi^2 / 4));
+        // a cation only shrinks and an anion only swells as their listed charge says (content/elements.unt ion-charge, ionic-a)
+        private readonly Dictionary<Mineral, Dictionary<Element, double>> _reach = new Dictionary<Mineral, Dictionary<Element, double>>(); private readonly Dictionary<Element, double> _reachNone = new Dictionary<Element, double>();
+        private double IonicCharacter(Mineral m, Element e, out Element partner)
+        {
+            partner = null; if (m == null || m.Atoms == null) return 0; double best = 0;
+            foreach (var sym in m.Atoms) { var o = El(sym); if (o == null || o == e || o.Chi <= 0 || e.Chi <= 0) continue; double d = Math.Abs(o.Chi - e.Chi); if (d > best) { best = d; partner = o; } }
+            return 1 - Math.Exp(-best * best / 4);
+        }
+        private double Reach(Mineral m, Element e)
+        {
+            Dictionary<Element, double> d; if (m == null) d = _reachNone; else if (!_reach.TryGetValue(m, out d)) { d = new Dictionary<Element, double>(); _reach[m] = d; }
+            double r; if (d.TryGetValue(e, out r)) return r;
+            r = AtomRadius(e); Element p; double ic = IonicCharacter(m, e, out p);
+            if (p != null && e.Ionic > 0 && e.Charge != 0 && ((e.Charge > 0) == (e.Chi < p.Chi))) r += (e.Ionic - r) * ic;   // (giving: smaller; taking: bigger)
+            d[e] = r; return r;
+        }
+        private void Density(List<StarVertex> glow, Mineral m, Element e, double x, double y, double z, double s, float f)
+        {
+            if (e == null || f <= 0.01) return;
+            double ar = Reach(m, e), vx = (x - _fx) / s + _ex, vy = (y + _yOff - _fy) / s + _ey, vz = (z - _fz) / s + _ez;
+            if (Math.Abs(vx - _ex) > 60 || Math.Abs(vz - _ez) > 60) return;
+            float b = 0.5f * f;
+            _orbRecs.Add(new StarVertex { X = (float)vx, Y = (float)vy, Z = (float)vz, Size = (float)(ar * 1.25 / s), R = (0.35f + 0.65f * e.R) * b, G = (0.35f + 0.65f * e.G) * b, B = (0.35f + 0.65f * e.B) * b, A = (7 * 8 + 0.25f) / 64f });
+            if (ar / s * _viewH > 40) Add(glow, x, y, z, Math.Max(NucleusRadius(e), s * 0.0014), (0.5f + 0.5f * e.R) * f, (0.5f + 0.5f * e.G) * f, (0.5f + 0.5f * e.B) * f, s);   // (its nucleus, a point at its middle, once the atom is a few dozen pixels across)
         }
         private void Orbitals(List<StarVertex> glow, Element e, double x, double y, double z, double s, double time, long key, float f)
         {

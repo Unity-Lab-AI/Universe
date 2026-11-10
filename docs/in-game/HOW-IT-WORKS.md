@@ -91,7 +91,7 @@ Anything that would take the whole universe to work out is worked out only where
 - **Stars born and ageing:** every star round you its own mass and age, through its main sequence, giant and remnant; a nebula's stars switching on as they are born; flares on the star of the system you are at.
 - **Seas:** upwelling and the deep water forming, the tide raised in shallows and narrowing bays, each world's own salt from its land, the western boundary currents and the upwellings drawn on the water.
 - **Air:** a clear air's sky from its pressure (a thin air darker, a thick one whiter), a dusty air's from its dust.
-- **Plates:** the world's ground carried by its plates as they move, raised where they crash and sunk where they spread.
+- **Plates:** the world's ground carried by its plates, raised where they crash and sunk where they spread, remade when the move shows from your height and time has slowed.
 - **Space stretching:** the far galaxies and the cosmic web drawn at their true distances now.
 - **Gravity back on:** the stars round you swing back about their paths, swollen stars fall back in on themselves, a black hole's gas and stars fall back onto new orbits round it.
 
@@ -103,7 +103,7 @@ Every rocky world runs on its own clock:
 - The magnetic field flips, and the air and climate follow real chemistry.
 - Ice ages come with the orbit's wobbles, mountains wear down, and rocks from space strike.
 
-Its ground is remade at big moments and as its plates and ice move, never piece by piece in front of you.
+Its ground is remade only when a change is big enough to see from where you are and time runs slower than a thousand years a second; while time runs faster the ground holds still and the card says how far its plates have moved.
 
 ### Under the sea
 

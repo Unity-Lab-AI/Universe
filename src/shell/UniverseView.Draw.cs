@@ -237,6 +237,9 @@ namespace Universe.Shell
                 near.Add(new KeyValuePair<double, int>(d / R, q)); at[q] = new[] { dx, dy, dz, R, d };
             }
             if (near.Count == 0) return;
+            // render by scale: the 256 biggest on screen (nearest for their size) and no more; the rest are a few pixels each, their light
+            // carried by the galaxy's own points, and asking for them all had remade hundreds of clouds every frame past the 512 kept
+            if (near.Count > 256) { near.Sort((a1, b1) => a1.Key.CompareTo(b1.Key)); near.RemoveRange(256, near.Count - 256); }
             foreach (var kvn in near)
             {
                 int q = kvn.Value; var fq = _features[q]; int fk = (int)fq[4]; var v = at[q]; double dx = v[0], dy = v[1], dz = v[2], R = v[3];

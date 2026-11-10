@@ -249,7 +249,7 @@ Universe runs on the real laws of physics, and their numbers are templates too. 
 
 | Force | What it does in Universe | Its numbers |
 |---|---|---|
-| **Gravity** | Every orbit follows **Kepler's third law** (a year squared is the orbit in AU cubed over the star's mass), and each body's speed everywhere follows from its orbit (vis-viva). Every info card for a massive body gives its **pull** where you are (Newton: falling with the distance squared) and the **escape speed**. A black hole's **event horizon** is 2GM/c² (Schwarzschild: about 2.95 km per solar mass), and the light of stars behind it bends into an **Einstein ring**. **Relativity** turns every orbit's closest point round its star (6πGM/c²a(1−e²) an orbit: Mercury's 43 arcseconds a century, whole turns near a black hole) and slows clocks in a gravity well; the cards say by how much | `@law gravity`: `gm-sol-m3-s2` (G times one solar mass: the pull of a star of one solar mass), `earth-g-m-s2` |
+| **Gravity** | A **live force** in the open star system (`src/gen/SystemGravity.cs`): the star and every planet and moon pull on each other (Newton), stepped with a symplectic leapfrog, started from their **Kepler** orbits (each planet's pull from its own moons' orbits); far systems and the small bodies keep Kepler's law, each body's speed from its orbit (vis-viva). Disc galaxies turn at their rim speed (the flat rotation curve), and space stretches by the scale factor of a universe of matter and dark energy (`@law cosmos`). Every info card for a massive body gives its mass, pull and escape speed |
 | **Electromagnetism** | Each atom's **electrons** fill their shells and orbitals in their real order (1s 2s 2p 3s ...). **Bonds** are shared electrons. A star's **colour** comes from its temperature the way a glowing body's does (Planck's law). Inside the nucleus, the **protons push each other apart** | `@law coulomb`: `k-mev-fm` (the push between two protons), `@law light`: `speed-m-s` |
 | **Strong nuclear force** | **Packs the nucleus**: protons and neutrons pull together just beyond a hard core where they push apart, and feel nothing past a few femtometres. It glues the **quarks** in every proton and neutron. A nucleus's **binding energy** comes from the strong pull against the electric push | `@law nuclear-force`: `core-fm`, `spacing-fm`, `range-fm`; `@law mass-formula`: the five terms of the Bethe–Weizsäcker formula |
 | **Weak nuclear force** | Decides **which nuclei are stable** and how the rest decay: too many neutrons and one turns into a proton (beta-minus), too many protons and one turns into a neutron (beta-plus). Past lead, the biggest nuclei throw out alpha particles. Every nucleus's card says which | `@law beta-stability`: `c` (the valley of stability), `alpha-above-z` |
@@ -280,7 +280,7 @@ range-fm: 2.6
 
 Make the strong force reach further and nuclei pack differently. Change gravity's pull and every escape speed, pull and black-hole horizon follows. These are the same numbers physics textbooks use; changing them is how you build a universe where the laws are different.
 
-> **Still to come:** gravity shaping orbits moment by moment (today orbits follow Kepler's law exactly), and the fields particles are waves in.
+> **Still to come:** gravity as a live force beyond the open system (the small bodies, other systems), and the fields particles are waves in.
 
 ---
 
@@ -376,6 +376,8 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 | Down through a world's layers (Page Down, Page Up) | `src/shell/UniverseView.Depth.cs` |
 | A black hole's swarm, disc, jets and torn star, clickable | `src/shell/UniverseView.Swarm.cs` |
 | How bright each planet, moon and star is from where you are | their apparent magnitude in `UniverseView.Draw` (`src/shell/UniverseView.Draw.cs`) |
+| Gravity as a live force, and gravity off | `src/gen/SystemGravity.cs`, `src/shell/UniverseView.Gravity.cs` |
+| Novae, kilonovae and supernovae | `content/physics.unt` `@supernova` (a kind with `rate-a-year` has its own rate, `remnant-mass-sol` what it leaves, `leaves: white-dwarf` for a nova), `src/shell/UniverseView.Supernovae.cs` |
 | Where you are, from the universe down | the one tree: `src/core/Thing.cs`, `UniverseView.Here` (`src/shell/UniverseView.Tree.cs`), `MatterView.Below` (`src/shell/MatterView.Tree.cs`) |
 
 **The rules that keep it a toolkit:**

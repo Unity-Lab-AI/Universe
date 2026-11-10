@@ -144,8 +144,14 @@ namespace Universe.Shell
         private void StarPos(int k, out double x, out double y, out double z)
         {
             if (k >= 2000000) { var cs = _cstars[k - 2000000]; x = cs[0]; y = cs[1]; z = cs[2]; return; }   // a cluster's star: already in universe units
-            if (k >= 1000000) { var sl = _localList[k - 1000000]; ToUniverse(_galaxies[_near], sl.X + _localOX, sl.Y + _localOY, sl.Z + _localOZ, out x, out y, out z); return; }   // (a real star: its offset from the list's origin)
-            var s = _nearLocal[k]; ToUniverse(_galaxies[_near], s.X, s.Y, s.Z, out x, out y, out z);
+            if (k >= 1000000) { var sl = _localList[k - 1000000]; double ddx, ddy, ddz; LocalDrift(k - 1000000, out ddx, out ddy, out ddz); ToUniverse(_galaxies[_near], sl.X + ddx + _localOX, sl.Y + ddy + _localOY, sl.Z + ddz + _localOZ, out x, out y, out z); return; }   // (gravity off: flown on from its place)   // (a real star: its offset from the list's origin)
+            var s = _nearLocal[k]; double gx = s.X, gz = s.Z;
+            {
+                // turned as the card turns it (a disc galaxy's stars round its middle, less your own turn: Pipeline.cs up.w)
+                var gg = _galaxies[_near]; float cr; float d = GalaxyTurn(gg, Placement(gg), out cr);
+                if (d != 0) { double rr = Math.Max(1e-4, Math.Sqrt(gx * gx + gz * gz)), an = d / rr - (cr > 0 ? d / cr : 0), ca = Math.Cos(an), sa = Math.Sin(an); double nx = gx * ca - gz * sa, nz = gx * sa + gz * ca; gx = nx; gz = nz; }
+            }
+            ToUniverse(_galaxies[_near], gx, s.Y, gz, out x, out y, out z);
         }
         // a cluster star's kind: in a globular, red giants, orange K and yellow G stars; in an open cluster, blue-white B and white A stars
         private int ClusterKind(double[] cs)

@@ -24,7 +24,7 @@
 | Control | What it does |
 |---|---|
 | **Space** | Pause time, or carry on |
-| **,** and **.** | Slower and faster, from real time to ten years a second (it starts at a minute a second) |
+| **,** and **.** | Slower and faster, from real time to a billion years a second (it starts at a minute a second) |
 | **Time menu** | The same speeds, **Always day** (on to start with) to keep every world in daylight; turn it off for true day and night; and **Gravity**: turn it off and every body goes straight on at its speed, every star is blown apart, a galaxy's stars fly off |
 
 Every world turns on its own day, so you can sit on the ground and watch its star rise and set.

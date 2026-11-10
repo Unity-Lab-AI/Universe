@@ -265,18 +265,18 @@ namespace Universe.Shell
                 // growing and going with its ice ages)
                 double want = Climate.IceLineSin(WorldMeanK(_planet));
                 if (!ReferenceEquals(_iceFor, _ground)) { _iceFor = _ground; if (Math.Abs(_ground.IceSin - want) > 1e-3) { _ground.IceSin = want; System.Threading.Interlocked.Increment(ref _ground.Generation); } }
-                else if (Math.Abs(_ground.IceSin - want) > 0.02 && _lastDrawTime - _iceAt > 5) { _ground.IceSin = want; _iceAt = _lastDrawTime; System.Threading.Interlocked.Increment(ref _ground.Generation); }   // (at most every five seconds watched: at the fastest times the ice comes and goes faster than the ground can be remade)
+                else if (Math.Abs(_ground.IceSin - want) > 1e-3 && GroundMayChange(_ground.Radius * Math.Abs(Math.Asin(Math.Min(1, want)) - Math.Asin(Math.Min(1, _ground.IceSin))), _iceAt)) { _ground.IceSin = want; _iceAt = _lastDrawTime; System.Threading.Interlocked.Increment(ref _ground.Generation); }   // (its line moved enough to see from where you are, with time slower than a thousand years a second: at the fastest times the ice comes and goes faster than the ground can be remade)
             }
             _wPlates.Advance(_wCore, (x, y, z, share) => { });
             if (_wCore.Plates)
             {
                 // the plates drawn on its ground and the ground moved with them (src/sim/PlanetPlates.cs Back, as on Universe's worlds): each
                 // point's rock found where its plate has carried it from, the edges raised where plates crash, sunk where they spread, in their
-                // rock's colours; the ground remade when they have moved a million years more (10 to 100 km, seen from above), at most every
-                // five seconds watched
+                // rock's colours; the ground remade when they have moved far enough to see from where you are (Earth's plates about 5 cm a year
+                // on average) and time runs slower than a thousand years a second; the card says how far they have moved since
                 double moved = Math.Max(0, _simYears);
                 if (!ReferenceEquals(_driftFor, _ground)) { _driftFor = _ground; _wPlates.MovedYears = moved; _ground.Drift = _wPlates.Back; System.Threading.Interlocked.Increment(ref _ground.Generation); _driftAt = _lastDrawTime; }
-                else if (Math.Abs(moved - _wPlates.MovedYears) >= 1e6 && _lastDrawTime - _driftAt > 5) { _wPlates.MovedYears = moved; _driftAt = _lastDrawTime; System.Threading.Interlocked.Increment(ref _ground.Generation); }
+                else if (GroundMayChange(Math.Abs(moved - _wPlates.MovedYears) * 5e-5, _driftAt)) { _wPlates.MovedYears = moved; _driftAt = _lastDrawTime; System.Threading.Interlocked.Increment(ref _ground.Generation); }
             }
             {
                 // the strikes on it with time (src/sim/PlanetImpacts.cs, as on Universe's worlds, no life here to harm), each great one's crater
@@ -284,16 +284,31 @@ namespace Universe.Shell
                 if (_wImpacts == null) _wImpacts = new Universe.Sim.PlanetImpacts((ulong)(WorldSeed(_planet) ^ 0x9933UL));
                 _wImpacts.Advance(_wCore, null);
                 int big = 0; foreach (var c in _wImpacts.Craters) if (c[3] >= 8) big++;
-                if (big != _wCraters && _lastDrawTime - _iceAt > 5)
+                if (big != _wCraters && GroundMayChange(8, _iceAt))
                 {
                     _wCraters = big; _iceAt = _lastDrawTime; var nc = new List<double[]>(); foreach (var c in _wImpacts.Craters) if (c[3] >= 8) nc.Add(c);
                     _ground.Craters = nc; _ground.BakeChanges(); System.Threading.Interlocked.Increment(ref _ground.Generation);
                 }
             }
         }
+        // when the world's ground may be remade for a change (its ice, its plates, its craters): only when time runs slower than a thousand
+        // years a second (faster, the ground holds still and the card says what has changed), and only when the change is big enough to see
+        // from where you are (at least three pixels at your height); never more than every five seconds watched
+        private bool GroundMayChange(double changeKm, double lastAt)
+        {
+            if (TimeSpeeds[TimeStep] > 1000 || _lastDrawTime - lastAt <= 5) return false;
+            double altKm = Math.Max(0.005, AboveGround() / Units.Km(1)), pxKm = altKm * 2 * Math.Tan(0.45) / Math.Max(1, _lastH);
+            return changeKm >= 3 * pxKm;
+        }
         private void InsideAtWorkLines(List<string> L)
         {
             if (_wCore == null) return; var c = _wCore;
+            if (c.Plates && _wPlates != null)
+            {
+                // how far its plates have moved since you began, and whether the ground shows it yet (it holds still while time runs fast)
+                double yrs = Math.Max(0, _simYears), km = yrs * 5e-5, behind = Math.Abs(yrs - _wPlates.MovedYears) * 5e-5;
+                if (km >= 0.001) L.Add("its plates moved about " + (km >= 1 ? km.ToString("N0") + " km" : (km * 1000).ToString("N0") + " m") + " since you began (about 5 cm a year)" + (behind >= 1 ? "; the ground shows them " + behind.ToString("N0") + " km back, remade when time runs slower than a thousand years a second" : ""));
+            }
             L.Add("inside: heat " + c.Heat.ToString("0.##") + " of Earth's, " + (c.MagmaOcean ? "its face a magma ocean" : c.Plates ? "its plates moving" : "a stagnant lid, no plates") + ", volcanoes " + c.Volcanism.ToString("0.##") + " of Earth's");
             L.Add("its core " + (c.LiquidOuterCore ? "liquid outside, solid " + (c.InnerCore * 100).ToString("0") + "% of the way out" : "solid") + "; its field " + (c.Field > 0 ? c.Field.ToString("0.##") + " of Earth's" + (c.Flips > 0 ? ", flipped " + c.Flips.ToString("N0") + " times" : "") : "gone"));
             if (_wPlates != null && _wPlates.Recent.Count > 0) L.Add("lately: " + _wPlates.Recent[_wPlates.Recent.Count - 1].What);

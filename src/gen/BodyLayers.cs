@@ -141,23 +141,42 @@ namespace Universe.Gen
         }
         /// <summary>A solid world's whole make-up by element, as shares of its mass, largest first: its layers (by its ground's
         /// kind) each weighed by its volume and density, each made of its mix (ground: the world's own surface mix).</summary>
-        public List<KeyValuePair<string, double>> Bulk(string terrainKind, string groundMix)
+        public List<KeyValuePair<string, double>> Bulk(string terrainKind, string groundMix) { return Bulk(terrainKind, groundMix, 0); }
+        /// <summary>The same for one body: each layer's minerals scattered from its kind's by the body's seed, by its mix's own
+        /// spread (content/minerals.unt vary: the logarithm of each share's factor at one sigma), so no two worlds alike.</summary>
+        public List<KeyValuePair<string, double>> Bulk(string terrainKind, string groundMix, ulong seed)
         {
-            string key = (terrainKind ?? "") + "|" + (groundMix ?? ""); List<KeyValuePair<string, double>> r;
-            if (_bulk.TryGetValue(key, out r)) return r;
+            string key = (terrainKind ?? "") + "|" + (groundMix ?? "") + "|" + seed; List<KeyValuePair<string, double>> r;
+            if (_bulk.TryGetValue(key, out r)) return r; if (_bulk.Count > 512) _bulk.Clear();   // (one entry a body seen: kept to the last few hundred)
             var tot = new Dictionary<string, double>(); double all = 0;
             foreach (var l in ForWorld(terrainKind))
             {
                 string mix = l.Mix == "ground" ? groundMix : l.Mix; var mins = MixMinerals(mix); if (mins.Count == 0) continue;
                 double mass = (l.To * l.To * l.To - l.From * l.From * l.From) * l.MeanDensity, sum = 0;
-                foreach (var m in mins) sum += m.Value;
+                double vary = seed != 0 ? MixVary(mix) : 0; var shares = new double[mins.Count];
+                for (int i = 0; i < mins.Count; i++) { shares[i] = mins[i].Value * (vary > 0 ? Math.Exp(vary * Gauss(seed, l.Id, mins[i].Key)) : 1); sum += shares[i]; }
                 if (sum <= 0 || mass <= 0) continue;
-                foreach (var m in mins)
-                    foreach (var el in MineralEls(m.Key)) { double v; tot.TryGetValue(el.Key, out v); double add = mass * m.Value / sum * el.Value; tot[el.Key] = v + add; all += add; }
+                for (int i = 0; i < mins.Count; i++)
+                    foreach (var el in MineralEls(mins[i].Key)) { double v; tot.TryGetValue(el.Key, out v); double add = mass * shares[i] / sum * el.Value; tot[el.Key] = v + add; all += add; }
             }
             r = new List<KeyValuePair<string, double>>();
             if (all > 0) foreach (var kv in tot) r.Add(new KeyValuePair<string, double>(kv.Key, kv.Value / all));
             r.Sort((p, q) => q.Value.CompareTo(p.Value)); _bulk[key] = r; return r;
+        }
+        private readonly Dictionary<string, double> _vary = new Dictionary<string, double>();
+        private double MixVary(string id)
+        {
+            double v; if (_vary.TryGetValue(id ?? "", out v)) return v; v = 0;
+            foreach (var e in _c.OfKind("minerals.unt", "mix")) if (e.Id == id) { double lo, hi; if (e.TryRange("vary", out lo, out hi)) v = lo; break; }
+            _vary[id ?? ""] = v; return v;
+        }
+        // a standard normal number fixed by the body's seed, the layer and the mineral (Box-Muller from two hashed uniforms)
+        private static double Gauss(ulong seed, string layer, string mineral)
+        {
+            ulong h = seed * 0x9E3779B97F4A7C15UL; foreach (char ch in layer + "/" + mineral) h = (h ^ ch) * 0x100000001B3UL;
+            h ^= h >> 31; h *= 0xBF58476D1CE4E5B9UL; h ^= h >> 29;
+            double u1 = ((h >> 11) + 1) / 9007199254740993.0, u2 = (((h * 0x94D049BB133111EBUL) >> 11)) / 9007199254740992.0;
+            return Math.Sqrt(-2 * Math.Log(u1)) * Math.Cos(2 * Math.PI * u2);
         }
         /// <summary>The make-up written short: the first few elements with their shares of the mass.</summary>
         public static string Words(List<KeyValuePair<string, double>> bulk, int most)

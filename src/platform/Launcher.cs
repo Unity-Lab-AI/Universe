@@ -147,7 +147,7 @@ namespace Universe.Platform
                     var f = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(System.Linq.Enumerable.Where(System.IO.Directory.GetFiles(Captures, "*.cdf97w*"), Universe.Platform.ClipPlayer.Plays), System.IO.Directory.GetFiles(Captures, "*.cdf97u"))); Array.Sort(f, (a, b) => System.IO.File.GetLastWriteTime(b).CompareTo(System.IO.File.GetLastWriteTime(a))); _clipFiles = f;
                 }
             }
-            catch { }
+            catch (System.Exception ex) { Universe.Program.WriteLog("failed in the launcher: " + ex.Message); }   // (never silent: written to the log)
             if (_clipFiles.Length == 0) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, "none yet (Film the tour, or F9 in flight)");
             foreach (var f in _clipFiles) SendMessage(_clips, CB_ADDSTRING, IntPtr.Zero, System.IO.Path.GetFileName(f));
             SendMessage(_clips, CB_SETCURSEL, IntPtr.Zero, IntPtr.Zero);
@@ -176,12 +176,12 @@ namespace Universe.Platform
                         else if (Universe.Render.UniverseClipReader.Is(_clipFiles[i]))
                         {
                             // a clip of the universe itself: the universe made again from its seed, the clip played through it
-                            try { var rc = new Universe.Render.UniverseClipReader(_clipFiles[i]); if (rc.Seed.HasValue) _replaySeed = rc.Seed; ReplayClip = _clipFiles[i]; _done = Choice.Begin; } catch { }
+                            try { var rc = new Universe.Render.UniverseClipReader(_clipFiles[i]); if (rc.Seed.HasValue) _replaySeed = rc.Seed; ReplayClip = _clipFiles[i]; _done = Choice.Begin; } catch (System.Exception ex) { Universe.Program.WriteLog("failed in opening a clip to replay: " + ex.Message); }
                         }
                         else if (ClipPlayer.Plays(_clipFiles[i])) ClipPlayer.Play(_wnd, _clipFiles[i], _alive); else ShellExecute(_wnd, "open", _clipFiles[i], null, null, 1);
                     }
                 }
-                else if (id == IdFolder) { try { System.IO.Directory.CreateDirectory(Captures); } catch { } ShellExecute(_wnd, "open", Captures, null, null, 1); }
+                else if (id == IdFolder) { try { System.IO.Directory.CreateDirectory(Captures); } catch (System.Exception ex) { Universe.Program.WriteLog("failed in making the captures folder: " + ex.Message); } ShellExecute(_wnd, "open", Captures, null, null, 1); }
                 else if (id == IdRandom) { var r = (ulong)DateTime.UtcNow.Ticks ^ BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0); Win32.SetWindowText(_seed, (r % 10000000000000000000UL).ToString()); SetFocus(_seed); SendMessage(_seed, EM_SETSEL, IntPtr.Zero, (IntPtr)(-1)); }   // (the focus back in the field with the number selected: typing replaces it, instead of the button holding the focus and every digit refused)
                 return IntPtr.Zero;
             }

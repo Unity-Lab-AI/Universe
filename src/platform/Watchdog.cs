@@ -52,7 +52,7 @@ namespace Universe.Platform
         public static Action BeforeExit;
         private static void Bail(string why)
         {
-            try { if (BeforeExit != null) BeforeExit(); } catch { }
+            try { if (BeforeExit != null) BeforeExit(); } catch (System.Exception ex) { Universe.Program.WriteLog("failed in finishing before a safety exit: " + ex.Message); }
             try
             {
                 string dir = Universe.Program.LogDir; Directory.CreateDirectory(dir);

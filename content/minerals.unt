@@ -1375,6 +1375,15 @@ shape: flat
 thickness: 0.03
 about: a skin of iron oxide (hematite, goethite) | it colours sand red, orange and yellow
 
+@surface ferrihydrite
+name: A cluster of ferrihydrite (iron oxide, shown as hematite)
+mineral: hematite
+size-km: 2e-12 6e-12
+chance: 0.6
+spacing: 2.5
+shape: round
+about: the smallest iron oxide in soils and sediments, 2 to 6 nanometres across, a few hundred atoms of iron, oxygen and water | its crystal too small and disordered to settle, so shown here as hematite, the oxide it ages into
+
 @surface nanoparticle
 name: An iron-oxide nanoparticle
 mineral: hematite

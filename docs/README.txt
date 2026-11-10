@@ -1,5 +1,5 @@
 ===============================================================================
-   U N I V E R S E                                                      0.1.0
+   U N I V E R S E                                                      0.1.1
    One camera. One universe. From the cosmic web down to a quark.
    Made by the Unity AI Lab  -  https://unityailab.com
 ===============================================================================
@@ -14,7 +14,7 @@
   plain text in the content folder. Change them, add your own, and build
   universes for your own games and simulations.
 
-  Built from nothing: no engine, no libraries, no art, 1.8 MB installed,
+  Built from nothing: no engine, no libraries, no art, 1.9 MB installed,
   MIT licensed. Take it for any project that needs a universe.
 
 

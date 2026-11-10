@@ -68,6 +68,7 @@ Universe runs on the real laws of nature, with their real numbers (all in `conte
 
 | Force | What it does here |
 |---|---|
+| **What the content is** | Every kind of thing is read from the content files, never named in the code; some entries there are words only for now: the design rules and real examples, the descriptions of the climate, rock and forces that are built as the program's own sums, and DNA-AND's life, cities and ships, which come with its game |
 | **Climate** | Every world's temperature from its own star's light, its orbit and albedo and its air's greenhouse (Earth 288 K, Venus 736, Mars 212, as measured), warmer at its equator and colder at its poles by the year's sunshine, colder up high by its air's fall of temperature; its air's pressure halving every few km by its own molecules' weight, to its tropopause; its seas salt, warm at the top and near freezing at the floor, frozen over where it is cold, methane and ethane on a world as cold as Titan; their tides from its moons and its star, and their currents from its wind belts. All on the cards |
 | **Rivers and lakes** | A world's rain runs downhill to the sea: every basin filled to its spill (a lake), each place draining to its neighbour below, the rivers where enough has gathered, as wide as real rivers of their size |
 | **A world at work** | The world you are at has its inside running with time: its heat, its plates or a stagnant lid, its core and magnetic field flipping now and then, its volcanoes, quakes and eruptions, on its card |

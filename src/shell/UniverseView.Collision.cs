@@ -89,10 +89,18 @@ namespace Universe.Shell
             c.T = t;
         }
         /// <summary>True when galaxy i is drawn by the collision instead (you outside both).</summary>
-        private bool CollisionDraws(int i) { return _col != null && (i == _col.A || i == _col.B) && InsideShare() < 0.5 && _col.T > 0; }
+        // drawn by the collision only once the two are within two of their widths together, where their pulls on each other's stars show
+        // (the tails, the bridge); further apart each is drawn whole as it is, its own hundred thousand points, never its 2,500 test stars
+        private bool Close()
+        {
+            var c = _col; if (c == null || c.A < 0 || c.B < 0 || c.A >= _galaxies.Count || c.B >= _galaxies.Count) return false;
+            double dx = c.Cx[1] - c.Cx[0], dy = c.Cy[1] - c.Cy[0], dz = c.Cz[1] - c.Cz[0];
+            return Math.Sqrt(dx * dx + dy * dy + dz * dz) < 2 * (_galaxies[c.A].Scale + _galaxies[c.B].Scale);
+        }
+        private bool CollisionDraws(int i) { return _col != null && (i == _col.A || i == _col.B) && InsideShare() < 0.5 && _col.T > 0 && Close(); }
         private void DrawCollision(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
-            var c = _col; if (c == null || InsideShare() >= 0.5 || c.T <= 0) return;
+            var c = _col; if (c == null || InsideShare() >= 0.5 || c.T <= 0 || !Close()) return;
             for (int i = 0; i < c.X.Length; i++) { var v = c.Base[i]; v.X = (float)((c.X[i] - _ax) - _ox); v.Y = (float)((c.Y[i] - _ay) - _oy); v.Z = (float)((c.Z[i] - _az) - _oz); c.Drawn[i] = v; }
             c.Buf.Write(c.Drawn, c.Drawn.Length);
             var g = _galaxies[c.A]; double gd = Math.Max(1e-9, Math.Sqrt((g.X - _cx) * (g.X - _cx) + (g.Y - _cy) * (g.Y - _cy) + (g.Z - _cz) * (g.Z - _cz))), gpx = g.Scale / gd * h / (2 * Math.Tan(0.45)), dotPx = Math.Max(1.5, 0.0016 * h);

@@ -262,7 +262,7 @@ namespace Universe.Shell
             else if (_tKind == 3 && _ground != null)
             {
                 double gh = _ground.Solid ? _ground.GroundAt(_tx, _ty, _tz) : 0;
-                bool sea = _ground.HasWater && gh < 0, ice = Math.Abs(_ty) > _ground.IceSin;
+                bool sea = _ground.HasWater && gh < 0, ice = _ground.IcyAt(_tx, _ty, _tz, gh);
                 L.Add(sea ? "sea" : ice ? "ice" : "land"); 
                 L.Add("on: " + GroundKind());
                 L.Add("place: " + (Math.Asin(_ty) * 180 / Math.PI).ToString("0.#") + " lat, " + (Math.Atan2(_tz, _tx) * 180 / Math.PI).ToString("0.#") + " long");

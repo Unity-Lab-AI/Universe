@@ -253,7 +253,7 @@ namespace Universe.Gen
 
         /// <summary>Fine roughness: from layer <paramref name="from"/> to <paramref name="to"/>, each layer's bumps are about a
         /// fifth of their own width tall, so the ground looks just as rough at a metre, a millimetre or a micrometre.</summary>
-        private double _grainKm { get { var m = GrainMix(0); return m != null ? m.Size : 0; } }
+        private double _grainKm { get { var m = GrainMix(1, 0, 0); return m != null ? m.Size : 0; } }
         private double Micro(double x, double y, double z, uint seed, int from, int to)
         {
             double sum = 0, f = 48 * Math.Pow(2, from);
@@ -360,13 +360,48 @@ namespace Universe.Gen
         public ulong GrainSeed { get { return (ulong)_seed * 0x9E3779B97F4A7C15UL + 0x6A1u; } }
         /// <summary>Where its permanent ice begins (the sine of the latitude): its climate's, moving with its ice ages (src/gen/Climate.cs); 0.86 until it is worked out.</summary>
         public double IceSin = 0.86;
-        public GrainField.Mix GrainMix(double y) { if (!Solid) return null; if (Math.Abs(y) > IceSin && GrainField.For("ice") != null) return GrainField.For("ice"); return GrainField.For(MixId ?? Kind) ?? GrainField.For("desert"); }   // (the same choice the matter view makes)
+        /// <summary>The ice line where a place is (as the sine of its latitude), never a circle: nature's own edge, as Earth's caps are.
+        /// The world's line from its climate (IceSin) moved by what moves it here: land holds ice nearer the equator than sea (Greenland's
+        /// sheet to 60 degrees, the sea ice to 75), high ground nearer still (about 6.5 K colder every km), a warm western current pushes
+        /// the sea ice back toward the pole and a cold eastern shore lets it out (the Gulf Stream's open Norwegian Sea, the Labrador
+        /// coast's ice); and a ragged edge at every size, from its bays and tongues thousands of km across down to its floes (five layers
+        /// of noise, each a quarter the last's width), all from the world's own seed.</summary>
+        public double IceLineAt(double x, double y, double z, double h)
+        {
+            double line = IceSin;
+            if (h > 0) line -= 0.05 + Math.Min(0.12, 0.025 * h);            // (land, and the higher the colder)
+            else if (HasWater)
+            {
+                if (_basin == null) lock (_basinLock) if (_basin == null) MakeBasins();
+                double l = Math.Sqrt(x * x + y * y + z * z), lat = Math.Asin(Math.Max(-1, Math.Min(1, y / l))), lo = Math.Atan2(z, x);
+                int j = Math.Max(0, Math.Min(BasinH - 1, (int)((lat / Math.PI + 0.5) * BasinH))), i = Math.Max(0, Math.Min(BasinW - 1, (int)((lo + Math.PI) / (2 * Math.PI) * BasinW)));
+                float share = _basin[j * BasinW + i]; if (share >= 0) line += 0.05 * (1 - 2 * share);   // (warm in the west of its basin, cold in the east)
+            }
+            return line + BandWobble(x, y, z);
+        }
+        /// <summary>A climate band's edge never straight: its latitude (as a sine) moved by five layers of the world's own noise, from
+        /// bays thousands of km across down to a few hundred metres, each a quarter the last's width (about 10 degrees at most at 70 degrees
+        /// latitude); for the ice line and every other band drawn by latitude (the tropics' red soil, the salt pans, the open sea).</summary>
+        public double BandWobble(double x, double y, double z)
+        {
+            double wob = 0, amp = 0.06, f = 2;
+            for (int k = 0; k < 5; k++) { wob += Fbm(x, y, z, _seed + 7300u + (uint)k * 31u, f, 2) * amp; amp *= 0.45; f *= 4; }
+            return wob;
+        }
+        /// <summary>Whether a place is under the ice (its ground's height h, km, or NaN to look it up): past its own ice line.</summary>
+        public bool IcyAt(double x, double y, double z, double h)
+        {
+            double l = Math.Sqrt(x * x + y * y + z * z); if (l <= 0) return false; x /= l; y /= l; z /= l;
+            if (double.IsNaN(h)) h = GroundAt(x, y, z, 0.5);
+            return Math.Abs(y) > IceLineAt(x, y, z, h);
+        }
+        public GrainField.Mix GrainMix(double x, double y, double z) { if (!Solid) return null; if (IcyAt(x, y, z, double.NaN) && GrainField.For("ice") != null) return GrainField.For("ice"); return GrainField.For(MixId ?? Kind) ?? GrainField.For("desert"); }   // (the same choice the matter view makes)
         // the ground's finest detail: the top of its grains, coming in as the detail grows finer than a couple of grains, so
         // zooming in, the ground itself breaks into its grains (each its own mineral, shape and shade), never a layer laid over it
         private double Grains(double x, double y, double z, double h, int layers, ref float r, ref float g, ref float b, float glow)
         {
             if (_noGrainsNow || !Solid || Shell || glow > 0.01 || layers <= 6) return h;   // (the sea bed too: it is dived to)
-            var gm = GrainMix(y); if (gm == null || gm.Size <= 0) return h;
+            var gm = !Solid ? null : Math.Abs(y) > IceLineAt(x, y, z, h) && GrainField.For("ice") != null ? GrainField.For("ice") : GrainField.For(MixId ?? Kind) ?? GrainField.For("desert"); if (gm == null || gm.Size <= 0) return h;
             double W = Math.Max(Radius * 0.1125 / Math.Pow(2, layers - 6) * 2, _cellAtLeast), G = gm.Size;   // the finest detail here (km): twice the real spacing of this piece's corners, so a stone comes into the ground's shape only once its corners can round it (never a single coloured corner: a soft hexagon)
             double big = GrainField.SizeOf(gm, GrainField.Classes(gm) - 1);              // the biggest stones come in first
             if (W > big * 0.25) return h;
@@ -589,7 +624,7 @@ namespace Universe.Gen
             }
             if (h < 0)
             {
-                if (lat > Math.Min(0.995, IceSin + 0.04) && _tk.PolarIce) { r = 0.85f; g = 0.9f; b = 0.95f; return 0.002; }   // sea ice near the poles, floating on top
+                if (lat > Math.Min(0.995, IceLineAt(x, y, z, h) + 0.04) && _tk.PolarIce) { r = 0.85f; g = 0.9f; b = 0.95f; return 0.002; }   // sea ice near the poles, floating on top
                 if (_tk.Locked)
                 {
                     // the twilight ring keeps its water painted on (no separate sea surface on this world)
@@ -804,9 +839,9 @@ namespace Universe.Gen
         /// <summary>Which resource field is here, by real geology, and what it looks like where it shows at the surface.</summary>
         private int ClassifyField(double x, double y, double z, double h, int layers, ref float r, ref float g, ref float b, ref float glow)
         {
-            double lat = _latOverride >= 0 ? _latOverride : Math.Abs(y), land = _land, mtn = _mtn;
-            if (HasWater && h < -0.0001 && lat < 0.9) return FieldIndex("ocean-water");
-            if (lat > IceSin + 0.05 * _tint || _tk.FrozenSea && h <= 0.0001) return FieldIndex("ice-field");
+            double lat = _latOverride >= 0 ? _latOverride : Math.Abs(y), land = _land, mtn = _mtn, latB = lat + BandWobble(x, y, z);   // (latB: the latitude with its natural edge, for the bands below)
+            if (HasWater && h < -0.0001 && latB < 0.9) return FieldIndex("ocean-water");
+            if (lat > IceLineAt(x, y, z, h) || _tk.FrozenSea && h <= 0.0001) return FieldIndex("ice-field");
             if (_vent > 0.3) { r = 0.95f; g = 0.85f; b = 0.15f; if (_activeVent) { r = 1f; g = 0.42f; b = 0.08f; } return FieldIndex("volcanic-sulfide"); }   // yellow sulfur crust
             if (_volcano > 0.25) { if (Spot(x, y, z, 2, 30, 0.55)) { r = 0.85f; g = 0.55f; b = 0.2f; } return FieldIndex("epithermal"); }   // hot-spring stains
             if (_river < 0) { if (Spot(x, y, z, 7, 200, 0.62)) { r = 0.9f; g = 0.78f; b = 0.3f; } return FieldIndex("placer"); }   // glints of gold in the banks
@@ -819,9 +854,9 @@ namespace Universe.Gen
             }
             bool dry = _tk.Dry;
             if (dry && h < -0.8) return FieldIndex("evaporite");                                      // the salt flats (already white)
-            if (!dry && h > 0 && h < 0.06 && lat < 0.45 && Spot(x, y, z, 8, 25, 0.62)) { r = 0.93f; g = 0.92f; b = 0.88f; return FieldIndex("evaporite"); }   // salt pans by the sea
+            if (!dry && h > 0 && h < 0.06 && latB < 0.45 && Spot(x, y, z, 8, 25, 0.62)) { r = 0.93f; g = 0.92f; b = 0.88f; return FieldIndex("evaporite"); }   // salt pans by the sea
             if (_tk.TropicalSoil)
-                if (lat < 0.32 && h > 0.04 && h < 1.2 && mtn < 0.15) { r = 0.62f; g = 0.26f; b = 0.14f; return FieldIndex("laterite"); }   // red tropical soil
+                if (latB < 0.32 && h > 0.04 && h < 1.2 && mtn < 0.15) { r = 0.62f; g = 0.26f; b = 0.14f; return FieldIndex("laterite"); }   // red tropical soil
             if (land > 0.25 && mtn < 0.08)
             {
                 if (Spot(x, y, z, 10, 18, 0.6))
@@ -1385,7 +1420,7 @@ namespace Universe.Gen
             // the ground's sand worked out on the card: where you are, in grains (wrapped to 32 bits as the grain field's keys are)
             _gg = false;
             {
-                double cl = Math.Sqrt(camX * camX + camY * camY + camZ * camZ); var gm = Solid && !Shell && cl > 0 ? GrainMix(camY / cl) : null;
+                double cl = Math.Sqrt(camX * camX + camY * camY + camZ * camZ); var gm = Solid && !Shell && cl > 0 ? GrainMix(camX / cl, camY / cl, camZ / cl) : null;
                 // (within a few thousand grains of the ground itself, not of the world's reference sphere: on land a few hundred metres
                 // up the sand never came, and from a millimetre down to the hand-over the ground was one blank colour)
                 double overGround = gm != null && gm.Size > 0 ? cl - Radius - GroundAt(camX / cl, camY / cl, camZ / cl) : double.MaxValue;

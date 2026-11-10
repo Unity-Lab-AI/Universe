@@ -95,6 +95,7 @@ namespace Universe.Shell
             else if (s < ar * 0.5) { if (k != 7 && k != 5 && k != 4) PickNearest("nucleus"); }
             else if (s < AtomSpacing * 6) { if (k != 1 && k != 3 && k != 6 && k != 7 && k != 5 && k != 4) PickNearest("atom"); }
         }
+        private readonly List<string> _pickSyms = new List<string>();
         public void PickNearest(string what)
         {
             if (what == "bonded-atom")
@@ -120,7 +121,7 @@ namespace Universe.Shell
             string wantSym = null;
             if (kind == 1)
             {
-                var syms = new List<string>();
+                var syms = _pickSyms; syms.Clear();   // (kept and emptied each call)
                 foreach (var b in _bodies) if (b.Kind == 1 && b.Sym != null && !syms.Contains(b.Sym)) syms.Add(b.Sym);
                 if (syms.Count > 1) { syms.Sort(string.CompareOrdinal); wantSym = syms[(int)(((long)PickCount + (long)(_seed & 0xFFFF)) % syms.Count)]; }
             }

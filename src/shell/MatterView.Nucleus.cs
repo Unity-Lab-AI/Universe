@@ -98,7 +98,7 @@ namespace Universe.Shell
         private void AddBody(int kind, long i, long j, double x, double y, double z, double size, double s)
         {
             double vx = (x - _fx) / s, vz = (z - _fz) / s, vs = size / s;
-            if (Math.Abs(vx) > 6 || Math.Abs(vz) > 6 || (vs < 0.004 && kind < 3) || _bodies.Count > 80000) return;   // only bodies big enough on screen to pick (points always are); room for every atom of a lattice in view and their electrons
+            if (Math.Abs(vx) > 6 || Math.Abs(vz) > 6 || (vs * _lastH < 4 && kind < 3) || _bodies.Count > 80000) return;   // only bodies at least four pixels across on screen to pick, at any screen size (points always are); room for every atom of a lattice in view and their electrons
             _bodies.Add(new Body { Kind = kind, I = i, J = j, X = x, Y = y + _yOff, Z = z, Size = size });
         }
 

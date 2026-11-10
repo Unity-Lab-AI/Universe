@@ -12,7 +12,7 @@ namespace Universe.Platform
         public static void OwnIcons(out IntPtr large, out IntPtr small)
         {
             large = small = IntPtr.Zero; var l = new IntPtr[1]; var s = new IntPtr[1];
-            try { if (ExtractIconEx(System.Reflection.Assembly.GetEntryAssembly().Location, 0, l, s, 1) > 0) { large = l[0]; small = s[0]; } } catch { }
+            try { if (ExtractIconEx(System.Reflection.Assembly.GetEntryAssembly().Location, 0, l, s, 1) > 0) { large = l[0]; small = s[0]; } } catch (System.Exception ex) { Universe.Program.WriteLog("failed in the window icon: " + ex.Message); }
         }
         public const uint WS_OVERLAPPEDWINDOW = 0x00CF0000;
         public const uint WS_VISIBLE = 0x10000000;

@@ -397,6 +397,7 @@ namespace Universe.Shell
             hp = new HoleParts { DiscN = disc.Count, JetsN = jets.Count, SwarmN = swarm.Count, StreamN = stream.Count, K = (float)(2 * Math.PI * Math.Pow(lo, 1.5) / secs) };
             hp.Disc = new UploadBuffer(_gpu.Device, (long)disc.Count * Stride); hp.Disc.Write(disc.ToArray(), disc.Count);
             hp.Jets = new UploadBuffer(_gpu.Device, (long)jets.Count * Stride); hp.Jets.Write(jets.ToArray(), jets.Count);
+            hp.SwarmRecs = swarm.ToArray();   // (kept here too: each star of the swarm is clicked by working out where the card has drawn it)
             if (swarm.Count > 0) { hp.Swarm = new UploadBuffer(_gpu.Device, (long)swarm.Count * Stride); hp.Swarm.Write(swarm.ToArray(), swarm.Count); }
             hp.Stream = new UploadBuffer(_gpu.Device, (long)stream.Count * Stride); hp.Stream.Write(stream.ToArray(), stream.Count);
             _holeParts[id] = hp; return hp;

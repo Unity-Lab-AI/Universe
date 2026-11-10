@@ -16,6 +16,7 @@ namespace Universe.Shell
         public List<string> Card()
         {
             var L = CardLines();
+            if (L.Count > 0) L.Add(CensusWords());                                         // (what there is to pick at this size, or that there is nothing)
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
             // is for later)

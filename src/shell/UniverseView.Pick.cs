@@ -559,7 +559,7 @@ namespace Universe.Shell
                 if (input.WasPressed(0x20)) TogglePause();
                 if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);
                 if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);
-                _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);
+                _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);
                 if (TimeStep > 0) _matterClock += dt;
                 return true;
             }
@@ -588,7 +588,7 @@ namespace Universe.Shell
                 if (input.WasPressed(0x20)) TogglePause();
                 if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);
                 if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);
-                _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);
+                _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);
                 if (TimeStep > 0) _matterClock += dt;
                 if (_matterScale > _matterTop)
                 {
@@ -779,7 +779,7 @@ namespace Universe.Shell
             if (input.WasPressed(0x20)) TogglePause();                                 // Space: pause, or carry on
             if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);                        // , slower
             if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);                        // . faster
-            _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]); SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);                                    // time runs at the speed chosen
+            _simYears += dt * TimeSpeeds[TimeStep]; SpaceGen.StarSwell = StarSwell; _matter.SetClock(_simYears * 31557600.0, TimeSpeeds[TimeStep] * 31557600.0, TimeNames[TimeStep]);                                    // time runs at the speed chosen
             if (TimeStep > 0) _matterClock += dt;
             ChooseNear(); Jumped("ChooseNear"); ClusterStars();
             LocalStars(); Jumped("LocalStars");

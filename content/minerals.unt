@@ -893,6 +893,26 @@ site: 0.7440 0.5200 0.5770 H
 site: 0.2440 0.9800 0.0770 H
 site: 0.7440 0.4800 0.0770 H
 
+@mineral periclase
+name: Periclase (magnesium oxide; ferropericlase deep in a mantle)
+formula: MgO
+atoms: Mg O
+trace: Mg Fe 0.12 Ni 0.002 Mn 0.001
+colour: 0.82 0.82 0.78
+lustre: vitreous
+clarity: translucent
+cell: 4.212 4.212 4.212 90 90 90
+structure: cubic Fm-3m rock salt: magnesium and oxygen alternating
+structure-source: rock-salt structure (Wyckoff, Crystal Structures); periclase a = 4.212 angstroms; in a lower mantle about a sixth of its magnesium sites hold iron (ferropericlase)
+site: 0.0000 0.0000 0.0000 Mg
+site: 0.0000 0.5000 0.5000 Mg
+site: 0.5000 0.0000 0.5000 Mg
+site: 0.5000 0.5000 0.0000 Mg
+site: 0.5000 0.5000 0.5000 O
+site: 0.5000 0.0000 0.0000 O
+site: 0.0000 0.5000 0.0000 O
+site: 0.0000 0.0000 0.5000 O
+
 @mineral halite
 name: Halite (rock salt)
 formula: NaCl
@@ -1249,6 +1269,43 @@ minerals: sea-water 100
 name: Sea ice and ice sheets
 grain-mm: 0.2..1
 minerals: water-ice 100
+
+# ── the deep layers of a world (content/planets.unt @layer mix: what each layer's matter is) ──
+# Upper mantle: peridotite, about three fifths olivine (forsterite with some fayalite) and the rest pyroxenes (Earth's upper
+#   mantle above 410 km; garnet, about a tenth, is not among our minerals yet). Lower mantle: in truth about three quarters
+#   bridgmanite (MgSiO3 crushed into a perovskite structure), a sixth ferropericlase and a little calcium perovskite;
+#   bridgmanite is not among our minerals yet, so its MgSiO3 is shown in its low-pressure form, enstatite, beside
+#   ferropericlase (periclase with iron). Core: iron with about a twentieth nickel and some sulfur (iron meteorites, the
+#   core's density); kamacite and taenite are its low-pressure forms (the inner core's iron is hexagonal close-packed).
+@mix upper-mantle
+name: Upper mantle (peridotite)
+grain-mm: 1..5
+minerals: forsterite 54, fayalite 6, enstatite 22, augite 18
+vary: 0.15
+
+@mix lower-mantle
+name: Lower mantle (MgSiO3 shown as enstatite, with ferropericlase)
+grain-mm: 1..5
+minerals: enstatite 76, periclase 17, augite 7
+vary: 0.15
+
+@mix metal-core
+name: Iron-nickel core
+grain-mm: 0.5..3
+minerals: kamacite 76, taenite 6, troilite 18
+vary: 0.2
+
+@mix icy-shell
+name: An icy moon's shell
+grain-mm: 0.2..2
+minerals: water-ice 90, dry-ice 3, ammonia-ice 3, halite 2, gypsum 2
+vary: 0.3
+
+@mix rock-mantle
+name: A small world's rock mantle
+grain-mm: 0.5..3
+minerals: forsterite 50, fayalite 10, enstatite 25, augite 10, troilite 5
+vary: 0.25
 
 # ── what lies on a grain's surface, everywhere, at its real size (soil science: clay platelets 0.2 to 2 um across,
 #   iron-oxide coatings 0.1 to 1 um, iron-oxide nanoparticles 5 to 50 nm, and a film of water one or two molecules thick

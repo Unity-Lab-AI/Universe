@@ -324,3 +324,58 @@ says: a meteorite's type follows the asteroid it came from; carbon-rich ones can
 @rule small-resources
 real: rule
 says: metal asteroids are mined for metals, icy bodies and comets for water and fuel, carbon-rich asteroids for life chemistry
+
+# ── Layers: what lies under a small body's ground (content/planets.unt @layer for the fields) ──
+# A rubble asteroid is a heap held by its own weak pull, dust over boulders all through (Itokawa, Ryugu, Bennu); a comet's
+#   nucleus a dark crust of dust over porous ice and dust (Rosetta at 67P: about three quarters empty space inside).
+@layer regolith
+name: Regolith
+from-r: 0.99
+to-r: 1
+matter: rock
+mix: ground
+temp-k: 150..400
+density-g-cc: 1.2..1.8
+pressure-gpa: 0..0
+real: yes
+says: loose dust and pebbles, shaken about by impacts
+in: asteroid
+
+@layer rubble-body
+name: Body
+from-r: 0
+to-r: 0.99
+matter: rock
+mix: ground
+temp-k: 150..200
+density-g-cc: 1.2..2.6
+pressure-gpa: 0..0.0001
+real: yes
+says: boulders and dust packed loosely, a third to a half of it empty space
+in: asteroid
+
+@layer comet-crust
+name: Dust crust
+from-r: 0.995
+to-r: 1
+matter: rock
+mix: ground
+temp-k: 150..350
+density-g-cc: 0.5..1
+pressure-gpa: 0..0
+real: yes
+says: a dark crust of dust left behind as the ice under it boils off near the star
+in: comet
+
+@layer comet-body
+name: Icy body
+from-r: 0
+to-r: 0.995
+matter: ice
+mix: comet
+temp-k: 30..150
+density-g-cc: 0.4..0.6
+pressure-gpa: 0..0
+real: yes
+says: ice and dust in about equal parts by weight, most of it empty space
+in: comet

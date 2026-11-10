@@ -182,6 +182,172 @@ says: bigger, colder planets keep more air; small hot ones lose it (content/phys
 real: rule
 says: where a planet forms (inside or outside the frost line, in or out of the habitable zone) sets its makeup and temperature
 
+# ── Layers: what lies under the ground, from the surface down to the middle ──
+# from-r, to-r: where the layer lies, as shares of the world's radius from its middle (1 the surface); in: the kinds of
+#   ground that have it (content/terrain.unt @terrain ids); matter: rock, metal (molten in an outer core), ice, water;
+#   mix: what it is made of (content/minerals.unt @mix; ground: the world's own surface mix); temp-k, density-g-cc and
+#   pressure-gpa run from the layer's top to its bottom. Earth's layers are the Preliminary Reference Earth Model
+#   (Dziewonski and Anderson 1981): crust to about 35 km, upper mantle to 660 km, lower mantle to 2,891 km, liquid outer
+#   core to 5,150 km, solid inner core to the middle at 6,371 km. The Moon's from Apollo seismology and GRAIL (crust about
+#   40 km, an iron core about 350 km across); an icy moon's from Galileo's gravity and magnetic readings at Europa (an ice
+#   shell some tens of km over an ocean about 100 km deep, over rock and an iron core). A world of another size keeps the
+#   shares; its pressures scale with its surface gravity times its radius (the card works them out).
+@layer crust
+name: Crust
+from-r: 0.995
+to-r: 1
+matter: rock
+mix: ground
+temp-k: 288..900
+density-g-cc: 2.7..2.9
+pressure-gpa: 0..1
+real: yes
+says: the thin skin the ground is made of: the world's own surface rock, half a percent of its radius
+in: default, temperate, ocean, desert, lava, snowball, tidally-locked
+
+@layer upper-mantle
+name: Upper mantle
+from-r: 0.896
+to-r: 0.995
+matter: rock
+mix: upper-mantle
+temp-k: 900..1900
+density-g-cc: 3.3..4.4
+pressure-gpa: 1..24
+real: yes
+says: hot solid rock that creeps a few centimetres a year, carrying the plates; its top melts into the magma of volcanoes
+in: default, temperate, ocean, desert, lava, snowball, tidally-locked
+
+@layer lower-mantle
+name: Lower mantle
+from-r: 0.546
+to-r: 0.896
+matter: rock
+mix: lower-mantle
+temp-k: 1900..4000
+density-g-cc: 4.4..5.6
+pressure-gpa: 24..136
+real: yes
+says: rock crushed into denser crystals, most of the world's volume; it churns slowly, taking the core's heat up
+in: default, temperate, ocean, desert, lava, snowball, tidally-locked
+
+@layer outer-core
+name: Outer core
+from-r: 0.19
+to-r: 0.546
+matter: metal
+mix: metal-core
+temp-k: 4000..5400
+density-g-cc: 9.9..12.2
+pressure-gpa: 136..330
+real: yes
+says: molten iron and nickel, stirred by the heat below and the world's turn; its flow makes the magnetic field
+in: default, temperate, ocean, desert, lava, snowball, tidally-locked
+
+@layer inner-core
+name: Inner core
+from-r: 0
+to-r: 0.19
+matter: metal
+mix: metal-core
+temp-k: 5400..5700
+density-g-cc: 12.8..13.1
+pressure-gpa: 330..364
+real: yes
+says: solid iron and nickel, as hot as a star's face but held solid by the pressure; it grows as the world cools
+in: default, temperate, ocean, desert, lava, snowball, tidally-locked
+
+@layer moon-crust
+name: Crust
+from-r: 0.977
+to-r: 1
+matter: rock
+mix: ground
+temp-k: 250..500
+density-g-cc: 2.9..3.0
+pressure-gpa: 0..0.2
+real: yes
+says: the old cooled rock of a magma ocean, thicker on the far side
+in: moon
+
+@layer moon-mantle
+name: Mantle
+from-r: 0.2
+to-r: 0.977
+matter: rock
+mix: upper-mantle
+temp-k: 500..1700
+density-g-cc: 3.3..3.4
+pressure-gpa: 0.2..4.5
+real: yes
+says: cold rigid rock; the deep moonquakes start near its bottom
+in: moon
+
+@layer moon-core
+name: Core
+from-r: 0
+to-r: 0.2
+matter: metal
+mix: metal-core
+temp-k: 1700..1900
+density-g-cc: 7..7.5
+pressure-gpa: 4.5..5
+real: yes
+says: a small iron core, partly molten round a solid middle
+in: moon
+
+@layer icy-shell
+name: Ice shell
+from-r: 0.985
+to-r: 1
+matter: ice
+mix: icy-shell
+temp-k: 100..270
+density-g-cc: 0.92..0.93
+pressure-gpa: 0..0.03
+real: yes
+says: a shell of ice tens of kilometres thick, cracked by the tides
+in: icy-moon
+
+@layer hidden-ocean
+name: Hidden ocean
+from-r: 0.9
+to-r: 0.985
+matter: water
+mix: sea
+temp-k: 270..275
+density-g-cc: 1.0..1.05
+pressure-gpa: 0.03..0.13
+real: yes
+says: salt water, kept liquid by the tides' heating, over the rock below
+in: icy-moon
+
+@layer icy-moon-mantle
+name: Rock mantle
+from-r: 0.35
+to-r: 0.9
+matter: rock
+mix: rock-mantle
+temp-k: 275..1300
+density-g-cc: 3.0..3.6
+pressure-gpa: 0.13..2.5
+real: yes
+says: rock, perhaps with sea-floor vents where the water meets it
+in: icy-moon
+
+@layer icy-moon-core
+name: Core
+from-r: 0
+to-r: 0.35
+matter: metal
+mix: metal-core
+temp-k: 1300..1600
+density-g-cc: 5.5..8
+pressure-gpa: 2.5..3.5
+real: yes
+says: iron and iron sulfide
+in: icy-moon
+
 @rule planet-interior
 real: rule
 says: every rocky planet gets core, mantle and crust; heat decides tectonics or a stagnant lid, volcanoes, and a magnetic field

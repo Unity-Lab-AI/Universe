@@ -655,10 +655,22 @@ real: yes
 says: a thin skin of hydrogen or helium, the only thing left of the star's outer layers
 in: white-dwarf
 
+@layer white-dwarf-helium
+name: Helium layer
+from-r: 0.99
+to-r: 0.999
+matter: plasma
+temp-k: 5.0e4..1.0e6
+density-g-cc: 1..1e4
+makeup: helium 100%
+real: yes
+says: a layer of helium about a hundredth of the star's mass, over the carbon and oxygen; the hydrogen skin floats on it, the heaviest matter sunk below
+in: white-dwarf
+
 @layer white-dwarf-body
 name: Degenerate body
 from-r: 0
-to-r: 0.999
+to-r: 0.99
 matter: plasma
 temp-k: 5.0e4..1.0e7
 density-g-cc: 1..1e6
@@ -666,6 +678,51 @@ makeup: carbon 50%, oxygen 50%
 real: yes
 says: carbon and oxygen pressed to a tonne a cubic centimetre, held up by electrons squeezed as close as they can go; it burns nothing, only cools, for billions of years
 in: white-dwarf
+
+@layer neutron-outer-crust
+name: Outer crust
+from-r: 0.97
+to-r: 1
+matter: plasma
+temp-k: 1e6..1e9
+density-g-cc: 1e4..4e11
+makeup: iron 100%
+real: yes
+says: a lattice of iron nuclei in a sea of electrons, the nuclei richer in neutrons the deeper (nickel, then heavier, stranger nuclei)
+in: neutron-star, pulsar, magnetar
+
+@layer neutron-inner-crust
+name: Inner crust
+from-r: 0.92
+to-r: 0.97
+matter: plasma
+temp-k: 1e9..1e9
+density-g-cc: 4e11..1.4e14
+real: yes
+says: nuclei so loaded with neutrons that neutrons drip out and flow free between them; deepest, the nuclei squash into rods and sheets (nuclear pasta)
+in: neutron-star, pulsar, magnetar
+
+@layer neutron-outer-core
+name: Outer core
+from-r: 0.4
+to-r: 0.92
+matter: plasma
+temp-k: 1e9..1e9
+density-g-cc: 1.4e14..5e14
+real: yes
+says: no nuclei left: neutrons packed shoulder to shoulder with a few protons and electrons, a superfluid
+in: neutron-star, pulsar, magnetar
+
+@layer neutron-inner-core
+name: Inner core
+from-r: 0
+to-r: 0.4
+matter: plasma
+temp-k: 1e9..1e9
+density-g-cc: 5e14..2e15
+real: yes
+says: unknown: denser than a nucleus; perhaps hyperons, perhaps quarks free of their neutrons
+in: neutron-star, pulsar, magnetar
 
 @layer brown-dwarf-body
 name: Interior

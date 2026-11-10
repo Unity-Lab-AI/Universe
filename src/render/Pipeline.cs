@@ -67,14 +67,14 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         else { uint kk = asuint(s.pos.x) ^ (asuint(s.pos.y) * 7919u) ^ (asuint(s.pos.z) * 104729u); tv = normalize(float3(oh01(kk, 1u), oh01(kk, 2u), oh01(kk, 3u)) * 2 - 1); }
         s.pos += tv * dd;
     }
-    bool webOut = false;
+    bool webOut = false; float orbR = -1, nebSprite = -1;   // (orbR: an orbital's or an atom's reach, for keeping its light by its size on screen)
     if (lensB.w > 0)
     {
         // a point of the web's light: left out near you (the galaxies made in full stand there) and past three fade distances;
         // fading with distance otherwise (seen through the whole web at once it would stack into an even dust)
         float wl = length(s.pos - webA.xyz);
-        webOut = wl < webA.w || wl > lensB.w * 3;
-        s.color.rgb *= 4.0 * exp(-wl / lensB.w) * saturate((wl - webA.w) / (webA.w * 0.5));
+        webOut = wl < webA.w || wl > lensB.w * 7;   // (out where its light has fallen to 4 e^-7, under half a percent: no edge, where at three fade distances it had been cut at a fifth of full)
+        s.color.rgb *= 4.0 * exp(-wl / lensB.w) * (wl >= webA.w ? 1.0 : 0.0);   // (from where the galaxies made in full end, at one distance: no fade; its light matched to theirs there, UniverseView.WebMatch)
         s.color.rgb *= lerp(float3(1, 1, 1), float3(1.0, 0.45, 0.25), saturate(wl / (lensB.w * 3)));   // the farthest light comes reddened: the space it crossed was stretching as it came (the expansion of space), redder the farther, out to your horizon   // faded in over half again past where it starts: just where the galaxies made in full fade out, so the two never show at once                        // each point a galaxy's whole light, bright enough that the web's strands read across hundreds of millions of light-years
     }
     if (lensB.y > 0.5)
@@ -85,7 +85,53 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         uint key = asuint(s.pos.x) ^ (asuint(s.pos.y) * 7919u) ^ (asuint(s.pos.z) * 104729u) ^ (code * 31u);
         uint tick = 0;                                                    // (a steady cloud: sampled once, never flickering like static)
         float3 dir = float3(0, 1, 0); float best = -1;
-        for (uint t = 0; t < 6u; t++)
+        if (l == 6u)
+        {
+            // a nebula, grown here from its own seed (pos.x's bits; its record at the cloud's middle, its radius 1): a planetary
+            // nebula's thin shell (m 4), a supernova remnant's filaments (5), an emission, reflection or dark cloud's knots (2, 3, 6);
+            // each point one of its many, the same every frame. Records of one cloud share its seed, one for each part of its gas
+            uint ns = asuint(s.pos.x), pt = sub; float br = 1; float3 q = float3(0, 0, 0);
+            float g1 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 21u)))) * cos(6.2832 * oh01(ns + pt, 22u));
+            float g2 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 23u)))) * cos(6.2832 * oh01(ns + pt, 24u));
+            float g3 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 25u)))) * cos(6.2832 * oh01(ns + pt, 26u));
+            float uu = oh01(ns + pt, 27u) * 2 - 1, aa = oh01(ns + pt, 28u) * 6.2832, ss2 = sqrt(1 - uu * uu); float3 dv = float3(ss2 * cos(aa), uu, ss2 * sin(aa));
+            if (m == 4u)
+            {
+                float squash = 0.6 + 0.4 * oh01(ns, 1u), rr = 0.75 + 0.22 * oh01(ns + pt, 29u) + 0.05 * g1;
+                if (oh01(ns + pt, 30u) < 0.19) { rr = sqrt(oh01(ns + pt, 31u)) * 0.7; br = 0.4; } else br = rr > 0.9 ? 1 : 0.7;
+                q = float3(dv.x * rr, dv.y * rr * squash, dv.z * rr);
+            }
+            else if (m == 5u)
+            {
+                uint fi = (uint)(oh01(ns + pt, 32u) * 40); float fu = oh01(ns + fi, 33u) * 2 - 1, fa = oh01(ns + fi, 34u) * 6.2832, fs = sqrt(1 - fu * fu);
+                float3 f0 = float3(fs * cos(fa), fu, fs * sin(fa)); float rr = 0.85 + 0.15 * oh01(ns + pt, 35u);
+                if (oh01(ns + pt, 36u) < 0.14) { q = dv * pow(oh01(ns + pt, 37u), 0.4); br = 0.35; } else q = normalize(f0 * 0.75 + dv * 0.35) * rr;
+            }
+            else
+            {
+                uint kq = (uint)(oh01(ns + pt, 38u) * 28); float3 kc = float3(0, 0, 0);
+                float k1 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 41u)))) * cos(6.2832 * oh01(ns + kq, 42u)), k2 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 43u)))) * cos(6.2832 * oh01(ns + kq, 44u)), k3 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 45u)))) * cos(6.2832 * oh01(ns + kq, 46u));
+                kc = float3(k1 * 0.45, k2 * 0.3, k3 * 0.45); float ksz = 0.12 + 0.3 * oh01(ns + kq, 47u);
+                q = kc + float3(g1, g2, g3) * ksz; float cl = length(q);
+                if (cl > 1 || (s.size < 0 && cl > 0.5)) webOut = true;                      // (outside the cloud; a gas kept to its middle: oxygen's teal)
+                br = (1 - cl * 0.5) * (m == 6u ? 0.45 : 1);
+            }
+            br *= 0.35 + 0.45 * oh01(ns + pt, 48u);
+            orbR = abs(s.size); nebSprite = abs(s.size);                                  // (its points' own size, a share of its radius)
+            s.pos = q; s.size = abs(s.size); s.color.rgb *= br; s.color.a = 1; best = 3;
+        }
+        if (l == 7u)
+        {
+            // an atom's electron density (the one model at every size): its electrons where they may be found, every way alike,
+            // densest a little out from the nucleus and thinning outward (r^2 e^(-2r/a), a gamma of three), out past the atom's
+            // radius, so in a solid each atom's outer electrons overlap its neighbours' into one sea of them
+            float u1 = max(1e-6, oh01(key + sub * 13u, 11u)), u2 = max(1e-6, oh01(key + sub * 13u, 12u)), u3 = max(1e-6, oh01(key + sub * 13u, 13u));
+            float th = acos(1 - 2 * oh01(key + sub * 13u, 14u)), ph = oh01(key + sub * 13u, 15u) * 6.2832;
+            float rr = min(1.8, -log(u1 * u2 * u3) * 0.3);                   // (in shares of its reach: mean 0.9, a tail past it)
+            orbR = s.size; s.pos += float3(sin(th) * cos(ph), cos(th), sin(th) * sin(ph)) * s.size * rr;
+            s.size = 0; s.color.a = 1; best = 2;
+        }
+        for (uint t = 0; t < (l >= 6u ? 0u : 6u); t++)
         {
             float u = oh01(key + sub * 13u, tick * 7u + t), v = oh01(key + sub * 13u + 5u, tick * 7u + t);
             float th = acos(1 - 2 * u), ph = v * 6.2832; float3 d = float3(sin(th) * cos(ph), cos(th), sin(th) * sin(ph));
@@ -93,10 +139,13 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             if (sc > best) { best = sc; dir = d; }
             if (sc > 0) break;
         }
-        float w = oh01(key + sub * 3u + 1u, tick);
-        s.pos += dir * s.size * (0.45 + 1.1 * pow(w, 0.7));
-        s.size = 0;
-        s.color.a = 1;
+        if (best < 1.5)
+        {
+            float w = oh01(key + sub * 3u + 1u, tick);
+            orbR = s.size; s.pos += dir * s.size * (0.45 + 1.1 * pow(w, 0.7));
+            s.size = 0;
+            s.color.a = 1;
+        }
     }
     bool holeHidden = false;
     if (extra.y > 0)
@@ -174,6 +223,19 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
     float2 c = corners[vid];
     float4 cc0 = mul(float4(s.pos, 1), viewProj);
     float size = max(s.size * misc.y, cc0.w * screen.z); // never smaller than screen.z of the view distance
+    if (nebSprite > 0)
+    {
+        // a nebula's light kept by its size on screen: each point's own glow is a share of the cloud's radius; once that is smaller
+        // than the smallest dot, the dot carries only the light of the glow it stands for (their sizes squared), so a far cloud
+        // shrinks and dims together and is never a white ball
+        float sp = nebSprite * misc.y, dotR2 = cc0.w * screen.z; s.color.rgb *= saturate((sp * sp) / max(1e-30, dotR2 * dotR2));
+    }
+    else if (orbR >= 0)
+    {
+        // a cloud's light kept by its size on screen: its points (lensB.z of them) share the light of its area, so a cloud smaller
+        // than its points' own dots dims as its area does and never adds up to white, and close in it is as bright as ever
+        float dotR = cc0.w * screen.z; s.color.rgb *= saturate(orbR * orbR / max(1e-30, lensB.z * dotR * dotR));
+    }
     if (screen.w > 0) size = min(size, cc0.w * screen.w);   // and, when asked, never bigger than screen.w of it (points of light stay points up close)
     if (cc0.w <= 0) o0 = true;
     // never more than about a third of the screen out from its middle (thousands each covering the whole screen are more work than

@@ -75,5 +75,105 @@ namespace Universe.Shell
             L.Add("speed at its closest: " + (vPeri / 1000).ToString("N0") + " km/s, " + (vPeri / Physics.C * 100).ToString("0.#") + "% of light's");
             L.Add("distance: " + Units.Describe(dist));
         }
+        // ── a feeding hole's disc and jets, each a thing you can click: the line under the mouse met with the disc's plane (in the
+        // hole's own frame, as DrawBlackHoles places it) within the disc's reach, or passing within the click's reach of a jet along
+        // the spin axis; picked, it is the point of gas there, its card its heat, its speed and its turn ──
+        private Extra _tPartHole; private int _tPart; private double _tPartR, _tPartX, _tPartY, _tPartZ; private string _tPartName;   // _tPart 1 the disc, 2 a jet; X Y Z the point in the hole's frame (horizon radii)
+        private bool PartPicked { get { return _tKind == 1 && _tPartHole != null && _tName == _tPartName; } }
+        // a point of the hole's frame (horizon radii) against the camera (universe units)
+        private void HoleToCamera(Extra ex, double hx, double hy, double hz, out double x, out double y, out double z)
+        {
+            double ct = Math.Cos(ex.Tilt), st = Math.Sin(ex.Tilt), rs = Units.Km(Physics.HorizonKm(ex.Mass));
+            x = hx * rs + RelX(ex) - _ox; y = (hy * ct - hz * st) * rs + RelY(ex) - _oy; z = (hy * st + hz * ct) * rs + RelZ(ex) - _oz;
+        }
+        private bool ClickHolePart(Vec3 dir, double reachPx)
+        {
+            double perRad = _lastH * 0.5 / Math.Tan(0.45), bestT = double.MaxValue; Extra bh = null; int part = 0; double br = 0, bx = 0, by = 0, bz = 0;
+            foreach (var ex in _extras)
+            {
+                if (!ex.Hole || ex.Mass <= 0 || ex.Feeding <= 0 || ex.Pl == null) continue;
+                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), Dx = RelX(ex) - _ox, Dy = RelY(ex) - _oy, Dz = RelZ(ex) - _oz, d = Math.Sqrt(Dx * Dx + Dy * Dy + Dz * Dz);
+                if (rs * 600 / Math.Max(1e-30, d) * _lastH < 2) continue;                      // (not drawn yet)
+                double ct = Math.Cos(ex.Tilt), st = Math.Sin(ex.Tilt);
+                // the disc: where the line meets its plane (y = 0 in the hole's frame)
+                double den = dir.Y * ct + dir.Z * st;
+                if (Math.Abs(den) > 1e-12)
+                {
+                    double t = (Dy * ct + Dz * st) / den;
+                    if (t > 0 && t < bestT)
+                    {
+                        double qx = dir.X * t - Dx, qy = dir.Y * t - Dy, qz = dir.Z * t - Dz;
+                        double hx = qx / rs, hz = (-qy * st + qz * ct) / rs, r = Math.Sqrt(hx * hx + hz * hz);
+                        if (r >= ex.Pl.DiscLo && r <= ex.Pl.DiscHi) { bestT = t; bh = ex; part = 1; br = r; bx = hx; by = 0; bz = hz; }
+                    }
+                }
+                // a jet: the spin axis (the hole frame's y) from 3 to 600 radii either way; the line's closest pass to it
+                if (ex.Feeding == 2)
+                {
+                    double ax = 0, ay = ct, az = st;                                           // the axis in the camera's frame
+                    double b = dir.X * ax + dir.Y * ay + dir.Z * az, dd = dir.X * Dx + dir.Y * Dy + dir.Z * Dz, ad = ax * Dx + ay * Dy + az * Dz, den2 = 1 - b * b;
+                    if (den2 > 1e-9)
+                    {
+                        double t = (dd - b * ad) / den2, s = (b * dd - ad) / den2;               // along the line, along the axis (universe units)
+                        double ys = s / rs, px = dir.X * t - (Dx + ax * s), py = dir.Y * t - (Dy + ay * s), pz = dir.Z * t - (Dz + az * s);
+                        double miss = Math.Sqrt(px * px + py * py + pz * pz), w = (0.6 + Math.Abs(ys) * 0.03) * rs;   // (the jet's width at that height, as drawn)
+                        if (t > 0 && t < bestT && Math.Abs(ys) >= 3 && Math.Abs(ys) <= 600 && (miss < w || miss / t * perRad < reachPx)) { bestT = t; bh = ex; part = 2; br = Math.Abs(ys); bx = 0; by = ys; bz = 0; }
+                    }
+                }
+            }
+            // a torn star's stream (a tidal disruption): its middle line, the same curve the card winds its gas along, turned its own way per star
+            foreach (var ex in _extras)
+            {
+                if (!ex.Hole || !ex.Eating || ex.Mass <= 0) continue;
+                for (int q = 0; q < Math.Max(1, ex.EatN); q++)
+                {
+                    double ra = q * Math.PI * 2 / Math.Max(1, ex.EatN) + ex.Turn * 3, cq = Math.Cos(ra), sq = Math.Sin(ra), rs = Units.Km(Physics.HorizonKm(ex.Mass));
+                    for (int k = 0; k <= 200; k++)
+                    {
+                        double s0 = k / 200.0, rr = 3.2 + 90 * Math.Exp(-s0 * 3.4), an = -s0 * 6.2832 * 2.4 + 0.9, lx = Math.Cos(an) * rr, lz = Math.Sin(an) * rr;
+                        double hx = lx * cq - lz * sq, hz = lx * sq + lz * cq, x, y, z; HoleToCamera(ex, hx, 0, hz, out x, out y, out z);
+                        double l = Math.Sqrt(x * x + y * y + z * z); if (l <= 0 || l >= bestT) continue;
+                        double c = (x * dir.X + y * dir.Y + z * dir.Z) / l; if (c <= 0) continue;
+                        double miss = Math.Sqrt(Math.Max(0, 1 - c * c)) * l, wide = (0.25 + 4 * s0 * s0) * 0.5 * rs;   // (the stream's width there, as drawn)
+                        if (miss < wide || miss / l * perRad < reachPx) { bestT = l; bh = ex; part = 3; br = rr; bx = hx; by = 0; bz = hz; }
+                    }
+                }
+            }
+            if (bh == null) return false;
+            _tPartHole = bh; _tPart = part; _tPartR = br; _tPartX = bx; _tPartY = by; _tPartZ = bz;
+            _tPartName = (part == 1 ? "the disc of " : part == 2 ? "a jet of " : "a star torn apart by ") + bh.Name.ToLowerInvariant();
+            _tKind = 1; _tIndex = -1; _tName = _tPartName; _tRadius = Units.Km(Physics.HorizonKm(bh.Mass)) * (part == 1 ? 0.5 : 2); _tSpot = null;
+            return true;
+        }
+        private static string Span(double sec) { return sec < 120 ? sec.ToString("0.#") + " seconds" : sec < 7200 ? (sec / 60).ToString("0") + " minutes" : sec < 172800 ? (sec / 3600).ToString("0.#") + " hours" : Years(sec / 31557600.0); }
+        // the disc's or the jet's card: where on it, how hot, how fast, its turn
+        private void HolePartCard(List<string> L, double dist)
+        {
+            var ex = _tPartHole; double rsKm = Physics.HorizonKm(ex.Mass), r = _tPartR;
+            if (_tPart == 1)
+            {
+                // a thin disc (Shakura and Sunyaev 1973): hottest near its inner edge, by its feeding rate and the hole's mass, cooling as r^-3/4
+                double tMax = 6.3e5 * Math.Pow(ex.Pl.FeedEdd, 0.25) * Math.Pow(Math.Max(1e-9, ex.Mass) / 1e8, -0.25), tK = tMax * Math.Pow(r / ex.Pl.DiscLo, -0.75);
+                double beta = Math.Sqrt(0.5 / r), periodS = 2 * Math.PI * r * rsKm * 1000 / (beta * Physics.C);   // (its circular speed, as the card draws it)
+                L.Add("gas falling in round " + ex.Name.ToLowerInvariant() + ", " + r.ToString("0.#") + " horizon radii out (" + Units.Describe(Units.Km(r * rsKm)) + ")");
+                L.Add("about " + tK.ToString(tK >= 1e4 ? "N0" : "0") + " K here, " + (tK > 1e5 ? "glowing in X-rays and far ultraviolet" : tK > 1e4 ? "glowing in ultraviolet" : "glowing in visible and infrared light"));
+                L.Add("speed " + (beta * Physics.C / 1000).ToString("N0") + " km/s, " + (beta * 100).ToString("0") + "% of light's; once round in " + Span(periodS));
+                L.Add("fed at " + (ex.Pl.FeedEdd * 100).ToString("0.#") + "% of the most its own light allows (the Eddington rate)");
+            }
+            else if (_tPart == 3)
+            {
+                // where a star like ours is torn: the hole's pull on its near side outdoing its own gravity (the tidal radius, R (M / m)^(1/3))
+                double tidalKm = 696000 * Math.Pow(Math.Max(1, ex.Mass), 1 / 3.0);
+                L.Add("a star that came too close to " + ex.Name.ToLowerInvariant() + ", stretched along its orbit into a stream of gas winding in to feed the disc");
+                L.Add("here " + r.ToString("0.#") + " horizon radii out (" + Units.Describe(Units.Km(r * rsKm)) + "), hotter and bluer the deeper it falls");
+                L.Add("a star like ours is torn within about " + Units.Describe(Units.Km(tidalKm)) + (tidalKm < rsKm ? ": inside the horizon, so a hole this heavy swallows such a star whole" : ""));
+            }
+            else
+            {
+                L.Add("a jet of " + ex.Name.ToLowerInvariant() + ": plasma flung out along its spin axis at nearly light's speed, wound by its magnetic field");
+                L.Add(r.ToString("N0") + " horizon radii up its length (" + Units.Describe(Units.Km(r * rsKm)) + "); real jets reach thousands of light-years");
+            }
+            L.Add("distance: " + Units.Describe(dist));
+        }
     }
 }

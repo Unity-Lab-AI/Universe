@@ -38,7 +38,7 @@ namespace Universe.Shell
         private const double Nucleon = 0.85e-18;    // a proton's or neutron's radius, about 0.85 femtometres
 
         private sealed class Mineral { public string Id, Name, Formula; public string[] Atoms; public float R, G, B, Lustre = 1; public Lattice Lat; public KeyValuePair<string, double[]>[] Molecule; public string Structure = ""; public bool Liquid; public double Spacing; public Dictionary<string, KeyValuePair<string, double>[]> Traces; }   // Traces: for each atom of the formula, the elements that stand in for it on its sites now and then, each with its share of those sites (content: trace)
-        private sealed class Element { public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; public double HalfLifeS; public string Decays = "", MadeIn = ""; }   // HalfLifeS: 0 stable; MadeIn: where its atoms were forged (content/elements.unt made-in) (content/elements.unt half-life, decays)
+        private sealed class Element { public double IonEv; public double Ionic; public int Charge; public string Symbol, Name; public int Z, A; public float R, G, B; public double Radius, Cov, Chi; public int[] Shells; public double HalfLifeS; public string Decays = "", MadeIn = ""; }   // HalfLifeS: 0 stable; MadeIn: where its atoms were forged (content/elements.unt made-in) (content/elements.unt half-life, decays)
         private readonly Dictionary<string, Mineral> _minerals = new Dictionary<string, Mineral>();
         private readonly Dictionary<string, List<KeyValuePair<Mineral, double>>> _mixes = new Dictionary<string, List<KeyValuePair<Mineral, double>>>();
         private readonly Dictionary<string, Element> _elements = new Dictionary<string, Element>(); private readonly Dictionary<int, Element> _byZ = new Dictionary<int, Element>();
@@ -70,7 +70,7 @@ namespace Universe.Shell
         private SpaceGen.Part[] _gasParts;
         public void SetSpace(int kind, ulong spot, double fromCentre, SpaceGen.Part[] parts)
         { Announce("SetSpace", true, new object[] { kind, spot, fromCentre, parts }); _recDepth++; try { Generation++;
-            _gasParts = parts; _bornSec = double.NaN;
+            _gasParts = parts; _bornSec = double.NaN; TempK = 0;   // (a cloud's temperature is not known here yet: no light drawn rather than another place's)
             _space = true; _spaceKind = kind; _seed = spot; _mix = null; _mixId = "space"; _noGrains = true; _plasma = false;
             // denser at the middle: an emission nebula about 9,000 atoms a cubic centimetre at its centre down to about 100 at its edge,
             // a reflection nebula about 3,000 to 30; between a cluster's stars about 1 (fromCentre: 0 the middle, 1 the edge)

@@ -110,6 +110,7 @@ namespace Universe.Shell
             }
             else if (_tKind == 1 && _tSn != null && _tName == "a supernova") SupernovaCard(L, dist);
             else if (SwarmPicked) SwarmCard(L, dist);
+            else if (PartPicked) HolePartCard(L, dist);
             else if (_tKind == 1)
             {
                 bool open = _system != null && Math.Abs(_tx - _ax) + Math.Abs(_ty - _ay) + Math.Abs(_tz - _az) < Units.Km(1e6);

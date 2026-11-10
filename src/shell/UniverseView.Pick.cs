@@ -67,6 +67,7 @@ namespace Universe.Shell
             // is off by up to a million kilometres: the zoom had flown to a point beside the body and stalled there, the dive never
             // within reach of the stone it was aimed at)
             if (_tKind == 6 && _tExtra != null) { dx = RelX(_tExtra) - _ox; dy = RelY(_tExtra) - _oy; dz = RelZ(_tExtra) - _oz; radius = _tRadius; return true; }
+            if (PartPicked) { HoleToCamera(_tPartHole, _tPartX, _tPartY, _tPartZ, out dx, out dy, out dz); radius = _tRadius; return true; }   // (a point of a hole's disc or jet)
             if (SwarmPicked && SwarmStarAt(_tSwarmHole, PartsFor(_tSwarmHole.Pl, _tSwarmHole.Spin), _tSwarmK, _lastDrawTime, out dx, out dy, out dz)) { radius = _tRadius; return true; }   // (a swarm star: where it is on its orbit now)
             if (_tKind == 1 && _tSn != null && _tName == "a supernova") { _tx = _tSn.Ux; _ty = _tSn.Uy; _tz = _tSn.Uz; }
             if (_tKind == 1 && _system != null && _tName == "a star" && Math.Abs(_tx - _ax) + Math.Abs(_ty - _ay) + Math.Abs(_tz - _az) < SystemRange * 0.5) { dx = -_ox; dy = -_oy; dz = -_oz; double want = StarRadiusNow; _tRadius = _tRadius > 0 && want > 0 ? Math.Exp(Math.Log(_tRadius) + (Math.Log(want) - Math.Log(_tRadius)) * 0.08) : want; radius = _tRadius; return true; }   // (its real radius eased in from the one the pick was made with, a twelfth of the way a frame: the shot measures its distance in radii, and the radius jumping from one solar radius to a dwarf's or a giant's the frame the system opened jerked the camera)   // (a star whose system is open is that star: its real place and radius, so a zoom onto its face ends at its face. The pick's stored point can sit a tenth of an AU from where the star is drawn, and aimed at the point the zoom crawled to a kilometre short of nothing, the caption saying onto its face with the star a dot in the distance, and the dive never came; one solar radius had stood for every star)   // (where it is now: a supernova is moved onto a real star of its galaxy once that galaxy's stars are made, after the pick from afar had copied its far place; the shots had flown to the old point, light-years from the dying star, and seen it as a point of light with no cloud)
@@ -98,6 +99,8 @@ namespace Universe.Shell
             if (ClickSupernova(dir)) return;                                                // a supernova going now, under the mouse: picked before any star
             _tSwarmHole = null;
             if (ClickSwarmStar(dir, 24 * Math.Max(1, _lastH / 1080.0))) return;            // a star of a feeding hole's swarm, under the mouse
+            _tPartHole = null;
+            if (ClickHolePart(dir, 24 * Math.Max(1, _lastH / 1080.0))) return;             // a feeding hole's disc or jet, under the mouse
             double reachPx = 24 * Math.Max(1, _lastH / 1080.0), best = reachPx * reachPx; int kind = -1, idx = 0; double tx = 0, ty = 0, tz = 0, trad = 0; string name = "";
             _tSpot = null;
             // a spot on the small body you are at: where the line under the mouse meets its drawn stone (its real shape, as a world's
@@ -488,6 +491,7 @@ namespace Universe.Shell
             Jumped("dragging");
             SpawnRegions(); TakeGalaxies(); HoldInside();                                   // the galaxies round you (their stars made in the background, a few taken to the card each frame), and the edge of the visible universe
             double reach = NearestDistance();
+            if (_matterScale <= 0 && _depthKm > 0) { _depthKm = 0; _matterSpot = ulong.MaxValue; _matter.Enclosed = false; }   // (out of the matter: back at the ground)
             if (_matterScale <= 0)
             {
                 // W A S D, Q and E: fly like a first-person game, at a speed scaled to the nearest thing (half its distance a
@@ -564,7 +568,7 @@ namespace Universe.Shell
                 // below a millimetre or so: the same zoom, with your height kept finely enough for atoms (the wheel moves
                 // you the same share of the way each notch; W A S D Q E fly at the same speed for the scale; time runs on)
                 if (input.Wheel != 0) _matterScale *= Math.Pow(0.87, input.Wheel);
-                if (input.Wheel > 0) _matter.Landmarks(_matterScale);                     // (the wheel goes down onto the landmark at each size: an atom, its nucleus, a nucleon, a quark; never between them into nothing)
+                if (input.Wheel > 0) _matter.Landmarks(_matterScale, _tour == null);                     // (the wheel goes down onto the landmark at each size: an atom, its nucleus, a nucleon, a quark; never between them into nothing)
                 {
                     double mf = (input.IsDown(0x57) ? 1 : 0) - (input.IsDown(0x53) ? 1 : 0), mr = (input.IsDown(0x44) ? 1 : 0) - (input.IsDown(0x41) ? 1 : 0), mu = (input.IsDown(0x45) ? 1 : 0) - (input.IsDown(0x51) ? 1 : 0);
                     if (mf != 0 || mr != 0 || mu != 0)
@@ -580,6 +584,7 @@ namespace Universe.Shell
                         if (mu != 0) _matterScale *= Math.Exp(mu * 0.5 * dt * (input.IsDown(0x10) ? 4 : 1));
                     }
                 }
+                DigStep(input, dt);                                                       // Page Down / Page Up: down through the world's layers to its middle, and back
                 if (input.WasPressed(0x20)) TogglePause();
                 if (input.WasPressed(0xBC)) SetTime(TimeStep - 1);
                 if (input.WasPressed(0xBE)) SetTime(TimeStep + 1);

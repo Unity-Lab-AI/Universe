@@ -73,7 +73,7 @@ namespace Universe.Shell
             double most = Math.Sqrt(budget * L.Area / Math.Max(1, per * nk)) * 0.5; reach = Math.Min(reach, most);
             // cells covering the square round (cx, cz): solve x = i*A + j*B in the face's plane
             double det = L.A[0] * L.B[2] - L.A[2] * L.B[0];
-            for (long k = -1; k >= -nk; k--)
+            for (long k = Enclosed ? nk : -1; k >= -nk; k--)                               // (inside the rock: layers above you too)
             {
                 double ox = cx - k * L.C[0], oz = cz - k * L.C[2];
                 double i0 = double.MaxValue, i1 = double.MinValue, j0 = double.MaxValue, j1 = double.MinValue;
@@ -89,7 +89,7 @@ namespace Universe.Shell
                         {
                             var f = L.Pos[q]; double u = i + f[0], w = j + f[1], h = k + f[2];
                             double X = u * L.A[0] + w * L.B[0] + h * L.C[0], Y = h * L.C[1], Z = u * L.A[2] + w * L.B[2] + h * L.C[2];
-                            if (Y > 0 || Y < -depth || Math.Abs(X - cx) > reach || Math.Abs(Z - cz) > reach) continue;
+                            if (Y > (Enclosed ? depth : 0) || Y < -depth || Math.Abs(X - cx) > reach || Math.Abs(Z - cz) > reach) continue;
                             // which atom is on this site here (a shared site: each as often as the data gives; maybe none)
                             var els = L.Els[q]; var oc = L.Occ[q]; string sym = null; double r = Hash(i * 977 + q, j, k + 90, _seed), acc = 0;
                             for (int t = 0; t < els.Length; t++) { acc += oc[t]; if (r < acc) { sym = els[t]; break; } }
@@ -110,11 +110,14 @@ namespace Universe.Shell
 
         // the crystal round you, worked out once and kept while you stay about where you are (not every frame)
         private List<CAtom> _kept; private Mineral _keptM; private double _keptX, _keptZ, _keptReach, _keptDepth;
+        /// <summary>Inside the rock, below a world's ground: the crystal goes on above you as well as below (no face, no open space over
+        /// it), the same depth every way.</summary>
+        public bool Enclosed; private bool _keptEnclosed;
         private List<CAtom> CrystalKept(Mineral m, double reach, double depth, int budget)
         {
-            if (_kept != null && _keptM == m && Math.Abs(_keptDepth - depth) < 1e-20 && reach <= _keptReach && reach > _keptReach * 0.4
+            if (_kept != null && _keptM == m && _keptEnclosed == Enclosed && Math.Abs(_keptDepth - depth) < 1e-20 && reach <= _keptReach && reach > _keptReach * 0.4
                 && Math.Abs(_fx - _keptX) < _keptReach * 0.25 && Math.Abs(_fz - _keptZ) < _keptReach * 0.25) return _kept;
-            _keptReach = reach * 1.6; _keptX = _fx; _keptZ = _fz; _keptM = m; _keptDepth = depth;
+            _keptReach = reach * 1.6; _keptX = _fx; _keptZ = _fz; _keptM = m; _keptDepth = depth; _keptEnclosed = Enclosed;
             _kept = Crystal(m, _fx, _fz, _keptReach, depth, budget); return _kept;
         }
 

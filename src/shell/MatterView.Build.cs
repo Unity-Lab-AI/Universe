@@ -90,8 +90,9 @@ namespace Universe.Shell
                         AddBody(2, a, b, sx, sy, sz, step * 0.45, s);
                     }
             }
-            if (!_noGrains && !_space && s < FocusRad * 1.5) SurfaceThings(solid, glow, mesh, s);
+            if (!_noGrains && !_space && !Enclosed && s < FocusRad * 1.5) SurfaceThings(solid, glow, mesh, s);   // (inside the rock nothing lies on a face: no silt, no film, no life)
             AirAbove(glow, s);                                                               // the world's air over the ground, molecule by molecule
+            if (!overlay) Photons(glow, s, time);                                            // the matter's own light, by its temperature (MatterView.Photons.cs)
             if (overlay) return;                                                        // over the ground: only its grains so far
             // the focus grain's surface: detail at every size, fixed in place (cells of powers of ten, two at a time, blended),
             // in the grain's colour; its finest cells take on the colours of its atoms
@@ -119,8 +120,11 @@ namespace Universe.Shell
                             if (c < 3e-10) { const double tw = 4e-11; long ti = (long)Math.Floor(x / tw), tj = (long)Math.Floor(z / tw); ty = -Math.Floor(Hash(ti, tj, 60, _seed) * 4) * 3e-13; sh *= (float)(1 + ty / 3e-13 * 0.08); }
                             float fsh = FocusShade, r = fm.R * fsh, g = fm.G * fsh, b = fm.B * fsh;             // the stone's own colour, carried on
                             if (atomish > 0) { var ae = El(fm.Atoms[(int)(Hash(ci, cj, 5, _seed) * fm.Atoms.Length) % fm.Atoms.Length]); if (ae != null) { r = (float)(r * (1 - atomish) + ae.R * atomish); g = (float)(g * (1 - atomish) + ae.G * atomish); b = (float)(b * (1 - atomish) + ae.B * atomish); } }
-                            float f = (float)(1 - Fade(s, AtomSpacing * 40, AtomSpacing * 22));
-                            if (f > 0.01) { Add(solid, x, ty - c * 0.05 - (Structured(fm) ? AtomSpacing * 3 * (1 - f) : 0), z, c * 0.72, r * sh, g * sh, b * sh, s); if (solid.Count > 0) { var tv = solid[solid.Count - 1]; tv.A = 0.5f; solid[solid.Count - 1] = tv; } }   // a flat tile of the face
+                            // never faded out: the tiles are the crystal itself, and once its atoms are drawn one by one (from forty spacings)
+                            // they are its body below the drawn layers, the floor the atoms' clouds lie over (a few spacings down, which from
+                            // above barely moves it)
+                            bool under = Structured(fm) && s < AtomSpacing * 40;
+                            { Add(solid, x, ty - c * 0.05 - (under ? AtomSpacing * 9.5 : 0), z, c * 0.72, r * sh, g * sh, b * sh, s); if (solid.Count > 0) { var tv = solid[solid.Count - 1]; tv.A = 0.5f; solid[solid.Count - 1] = tv; } }   // a flat tile of the face
                         }
                 }
             }
@@ -149,14 +153,11 @@ namespace Universe.Shell
                 // the atoms' own systems fade in between seven spacings and four; the atom you are at hands over to its inside view
                 // between eight widths and four, its cloud fading as its electrons' shells and orbitals come up (it had been one
                 // switch at four spacings and another at four radii: black, then orbs in a frame, then the orbitals in a frame)
-                double cw = Fade(s, AtomSpacing * 7, AtomSpacing * 4); bool lattice = cw < 0.98;   // (the electrons on their paths come in a little sooner, from seven spacings)
                 foreach (var at0 in CrystalKept(fm, 2.4 * s, depth, 25000))
                 {
                     var at = at0; double dSince; Element dPar; { var dE = Daughter(at0.E, AtomKey(at0.X, at0.Y, at0.Z), out dSince, out dPar); if (dE != at0.E) at = new CAtom { E = dE, X = at0.X, Y = at0.Y, Z = at0.Z }; }   // (as it is now: decayed, if its moment has come)
                     double ar = AtomRadius(at.E), ay = at.Y - ar - _yOff;                     // on the grain's real surface
                     if (dSince >= 0) DecayFlash(glow, solid, dPar, at.X, ay, at.Z, dSince, s);   // (its particle still flying out)
-                    bool inFocus = at.E == focus && Math.Abs(at.X - fax) < 1e-20 && Math.Abs(ay - fay) < 1e-20 && Math.Abs(at.Z - faz) < 1e-20 && s < Math.Max(ar, AtomSpacing) * 8;
-                    float fw = inFocus ? (float)Fade(s, Math.Max(ar, AtomSpacing) * 8, Math.Max(ar, AtomSpacing) * 4) : 0f; if (fw >= 0.98f) continue;   // (handed over by degrees to its inside view below)
                     float sh = (float)(1 + 0.6 * at.Y / AtomSpacing * 0.25); sh = Math.Max(0.45f, sh);
                     // from afar a ball in its colour, growing up out of the face; close in the ball gives way to the atom's own system
                     // (its nucleus and its electrons on their paths), as the electrons are what an atom's size really is
@@ -166,15 +167,11 @@ namespace Universe.Shell
                     // between the face and the atom's own system (from about ten nanometres in to about an atom's width), each atom as
                     // its electron cloud: a soft glow of its element's colour at its real size (the cloud of where its electrons may be,
                     // densest at the middle), its nucleus a spark at the middle
-                    float lw = (float)((1 - cw) * (1 - fw));
-                    if (lw > 0.02f && ar > px * 2) LatticeCloud(glow, at.E, at.X, ay, at.Z, s, sh * lw);
-                    // the atom's level: one drawing of each atom (its nucleus and its electrons, each shown once big enough to see), the
-                    // ones near where you look with their electrons' paths too; coming up by degrees as the lattice's clouds fade
-                    if (cw > 0.02) { float fa = f * sh * (float)cw * (1 - fw); if (NearLook(at.X, ay, at.Z, s)) Cloud(glow, at.E, at.X, ay, at.Z, s, time, akey, fa); else AtomSystem(glow, at.E, at.X, ay, at.Z, s, time, akey, fa); }
+                    Density(glow, fm, at.E, at.X, ay, at.Z, s, f * sh);                             // (one model at every size: its electron density, overlapping its neighbours'; DESIGN 740)
                     { int nb = _bodies.Count; AddBody(1, 0, 0, at.X, ay, at.Z, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = at.E.Symbol; }   // every layer's atoms
                 }
-                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, (float)(1 - 0.6 * cw));
-                if (probe) Log("LATTICE probe: drawn " + drawnAt.Count + " near, glows " + (glow.Count - glow0) + ", bodies " + (_bodies.Count - bodies0) + ", cw " + cw.ToString("0.00"));   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
+                if (AtomSpacing > px * 3) Bonds(glow, drawnAt, s, time, 0.7f);   // (the shared electrons between neighbours, the same at every size)
+                if (probe) Log("LATTICE probe: drawn " + drawnAt.Count + " near, glows " + (glow.Count - glow0) + ", bodies " + (_bodies.Count - bodies0)+ "");   // (bonds once they span a few pixels: the shared pairs, dimmer among the electrons at the atom's level)
             }
             else if (fm != null && s < AtomSpacing * 40)
             {
@@ -187,8 +184,6 @@ namespace Universe.Shell
                             var el = SiteAtom(fm, i, j, k);
                             if (el == null) continue;
                             double ar = AtomRadius(el);
-                            bool inFocus = i == ai0 && j == aj0 && k == 0 && s < Math.Max(ar, AtomSpacing) * 8;
-                            float fw = inFocus ? (float)Fade(s, Math.Max(ar, AtomSpacing) * 8, Math.Max(ar, AtomSpacing) * 4) : 0f; if (fw >= 0.98f) continue;   // (you are going into this one: handed over by degrees to its inside view below)
                             float sh = (float)(1 - 0.25 * -k);
                             double sx, sy, sz; SitePos(fm, i, j, k, out sx, out sy, out sz);                // its place (a liquid's: loose and moving)
                             var mol = fm.Molecule;
@@ -199,23 +194,19 @@ namespace Universe.Shell
                                 // close in and near where you look (every atom of every molecule had been its full system, every electron and
                                 // its path, at every size below forty spacings: millions of points in a frame at six nanometres, and the card
                                 // stopped answering: the driver reset, and the program went down with it)
-                                double cw2 = Fade(s, AtomSpacing * 7, AtomSpacing * 4); float lw2 = (float)((1 - cw2) * (1 - fw));
                                 for (int q = 0; q < mol.Length; q++)
                                 {
                                     var me = q == 0 ? el : El(mol[q].Key); if (me == null) continue; double ox = 0, oy = 0, oz = 0; if (q > 0) Orient(i, j, k, mol[q].Value, out ox, out oy, out oz);
                                     double mx = sx + ox, my = sy - ar + oy - _yOff, mz = sz + oz, mar = AtomRadius(me); long mk = i * 7919 ^ j * 104729 ^ k * 31 + q;
                                     if (mar < px * 0.5) continue;
-                                    if (lw2 > 0.02f && mar > px * 2) LatticeCloud(glow, me, mx, my, mz, s, sh * lw2);
-                                    if (cw2 > 0.02) { float fa = sh * f * (float)cw2 * (1 - fw); if (NearLook(mx, my, mz, s)) Cloud(glow, me, mx, my, mz, s, time, mk, fa); else AtomSystem(glow, me, mx, my, mz, s, time, mk, fa); }
+                                    Density(glow, fm, me, mx, my, mz, s, sh * f);                   // (one model at every size: DESIGN 740)
                                 }
                                 { int nb = _bodies.Count; AddBody(6, i, j, sx, sy - ar - _yOff, sz, ar * 1.6, s); if (_bodies.Count > nb) _bodies[nb].Sym = fm.Id; }   // the whole molecule
                             }
                             else
                             {
                                 if (ar < px * 0.5) continue;
-                                double cw2 = Fade(s, AtomSpacing * 7, AtomSpacing * 4); float lw2 = (float)((1 - cw2) * (1 - fw));
-                                if (ar > px * 2) LatticeCloud(glow, el, sx, sy - ar - _yOff, sz, s, sh * lw2);   // (above the atoms' level each as its cloud, as a crystal's; the hand-overs by degrees, the same)
-                                if (cw2 > 0.02) { float fa = sh * f * (float)cw2 * (1 - fw); if (NearLook(sx, sy - ar - _yOff, sz, s)) Cloud(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, fa); else AtomSystem(glow, el, sx, sy - ar - _yOff, sz, s, time, i * 7919 ^ j * 104729 ^ k, fa); }
+                                Density(glow, fm, el, sx, sy - ar - _yOff, sz, s, sh * f);                   // (one model at every size: DESIGN 740)
                             }
                             { int nb = _bodies.Count; AddBody(1, i, j, sx, sy - ar - _yOff, sz, ar, s); if (_bodies.Count > nb) _bodies[nb].Sym = el.Symbol; }   // every layer's atoms
                         }
@@ -224,11 +215,10 @@ namespace Universe.Shell
             if (focus != null && s < Math.Max(AtomRadius(focus), AtomSpacing) * 8)
             {
                 double ar = AtomRadius(focus), cy = fay, nr = NucleusRadius(focus), ax0 = fax, az0 = faz;
-                float iw = (float)Fade(s, Math.Max(ar, AtomSpacing) * 8, Math.Max(ar, AtomSpacing) * 4);   // (coming up by degrees from eight widths to four, as its drawing among the others above fades out)
+                // (no hand-over: the atom you are at is its density like every atom, and from here its own electrons and orbitals are drawn on it)
                 // its electrons, the same as every atom's system: each a clear dot on its own path in its shells, the valence shell
                 // in gold (the nucleus is drawn below, for real)
-                float cloud = (float)Fade(s, Math.Max(ar, AtomSpacing) * 4, Math.Max(ar, AtomSpacing) * 2);
-                Cloud(glow, focus, ax0, cy, az0, s, time, 777, Math.Max(0.6f, cloud) * iw);   // fully drawn from as far as every atom's
+                Cloud(glow, focus, ax0, cy, az0, s, time, 777, 1f);   // fully drawn from as far as every atom's
                 if (s < ar * 0.5)
                 {
                     // inside its electron cloud it is not empty: the innermost electrons (1s) are densest at the nucleus itself,

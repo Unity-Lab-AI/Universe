@@ -85,7 +85,9 @@ namespace Universe.Shell
         /// <summary>Zooming in by hand with nothing finer picked: the view locks onto the landmark at each size (the nearest atom,
         /// then its nucleus, then a proton or neutron, then a quark), so the wheel goes down into matter, never between it into
         /// nothing. Called on each wheel notch in, with the scale.</summary>
-        public void Landmarks(double s)
+        public void Landmarks(double s) { Landmarks(s, false); }
+        /// <summary>The same; by hand (never on the tour, whose stops pick their own) also the molecule and the grain face's own things.</summary>
+        public void Landmarks(double s, bool byHand)
         {
             if (_space) return;
             int k = _picked != null ? _picked.Kind : -1;
@@ -94,6 +96,9 @@ namespace Universe.Shell
             else if (s < Nucleon * 8) { if (k != 5 && k != 4) PickNearest("proton"); }
             else if (s < ar * 0.5) { if (k != 7 && k != 5 && k != 4) PickNearest("nucleus"); }
             else if (s < AtomSpacing * 6) { if (k != 1 && k != 3 && k != 6 && k != 7 && k != 5 && k != 4) PickNearest("atom"); }
+            else if (!byHand) return;
+            else if (s < AtomSpacing * 40) { if (k != 6 && k != 1 && k != 3) PickNearest("molecule"); }   // (a molecule on the face, where there is one: water, a clay's)
+            else if (s < Grain * 1.5 && !_noGrains) { if (k != 8 && k != 0) PickNearest("thing"); }   // (on the grain's face: the nearest real thing on it, a speck, a plate, a cluster, a cell)
         }
         private readonly List<string> _pickSyms = new List<string>();
         public void PickNearest(string what)
@@ -114,7 +119,7 @@ namespace Universe.Shell
                 if (_picked != null) { _lastLeftX = _picked.X; _lastLeftZ = _picked.Z; }
                 _picked = nb; _tfx = nb.X; _tfz = nb.Z; _tfy = nb.Y; PickCount++; return;
             }
-            int kind = what == "grain" ? 0 : what == "spot" ? 2 : what == "atom" ? 1 : what == "electron" ? 3 : what == "nucleus" ? 7 : what == "proton" ? 5 : what == "quark" ? 4 : -1; if (kind < 0) return;
+            int kind = what == "grain" ? 0 : what == "spot" ? 2 : what == "atom" ? 1 : what == "electron" ? 3 : what == "nucleus" ? 7 : what == "proton" ? 5 : what == "quark" ? 4 : what == "molecule" ? 6 : what == "thing" ? 8 : -1; if (kind < 0) return;
             // an atom: the mineral's elements in turn (its oxygen is three atoms in five of every silicate and two in three of ice,
             // and the face's top layer is mostly its oxygen, so the nearest atom was oxygen every time); each pick takes the next
             // element the face has, and the nearest atom of that

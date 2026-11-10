@@ -49,10 +49,21 @@ namespace Universe.Core
             return lib;
         }
 
+        // the entries by kind, built once (rebuilt if entries were added since): a lookup walks only its own kind, never the
+        // whole content (thousands of entries) as it did on every card line
+        private Dictionary<string, List<ContentEntry>> _byKind; private int _indexed = -1;
+        private static readonly List<ContentEntry> None = new List<ContentEntry>();
         public IEnumerable<ContentEntry> OfKind(string file, string kind)
         {
-            foreach (var e in Entries)
-                if (e.Kind == kind && (file == null || e.File.EndsWith(file, StringComparison.OrdinalIgnoreCase))) yield return e;
+            if (_byKind == null || _indexed != Entries.Count)
+            {
+                _byKind = new Dictionary<string, List<ContentEntry>>();
+                foreach (var x in Entries) { List<ContentEntry> l; if (!_byKind.TryGetValue(x.Kind ?? "", out l)) { l = new List<ContentEntry>(); _byKind[x.Kind ?? ""] = l; } l.Add(x); }
+                _indexed = Entries.Count;
+            }
+            List<ContentEntry> of; if (!_byKind.TryGetValue(kind ?? "", out of)) of = None;
+            foreach (var e in of)
+                if (file == null || e.File.EndsWith(file, StringComparison.OrdinalIgnoreCase)) yield return e;
         }
 
         private void ParseFile(string path)

@@ -369,8 +369,10 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 | A black hole's disc, swarm and torn stars | `content/bodies.unt`: `eating-stars` (how many stars a feeding hole tears apart at once), `disc-rs` (its disc's reach in horizon radii), `inner-orbit-seconds` (how long its inner edge takes round, as watched), `swarm-stars` and `swarm-rs` (stars on tight ellipses round it), `eating-share` (how many feeding holes are tearing a star apart now). Every motion is worked out on the card from these |
 | Dark matter and dark energy | `content/physics.unt` `@law cosmos`: `dark-matter-share` and `rim-speed-km-s` (a galaxy's card: its mass with its halo, its stars' flat speed), `dark-energy-share` and `hubble-km-s-mpc` (the horizon's words) |
 | A new galaxy shape | `src/gen/GalaxyGen.cs` |
-| New controls or camera moves | `UniverseView.Update` and the tour's `TourStep` (`src/shell/UniverseView.cs`) |
-| What the info cards say | `UniverseView.Card` |
+| New controls or camera moves | `UniverseView.Update` (`src/shell/UniverseView.cs`) and the tour's `TourStep` (`src/shell/UniverseView.Tour.cs`) |
+| What the info cards say | `UniverseView.Card` (`src/shell/UniverseView.Card.cs`) |
+| What a body is made of inside | its `@layer` entries (`content/planets.unt`, `content/small-bodies.unt`, `content/stars.unt`, `content/gas-giants.unt`), read by `src/gen/BodyLayers.cs` |
+| Where you are, from the universe down | the one tree: `src/core/Thing.cs`, `UniverseView.Here` (`src/shell/UniverseView.Tree.cs`), `MatterView.Below` (`src/shell/MatterView.Tree.cs`) |
 
 **The rules that keep it a toolkit:**
 

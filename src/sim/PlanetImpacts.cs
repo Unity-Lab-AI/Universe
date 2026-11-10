@@ -69,11 +69,11 @@ namespace Universe.Sim
             if (CraterKm[size] > 0) { Craters.Add(new double[] { d.X, d.Y, d.Z, CraterKm[size] }); if (Craters.Count > 60) { int least = 0; for (int q = 1; q < Craters.Count; q++) if (Craters[q][3] < Craters[least][3]) least = q; Craters.RemoveAt(least); } }   /* the smallest wear away first */
             switch (size)
             {
-                case 4: life.Disaster(d.X, d.Y, d.Z, 0.03); break;
-                case 5: life.Disaster(d.X, d.Y, d.Z, 0.08); break;
-                case 6: life.Disaster(d.X, d.Y, d.Z, 0.5); life.GlobalKill(0.05); DarkYearsLeft = Math.Max(DarkYearsLeft, 3); break;
-                case 7: life.Disaster(d.X, d.Y, d.Z, 0.95); life.GlobalKill(0.75); DarkYearsLeft = Math.Max(DarkYearsLeft, 10); break;
-                default: life.GlobalKill(0.98); DarkYearsLeft = Math.Max(DarkYearsLeft, 1000); break;
+                case 4: if (life != null) life.Disaster(d.X, d.Y, d.Z, 0.03); break;
+                case 5: if (life != null) life.Disaster(d.X, d.Y, d.Z, 0.08); break;
+                case 6: if (life != null) life.Disaster(d.X, d.Y, d.Z, 0.5); if (life != null) life.GlobalKill(0.05); DarkYearsLeft = Math.Max(DarkYearsLeft, 3); break;
+                case 7: if (life != null) life.Disaster(d.X, d.Y, d.Z, 0.95); if (life != null) life.GlobalKill(0.75); DarkYearsLeft = Math.Max(DarkYearsLeft, 10); break;
+                default: if (life != null) life.GlobalKill(0.98); DarkYearsLeft = Math.Max(DarkYearsLeft, 1000); break;
             }
         }
 

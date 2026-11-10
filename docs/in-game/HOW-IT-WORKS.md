@@ -81,6 +81,20 @@ Universe runs on the real laws of nature, with their real numbers (all in `conte
 
 A galaxy holds about a hundred billion stars, and the program keeps a sample of 150,000. Round the camera, the real ones are made at the galaxy's true density, in cubes about 25 light-years wide, every cube within about 60 light-years of you (both are traits of the universe template), so the sky is as deep in stars on every side. Each cube is made from its own position, so they are the same stars whenever you come back, and each star is placed exactly, to a fraction of an AU, however far across the galaxy you are.
 
+## Worked out where you are
+
+Anything that would take the whole universe to work out is worked out only where you are, at the detail your view needs, so any one view is easily made:
+
+- **Small streams:** a fine drainage map of the ground round you, forty times your height across, made in the background: streams from about half a square kilometre drained, ponds in the hollows.
+- **Ice ages:** each world's ice line from its own climate, swayed by its orbit's cycles (100,000, 405,000, 41,000 and 23,000 years), the ground remade as the ice moves.
+- **Galaxies colliding:** the galaxy you are near and its nearest neighbour fall together by their pulls, their stars stepped through both, so the tails, the bridge and the merger come of the physics.
+- **Stars born and ageing:** every star round you its own mass and age, through its main sequence, giant and remnant; a nebula's stars switching on as they are born; flares on the star of the system you are at.
+- **Seas:** upwelling and the deep water forming, the tide raised in shallows and narrowing bays, each world's own salt from its land, the western boundary currents and the upwellings drawn on the water.
+- **Air:** a clear air's sky from its pressure (a thin air darker, a thick one whiter), a dusty air's from its dust.
+- **Plates:** the world's ground carried by its plates as they move, raised where they crash and sunk where they spread.
+- **Space stretching:** the far galaxies and the cosmic web drawn at their true distances now.
+- **Gravity back on:** the stars round you swing back about their paths, swollen stars fall back in on themselves, a black hole's gas and stars fall back onto new orbits round it.
+
 ## A living world, even a dead one
 
 Every rocky world runs on its own clock:
@@ -89,7 +103,7 @@ Every rocky world runs on its own clock:
 - The magnetic field flips, and the air and climate follow real chemistry.
 - Ice ages come with the orbit's wobbles, mountains wear down, and rocks from space strike.
 
-Its ground changes all at once at big moments, never piece by piece in front of you.
+Its ground is remade at big moments and as its plates and ice move, never piece by piece in front of you.
 
 ### Under the sea
 
@@ -109,8 +123,8 @@ Time runs at the speed you choose, from paused and real time up to a billion yea
 
 ## Built from scratch
 
-There is no engine under this, no library beside it and no art inside it. The window, the input and the menus are direct calls into Windows. The graphics are Direct3D 12, called through its method tables by our own declarations, with our own shaders compiled as the program starts. The maths (vectors, the CDF 9/7 wavelet, mode-E, the physics), the content format and its reader, every generator (galaxies, stars, systems, worlds, ground, grains, atoms), the camera, the tour, the cards and their blocky font, this document viewer, the installer and the icons are all our own code, the .cdf97w clip format with its wavelet coder and its player too: about 21,800 lines of C# and shader, and 11,400 lines of templates. What it borrows is Windows itself: Direct3D 12 and its shader compiler for the card, the framework's Deflate inside a PNG. The compiler is the one inside every copy of Windows. Nothing is downloaded and nothing is installed to build it.
+There is no engine under this, no library beside it and no art inside it. The window, the input and the menus are direct calls into Windows. The graphics are Direct3D 12, called through its method tables by our own declarations, with our own shaders compiled as the program starts. The maths (vectors, the CDF 9/7 wavelet, mode-E, the physics), the content format and its reader, every generator (galaxies, stars, systems, worlds, ground, grains, atoms), the camera, the tour, the cards and their blocky font, this document viewer, the installer and the icons are all our own code, the .cdf97w clip format with its wavelet coder and its player too: about 23,000 lines of C# and shader, and 12,000 lines of templates. What it borrows is Windows itself: Direct3D 12 and its shader compiler for the card, the framework's Deflate inside a PNG. The compiler is the one inside every copy of Windows. Nothing is downloaded and nothing is installed to build it.
 
 ## Still to come
 
-Gravity as a live force beyond the system you are at (the small bodies, other systems, a galaxy's stars falling back once gravity returns); the fields particles are waves in; light rendered truly below its wavelength; the waveform carrying every field from the cosmic web to the microbes (gas and star fields, the ground itself, clouds, stars' surfaces); native Linux and Mac builds. Then life on the worlds, and the larger game the lab builds on this universe: that is DNA-AND's, never this program's.
+Gravity as a live force beyond the system you are at (the small bodies, other systems, a whole galaxy's stars falling back once gravity returns); the cosmic web's light out to the horizon; the fields particles are waves in; light rendered truly below its wavelength; the waveform carrying every field from the cosmic web to the microbes (gas and star fields, the ground itself, clouds, stars' surfaces); native Linux and Mac builds. Then life on the worlds, and the larger game the lab builds on this universe: that is DNA-AND's, never this program's.

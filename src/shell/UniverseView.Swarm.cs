@@ -25,7 +25,16 @@ namespace Universe.Shell
             double off = !Flown ? 0 : Math.Max(1e-3, _lastDrawTime - _gravityOffWatch);
             if (off <= 0) return SwarmStarRaw(ex, hp, k, time, out x, out y, out z);
             double x0, y0, z0, x1, y1, z1; bool ok = SwarmStarRaw(ex, hp, k, time - off, out x0, out y0, out z0) & SwarmStarRaw(ex, hp, k, time - off + 0.01, out x1, out y1, out z1);
-            double fl = OffWatchFlight; x = x0 + (x1 - x0) / 0.01 * fl; y = y0 + (y1 - y0) / 0.01 * fl; z = z0 + (z1 - z0) / 0.01 * fl; return ok;
+            double fl = OffWatchFlight, vx = (x1 - x0) / 0.01, vy = (y1 - y0) / 0.01, vz = (z1 - z0) / 0.01; x = x0 + vx * fl; y = y0 + vy * fl; z = z0 + vz * fl;
+            // gravity back on: falling back under the hole's pull on its new path (as the card draws it: mu nine K squared)
+            // (about the hole's middle, its pull in these units: nine K squared times its horizon's radius cubed; its turn changes nothing)
+            if (Window.GravityOn && off > fl && hp.K > 0)
+            {
+                double rs = Units.Km(Physics.HorizonKm(ex.Mass)), hx = RelX(ex) - _ox, hy = RelY(ex) - _oy, hz = RelZ(ex) - _oz, nx, ny, nz, nvx, nvy, nvz;
+                Kepler.Propagate(9.0 * hp.K * hp.K * rs * rs * rs, x - hx, y - hy, z - hz, vx, vy, vz, off - fl, out nx, out ny, out nz, out nvx, out nvy, out nvz);
+                x = nx + hx; y = ny + hy; z = nz + hz;
+            }
+            return ok;
         }
         private bool SwarmStarRaw(Extra ex, HoleParts hp, int k, double time, out double x, out double y, out double z)
         {

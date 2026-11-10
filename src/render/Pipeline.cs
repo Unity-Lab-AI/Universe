@@ -44,6 +44,24 @@ static const float2 corners[6] = { float2(-1,-1), float2(-1,1), float2(1,1), flo
 
 uint ohash(uint a, uint b) { uint h = a * 747796405u + b * 2891336453u + 1u; h = ((h >> ((h >> 28u) + 4u)) ^ h) * 277803737u; return (h >> 22u) ^ h; }
 float oh01(uint a, uint b) { return (ohash(a, b) & 0xFFFFFF) / 16777216.0; }
+// a body carried on under one mass's pull mu from its place r and velocity v for a time dt (the universal variable, Stumpff's C and S,
+// Newton on the universal Kepler equation, the Lagrange f and g: as src/core/Kepler.cs), its new place
+float kstC(float z) { return z > 1e-4 ? (1 - cos(sqrt(z))) / z : z < -1e-4 ? (cosh(sqrt(-z)) - 1) / -z : 0.5 - z / 24; }
+float kstS(float z) { if (z > 1e-4) { float q = sqrt(z); return (q - sin(q)) / (q * q * q); } if (z < -1e-4) { float q = sqrt(-z); return (sinh(q) - q) / (q * q * q); } return 1.0 / 6 - z / 120; }
+float3 keplerOn(float mu, float3 r, float3 v, float dt)
+{
+    float r0 = max(1e-6, length(r)), vr0 = dot(r, v) / r0, alpha = 2 / r0 - dot(v, v) / mu, smu = sqrt(mu);
+    float chi = alpha > 0 ? smu * alpha * dt : smu * dt / r0;
+    for (int it = 0; it < 24; it++)
+    {
+        float z = alpha * chi * chi, c = kstC(z), sv = kstS(z);
+        float F = r0 * vr0 / smu * chi * chi * c + (1 - alpha * r0) * chi * chi * chi * sv + r0 * chi - smu * dt;
+        float dF = r0 * vr0 / smu * chi * (1 - alpha * chi * chi * sv) + (1 - alpha * r0) * chi * chi * c + r0;
+        chi -= F / max(1e-6, dF);
+    }
+    float zz = alpha * chi * chi; float f = 1 - chi * chi / r0 * kstC(zz), g = dt - chi * chi * chi / smu * kstS(zz);
+    return f * r + g * v;
+}
 // how strongly an orbital (l, m) leans along a direction: its real |Y|^2 shape (s round, p dumbbells, d clovers, f more lobed)
 float olobe(int l, int m, float3 d)
 {
@@ -211,7 +229,18 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             }
         if (hp == 0) { sAt = s; pA = s.pos; } else pB = s.pos;
         }
-        if (offS > 0) { float flightS = right.w > 0 ? right.w : offS; s = sAt; s.pos = pA + (pB - pA) / 0.01 * flightS; }   // (gravity back on: held where it flew to, not yet falling back)
+        if (offS > 0)
+        {
+            // flown straight on while it was off; gravity back on (right.w how long it flew), from there each falls back under the hole's
+            // pull on its new path from where it is at the speed it had (its pull: the disc's circles run at K / r^1.5, mu K squared; the
+            // swarm's ellipses at 3K / a^1.5, mu nine K squared), and what falls inside the horizon is gone
+            float flightS = right.w > 0 ? right.w : offS; s = sAt; float3 vel = (pB - pA) / 0.01; s.pos = pA + vel * flightS;
+            if (right.w > 0 && offS > right.w && K > 0)
+            {
+                float mu = (extra.w > 1.5 && extra.w < 2.5 ? 9.0 : 1.0) * K * K; s.pos = keplerOn(mu, s.pos, vel, offS - right.w);
+                if (length(s.pos) < 1) s.color.rgb = 0;
+            }
+        }
         {
             // the hole's own things seen past it: what lies within its shadow's cone is hidden by the shadow (the light from the far side
             // that reaches you round the hole is the background lens's work: its ring for light from well behind)

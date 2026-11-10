@@ -104,7 +104,7 @@ namespace Universe.Shell
                 var g = _galaxies[_tIndex];
                 L.Add(g.Name); L.Add("id: G-" + (g.Seed & 0xFFFFFF).ToString("X6"));
                 L.Add("type: " + g.Type); L.Add("width: about " + Units.Describe(g.Scale));
-                L.Add("stars: about 100 billion"); L.Add("distance: " + Units.Describe(dist)); ExpansionLines(L, dist);
+                L.Add("stars: about 100 billion"); L.Add("distance: " + Units.Describe(dist)); ExpansionLines(L, dist); CollisionLines(L, _tIndex);
                 { var sc = Supernovae(g, _tIndex == _near); int going = 0; foreach (var sn in sc.Events) { double yrs = _simYears - sn.T; if (yrs >= 0 && yrs * 365.25 < 150) going++; } L.Add("supernovae: about " + (SnRate(g) * 100).ToString("0.#") + " a century here" + (going > 0 ? "; " + going + " going now" : "; none going now")); }
                 if (_darkMatter > 0) { L.Add("mass: about " + (1e11 / (1 - _darkMatter)).ToString("0.#E+0") + " solar masses, " + (_darkMatter * 100).ToString("0") + "% of it dark matter"); L.Add("its stars orbit at a flat " + _rimSpeed.ToString("0") + " km/s out to its rim, held by the dark halo (without it they would slow outward like planets)"); }
             }
@@ -130,6 +130,8 @@ namespace Universe.Shell
                         // its light climbing out of its own well (gravitational redshift, GM/Rc^2 for a star), and its layers from the surface to the core
                         double gmS = Physics.GmSol * sy.MassSol, RS = Math.Max(1, sy.StarRadius / Units.Km(1) * 1000), zS = 1 / Math.Sqrt(Math.Max(1e-30, 1 - 2 * gmS / (RS * Physics.C * Physics.C))) - 1;
                         L.Add("relativity: its light redshifted " + ShiftWords(zS) + " climbing out; surface clocks slower by the same");
+                        { double wnd = WindSolPerYear(SystemStarId()); if (wnd > 0) L.Add("its wind: " + wnd.ToString("0.#E+0") + " solar masses a year blown away" + (wnd >= 1e-7 ? ", a whole solar mass in " + Years(1 / wnd) : "")); }
+                        { double fpd = FlaresPerDay(); if (fpd > 0) L.Add("flares: about " + (fpd >= 1 ? fpd.ToString("0.#") + " a day" : (fpd * 30).ToString("0.#") + " a month") + ", the bigger the rarer (their number as the energy to the minus " + _flarePow.ToString("0.#") + ")"); }
                         var lays = StarLayersFor(SystemStarId()); if (lays.Count > 0) { var nm = new List<string>(); foreach (var l in lays) nm.Add(l.Name.ToLowerInvariant()); L.Add("layers: " + string.Join(", ", nm.ToArray())); }
                         var sl = StarLayerHere(); if (sl != null) { double sdK = Math.Sqrt(_ox * _ox + _oy * _oy + _oz * _oz) / Units.Km(1), RK = StarRadiusNow / Units.Km(1); L.Add("inside: " + ScaleHud.Words(RK - sdK) + " down, its " + sl.Name.ToLowerInvariant() + ", about " + LayerTempK(sl, sdK / RK).ToString("N0") + " K, " + DensityWords(LayerDensity(sl, sdK / RK))); }
                         if (Flown) L.Add((Window.GravityOn ? "gravity back on, after it was off " : "gravity off ") + Years(Math.Max(0, OffYears)) + ": " + (StarSwell >= 100 ? StarSwell.ToString("N0") : StarSwell.ToString("0.#")) + " times its size, growing " + (StarSwellSpeedKmS()).ToString("N0") + " km/s");
@@ -260,11 +262,11 @@ namespace Universe.Shell
             else if (_tKind == 3 && _ground != null)
             {
                 double gh = _ground.Solid ? _ground.GroundAt(_tx, _ty, _tz) : 0;
-                bool sea = _ground.HasWater && gh < 0, ice = Math.Abs(_ty) > 0.86;
+                bool sea = _ground.HasWater && gh < 0, ice = Math.Abs(_ty) > _ground.IceSin;
                 L.Add(sea ? "sea" : ice ? "ice" : "land"); 
                 L.Add("on: " + GroundKind());
                 L.Add("place: " + (Math.Asin(_ty) * 180 / Math.PI).ToString("0.#") + " lat, " + (Math.Atan2(_tz, _tx) * 180 / Math.PI).ToString("0.#") + " long");
-                if (_planet >= 0 && _system != null && _planet < _system.Bodies.Count && !_system.Bodies[_planet].Giant) L.Add("the year's mean here about " + Kelvin(Climate.SurfaceK(WorldMeanK(_planet), Math.Asin(Math.Max(-1, Math.Min(1, _ty))), WorldKind(_planet).Tau > 0) - HeightCoolingK(_planet, Math.Max(0, gh))));   // (by its latitude: UniverseView.Climate.cs)
+                if (_planet >= 0 && _system != null && _planet < _system.Bodies.Count && !_system.Bodies[_planet].Giant) { double latR = Math.Asin(Math.Max(-1, Math.Min(1, _ty))); L.Add("the year's mean here about " + Kelvin(Climate.SurfaceK(WorldMeanK(_planet), latR, WorldKind(_planet).Tau > 0) - HeightCoolingK(_planet, Math.Max(0, gh)))); L.Add("now about " + Kelvin(NowK(_planet, latR, Math.Max(0, gh), LocalHour())) + " (its season by its " + TiltDeg(_planet).ToString("0") + " degree tilt, its hour; its day swinging " + DaySwingK(_planet).ToString("0") + " K)"); }   // (by its latitude: UniverseView.Climate.cs)
                 L.Add(sea ? "depth: " + (-gh * 1000).ToString("N0") + " m of water" : "height: " + (gh * 1000).ToString("N0") + " m above the sea");
                 if (sea && _planet >= 0) SeaLines(L, _planet, Math.Asin(Math.Max(-1, Math.Min(1, _ty))), -gh * 1000);   // (its tides and its current here: UniverseView.Climate.cs)
                 L.Add(sea ? "water over sand and mud" : ice ? "ice and packed snow" : gh > 3 ? "bare rock and scree" : gh > 1 ? "rock and thin soil" : "soil, sand and stone");

@@ -183,7 +183,7 @@ namespace Universe.Shell
         public void Dispose()
         {
             foreach (var g in _galaxies) if (g.Far != null) g.Far.Dispose(); if (_glowBuf != null) _glowBuf.Dispose();
-            if (_nearBuf != null) _nearBuf.Dispose(); foreach (var g in _galaxies) if (g.Struct != null) g.Struct.Dispose(); foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear(); foreach (var kv in _nebStarBufs) if (kv.Value != null) kv.Value.Dispose(); _nebStarBufs.Clear(); _nebNs.Clear(); _nebUsed.Clear();
+            if (_nearBuf != null) _nearBuf.Dispose(); foreach (var g in _galaxies) if (g.Struct != null) g.Struct.Dispose(); foreach (var kv in _nebBufs) kv.Value.Dispose(); _nebBufs.Clear(); if (_flareBuf != null) _flareBuf.Dispose(); foreach (var kv in _nebStarBufs) if (kv.Value != null) kv.Value.Dispose(); _nebStarBufs.Clear(); _nebNs.Clear(); _nebUsed.Clear();
             CloseSystem();
             DropPlanet();
             _hud.Dispose(); _matter.Dispose();

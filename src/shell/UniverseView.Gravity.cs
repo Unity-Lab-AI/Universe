@@ -18,6 +18,23 @@ namespace Universe.Shell
         // how long it was off: to now while it is off, to when it came back once it is on again (years; and watched seconds)
         private double OffYears { get { return !Flown ? 0 : Math.Max(0, (Window.GravityOn && !double.IsNaN(_gravityOnYear) ? _gravityOnYear : _simYears) - _gravityOffYear); } }
         private double OffWatchFlight { get { return !Flown ? 0 : Math.Max(1e-3, (Window.GravityOn && !double.IsNaN(_gravityOnYear) ? _gravityOnWatch : _lastDrawTime) - _gravityOffWatch); } }   // (_gravityOffWatch: the watched time it went off, for what is moved on the card by watched time: a hole's disc, swarm and stream)
+        // how long since it came back (years; 0 while it is off)
+        private double OnYears { get { return Flown && Window.GravityOn && !double.IsNaN(_gravityOnYear) ? Math.Max(0, _simYears - _gravityOnYear) : 0; } }
+        // gravity back on, a star flown off its path in a pull that grows with its distance from where it was (a galaxy's disc, a
+        // cluster's middle) swings back about it, as a spring: its offset x0 cos(k t) + (v / k) sin(k t), from the offset it had flown
+        // (v times the time off) and still moving at v; given as the years of flight at v that offset is worth (k: its swing's rate a year)
+        private double DriftYears(double kPerYear)
+        {
+            double off = Math.Max(0, OffYears), t = OnYears; if (t <= 0 || kPerYear <= 0) return off;
+            return off * Math.Cos(kPerYear * t) + Math.Sin(kPerYear * t) / kPerYear;
+        }
+        // gravity back on, a ball of gas swollen to s times its size falls back in on itself in its free-fall time from there
+        // (pi / (2 root 2)) s^1.5 times its own free-fall time, as a body dropped: its size 1 + (s - 1)(1 - (t / t_fall)^2)
+        private double SwellNow(double tffSec)
+        {
+            double s = Math.Min(1e6, 1 + Math.Max(0, OffYears) * 31557600.0 / (_swellOverFreefall * tffSec)), t = OnYears * 31557600.0; if (t <= 0) return s;
+            double fall = Math.PI / (2 * Math.Sqrt(2)) * Math.Pow(s, 1.5) * tffSec, q = t / fall; return q >= 1 ? 1 : 1 + (s - 1) * (1 - q * q);
+        }
         public void ToggleGravity()
         {
             // off: from now everything goes straight on; on again: the open system's bodies fall back under their pulls (live gravity),
@@ -36,7 +53,7 @@ namespace Universe.Shell
             {
                 if (!Flown || _system == null) return 1;
                 double R = _system.StarRadius / Units.Km(1) * 1000, gm = Physics.GmSol * Math.Max(0.01, _system.MassSol), tff = Math.Sqrt(R * R * R / gm);
-                return Math.Min(1e6, 1 + Math.Max(0, OffYears) * 31557600.0 / (_swellOverFreefall * tff));
+                return SwellNow(tff);
             }
         }
         private double StarSwellSpeedKmS() { if (_system == null) return 0; double R = _system.StarRadius / Units.Km(1) * 1000, gm = Physics.GmSol * Math.Max(0.01, _system.MassSol); return R / (_swellOverFreefall * Math.Sqrt(R * R * R / gm)) / 1000; }
@@ -65,8 +82,8 @@ namespace Universe.Shell
         private void LocalDrift(int k, out double dx, out double dy, out double dz)
         {
             dx = dy = dz = 0; if (!Flown || _near < 0 || _near >= _galaxies.Count) return;
-            double years = Math.Max(0, OffYears), kmPerUnit = _galaxies[_near].Scale / Units.Km(1), km = 20.0 * years * 31557600.0 / Math.Max(1e-30, kmPerUnit);
-            uint h = (uint)k * 2654435761u + 977u;
+            double years = DriftYears(Math.Sqrt(2) * _rimSpeed / 2.469e17 * 31557600.0), kmPerUnit = _galaxies[_near].Scale / Units.Km(1), km = 20.0 * years * 31557600.0 / Math.Max(1e-30, kmPerUnit);
+            uint h = (uint)StarKey(k) * 2654435761u + 977u;   // (by the star's own lasting id)
             Func<uint, double> g = q => { uint a = h ^ (q * 0x9E3779B9u); a ^= a >> 15; a *= 0x2C1B3C6Du; a ^= a >> 12; double u1 = ((a & 0xFFFFFF) + 1) / 16777217.0, u2 = ((a >> 8) & 0xFFFF) / 65536.0; return Math.Sqrt(-2 * Math.Log(u1)) * Math.Cos(2 * Math.PI * u2); };
             dx = g(1) * km; dy = g(2) * km; dz = g(3) * km;
         }
@@ -77,14 +94,14 @@ namespace Universe.Shell
         {
             if (!Flown || k == null) return 1;
             double R = k.RadiusSol * 6.957e8, gm = Physics.GmSol * Math.Max(1e-3, k.MassSol), tff = Math.Sqrt(R * R * R / gm);
-            return Math.Min(1e6, 1 + Math.Max(0, OffYears) * 31557600.0 / (_swellOverFreefall * tff));
+            return SwellNow(tff);
         }
         // with gravity off, the card's lines at every scale: how long, and what it means where you are (the star swelling, the
         // galaxy's stars flown off as a share of its width and the time they take to cross it at their rim speed)
         private void GravityLines(List<string> L)
         {
             if (!Flown) return; double yrs = Math.Max(0, OffYears);
-            if (Window.GravityOn) { L.Add("gravity back on after " + Years(yrs) + " off: this system's worlds fall back under their pulls"); L.Add("rubble, rings, the stars round you and a hole's parts held where they flew to (their fall back not yet worked out)"); return; }
+            if (Window.GravityOn) { L.Add("gravity back on after " + Years(yrs) + " off: this system's worlds fall back under their pulls"); L.Add("rubble and rings falling back on their new orbits; the stars round you swinging back about their paths (the disc's epicycles, about 160 million years round), a cluster's about its middle; swollen stars and giants falling back in on themselves in their free-fall time; a hole's gas and stars falling back on new orbits round it"); return; }
             L.Add("gravity off " + Years(yrs) + ": everything goes straight on at the speed it had");
             if (_system != null && !L.Exists(x => x.Contains("times its size"))) L.Add("its star blown " + (StarSwell >= 100 ? StarSwell.ToString("N0") : StarSwell.ToString("0.#")) + " times its size by its own pressure");
             if (_near >= 0 && _near < _galaxies.Count)
@@ -100,7 +117,7 @@ namespace Universe.Shell
         {
             if (!Flown || b == null || !b.Giant || b.MassKg <= 0) return 1;
             double R = b.RadiusUnits / Units.Km(1) * 1000, tff = Math.Sqrt(R * R * R / (Physics.G * b.MassKg));
-            return Math.Min(1e6, 1 + Math.Max(0, OffYears) * 31557600.0 / (_swellOverFreefall * tff));
+            return SwellNow(tff);
         }
         private void WorldGravityLines(List<string> L, SpaceGen.Body b, bool water)
         {
@@ -138,6 +155,15 @@ namespace Universe.Shell
             }
         }
         // the Hubble rate now in the game (km/s per megaparsec): H0 root(Om a^-3 + OmegaL)
+        // a galaxy drawn at its true distance now: space stretched by the scale factor between you and it (beyond about ten million light-
+        // years: nearer, galaxies' own groups are bound by their pulls and do not stretch apart; between five and ten eased in), its own
+        // size kept (a galaxy is held together by its own pull); its place on the grid kept for clicks and flights
+        private void Stretched(ref Mat4 pg)
+        {
+            double a = ScaleNow; if (Math.Abs(a - 1) < 1e-6) return;
+            double dx = pg.M41, dy = pg.M42, dz = pg.M43, ly = Math.Sqrt(dx * dx + dy * dy + dz * dz) * Units.LightYearsPerUnit, q = Math.Max(0, Math.Min(1, (ly - 5e6) / 5e6));
+            float k = (float)(1 + (a - 1) * q * q * (3 - 2 * q)); pg.M41 *= k; pg.M42 *= k; pg.M43 *= k;
+        }
         private double HubbleNow { get { double a = ScaleNow, ol = OmegaL; return _hubble * Math.Sqrt((1 - ol) / (a * a * a) + ol); } }
         // a far thing's card: its distance on the stretching grid, its true distance now, how fast that grows, the universe's age
         private void ExpansionLines(List<string> L, double distUnits)
@@ -146,6 +172,13 @@ namespace Universe.Shell
             double mpc = ly / 3.2616e6 * a, v = HubbleNow * mpc;
             L.Add("its true distance now " + Units.Describe(distUnits * a) + ", growing " + (v >= 1e5 ? (v / 299792.458).ToString("0.##") + " times light's speed" : v.ToString("N0") + " km/s") + " (space stretching)");
             if (Math.Abs(a - 1) > 1e-4) L.Add("space stretched " + a.ToString(a >= 10 ? "N0" : "0.####") + " times since you began; the universe " + Years(AgeNow + _simYears) + " old");
+        }
+        // with gravity off, a cluster's star flies on at its own speed in its cluster: the spread of their speeds about 10 km/s in an old
+        // globular cluster, about 1 km/s in a young open one; its flight so far, universe units
+        private void ClusterDrift(int q, bool old, out double dx, out double dy, out double dz)
+        {
+            dx = dy = dz = 0; if (!Flown) return; double km = (old ? 10.0 : 1.0) * DriftYears(2 * Math.PI / (old ? 1e6 : 1e7)) * 31557600.0, u = Units.Km(km);
+            dx = (Hash01(q, 11) * 2 - 1) * 1.7 * u; dy = (Hash01(q, 12) * 2 - 1) * 1.7 * u; dz = (Hash01(q, 13) * 2 - 1) * 1.7 * u;   // (a uniform spread of a root-three width: the same spread as the speeds')
         }
     }
 }

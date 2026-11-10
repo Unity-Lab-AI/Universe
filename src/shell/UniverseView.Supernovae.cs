@@ -199,7 +199,10 @@ namespace Universe.Shell
             {
                 var g = _galaxies[i]; double gx = (g.X - _ax) - _ox, gy = (g.Y - _ay) - _oy, gz = (g.Z - _az) - _oz, gd = Math.Sqrt(gx * gx + gy * gy + gz * gz);
                 if (gd > 400 * g.Scale) continue;
-                bool full = i == _near; var c = Supernovae(g, full); if (c.Events.Count == 0) continue;
+                // render by scale: a galaxy's hundred thousand years of remnants (shells some tens of light-years across) worked out only when
+                // one would be at least a pixel from here; further out only its last few years' light, as every other galaxy's
+                bool full = i == _near && 30.0 / Math.Max(1e-9, ViewDistanceKm() / 9.4607e12) * h / (2 * Math.Tan(0.45)) >= 1;
+                var c = Supernovae(g, full); if (c.Events.Count == 0) continue;
                 foreach (var sn in c.Events)
                 {
                     double years = now - sn.T; if (years < 0) continue; double days = years * 365.25;

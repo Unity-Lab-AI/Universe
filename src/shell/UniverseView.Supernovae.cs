@@ -71,6 +71,7 @@ namespace Universe.Shell
         }
         /// <summary>A galaxy's supernovae up to now: the last few years' (their light), or with its whole history back a hundred thousand
         /// years (their shells and the remnants at their middles) for the galaxy you are in.</summary>
+        private readonly HashSet<long> _ownSn = new HashSet<long>();   // (the stars round you whose own supernova is already among the events)
         private SnCache Supernovae(Galaxy g, bool full)
         {
             if (!_snLoaded) LoadSupernovaLaw();
@@ -86,6 +87,18 @@ namespace Universe.Shell
                 while (c.To < to) { c.To++; SnYear(g, c, c.To); }
                 if (from > c.From + 1000) { c.Events.RemoveAll(e => e.T < from); c.From = from; }   // (the ones past the window let go)
                 double recent = now - 3; c.Events.RemoveAll(e => e.K.OwnRate > 0 && e.T < recent);   // (a nova's few years done: let go)
+            }
+            if (full && _near >= 0 && _near < _galaxies.Count && ReferenceEquals(g, _galaxies[_near]))
+            {
+                // the massive stars round you that have reached their end: each its own supernova, at its own place, when its life is done
+                // (UniverseView.Lives.cs), among the galaxy's others: shining, its shell and its remnant as any
+                for (int k = 0; k < _localCount && k < _localList.Count; k++)
+                {
+                    double ty = LocalDeathYear(k); if (double.IsNaN(ty) || ty < from || ty > to || !_ownSn.Add(_localId[k])) continue;
+                    double m, life, age0; LocalLife(k, _localKind[k], out m, out life, out age0); string kid = m >= 25 ? "ib-c" : "ii-p"; int ki = 0; for (int q = 0; q < _snKinds.Count; q++) if (_snKinds[q].Id == kid) { ki = q; break; }
+                    var sl = _localList[k]; var sn = new Sn { G = g, T = ty, Kind = ki, K = _snKinds[ki], X = sl.X + _localOX, Y = sl.Y + _localOY, Z = sl.Z + _localOZ, Mass = m >= 25 ? m * 0.3 : 1.6 };
+                    StarPos(k + 1000000, out sn.Ux, out sn.Uy, out sn.Uz); c.Events.Add(sn);
+                }
             }
             return c;
         }
@@ -336,6 +349,7 @@ namespace Universe.Shell
         private void SupernovaCard(List<string> L, double dist)
         {
             var sn = _tSn; double years = _simYears - sn.T, days = years * 365.25, L0 = SnLum(sn, days), peak = sn.K.Peak, v = sn.K.V;
+            GrbLine(L, sn);                                                              // (did it fire a gamma-ray burst, and which way: content/physics.unt @law gamma-ray-bursts)
             if (years > 2)
             {
                 // a remnant, mid-process: the shell by its age, what is at its middle, what became of the star and its worlds, what comes next

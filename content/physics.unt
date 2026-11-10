@@ -445,6 +445,9 @@ atoms: H H
 atoms: He
 @gas methane
 atoms: C H H H H
+@gas ethane
+atoms: C C H H H H H H
+
 @gas ammonia
 atoms: N H H H
 @gas nitrogen
@@ -479,6 +482,34 @@ atoms: Si O
 #   held by the dark halo; without it they would slow outward like planets); rim-speed-km-s: that flat speed for a galaxy like
 #   ours; dark-energy-share: how much of the universe's energy is dark energy (about 68%), which speeds the expansion and
 #   sets the horizon beyond which light will never arrive; hubble-km-s-mpc: how fast space stretches, per megaparsec.
+@law winds
+name: The wind off a star
+real: yes
+solar-masses-a-year: o-type 1e-6, b-type 1e-8, a-type 1e-10, f-type 1e-13, g-type 2e-14, k-type 1e-14, m-type 1e-14, red-giant 1e-8, red-supergiant 1e-5, blue-supergiant 1e-6, wolf-rayet 1e-5, mira 1e-6, carbon-star 1e-6
+says: every star blows its outer gas away: a star like ours two hundred-trillionths of its mass a year (the solar wind, at about 400 km/s), the hot and the swollen far more, a red supergiant or a Wolf-Rayet star a solar mass in a hundred thousand years
+
+@law gamma-ray-bursts
+name: Gamma-ray bursts
+real: yes
+long-share: 0.01
+says: a few stripped stars' cores collapse straight to a black hole and fire jets out along their spin at nearly light's speed (a collapsar, about one in a hundred Type Ib/c supernovae): a long burst, seconds to minutes; two neutron stars merging fire a short one, under two seconds; seen only from within a few degrees of the jet, the brightest flashes in the universe
+
+@law flares
+name: Flares on a star's face
+real: yes
+per-day: m-type 2, k-type 0.3, g-type 0.1, f-type 0.03, a-type 0.01
+energy-power: 1.8
+minutes: 10..60
+says: magnetic loops snapping over its face: red dwarfs flare many times a day, a star like ours a few times a month at its busiest (the X-class); the bigger the rarer, their number falling as the energy to the minus 1.8 (as counted on the Sun and by the Kepler and TESS telescopes), each brightening a patch of its face for minutes to an hour
+
+@law axial-tilt
+name: How far a world's spin leans from its orbit (its seasons)
+real: yes
+tilt-deg: 0..30
+wild-share: 0.15
+wild-deg: 60..180
+says: most worlds lean a few to thirty degrees (Earth 23.4, Mars 25.2, Saturn 26.7, Neptune 28.3); about one in seven is knocked far over (Uranus 97.8, Venus 177, spinning backwards), as our own system's eight planets show; its seasons swing by it
+
 @law cosmos
 name: Dark matter and dark energy
 dark-matter-share: 0.85

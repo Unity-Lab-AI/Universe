@@ -143,7 +143,7 @@ namespace Universe.Shell
         // where a star of the near galaxy sits in the universe
         private void StarPos(int k, out double x, out double y, out double z)
         {
-            if (k >= 2000000) { var cs = _cstars[k - 2000000]; x = cs[0]; y = cs[1]; z = cs[2]; return; }   // a cluster's star: already in universe units
+            if (k >= 2000000) { var cs = _cstars[k - 2000000]; double cdx, cdy, cdz; ClusterDrift(k - 2000000, cs[3] == 0, out cdx, out cdy, out cdz); x = cs[0] + cdx; y = cs[1] + cdy; z = cs[2] + cdz; return; }   // (gravity off: flown on in its cluster)   // a cluster's star: already in universe units
             if (k >= 1000000) { var sl = _localList[k - 1000000]; double ddx, ddy, ddz; LocalDrift(k - 1000000, out ddx, out ddy, out ddz); ToUniverse(_galaxies[_near], sl.X + ddx + _localOX, sl.Y + ddy + _localOY, sl.Z + ddz + _localOZ, out x, out y, out z); return; }   // (gravity off: flown on from its place)   // (a real star: its offset from the list's origin)
             var s = _nearLocal[k]; double gx = s.X, gz = s.Z;
             {
@@ -160,7 +160,7 @@ namespace Universe.Shell
             for (int i = 0; i < _kinds.Count; i++) if (_kinds[i].Id == id) return i;
             return 0;
         }
-        private int StarKindOf(int k) { return k >= 2000000 ? ClusterKind(_cstars[k - 2000000]) : k >= 1000000 ? _localKind[k - 1000000] : _nearKinds[k]; }
+        private int StarKindOf(int k) { return k >= 2000000 ? ClusterKind(_cstars[k - 2000000]) : k >= 1000000 ? Math.Max(0, LocalKindNow(k - 1000000, _localKind[k - 1000000])) : _nearKinds[k]; }   // (a star round you as it is now: its life, UniverseView.Lives.cs)
         private ulong StarSeed(int k) { if (k >= 2000000) { var cs = _cstars[k - 2000000]; return (ulong)(long)(cs[0] / Units.Km(1e6)) * 73856093UL ^ (ulong)(long)(cs[2] / Units.Km(1e6)) * 19349663UL ^ 0xC1C1UL; } return k >= 1000000 ? (ulong)_localId[k - 1000000] : (ulong)k; }
 
         // open the system of the star you have come close to (and anchor the camera on it), or close it when you leave
@@ -357,7 +357,7 @@ namespace Universe.Shell
                 if (lay != null && lay.Matter == "ice") { _matter.Set("ice", false, true, 0.7f, 0.8f, 0.9f, gspot); return; }   // the ice mantle: hot dense water, ammonia, methane
                 _matter.SetAir(air, gspot); return;
             }
-            bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = Math.Abs(y / r) > 0.86;
+            bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = Math.Abs(y / r) > _ground.IceSin;
             ulong spot = (ulong)(long)(x / r * 1e7) * 73856093UL ^ (ulong)(long)(y / r * 1e7) * 19349663UL ^ (ulong)(long)(z / r * 1e7) * 83492791UL;   // the same place, the same grains
             _matterSpot = spot; _matterPlanet = _planet; _mox = x / r; _moy = y / r; _moz = z / r;
             float mr0, mg0, mb0, mglow; _ground.Height(x / r, y / r, z / r, 30, out mr0, out mg0, out mb0, out mglow);
@@ -378,7 +378,9 @@ namespace Universe.Shell
                 _matter.SetGround(R, ux, uy, uz, molten ? null : sea ? "ocean" : gm != null ? gm.Id : null, _ground.GrainSeed, he, hn);
                 _matter.SetLife(_ground.HasWater && _ground.Traits.Life);   // microbes on a living world's grains
                 string airHere;
-                if (sea) _matter.SetAirAbove("water 100%", 3.3e22);                      // the sea above the bed: water molecules, packed as a liquid is (about 0.31 nm apart)
+                bool methaneSea = sea && GroundHereK() > 0 && GroundHereK() < 100 && _planet >= 0 && (WorldAir(_planet) ?? "").Contains("methane");
+                if (methaneSea) _matter.SetAirAbove("methane 71%, ethane 17%, nitrogen 12%", 1.5e22);   // a sea as cold as Titan's: liquid methane, ethane and nitrogen in it (Cassini's radar at Ligeia Mare, Mastrogiuseppe et al. 2014), about 0.5 g/cc
+                else if (sea) _matter.SetAirAbove("water 100%", 3.3e22);                 // the sea above the bed: water molecules, packed as a liquid is (about 0.31 nm apart)
                 else _matter.SetAirAbove(_ground.AirKm <= 0 || !PlanetTerrain.Air.TryGetValue(_ground.Kind, out airHere) ? null : airHere);   // its own air (a moon: none)
             }
         }

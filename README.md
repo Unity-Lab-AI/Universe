@@ -10,7 +10,7 @@
   <a href="https://git.unityailab.com/GFourteen/Universe/releases" title="The same release on Unity AI Lab Git"><b>Unity AI Lab Git</b></a>
 </p>
 
-> **Get it in one minute.** The current release is **0.1.1**. Download **[Universe-Setup-0.1.1.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.1/Universe-Setup-0.1.1.exe "The installer, 0.8 MB, from GitHub")** (0.8 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.1/Universe-0.1.1-windows.zip "Universe-0.1.1-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.9 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
+> **Get it in one minute.** The current release is **0.1.2**. Download **[Universe-Setup-0.1.2.exe](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.2/Universe-Setup-0.1.2.exe "The installer, 0.8 MB, from GitHub")** (0.8 MB) and run it, or the **[zip](https://github.com/Unity-Lab-AI/Universe/releases/download/v0.1.2/Universe-0.1.2-windows.zip "Universe-0.1.2-windows.zip: unpack anywhere and run Universe.exe")** to unpack anywhere and run `Universe.exe`. The same two files are on **[Unity AI Lab Git](https://git.unityailab.com/GFourteen/Universe/releases "The release on the lab's own Git")**. Needs Windows 10 or 11 (64-bit) and a Direct3D 12 graphics card; installed it is 1.9 MB, the whole universe, nothing downloaded after. **On Linux**, take the zip and run the script inside it, through Wine: [On Linux](docs/LINUX.md "Universe on Linux, through Wine: one script"). What you get: a visible universe of about 100 billion galaxies to fly through with one camera, from the cosmic web down to the quarks inside a grain of sand, a guided tour (press **T**), and a card on everything you click.
 
 <p align="center">Windows 10 and 11 &nbsp;·&nbsp; Direct3D 12 &nbsp;·&nbsp; 1.9 MB installed &nbsp;·&nbsp; 13.4 billion light-years &nbsp;·&nbsp; 100 billion galaxies &nbsp;·&nbsp; down to the quarks and below &nbsp;·&nbsp; built from scratch</p>
 
@@ -86,10 +86,10 @@ Rename it, swap the icon, change the content, and `release.cmd` makes your insta
 
 | | |
 |---|---|
-| **Download** | 0.83 MB installer |
-| **The program** | 1.48 MB |
-| **Every template** | 0.30 MB of plain text |
-| **Everything installed** | 1.9 MB (2.7 MB with the uninstaller) |
+| **Download** | 0.85 MB installer |
+| **The program** | 1.52 MB |
+| **Every template** | 0.31 MB of plain text |
+| **Everything installed** | 1.9 MB (2.8 MB with the uninstaller) |
 | **What it holds** | About 100 billion galaxies of about 100 billion stars each: some 10²² stars, every one with its own worlds, and every world down to its grains and their atoms |
 
 That's less than one photo from a phone. It fits because **nothing in it is stored. Everything is grown.**
@@ -151,7 +151,7 @@ That makes a lava world wherever an orbit hugs its star, each with its own size,
 | **Our own formats** | The content format, the wavelet engine, the icon drawer, the installer, the document viewer, the PNG and GIF writers: ours |
 | **What it borrows** | Windows itself: Direct3D 12 and its shader compiler for the card, the framework's Deflate inside a PNG and the universe clip's records. Nothing from anywhere else |
 
-About 21,800 lines of C# and shader code in 65 files, and about 11,400 lines of templates in 30. That is the whole thing.
+About 23,000 lines of C# and shader code in 115 files, and about 12,000 lines of templates in 30. That is the whole thing.
 
 ---
 

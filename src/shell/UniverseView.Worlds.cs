@@ -46,7 +46,14 @@ namespace Universe.Shell
                     {
                         var v0 = rb[q]; var pp = new Vec3(v0.X, v0.Y, v0.Z); double rr = Math.Sqrt((double)pp.X * pp.X + (double)pp.Y * pp.Y + (double)pp.Z * pp.Z); var tg = Vec3.Cross(nrm, pp).Normalized;
                         double fl = Math.Sqrt(gm / Math.Max(1, rr * rKm * 1000)) * secs / (rKm * 1000);   // (its flight so far, in the planet's radii)
-                        v0.X += (float)(tg.X * fl); v0.Y += (float)(tg.Y * fl); v0.Z += (float)(tg.Z * fl); moved[q] = v0;
+                        double fx = v0.X + tg.X * fl, fy = v0.Y + tg.Y * fl, fz = v0.Z + tg.Z * fl;
+                        if (Window.GravityOn && !double.IsNaN(_gravityOnYear) && _simYears > _gravityOnYear)
+                        {
+                            // gravity back: falling back on its new orbit round the planet from where it flew to (radii and seconds)
+                            double vr = Math.Sqrt(gm / Math.Max(1, rr * rKm * 1000)) / (rKm * 1000), nx, ny, nz, nvx, nvy, nvz, mu = gm / Math.Pow(rKm * 1000, 3);
+                            Kepler.Propagate(mu, fx, fy, fz, tg.X * vr, tg.Y * vr, tg.Z * vr, (_simYears - _gravityOnYear) * 31557600.0, out nx, out ny, out nz, out nvx, out nvy, out nvz); fx = nx; fy = ny; fz = nz;
+                        }
+                        v0.X = (float)fx; v0.Y = (float)fy; v0.Z = (float)fz; moved[q] = v0;
                     }
                     buf.Write(moved, nr); _ringsMovedFor[i] = true;
                 }

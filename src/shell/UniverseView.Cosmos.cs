@@ -111,7 +111,7 @@ namespace Universe.Shell
             }
             if (keep.Count == _galaxies.Count) return;
             Func<int, int> m = k => k >= 0 && k < map.Length ? map[k] : k;
-            _near = m(_near); _tGal = m(_tGal); if (_tKind == 0) { _tIndex = m(_tIndex); if (_tIndex < 0) _tKind = -1; }
+            _near = m(_near); _tGal = m(_tGal); if (_col != null) { _col.A = m(_col.A); _col.B = m(_col.B); if (_col.A < 0 || _col.B < 0) DropCollision(); } if (_tKind == 0) { _tIndex = m(_tIndex); if (_tIndex < 0) _tKind = -1; }
             _galaxies.Clear(); _galaxies.AddRange(keep);
         }
         private void SpawnRegions()

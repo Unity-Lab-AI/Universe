@@ -210,7 +210,7 @@ namespace Universe.Shell
                 {
                     var s0 = _localList[k]; double ux, uy, uz; ToUniverse(g, s0.X + _localOX, s0.Y + _localOY, s0.Z + _localOZ, out ux, out uy, out uz);
                     double d2 = near((ux - _ax) - _ox, (uy - _ay) - _oy, (uz - _az) - _oz);
-                    if (d2 < best) { best = d2; kind = 1; tx = ux; ty = uy; tz = uz; trad = Units.Km(696000); name = "a " + _kinds[_localKind[k]].Name; }
+                    if (d2 < best) { best = d2; kind = 1; tx = ux; ty = uy; tz = uz; trad = Units.Km(696000); { int kn = LocalKindNow(k, _localKind[k]); name = kn >= 0 ? "a " + _kinds[kn].Name : "a black hole, all a massive star left"; } }
                 }
                 if (kind < 0 && NearShare() > 0.5)
                     for (int k = 0; k < _nearLocal.Length; k++)
@@ -606,7 +606,7 @@ namespace Universe.Shell
             {
                 // at the finest ground: on down into what it is made of
                 double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z);
-                bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = Math.Abs(y / r) > 0.86;
+                bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = Math.Abs(y / r) > _ground.IceSin;
                 SetMatter();
                 _matterScale = Math.Max(MatterView.BottomKm, AboveGround() / Units.Km(1) / 0.6);   // the same picture carries on: you are 0.6 of the scale above it
                 _matterTop = Math.Max(MatterView.TopKm, _matterScale * 1.1);

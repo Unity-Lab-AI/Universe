@@ -251,6 +251,8 @@ namespace Universe.Gen
             public StarVertex[] Static; // belts, Kuiper belt, Oort cloud, orbit lines
             public float[] StaticRate;  // each point's turn a year (radians) about the star: the belts' rubble on its orbits (Kepler's rate at its distance); 0 for the orbit lines and the Oort cloud
             public int Planets;
+            /// <summary>Gravity as a live force once the system is open (src/gen/SystemGravity.cs); made on first use.</summary>
+            public SystemGravity Live;
         }
 
         public static StarSystem System(ContentLibrary content, StarKind kind, ulong seed, string layout = null)
@@ -510,9 +512,25 @@ namespace Universe.Gen
 
         /// <summary>A world's mass (kg) from its radius (units) and its density (g/cc): four thirds pi r cubed rho.</summary>
         public static double MassOf(double radiusUnits, double densityGcc) { double r = radiusUnits / Units.Km(1) * 1000; return 4.0 / 3 * Math.PI * r * r * r * densityGcc * 1000; }
+        /// <summary>Every body's place on its Kepler orbit at time t (years), against the star, universe units, three numbers a body
+        /// (a moon's with its planet's): where gravity as a live force starts from.</summary>
+        public static double[] KeplerPlaces(StarSystem sys, double t)
+        {
+            int count = sys.Bodies.Count; var p = new double[count * 3];
+            for (int i = 0; i < count; i++)
+            {
+                var b = sys.Bodies[i]; double period = Math.Max(1e-4, b.Period), ox, oy, oz;
+                b.At(b.Phase + t / period * Math.PI * 2, out ox, out oy, out oz);
+                double cx = b.Parent >= 0 ? p[b.Parent * 3] : 0, cy = b.Parent >= 0 ? p[b.Parent * 3 + 1] : 0, cz = b.Parent >= 0 ? p[b.Parent * 3 + 2] : 0;
+                p[i * 3] = cx + ox; p[i * 3 + 1] = cy + oy; p[i * 3 + 2] = cz + oz;
+            }
+            return p;
+        }
         /// <summary>Gravity switched off (content/physics.unt @law gravity-off): the year it went off (NaN: on). From then on every
         /// body carries straight on at the speed it had on its orbit, and the star swells by <see cref="StarSwell"/>.</summary>
         public static double GravityOffYear = double.NaN;
+        /// <summary>The year gravity came back on after it went off (NaN: not back).</summary>
+        public static double GravityOnYear = double.NaN;
         /// <summary>How much the star has swollen since gravity went off (1: not at all), set by the view each frame.</summary>
         public static double StarSwell = 1;
 
@@ -534,31 +552,11 @@ namespace Universe.Gen
         {
             int count = sys.Bodies.Count;
             var px = new double[count]; var py = new double[count]; var pz = new double[count];
-            double seconds = yearsPerSecond > 0 ? simYears / yearsPerSecond : 0;
-            Action<double, double[], double[], double[], bool> place = (t, qx, qy, qz, calm) =>
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var b = sys.Bodies[i];
-                    double period = Math.Max(1e-4, b.Period);
-                    double turn = yearsPerSecond / period * Math.PI * 2;
-                    // calm motion: a body that would turn faster than the limit is shown turning at the limit
-                    double ang = !calm || turn <= maxTurnPerSecond || yearsPerSecond <= 0
-                        ? b.Phase + t / period * Math.PI * 2
-                        : b.Phase + seconds * maxTurnPerSecond;
-                    double cx = b.Parent >= 0 ? qx[b.Parent] : 0, cy = b.Parent >= 0 ? qy[b.Parent] : 0, cz = b.Parent >= 0 ? qz[b.Parent] : 0, ox, oy, oz;
-                    b.At(ang, out ox, out oy, out oz); qx[i] = cx + ox; qy[i] = cy + oy; qz[i] = cz + oz;
-                }
-            };
-            if (double.IsNaN(GravityOffYear) || simYears <= GravityOffYear) place(simYears, px, py, pz, true);
-            else
-            {
-                // gravity off: from the moment it went, every body carries straight on at the speed it had then (its place a
-                // moment later less its place then, over that moment), a moon with its planet's motion and its own
-                double t0 = GravityOffYear, hY = 1e-5; var ax = new double[count]; var ay = new double[count]; var az = new double[count];
-                place(t0, px, py, pz, false); place(t0 + hY, ax, ay, az, false); double k = (simYears - t0) / hY;
-                for (int i = 0; i < count; i++) { px[i] += (ax[i] - px[i]) * k; py[i] += (ay[i] - py[i]) * k; pz[i] += (az[i] - pz[i]) * k; }
-            }
+            // every body where it truly is (no calm motion standing in for a fast one): from gravity as a live force, the bodies'
+            // own pulls moment by moment (src/gen/SystemGravity.cs), started from their Kepler orbits; with gravity off, straight on
+            if (sys.Live == null) sys.Live = new SystemGravity(sys, simYears);
+            sys.Live.Advance(sys, simYears, GravityOffYear, GravityOnYear);
+            for (int i = 0; i < count; i++) sys.Live.Place(i + 1, out px[i], out py[i], out pz[i]);
             fx = focus >= 0 && focus < count ? px[focus] : 0; fy = focus >= 0 && focus < count ? py[focus] : 0; fz = focus >= 0 && focus < count ? pz[focus] : 0;
             int n = 0;
             outV[n++] = Star(new Vec3((float)(-fx * scale), (float)(-fy * scale), (float)(-fz * scale)), (float)(sys.StarRadius * StarSwell * scale), sys.SR, sys.SG, sys.SB, 1f);

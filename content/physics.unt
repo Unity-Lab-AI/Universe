@@ -573,6 +573,40 @@ colour: 0.95 0.95 1
 leaves: core
 says: a star that lost its hydrogen (for Ic its helium too) in winds or to a companion before its core collapsed: fast and fainter, its matter flung out faster
 
+# rate-a-year: a kind with a rate of its own (not a share of the supernovae's), a year in a galaxy of a hundred billion stars;
+#   remnant-mass-sol: what it leaves, solar masses; leaves: white-dwarf (the white dwarf goes on, as after a nova)
+@supernova classical-nova
+name: Classical nova
+real: yes
+rate-a-year: 50
+peak-sol: 1e5
+rise-days: 2
+plateau-days: 0
+halving-days: 12
+tail-share: 0.001
+peak-k: 8000
+ejecta-km-s: 1500
+colour: 1 0.9 0.8
+leaves: white-dwarf
+remnant-mass-sol: 0.6..1.3
+says: hydrogen pulled from a companion onto a white dwarf's face until it ignites in a thermonuclear flash; the white dwarf survives, throws off a thin shell, and can do it again (about fifty a year in a galaxy like ours, Shafter 2017)
+
+@supernova kilonova
+name: Kilonova (two neutron stars merging)
+real: yes
+rate-a-year: 1e-4
+peak-sol: 1e8
+rise-days: 1
+plateau-days: 0
+halving-days: 2
+tail-share: 0.01
+peak-k: 5000
+ejecta-km-s: 60000
+colour: 1 0.6 0.4
+leaves: core
+remnant-mass-sol: 2.5..3
+says: two neutron stars spiralling together and merging, as GW170817 was seen in gravitational waves and light in 2017: a few days' glow from the heavy elements forged in it (gold, platinum, the rare earths), leaving a black hole or a heavy neutron star
+
 @supernova ia
 name: Type Ia supernova (white dwarf)
 real: yes

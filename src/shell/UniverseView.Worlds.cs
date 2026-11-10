@@ -14,10 +14,11 @@ namespace Universe.Shell
         // ── rings: round any world whose template gives it them (content/terrain.unt rings-chance and its rings), made once
         // for each world of the system you are in, in the world's own radii, placed and scaled to it where it is now ──
         private readonly Dictionary<int, UploadBuffer> _ringBufs = new Dictionary<int, UploadBuffer>(); private readonly Dictionary<int, int> _ringCounts = new Dictionary<int, int>(); private object _ringSystem;
+        private readonly Dictionary<int, StarVertex[]> _ringBase = new Dictionary<int, StarVertex[]>(); private readonly Dictionary<int, bool> _ringsMovedFor = new Dictionary<int, bool>(); private StarVertex[] _ringMoved = new StarVertex[0];   // (the rings as made, and as flown with gravity off)
         private void DrawRings(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             if (_system == null) return;
-            if (_ringSystem != _system) { foreach (var b0 in _ringBufs.Values) b0.Dispose(); _ringBufs.Clear(); _ringCounts.Clear(); _ringSystem = _system; }
+            if (_ringSystem != _system) { foreach (var b0 in _ringBufs.Values) b0.Dispose(); _ringBufs.Clear(); _ringCounts.Clear(); _ringBase.Clear(); _ringsMovedFor.Clear(); _ringSystem = _system; }
             for (int i = 0; i < _system.Bodies.Count && i + 1 < _bodyCount; i++)
             {
                 var b = _system.Bodies[i]; if (!b.Rings || b.Terrain == null) continue;
@@ -31,9 +32,25 @@ namespace Universe.Shell
                     var v = new StarVertex[Math.Max(1, rings.Points.Count)];
                     for (int q = 0; q < rings.Points.Count; q++) { var p = rings.Points[q]; float s = rings.Shade[q] * 2; v[q] = new StarVertex { X = p.X, Y = p.Y, Z = p.Z, Size = 0.012f, R = col[0] * s, G = col[1] * s, B = col[2] * s, A = 1 }; }
                     buf = new UploadBuffer(_gpu.Device, (long)v.Length * Stride); buf.Write(v, rings.Points.Count);
-                    _ringBufs[i] = buf; _ringCounts[i] = rings.Points.Count;
+                    _ringBufs[i] = buf; _ringCounts[i] = rings.Points.Count; _ringBase[i] = v;
                 }
                 if (_ringCounts[i] == 0) continue;
+                StarVertex[] rb;
+                if (Flown && _ringBase.TryGetValue(i, out rb))
+                {
+                    // gravity off: each piece of the rings straight on in the rings' plane along its orbit's tangent, at its own speed
+                    // round the planet (root(GM / r), the inner ones faster), from where it was when gravity went
+                    double secs = Math.Max(0, OffYears) * 31557600.0, rKm = b.RadiusUnits / Units.Km(1), gm = Physics.G * Math.Max(1, b.MassKg);
+                    var nrm = new Vec3(0, 0.95f, -0.3f); int nr = _ringCounts[i]; var moved = _ringMoved.Length >= nr ? _ringMoved : (_ringMoved = new StarVertex[nr]);
+                    for (int q = 0; q < nr; q++)
+                    {
+                        var v0 = rb[q]; var pp = new Vec3(v0.X, v0.Y, v0.Z); double rr = Math.Sqrt((double)pp.X * pp.X + (double)pp.Y * pp.Y + (double)pp.Z * pp.Z); var tg = Vec3.Cross(nrm, pp).Normalized;
+                        double fl = Math.Sqrt(gm / Math.Max(1, rr * rKm * 1000)) * secs / (rKm * 1000);   // (its flight so far, in the planet's radii)
+                        v0.X += (float)(tg.X * fl); v0.Y += (float)(tg.Y * fl); v0.Z += (float)(tg.Z * fl); moved[q] = v0;
+                    }
+                    buf.Write(moved, nr); _ringsMovedFor[i] = true;
+                }
+                else if (_ringsMovedFor.ContainsKey(i) && _ringBase.TryGetValue(i, out rb)) { buf.Write(rb, _ringCounts[i]); _ringsMovedFor.Remove(i); }   // (gravity back: the rings as they are)
                 float sc = (float)b.RadiusUnits; var m = Mat4.Identity; m.M11 = sc; m.M22 = sc; m.M33 = sc; m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
                 DrawPoints(buf, _ringCounts[i], m * vp, right, up, 1f, 0.0008f, w, h, time, 0f, 1f, 0f);
             }
@@ -368,8 +385,14 @@ namespace Universe.Shell
             double off = SpaceGen.GravityOffYear, t = _simYears, lx, ly, lz;
             if (!double.IsNaN(off) && t > off)
             {
-                double x0, y0, z0, x1, y1, z1; OrbitAt(ex, off - 1e-4, out x0, out y0, out z0); OrbitAt(ex, off, out x1, out y1, out z1);
-                lx = x1 + (x1 - x0) / 1e-4 * (t - off); ly = y1 + (y1 - y0) / 1e-4 * (t - off); lz = z1 + (z1 - z0) / 1e-4 * (t - off);
+                // its place and velocity at the moment gravity went, worked out once (a step either side, a millionth of its orbit), then
+                // straight on from there for as long as gravity was off (held where it flew to once it is back)
+                if (ex.OffAt != off)
+                {
+                    double h = Math.Max(1e-9, ex.OrbPeriod * 1e-6), x0, y0, z0, x2, y2, z2; OrbitAt(ex, off - h, out x0, out y0, out z0); OrbitAt(ex, off + h, out x2, out y2, out z2); OrbitAt(ex, off, out ex.GoX, out ex.GoY, out ex.GoZ);
+                    ex.GoVx = (x2 - x0) / (2 * h); ex.GoVy = (y2 - y0) / (2 * h); ex.GoVz = (z2 - z0) / (2 * h); ex.OffAt = off;
+                }
+                double fl = OffYears; lx = ex.GoX + ex.GoVx * fl; ly = ex.GoY + ex.GoVy * fl; lz = ex.GoZ + ex.GoVz * fl;
             }
             else OrbitAt(ex, t, out lx, out ly, out lz);
             ex.OffX = lx; ex.OffY = ly; ex.OffZ = lz; ex.X = ex.OrbCx + lx; ex.Y = ex.OrbCy + ly; ex.Z = ex.OrbCz + lz;   // (the precise offset kept beside the absolute place)

@@ -16,9 +16,9 @@ namespace Universe.Shell
         // light by its real light curve, its shell of flung matter growing for a hundred thousand years, and the neutron star or
         // black hole born at its middle (one of the bodies round you, picked like any) ──
         private sealed class Sn { public double T, X, Y, Z, Ux, Uy, Uz, Mass; public int Kind; public Galaxy G; public SnKind K; public bool Ia { get { return K.Leaves == "nothing"; } } }   // T: when, in years of the game's time; X Y Z in its galaxy's frame; U: in the universe
-        private sealed class SnKind { public string Id, Name, Leaves, Says; public double Share, Peak, Rise, Plateau, Halving, Tail, V, PeakK = 6000; public float R = 1, G = 1, B = 1; }
+        private sealed class SnKind { public string Id, Name, Leaves, Says; public double Share, Peak, Rise, Plateau, Halving, Tail, V, PeakK = 6000, OwnRate, RemLo, RemHi; public float R = 1, G = 1, B = 1; }   // OwnRate: its own rate a year in a galaxy of a hundred billion stars (0: a share of the supernovae's); RemLo..RemHi: what it leaves, solar masses
         private readonly List<SnKind> _snKinds = new List<SnKind>();
-        private sealed class SnCache { public int From = int.MaxValue, To = int.MinValue; public bool Full; public readonly List<Sn> Events = new List<Sn>(); }
+        private sealed class SnCache { public long From = long.MaxValue, To = long.MinValue; public bool Full; public readonly List<Sn> Events = new List<Sn>(); }
         private readonly Dictionary<ulong, SnCache> _snCache = new Dictionary<ulong, SnCache>();
         private double _snRate = 3, _snCc = 0.7, _snCcPeak = 5e8, _snIaPeak = 4e9, _snCcRise = 10, _snIaRise = 18, _snPlateau = 100, _snCcV = 5000, _snIaV = 10000, _snFreeYears = 300, _snRemnantYears = 1e5, _snNsMax = 20; private bool _snLoaded;
         private Sn _tSn;                                                                   // the supernova picked (its card, the tour's words)
@@ -39,25 +39,34 @@ namespace Universe.Shell
                 Func<string, double, double> num = (k, d) => { double v; return double.TryParse(e.Get(k, ""), fs, ci, out v) ? v : d; };
                 var k2 = new SnKind { Id = e.Id, Name = e.Name, Leaves = e.Get("leaves", "core"), Says = e.Get("says", ""), Share = num("share", 0), Peak = num("peak-sol", 5e8), Rise = num("rise-days", 10), Plateau = num("plateau-days", 0), Halving = num("halving-days", 15), Tail = num("tail-share", 0.05), V = num("ejecta-km-s", 5000), PeakK = num("peak-k", 6000) };
                 var cw = e.Get("colour", "1 1 1").Split(' '); if (cw.Length == 3) { float.TryParse(cw[0], fs, ci, out k2.R); float.TryParse(cw[1], fs, ci, out k2.G); float.TryParse(cw[2], fs, ci, out k2.B); }
-                if (k2.Share > 0) _snKinds.Add(k2);
+                k2.OwnRate = num("rate-a-year", 0); { double lo, hi; if (e.TryRange("remnant-mass-sol", out lo, out hi)) { k2.RemLo = lo; k2.RemHi = hi; } }
+                if (k2.Share > 0 || k2.OwnRate > 0) _snKinds.Add(k2);
             }
             if (_snKinds.Count == 0) _snKinds.Add(new SnKind { Id = "ii-p", Name = "Type II-P supernova", Leaves = "core", Share = 1, Peak = _snCcPeak, Rise = _snCcRise, Plateau = _snPlateau, Halving = 8, Tail = 0.05, V = _snCcV });
         }
         // a galaxy's rate a year: the law's rate for a galaxy of a hundred billion stars (about fifty thousand light-years across), by its size squared
         private double SnRate(Galaxy g) { double k = g.Scale / (5e4 / Units.LightYearsPerUnit); return _snRate / 100.0 * Math.Max(0.1, Math.Min(4, k * k)); }
-        private void SnYear(Galaxy g, SnCache c, int year)
+        private void SnYear(Galaxy g, SnCache c, long year)
         {
             var rng = new Rng((ulong)year * 0x9E3779B97F4A7C15UL ^ g.Seed ^ 0xA5A5UL);
-            double lam = SnRate(g); int n = (int)Math.Floor(lam) + (rng.NextDouble() < lam - Math.Floor(lam) ? 1 : 0);
-            for (int q = 0; q < n; q++)
+            double scale = SnRate(g) / Math.Max(1e-30, _snRate / 100.0);                    // (its size against a galaxy of a hundred billion stars)
+            for (int kk = -1; kk < _snKinds.Count; kk++)
             {
-                var sn = new Sn { G = g, T = year + rng.NextDouble() };
-                { double tot = 0; foreach (var k2 in _snKinds) tot += k2.Share; double pick = rng.NextDouble() * tot; sn.Kind = _snKinds.Count - 1; for (int qk = 0; qk < _snKinds.Count; qk++) { pick -= _snKinds[qk].Share; if (pick <= 0) { sn.Kind = qk; break; } } sn.K = _snKinds[sn.Kind]; }
-                if (g.FarPts != null && g.FarPts.Length > 0) { var p = g.FarPts[rng.Below(g.FarPts.Length)]; sn.X = p.X; sn.Y = p.Y; sn.Z = p.Z; }
-                else { double r = Math.Sqrt(rng.NextDouble()) * 0.5, a = rng.NextDouble() * Math.PI * 2; sn.X = Math.Cos(a) * r; sn.Y = rng.Gaussian() * 0.02; sn.Z = Math.Sin(a) * r; }
-                sn.Mass = sn.K.Leaves == "nothing" ? 1.4 : sn.K.Leaves == "magnetar" ? 40 * Math.Pow(3, rng.NextDouble()) : 8 * Math.Pow(5, rng.NextDouble());   // a white dwarf at its limit; a star of 8 to 40 solar masses; a very heavy one, 40 to 120
-                ToUniverse(g, sn.X, sn.Y, sn.Z, out sn.Ux, out sn.Uy, out sn.Uz);
-                c.Events.Add(sn);
+                // kk -1: the supernovae, each kind by its share of their rate; then each kind with a rate of its own
+                if (kk >= 0 && (_snKinds[kk].OwnRate <= 0 || year < (long)Math.Floor(_simYears) - 3)) continue;   // (novae and the like only for the last few years: they last weeks, their shells centuries, never the remnants' hundred thousand years)
+                double lam = kk < 0 ? SnRate(g) : _snKinds[kk].OwnRate * scale; int n = (int)Math.Floor(lam) + (rng.NextDouble() < lam - Math.Floor(lam) ? 1 : 0);
+                for (int q = 0; q < n; q++)
+                {
+                    var sn = new Sn { G = g, T = year + rng.NextDouble() };
+                    if (kk >= 0) sn.Kind = kk;
+                    else { double tot = 0; foreach (var k2 in _snKinds) if (k2.OwnRate <= 0) tot += k2.Share; double pick = rng.NextDouble() * tot; sn.Kind = 0; for (int qk = 0; qk < _snKinds.Count; qk++) { if (_snKinds[qk].OwnRate > 0) continue; sn.Kind = qk; pick -= _snKinds[qk].Share; if (pick <= 0) break; } }
+                    sn.K = _snKinds[sn.Kind];
+                    if (g.FarPts != null && g.FarPts.Length > 0) { var p = g.FarPts[rng.Below(g.FarPts.Length)]; sn.X = p.X; sn.Y = p.Y; sn.Z = p.Z; }
+                    else { double r = Math.Sqrt(rng.NextDouble()) * 0.5, a = rng.NextDouble() * Math.PI * 2; sn.X = Math.Cos(a) * r; sn.Y = rng.Gaussian() * 0.02; sn.Z = Math.Sin(a) * r; }
+                    sn.Mass = sn.K.RemHi > 0 ? sn.K.RemLo + (sn.K.RemHi - sn.K.RemLo) * rng.NextDouble() : sn.K.Leaves == "nothing" ? 1.4 : sn.K.Leaves == "magnetar" ? 40 * Math.Pow(3, rng.NextDouble()) : 8 * Math.Pow(5, rng.NextDouble());
+                    ToUniverse(g, sn.X, sn.Y, sn.Z, out sn.Ux, out sn.Uy, out sn.Uz);
+                    c.Events.Add(sn);
+                }
             }
         }
         /// <summary>A galaxy's supernovae up to now: the last few years' (their light), or with its whole history back a hundred thousand
@@ -66,12 +75,17 @@ namespace Universe.Shell
         {
             if (!_snLoaded) LoadSupernovaLaw();
             SnCache c; if (!_snCache.TryGetValue(g.Seed, out c)) { c = new SnCache(); _snCache[g.Seed] = c; }
-            int now = (int)Math.Floor(_simYears), from = full ? now - (int)_snRemnantYears : now - 2, to = now + 1;
-            if (c.From == int.MaxValue) { for (int y = from; y <= to; y++) SnYear(g, c, y); c.From = from; c.To = to; c.Full = full; }
+            long now = (long)Math.Floor(_simYears), from = full ? now - (long)_snRemnantYears : now - 2, to = now + 1;
+            // time run on past the whole window since it was last made (the faster times: a frame can be millions of years): made afresh
+            // for the window alone, never year by year through all that lies between
+            if (c.From != long.MaxValue && (to - c.To > to - from + 1 || to < c.From)) { c.Events.Clear(); c.From = long.MaxValue; c.To = long.MinValue; c.Full = false; }
+            if (c.From == long.MaxValue) { for (long y = from; y <= to; y++) SnYear(g, c, y); c.From = from; c.To = to; c.Full = full; }
             else
             {
-                if (full && !c.Full) { for (int y = from; y < c.From; y++) SnYear(g, c, y); c.From = Math.Min(c.From, from); c.Full = true; }
+                if (full && !c.Full) { for (long y = from; y < c.From; y++) SnYear(g, c, y); c.From = Math.Min(c.From, from); c.Full = true; }
                 while (c.To < to) { c.To++; SnYear(g, c, c.To); }
+                if (from > c.From + 1000) { c.Events.RemoveAll(e => e.T < from); c.From = from; }   // (the ones past the window let go)
+                double recent = now - 3; c.Events.RemoveAll(e => e.K.OwnRate > 0 && e.T < recent);   // (a nova's few years done: let go)
             }
             return c;
         }
@@ -251,6 +265,7 @@ namespace Universe.Shell
                 var c = Supernovae(_galaxies[i], i == _near);
                 foreach (var sn in c.Events)
                 {
+                    if (sn.K.OwnRate > 0) continue;                                         // (a supernova, never a nova or a kilonova)
                     double years = _simYears - sn.T; if (years < 0 || years > 1.2) continue; double days = years * 365.25, end = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving;
                     // the nearest, but a shining one (its face still blazing) far before one on its tail, and one that leaves a neutron star
                     // or a black hole before a white dwarf blown to nothing (the tour had kept landing on white dwarfs a hundred and seventy
@@ -268,22 +283,25 @@ namespace Universe.Shell
             if (_near < 0 || _near >= _galaxies.Count) return null; var c = Supernovae(_galaxies[_near], true); Sn best = null; double bs = double.MaxValue;
             foreach (var sn in c.Events)
             {
+                if (sn.K.OwnRate > 0) continue;                                             // (a supernova's remnant)
                 double years = _simYears - sn.T; if (years < 1.2 || years > 3000) continue;
                 double dx = (sn.Ux - _ax) - _ox, dy = (sn.Uy - _ay) - _oy, dz = (sn.Uz - _az) - _oz, score = Math.Sqrt(dx * dx + dy * dy + dz * dz) * (1 + years / 300);
                 if (score < bs) { bs = score; best = sn; }
             }
             return best;
         }
+        // what it is called: a nova (the white dwarf goes on), a kilonova (two neutron stars merged), or a supernova
+        private static string SnName(Sn sn) { return sn.K.Leaves == "white-dwarf" ? "a nova" : sn.K.Id == "kilonova" ? "a kilonova" : "a supernova"; }
         private void PickSupernova(Sn sn)
         {
             double years = _simYears - sn.T, days = Math.Max(1, years * 365.25);
-            _tKind = 1; _tx = sn.Ux; _ty = sn.Uy; _tz = sn.Uz; _tName = "a supernova"; _tSn = sn;
+            _tKind = 1; _tx = sn.Ux; _ty = sn.Uy; _tz = sn.Uz; _tName = SnName(sn); _tSn = sn;
             // the shots' measure: the glowing face while it shines; once it has thinned (the tail), or for a remnant, the neutron star
             // or black hole at its middle, so the tour flies in to what is there (it had gone to ten times the face's size at its
             // biggest, a thousand AU from a face shrunk to nothing and a remnant not yet made: empty space); a white dwarf blown apart
             // leaves nothing, and its shots stay at its thinning cloud
             double endD = sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving; bool tail = days > endD;
-            _tRadius = sn.K.Leaves != "nothing" && (tail || years > 2) ? Units.Km(sn.K.Leaves == "magnetar" || sn.Mass < _snNsMax ? 12 : Physics.HorizonKm(sn.Mass) * 3)
+            _tRadius = sn.K.Leaves != "nothing" && (tail || years > 2) ? Units.Km(sn.K.Leaves == "white-dwarf" ? 7000 : sn.K.Leaves == "magnetar" || sn.Mass < _snNsMax ? 12 : Physics.HorizonKm(sn.Mass) * 3)
                 : years > 2 ? Units.Km(SnShellLy(sn, years) * 9.4607e12)
                 : Units.Km(Math.Max(1e8, Math.Max(SnPhotKm(sn, days), SnEjectaKm(sn, days) * 0.5)));   // (the shots framed on the ballooning cloud, not only the face inside it)
         }
@@ -313,7 +331,7 @@ namespace Universe.Shell
                 return "A " + sn.K.Name.ToLowerInvariant() + " " + Years(yrs) + " ago, mid-process: its shell " + SnShellLy(sn, yrs).ToString("0.#") + " light-years out, moving at " + SnShellKmS(sn, yrs).ToString("N0") + " km/s, " + (yrs < 300 ? "flying free" : "slowed as it sweeps up the gas between the stars") + "; " + (sn.K.Leaves == "nothing" ? "nothing at its middle but the shell" : (sn.K.Leaves == "magnetar" ? "a magnetar" : sn.Mass < _snNsMax ? "a neutron star" : "a black hole") + " at its middle, born in it; the star that died is gone, its worlds with it");
             }
             double days = (_simYears - sn.T) * 365.25, L = SnLum(sn, days), v = sn.K.V; string stage = days < sn.K.Rise ? "still rising" : days < sn.K.Rise + sn.K.Plateau ? "on its plateau" : days < sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? "fading" : "on its long radioactive tail";
-            return sn.K.Name + ", " + days.ToString("0") + " days after its blast, " + stage + ": " + (sn.Ia ? "a white dwarf blown apart, " : "the core of a star of " + sn.Mass.ToString("0") + " solar masses collapsed, ") + "shining at " + (L >= 1e6 ? (L / 1e6).ToString("0.#") + " million" : L.ToString("N0")) + " solar luminosities, its matter flung out at " + v.ToString("N0") + " km/s" + (sn.K.Leaves == "nothing" ? "; it leaves nothing but its shell" : sn.K.Leaves == "magnetar" ? "; a magnetar is born at its middle" : sn.Mass < _snNsMax ? "; a neutron star is born at its middle" : "; a black hole is born at its middle");
+            return sn.K.Name + ", " + days.ToString("0") + " days after its blast, " + stage + ": " + (sn.Ia ? "a white dwarf blown apart, " : sn.K.Leaves == "white-dwarf" ? "hydrogen ignited on a white dwarf's face, " : sn.K.Id == "kilonova" ? "two neutron stars merged, " : "the core of a star of " + sn.Mass.ToString("0") + " solar masses collapsed, ") + "shining at " + (L >= 1e6 ? (L / 1e6).ToString("0.#") + " million" : L.ToString("N0")) + " solar luminosities, its matter flung out at " + v.ToString("N0") + " km/s" + (sn.K.Leaves == "nothing" ? "; it leaves nothing but its shell" : sn.K.Leaves == "magnetar" ? "; a magnetar is born at its middle" : sn.Mass < _snNsMax ? "; a neutron star is born at its middle" : "; a black hole is born at its middle");
         }
         private void SupernovaCard(List<string> L, double dist)
         {
@@ -323,7 +341,7 @@ namespace Universe.Shell
                 // a remnant, mid-process: the shell by its age, what is at its middle, what became of the star and its worlds, what comes next
                 L.Add(sn.K.Name + ", " + Years(years) + " ago"); L.Add("id: SN-" + ((long)(sn.T * 1000) & 0xFFFFFF).ToString("X6") + " in " + sn.G.Name);
                 L.Add("its shell: " + (SnShellLy(sn, years) * 2).ToString("0.#") + " light-years across, moving at " + SnShellKmS(sn, years).ToString("N0") + " km/s" + (years < _snFreeYears ? " (flying free: it has not yet swept up its own mass of gas)" : " (slowed as it sweeps up the gas between the stars, its radius growing as the two-fifths power of its age)") + (years < 5000 ? "; hot, glowing in hydrogen and oxygen" : "; cooling, faint, blue-green"));
-                L.Add(sn.K.Leaves == "nothing" ? "at its middle: nothing; the white dwarf was blown apart entirely" : sn.K.Leaves == "magnetar" ? "at its middle: a magnetar, born in it, lighting the blast from inside as it spins down" : sn.Mass < _snNsMax ? "at its middle: a neutron star, born in it, spinning about " + Math.Min(700, 30 * Math.Sqrt(970 / Math.Max(1, years))).ToString("0") + " times a second; among the bodies round you, picked like any" : "at its middle: a black hole, born in it; among the bodies round you, picked like any");
+                L.Add(sn.K.Leaves == "white-dwarf" ? "at its middle: the white dwarf, still there, to flare again when it has gathered enough" : sn.K.Leaves == "nothing" ? "at its middle: nothing; the white dwarf was blown apart entirely" : sn.K.Leaves == "magnetar" ? "at its middle: a magnetar, born in it, lighting the blast from inside as it spins down" : sn.Mass < _snNsMax ? "at its middle: a neutron star, born in it, spinning about " + Math.Min(700, 30 * Math.Sqrt(970 / Math.Max(1, years))).ToString("0") + " times a second; among the bodies round you, picked like any" : "at its middle: a black hole, born in it; among the bodies round you, picked like any");
                 L.Add("the star that died: " + (sn.Ia ? "a white dwarf of 1.4 solar masses" : "a star of " + sn.Mass.ToString("0") + " solar masses") + ", gone; its worlds with it: the inner ones vaporised, the outer flung loose");
                 L.Add("distance: " + Units.Describe(dist));
                 return;
@@ -335,7 +353,7 @@ namespace Universe.Shell
             L.Add("its matter flung out at " + v.ToString("N0") + " km/s (" + (v / 299792.458 * 100).ToString("0.#") + "% of light's speed, the outermost up to a tenth of it): its edge now " + ScaleHud.Words(SnEjectaKm(sn, Math.Max(1, days)) * 2) + " across");
             { double rp = SnPhotKm(sn, days), tk = SnHeatK(sn, days); L.Add(rp > 1e6 ? "its glowing face: " + ScaleHud.Words(rp * 2) + " across, " + tk.ToString("N0") + " K (" + (tk > 9000 ? "blue-white" : tk > 6500 ? "white" : tk > 5000 ? "yellow-white" : "orange") + ")" + (days > sn.K.Rise + sn.K.Plateau + 3 * sn.K.Halving ? ", drawing back in as the fireball thins to a cloud" : "") : "the fireball has thinned to a cloud: its remnant shows at the middle"); }
             L.Add("its worlds: the inner ones vaporised, the outer flung loose; its neighbours scorched");
-            L.Add(sn.K.Leaves == "nothing" ? "what it leaves: nothing but its shell, seen for a hundred thousand years as it sweeps up the gas between the stars" : sn.K.Leaves == "magnetar" ? "what it leaves: a magnetar at its middle, a neutron star with a field a thousand times a pulsar's, spinning down and lighting the blast from inside; its shell seen for a hundred thousand years" : sn.Mass < _snNsMax ? "what it leaves: a neutron star at its middle, revealed as the ejecta thin, spinning tens of times a second; its shell seen for a hundred thousand years" : "what it leaves: a black hole at its middle, revealed as the ejecta thin; its shell seen for a hundred thousand years");
+            L.Add(sn.K.Leaves == "white-dwarf" ? "what it leaves: the white dwarf as it was and a thin shell of its burned gas, gone in a few centuries" : sn.K.Leaves == "nothing" ? "what it leaves: nothing but its shell, seen for a hundred thousand years as it sweeps up the gas between the stars" : sn.K.Leaves == "magnetar" ? "what it leaves: a magnetar at its middle, a neutron star with a field a thousand times a pulsar's, spinning down and lighting the blast from inside; its shell seen for a hundred thousand years" : sn.Mass < _snNsMax ? "what it leaves: a neutron star at its middle, revealed as the ejecta thin, spinning tens of times a second; its shell seen for a hundred thousand years" : "what it leaves: a black hole at its middle, revealed as the ejecta thin; its shell seen for a hundred thousand years");
             L.Add("this galaxy: about " + (SnRate(sn.G) * 100).ToString("0.#") + " supernovae a century");
             L.Add("distance: " + Units.Describe(dist));
         }

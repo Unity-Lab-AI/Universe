@@ -118,7 +118,7 @@ namespace Universe.Gen
         // ── each kind of world is a template in content/terrain.unt (none named in code): any number may be a range
         // (a..b) and any colour a range (r g b .. r g b); every world of the kind takes its own values from its seed, so no
         // two are the same, and the same seed always gives the same world ──
-        public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255, Albedo = 0.3; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
+        public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255, Albedo = 0.3, Tau, AirBar; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
             public double LandShare = 0.06, CloudShift, DayHours = 24, Tides = 0.5, Bands = 19, GreatStorm = 1, ReliefOfRadius;   // ReliefOfRadius: the ground's relief as a share of the world's radius (a small body's lumps and craters); 0 for a world's own kilometres
             public bool Molten, Dunes, FrozenSea, SnowPatches, Locked, PolarIce = true, Dry, TropicalSoil, Life = true, ManyVolcanoes, Rivers = true, SeaFloorVolcanoes;
             public double VolcanoCount = 30; public string Grains;
@@ -168,7 +168,7 @@ namespace Universe.Gen
                 return new[] { p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u, p0[2] + (p1[2] - p0[2]) * u };
             };
             var t = new TerrainKindData();
-            t.Radius = d("radius-km", 6371); t.CloudKm = d("cloud-km", 9); t.AirKm = d("air-km", 110); t.CloudThick = d("cloud-thickness", 1); t.BaseK = d("base-k", 255); t.Albedo = d("albedo", 0.3);
+            t.Radius = d("radius-km", 6371); t.CloudKm = d("cloud-km", 9); t.AirKm = d("air-km", 110); t.CloudThick = d("cloud-thickness", 1); t.BaseK = d("base-k", 255); t.Albedo = d("albedo", 0.3); t.Tau = d("optical-depth", 0); t.AirBar = d("air-bar", 0);
             t.Solid = g("solid") != "no"; t.Water = g("water") == "yes"; t.Clouds = g("clouds") != "no";
             t.Air = c("air-colour", t.Air); t.Cloud = c("cloud-colour", t.Cloud); t.Rock = c("rock-colour", t.Rock);
             Func<string, bool, bool> yes = (k, f) => { var v = g(k); return v == "" ? f : v == "yes"; };
@@ -709,7 +709,7 @@ namespace Universe.Gen
             _volcanoes = list.ToArray();
         }
 
-        private double _volcano, _vent, _river; private bool _activeVent;
+        private double _volcano, _vent, _river; private bool _activeVent; private volatile Drainage _drain; private readonly object _drainLock = new object();
 
         private double Landforms(double x, double y, double z, double h, int layers, ref float r, ref float g, ref float b, ref float glow)
         {
@@ -737,19 +737,20 @@ namespace Universe.Gen
                 r += (0.2f - r) * m; g += (0.18f - g) * m; b += (0.17f - b) * m;
                 if (_vent > 0 && _activeVent) { r = 1f; g = 0.42f; b = 0.08f; glow = 0.9f; }
             }
-            // rivers: thin winding channels through the lowlands, running toward the sea
+            // rivers and lakes: the world's rain run downhill to the sea (src/gen/Drainage.cs, made once for the world): a river where
+            // enough has gathered, as wide as the root of it; a lake where a basin fills to its spill, its water level flat
             _river = 0;
-            if (h > 0.02 && h < 2.2 && _tk.Rivers)   // (its template: rivers)
+            if (h > 0 && _tk.Rivers)   // (its template: rivers)
             {
-                double line = 1 - Math.Abs(Fbm(x, y, z, _seed + 4000u, 22, 3 + Math.Min(Math.Max(0, layers - 6), 6)) * 2 - 1);
-                double width = 0.988 - 0.004 * Smooth(0, 2, h);
-                if (line > width)
+                if (_drain == null) lock (_drainLock) if (_drain == null) _drain = new Drainage((dx, dy, dz) => { float r1, g1, b1, gl1; return HeightBase(dx, dy, dz, 6, out r1, out g1, out b1, out gl1); });   // (made once, by whichever thread needs it first)
+                double lake, rv = _drain.RiverAt(x, y, z, h, Radius, out lake);
+                if (!double.IsNaN(lake)) { h = lake; _river = 1; r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2]; }   // (lake water, at its level)
+                else if (rv > 0)
                 {
-                    _river = (line - width) / (1 - width);
-                    h -= 0.03 + 0.05 * _river;
+                    _river = rv; h -= 0.03 * rv;
                     r = _tk.River[0]; g = _tk.River[1]; b = _tk.River[2];                  // river water, or a dry bed (terrain.unt)
                 }
-                else if (line > width - 0.006) _river = -1;                               // the river banks
+                else if (rv < 0) _river = -1;                                             // the river banks
             }
             return h;
         }

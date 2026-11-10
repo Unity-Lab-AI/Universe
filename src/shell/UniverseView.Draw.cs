@@ -344,6 +344,7 @@ namespace Universe.Shell
         public void Draw(int w, int h, double time)
         {
             _lastDrawTime = time;
+            WorldInside();                                                               // (the inside of the world you are at, at work with the game's time)
             {
                 // the zoom log's census at every tenfold in the matter: what there was to pick at that size (a size with nothing real in it shows)
                 double ms = _spaceScale > 0 ? _spaceScale : _matterScale; int dec = ms > 0 ? (int)Math.Floor(Math.Log10(ms)) : int.MinValue;

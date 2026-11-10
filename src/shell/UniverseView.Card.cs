@@ -194,7 +194,8 @@ namespace Universe.Shell
                 else L.Add("orbit: " + Km(b.OrbitUnits) + " from its planet" + (b.Ecc >= 0.05 ? ", " + (b.Ecc < 0.25 ? "oval" : "a long ellipse") + " (eccentricity " + b.Ecc.ToString("0.00") + ")" : ""));
                 bool here = _ground != null && _planet == _tIndex;
                 foreach (var m in MakeUp(b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water)) L.Add(m);
-                WorldGravityLines(L, b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water);   // (gravity off: what it does to this world)
+                WorldGravityLines(L, b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water);
+                if (!b.Giant) { ClimateLines(L, _tIndex); AirLines(L, _tIndex); if (here) InsideAtWorkLines(L); }   // (its temperatures, its air by height, and at the world you are at, its inside at work)                                       // (its temperatures, from its star, its orbit and its air)   // (gravity off: what it does to this world)
                 if (!b.Giant) foreach (var m in InsideWords(b.Terrain ?? DeepView.TerrainKind(b.Kind), null, WorldSeed(_tIndex) + 1UL)) L.Add(m);   // (its layers to its middle, and its whole make-up by element)
                 { string sc = ScorchWords(_ax, _ay, _az); if (sc != null) L.Add("scorched: " + sc); }
                 if (here) { L.Add("air: " + (_ground.AirKm > 0 ? "about " + _ground.AirKm.ToString("0") + " km deep" : "none") + (_ground.HasClouds ? ", clouds" : "")); }
@@ -263,7 +264,9 @@ namespace Universe.Shell
                 L.Add(sea ? "sea" : ice ? "ice" : "land"); 
                 L.Add("on: " + GroundKind());
                 L.Add("place: " + (Math.Asin(_ty) * 180 / Math.PI).ToString("0.#") + " lat, " + (Math.Atan2(_tz, _tx) * 180 / Math.PI).ToString("0.#") + " long");
+                if (_planet >= 0 && _system != null && _planet < _system.Bodies.Count && !_system.Bodies[_planet].Giant) L.Add("the year's mean here about " + Kelvin(Climate.SurfaceK(WorldMeanK(_planet), Math.Asin(Math.Max(-1, Math.Min(1, _ty))), WorldKind(_planet).Tau > 0) - HeightCoolingK(_planet, Math.Max(0, gh))));   // (by its latitude: UniverseView.Climate.cs)
                 L.Add(sea ? "depth: " + (-gh * 1000).ToString("N0") + " m of water" : "height: " + (gh * 1000).ToString("N0") + " m above the sea");
+                if (sea && _planet >= 0) SeaLines(L, _planet, Math.Asin(Math.Max(-1, Math.Min(1, _ty))), -gh * 1000);   // (its tides and its current here: UniverseView.Climate.cs)
                 L.Add(sea ? "water over sand and mud" : ice ? "ice and packed snow" : gh > 3 ? "bare rock and scree" : gh > 1 ? "rock and thin soil" : "soil, sand and stone");
                 L.Add("distance: " + Units.Describe(dist));
             }

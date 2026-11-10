@@ -228,7 +228,7 @@ namespace Universe.Shell
             // three hundred milliseconds on the processor and the card idle at four frames a second), at most two new ones a frame
             if (_near < 0 || _near >= _galaxies.Count || _features == null) return;
             var g = _galaxies[_near]; _nebFrame++;
-            var near = new List<KeyValuePair<double, int>>(); var at = new Dictionary<int, double[]>();
+            var near = _nebNear; near.Clear(); var at = _nebAt; at.Clear();   // (kept and emptied each frame)
             for (int q = 0; q < _features.Count; q++)
             {
                 var fq = _features[q]; int fk = (int)fq[4]; if (fk < 2 || fk > 6) continue;
@@ -355,6 +355,11 @@ namespace Universe.Shell
         {
             _lastDrawTime = time;
             {
+                // the zoom log's census at every tenfold in the matter: what there was to pick at that size (a size with nothing real in it shows)
+                double ms = _spaceScale > 0 ? _spaceScale : _matterScale; int dec = ms > 0 ? (int)Math.Floor(Math.Log10(ms)) : int.MinValue;
+                if (dec != _levelLogged) { _levelLogged = dec; if (ms > 0) ZoomLog("LEVEL " + ScaleHud.Words(ms) + ": " + _matter.CensusWords() + " · " + _matter.Stage(ms)); }
+            }
+            {
                 double fine = _spaceScale > 0 ? _spaceScale : _matterScale > 0 ? _matterScale : 1;
                 _sky = (float)Math.Max(0, Math.Min(1, Math.Log(fine / 1.7e-8) / Math.Log(1.7e-6 / 1.7e-8)));   // from a millimetre down to 10 microns
             }
@@ -456,7 +461,7 @@ namespace Universe.Shell
             {
                 // every galaxy's clusters and nebulae, for the 8 nearest within about 60 of their sizes (one made new each frame at most)
                 int drawn = 0; bool made = false;
-                var order = new List<KeyValuePair<double, int>>();
+                var order = _galOrder; order.Clear();   // (kept and emptied each frame)
                 for (int i = 0; i < _galaxies.Count; i++) { var g = _galaxies[i]; double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz) / g.Scale; if (d < 60) order.Add(new KeyValuePair<double, int>(d, i)); }
                 order.Sort((a, b) => a.Key.CompareTo(b.Key));
                 foreach (var kv in order)
@@ -481,7 +486,7 @@ namespace Universe.Shell
                 {
                     if (!ex.Hole) continue; double dx = RelX(ex) - _ox, dy = RelY(ex) - _oy, dz = RelZ(ex) - _oz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     double rs = Units.Km(Physics.HorizonKm(ex.Mass)), thE = Math.Sqrt(2 * rs / Math.Max(d, rs)); if (thE < bestE) continue;
-                    var cl = new float[4]; float px0 = (float)dx, py0 = (float)dy, pz0 = (float)dz;
+                    float px0 = (float)dx, py0 = (float)dy, pz0 = (float)dz;
                     float cx0 = px0 * vp.M11 + py0 * vp.M21 + pz0 * vp.M31 + vp.M41, cy0 = px0 * vp.M12 + py0 * vp.M22 + pz0 * vp.M32 + vp.M42, cw0 = px0 * vp.M14 + py0 * vp.M24 + pz0 * vp.M34 + vp.M44;
                     if (cw0 <= 0) continue;
                     bestE = thE; _lens[0] = cx0 / cw0; _lens[1] = cy0 / cw0; _lens[2] = (float)(thE / Math.Tan(0.45)); _lens[3] = cw0;
@@ -823,6 +828,8 @@ namespace Universe.Shell
         private float _sky = 1;                                                           // how much of space shows behind (fades away at the very small)
         private int _comaN, _tailN; private UploadBuffer _tailBuf;
         private readonly float[] _pointConsts = new float[BillboardPipeline.ConstantCount];
+        private int _levelLogged = int.MinValue;
+        private readonly List<KeyValuePair<double, int>> _nebNear = new List<KeyValuePair<double, int>>(), _galOrder = new List<KeyValuePair<double, int>>(); private readonly Dictionary<int, double[]> _nebAt = new Dictionary<int, double[]>();
         private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0, float drift = 0)
         {
             if (buf == null || count <= 0) return;

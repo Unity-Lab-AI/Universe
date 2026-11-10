@@ -51,7 +51,7 @@ namespace Universe.Shell
             }
             _solidL.Clear(); _glowL.Clear(); _meshL.Clear(); var solid = _solidL; var glow = _glowL; var mesh = pipes != null ? _meshL : null;   // (the frame's lists kept and emptied, never made anew each frame)
             _bodies.Clear();
-            _clock = time; Build(scaleKm, time, solid, glow, mesh, overlay);
+            _clock = time; Build(scaleKm, time, solid, glow, mesh, overlay); Count();
             if (_picked != null && _picked.Kind == 3 && !overlay)
             {
                 // the electron you ride: where it is now, worked out from the pick itself (its atom, its shell and orbital, its phase), the

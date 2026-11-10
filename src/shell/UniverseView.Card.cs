@@ -109,6 +109,7 @@ namespace Universe.Shell
                 if (_darkMatter > 0) { L.Add("mass: about " + (1e11 / (1 - _darkMatter)).ToString("0.#E+0") + " solar masses, " + (_darkMatter * 100).ToString("0") + "% of it dark matter"); L.Add("its stars orbit at a flat " + _rimSpeed.ToString("0") + " km/s out to its rim, held by the dark halo (without it they would slow outward like planets)"); }
             }
             else if (_tKind == 1 && _tSn != null && _tName == "a supernova") SupernovaCard(L, dist);
+            else if (SwarmPicked) SwarmCard(L, dist);
             else if (_tKind == 1)
             {
                 bool open = _system != null && Math.Abs(_tx - _ax) + Math.Abs(_ty - _ay) + Math.Abs(_tz - _az) < Units.Km(1e6);
@@ -192,7 +193,7 @@ namespace Universe.Shell
                 else L.Add("orbit: " + Km(b.OrbitUnits) + " from its planet" + (b.Ecc >= 0.05 ? ", " + (b.Ecc < 0.25 ? "oval" : "a long ellipse") + " (eccentricity " + b.Ecc.ToString("0.00") + ")" : ""));
                 bool here = _ground != null && _planet == _tIndex;
                 foreach (var m in MakeUp(b, here ? _ground.HasWater : PlanetTerrain.TerrainKind(b.Terrain).Water)) L.Add(m);
-                if (!b.Giant) foreach (var m in InsideWords(b.Terrain ?? DeepView.TerrainKind(b.Kind), null)) L.Add(m);   // (its layers to its middle, and its whole make-up by element)
+                if (!b.Giant) foreach (var m in InsideWords(b.Terrain ?? DeepView.TerrainKind(b.Kind), null, WorldSeed(_tIndex) + 1UL)) L.Add(m);   // (its layers to its middle, and its whole make-up by element)
                 { string sc = ScorchWords(_ax, _ay, _az); if (sc != null) L.Add("scorched: " + sc); }
                 if (here) { L.Add("air: " + (_ground.AirKm > 0 ? "about " + _ground.AirKm.ToString("0") + " km deep" : "none") + (_ground.HasClouds ? ", clouds" : "")); }
                 L.Add("distance: " + Units.Describe(dist));

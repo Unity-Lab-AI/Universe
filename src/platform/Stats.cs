@@ -63,7 +63,7 @@ namespace Universe.Platform
                 lines.Add("detail " + Math.Round(Window.Detail * 100) + "%" + (atGround && backlog > 0 ? ", " + backlog + " ground pieces waiting" : ""));
                 Lines = lines.ToArray();
             }
-            catch { }
+            catch (System.Exception ex) { Universe.Program.WriteLog("failed in the stats: " + ex.Message); }   // (never silent: written to the log)
             _wallAt = now; _cpuSum = 0; _gpuSum = 0; _n = 0;
         }
 

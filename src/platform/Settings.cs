@@ -18,7 +18,7 @@ namespace Universe.Platform
                 if (_v != null) return _v;
                 _v = new Dictionary<string, string>();
                 try { if (File.Exists(FilePath)) foreach (var l in File.ReadAllLines(FilePath)) { int i = l.IndexOf('='); if (i > 0) _v[l.Substring(0, i).Trim()] = l.Substring(i + 1).Trim(); } }
-                catch { }
+                catch (System.Exception ex) { Universe.Program.WriteLog("failed in reading the settings: " + ex.Message); }   // (never silent: written to the log)
                 return _v;
             }
         }
@@ -39,7 +39,7 @@ namespace Universe.Platform
                 var lines = new List<string>(); foreach (var kv in V) lines.Add(kv.Key + " = " + kv.Value);
                 File.WriteAllLines(FilePath, lines.ToArray());
             }
-            catch { }
+            catch (System.Exception ex) { Universe.Program.WriteLog("failed in saving the settings: " + ex.Message); }   // (never silent: written to the log)
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Universe.Shell
         // swarm of stars, how fast its inner edge turns as watched), in its own frame (its horizon's radius 1, its disc level); every
         // motion in them is worked out on the card each frame (Pipeline: the gas on Kepler orbits, the stars on their ellipses, the
         // torn star's stream flowing)
-        private sealed class HoleParts { public UploadBuffer Disc, Jets, Swarm, Stream; public int DiscN, JetsN, SwarmN, StreamN; public float K; }
+        private sealed class HoleParts { public StarVertex[] SwarmRecs; public UploadBuffer Disc, Jets, Swarm, Stream; public int DiscN, JetsN, SwarmN, StreamN; public float K; }
         private readonly Dictionary<string, HoleParts> _holeParts = new Dictionary<string, HoleParts>();
         /// <summary>Every black hole's shadow: a black cone of the view round it, its half-angle by the law for where the camera
         /// stands (sin^2 = (27/4)(rs/r)^2 (1 - rs/r)): 2.6 horizon radii across from afar, half the sky at the photon sphere, nearly
@@ -167,12 +167,12 @@ namespace Universe.Shell
         }
         // a solid body's inside on its card (content @layer for its ground's kind, src/gen/BodyLayers.cs): its layers from the
         // ground to the middle, and its whole make-up by element (each layer weighed by its volume and density, made of its mix)
-        private List<string> InsideWords(string terrainKind, string groundMix)
+        private List<string> InsideWords(string terrainKind, string groundMix, ulong seed)
         {
             var l = new List<string>(); var bl = BodyLayers.Of(_content); var lays = bl.ForWorld(terrainKind); if (lays.Count == 0) return l;
             var names = new List<string>(); foreach (var q in lays) names.Add(q.Name.ToLowerInvariant());
             l.Add("inside: " + string.Join(", ", names));
-            var bulk = bl.Bulk(terrainKind, groundMix ?? PlanetTerrain.TerrainKind(terrainKind).Grains ?? terrainKind);
+            var bulk = bl.Bulk(terrainKind, groundMix ?? PlanetTerrain.TerrainKind(terrainKind).Grains ?? terrainKind, seed);   // (its own: scattered from its kind's by its seed)
             if (bulk.Count > 0) l.Add("whole, by mass: " + BodyLayers.Words(bulk, 6));
             return l;
         }
@@ -185,7 +185,7 @@ namespace Universe.Shell
             ex.Lines.Add(made.Name);   // (its kind; its words are in the content and the docs: the card stays short)
             { var parts = made.Get("makeup", "").Split(';'); if (parts.Length > 0 && parts[0].Trim().Length > 0) ex.Lines.Add("made of: " + Short(parts[0].Trim(), 70)); }   // (the first clause of its make-up: the minerals and elements below say the rest)
             if (ex.Mix != null) foreach (var ln in _matter.MakeUpWords(ex.Mix)) ex.Lines.Add(ln);
-            if (made.Kind == "asteroid" || made.Kind == "comet") foreach (var ln in InsideWords(made.Kind, made.Get("mix", null))) ex.Lines.Add(ln);   // (its layers, and its whole make-up by element)
+            if (made.Kind == "asteroid" || made.Kind == "comet") foreach (var ln in InsideWords(made.Kind, made.Get("mix", null), 1UL + (ulong)(Math.Abs(Math.Sin(ex.X * 7.1 + ex.Y * 13.3 + ex.Z * 3.7) * 1e6) % 1e6))) ex.Lines.Add(ln);   // (its layers, and its whole make-up by element)
             double dens; if (double.TryParse(made.Get("density", ""), fs, ci, out dens) && dens > 0)
             {
                 ex.Density = dens; double rM = ex.R / Units.Km(1) * 1000, kg = dens * 1000 * 4.0 / 3 * Math.PI * rM * rM * rM; ex.Mass = kg / 1.989e30;

@@ -14,6 +14,7 @@ namespace Universe.Shell
         // a tenth of that again as a giant (a red supergiant from eight solar masses up), then what its mass leaves: a white dwarf under
         // eight, a neutron star to about twenty-five, a black hole past it, drawn in that kind's colour, size and light ──
         private static readonly string[] MainSequence = { "o-type", "b-type", "a-type", "f-type", "g-type", "k-type", "m-type" };
+        private bool[] _onMs; private bool OnMainSequence(int kind) { if (_onMs == null || _onMs.Length != _kinds.Count) { _onMs = new bool[_kinds.Count]; for (int q = 0; q < _kinds.Count; q++) _onMs[q] = Array.IndexOf(MainSequence, _kinds[q].Id) >= 0; } return kind >= 0 && kind < _onMs.Length && _onMs[kind]; }
         private readonly Dictionary<string, int> _kindIx = new Dictionary<string, int>();
         private int KindIx(string id)
         {
@@ -24,20 +25,29 @@ namespace Universe.Shell
         private static double Hash01(int k, int salt) { uint h = (uint)k * 2654435761u ^ (uint)salt * 0x9E3779B9u; h ^= h >> 15; h *= 0x2C1B3C6Du; h ^= h >> 12; return (h & 0xFFFFFF) / 16777216.0; }
         // star k's own mass, main-sequence life and age at the start, by its own lasting id (never its place in the list, which is remade as you move)
         private int StarKey(int k) { long id = k >= 0 && k < _localId.Count ? _localId[k] : k; return (int)(id ^ (id >> 31)); }
+        // each star's life worked out once for the list it is in (remade as you move: _localVersion), never every frame
+        private double[] _lifeM = new double[0], _lifeL = new double[0], _lifeA = new double[0]; private int _lifeVer = -1;
         private void LocalLife(int k, int bornKind, out double m, out double life, out double age0)
         {
+            if (_lifeVer != _localVersion || _lifeM.Length < _localList.Count)
+            {
+                int n = _localList.Count; if (_lifeM.Length < n) { _lifeM = new double[n]; _lifeL = new double[n]; _lifeA = new double[n]; }
+                for (int q = 0; q < n; q++) _lifeM[q] = -1; _lifeVer = _localVersion;
+            }
+            if (k >= 0 && k < _lifeM.Length && _lifeM[k] >= 0) { m = _lifeM[k]; life = _lifeL[k]; age0 = _lifeA[k]; return; }
             int key = StarKey(k); m = _kinds[bornKind].MassSol * Math.Exp(0.25 * (Hash01(key, 1) * 2 - 1)); life = 1e10 * Math.Pow(m, -2.5); age0 = Hash01(key, 2) * Math.Min(life, 1.2e10);
+            if (k >= 0 && k < _lifeM.Length) { _lifeM[k] = m; _lifeL[k] = life; _lifeA[k] = age0; }
         }
         /// <summary>The game's year star k round you dies in a supernova (NaN: it never does: under eight solar masses, or not on the main sequence).</summary>
         private double LocalDeathYear(int k)
         {
-            int born = k < _localKind.Count ? _localKind[k] : -1; if (born < 0 || born >= _kinds.Count || Array.IndexOf(MainSequence, _kinds[born].Id) < 0) return double.NaN;
+            int born = k < _localKind.Count ? _localKind[k] : -1; if (born < 0 || born >= _kinds.Count || !OnMainSequence(born)) return double.NaN;
             double m, life, age0; LocalLife(k, born, out m, out life, out age0); return m >= 8 ? life * 1.1 - age0 : double.NaN;
         }
         /// <summary>What star k round you is now: its kind (index into the kinds; -1 gone from sight, a black hole), from its own mass and age.</summary>
         private int LocalKindNow(int k, int bornKind)
         {
-            if (bornKind < 0 || bornKind >= _kinds.Count || Array.IndexOf(MainSequence, _kinds[bornKind].Id) < 0) return bornKind;   // (a giant, a remnant, a brown dwarf: as it is)
+            if (bornKind < 0 || bornKind >= _kinds.Count || !OnMainSequence(bornKind)) return bornKind;   // (a giant, a remnant, a brown dwarf: as it is)
             double m, life, age0; LocalLife(k, bornKind, out m, out life, out age0); double age = age0 + Math.Max(0, _simYears);   // (somewhere in its main sequence at the start, older with the game's time)
             if (age < life) return bornKind;
             if (age < life * 1.1) { int g = KindIx(m >= 8 ? "red-supergiant" : "red-giant"); return g >= 0 ? g : bornKind; }

@@ -299,7 +299,7 @@ namespace Universe
                 }
                 if (testStall && clock.Total > 0.5) System.Threading.Thread.Sleep(10000);
 
-                _frameT0 = System.Diagnostics.Stopwatch.GetTimestamp();
+                _frameT0 = System.Diagnostics.Stopwatch.GetTimestamp(); Universe.Render.GpuLog.Pass = "the frame's update and input";
                 if (window.Resized) { window.Resized = false; gpu.Resize(window.RenderWidth, window.RenderHeight); }
                 if (deep != null && testDeep >= 0 && frames == 2)
                 {
@@ -388,8 +388,10 @@ namespace Universe
                 else if (planet != null) planet.Draw(gpu, gpu.Width, gpu.Height);
                 else if (deep == null && universe != null) universe.Draw(gpu.Width, gpu.Height, clock.Total);
                 else if (deep == null) viewer.Draw(gpu.Width, gpu.Height, clock.Total); else deep.Draw(gpu.Width, gpu.Height, clock.Total);
+                Universe.Render.GpuLog.Pass = "the card and menus";
                 if (frontman != null && frontman.On && world != null && !showElements && rec == null) frontman.Draw(meshes, window.Input, gpu.Width, gpu.Height);   // (the encoders' sample over the universe, never into a clip; after the views' own chain, so the chain stays the universe's)
                 if (shotPath != null && clock.Total >= shotAt) { gpu.CaptureNext = shotPath; shotPath = null; }
+                Universe.Render.GpuLog.Pass = "screenshots and the clip";
                 // screenshots (F12) and clips (F9), from any view: the finished frame copied back from the card; the panoramic
                 // tour on and off (T); with --record, the whole tour filmed and the clip finished when it ends
                 {
@@ -442,6 +444,7 @@ namespace Universe
                     tourStep++;
                     if (tourStep == tour.Length * 2) smokeMs = (int)(clock.Total * 1000) + 500;
                 }
+                Universe.Render.GpuLog.FrameEnd();
                 Universe.Platform.Stats.CpuMs = (System.Diagnostics.Stopwatch.GetTimestamp() - _frameT0) * 1000.0 / System.Diagnostics.Stopwatch.Frequency;   // (the processor's part of the frame: up to handing it to the card)
                 gpu.EndFrame();
                 // keep the card as busy as the GPU use asks (never over 90%): its working time against the frame's time, the

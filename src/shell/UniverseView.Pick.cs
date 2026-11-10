@@ -606,7 +606,7 @@ namespace Universe.Shell
             {
                 // at the finest ground: on down into what it is made of
                 double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z);
-                bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = Math.Abs(y / r) > _ground.IceSin;
+                bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = _ground.IcyAt(x, y, z, double.NaN);
                 SetMatter();
                 _matterScale = Math.Max(MatterView.BottomKm, AboveGround() / Units.Km(1) / 0.6);   // the same picture carries on: you are 0.6 of the scale above it
                 _matterTop = Math.Max(MatterView.TopKm, _matterScale * 1.1);

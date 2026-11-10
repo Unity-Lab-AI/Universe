@@ -357,7 +357,7 @@ namespace Universe.Shell
                 if (lay != null && lay.Matter == "ice") { _matter.Set("ice", false, true, 0.7f, 0.8f, 0.9f, gspot); return; }   // the ice mantle: hot dense water, ammonia, methane
                 _matter.SetAir(air, gspot); return;
             }
-            bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = Math.Abs(y / r) > _ground.IceSin;
+            bool sea = _ground.HasWater && _ground.GroundAt(x / r, y / r, z / r) < 0, ice = _ground.IcyAt(x, y, z, double.NaN);
             ulong spot = (ulong)(long)(x / r * 1e7) * 73856093UL ^ (ulong)(long)(y / r * 1e7) * 19349663UL ^ (ulong)(long)(z / r * 1e7) * 83492791UL;   // the same place, the same grains
             _matterSpot = spot; _matterPlanet = _planet; _mox = x / r; _moy = y / r; _moz = z / r;
             float mr0, mg0, mb0, mglow; _ground.Height(x / r, y / r, z / r, 30, out mr0, out mg0, out mb0, out mglow);
@@ -374,7 +374,7 @@ namespace Universe.Shell
                 double he = (H(ux + ex * d / R, uy + ey * d / R, uz + ez * d / R) - H(ux - ex * d / R, uy - ey * d / R, uz - ez * d / R)) / (2 * d);
                 double hn = (H(ux + nx * d / R, uy + ny * d / R, uz + nz * d / R) - H(ux - nx * d / R, uy - ny * d / R, uz - nz * d / R)) / (2 * d);
                 if (double.IsNaN(he) || Math.Abs(he) > 20) he = 0; if (double.IsNaN(hn) || Math.Abs(hn) > 20) hn = 0;
-                var gm = _ground.GrainMix(uy);
+                var gm = _ground.GrainMix(ux, uy, uz);
                 _matter.SetGround(R, ux, uy, uz, molten ? null : sea ? "ocean" : gm != null ? gm.Id : null, _ground.GrainSeed, he, hn);
                 _matter.SetLife(_ground.HasWater && _ground.Traits.Life);   // microbes on a living world's grains
                 string airHere;
@@ -409,7 +409,7 @@ namespace Universe.Shell
         private double HandoffKm()
         {
             if (_ground == null || !_ground.Solid) return 2e-9;
-            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? (_underSea ? GrainField.For("ocean") ?? _ground.GrainMix(y / r) : _ground.GrainMix(y / r)) : null;   // (under the sea: the bed's own grains)
+            double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? (_underSea ? GrainField.For("ocean") ?? _ground.GrainMix(x / r, y / r, z / r) : _ground.GrainMix(x / r, y / r, z / r)) : null;   // (under the sea: the bed's own grains)
             return Math.Max(gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9, _ground.ReadyStep < 1e30 ? _ground.ReadyStep * 1.6 : 0);   // (and never later than the drawn pieces' own cell: their flat faces are the floor until then)
         }
         private double _agX = double.NaN, _agY, _agZ, _agCell, _agVal; private object _agGround;

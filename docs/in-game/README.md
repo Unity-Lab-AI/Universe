@@ -17,6 +17,7 @@
 | **Right click** | Let go of what you picked |
 | **Drag** | With something picked, circle round it. With nothing picked, look around |
 | **B** | Among atoms: glide across the bond to the next atom |
+| **Page Down / Page Up** | In the matter of a world, a moon or a small body: dig down through its layers to its middle, and climb back (Shift: faster) |
 
 ## Time
 

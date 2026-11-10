@@ -118,7 +118,7 @@ namespace Universe.Gen
         // ── each kind of world is a template in content/terrain.unt (none named in code): any number may be a range
         // (a..b) and any colour a range (r g b .. r g b); every world of the kind takes its own values from its seed, so no
         // two are the same, and the same seed always gives the same world ──
-        public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
+        public sealed class TerrainKindData { public double Radius = 6371, CloudKm = 9, AirKm = 110, CloudThick = 1, BaseK = 255, Albedo = 0.3; public bool Solid = true, Water, Clouds = true; public float[] Air = { 0.35f, 0.56f, 1f }, Cloud = { 0.97f, 0.97f, 0.97f }, Rock = { 0.4f, 0.38f, 0.36f };
             public double LandShare = 0.06, CloudShift, DayHours = 24, Tides = 0.5, Bands = 19, GreatStorm = 1, ReliefOfRadius;   // ReliefOfRadius: the ground's relief as a share of the world's radius (a small body's lumps and craters); 0 for a world's own kilometres
             public bool Molten, Dunes, FrozenSea, SnowPatches, Locked, PolarIce = true, Dry, TropicalSoil, Life = true, ManyVolcanoes, Rivers = true, SeaFloorVolcanoes;
             public double VolcanoCount = 30; public string Grains;
@@ -168,7 +168,7 @@ namespace Universe.Gen
                 return new[] { p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u, p0[2] + (p1[2] - p0[2]) * u };
             };
             var t = new TerrainKindData();
-            t.Radius = d("radius-km", 6371); t.CloudKm = d("cloud-km", 9); t.AirKm = d("air-km", 110); t.CloudThick = d("cloud-thickness", 1); t.BaseK = d("base-k", 255);
+            t.Radius = d("radius-km", 6371); t.CloudKm = d("cloud-km", 9); t.AirKm = d("air-km", 110); t.CloudThick = d("cloud-thickness", 1); t.BaseK = d("base-k", 255); t.Albedo = d("albedo", 0.3);
             t.Solid = g("solid") != "no"; t.Water = g("water") == "yes"; t.Clouds = g("clouds") != "no";
             t.Air = c("air-colour", t.Air); t.Cloud = c("cloud-colour", t.Cloud); t.Rock = c("rock-colour", t.Rock);
             Func<string, bool, bool> yes = (k, f) => { var v = g(k); return v == "" ? f : v == "yes"; };

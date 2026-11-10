@@ -16,6 +16,7 @@ namespace Universe.Shell
         public List<string> Card()
         {
             var L = CardLines();
+            if (L.Count > 0) PhotonWords(L);                                               // (the light of the matter here: its temperature, its peak, what it ionises)
             if (L.Count > 0) L.Add(CensusWords());                                         // (what there is to pick at this size, or that there is nothing)
             // colour is light of a wavelength (about 400 to 700 nanometres): nothing smaller than that can be seen in colour, so
             // from there down what is drawn is in greys, as an electron microscope shows it (a true rendering of light this small
@@ -160,6 +161,14 @@ namespace Universe.Shell
             L.Add((_picked != null ? "an atom of " : "under you: ") + e.Name.ToLowerInvariant() + " (" + e.Symbol + ")");
             L.Add("atomic number " + e.Z + ", mass " + e.A);
             L.Add("protons: " + e.Z + ", neutrons: " + (e.A - e.Z) + ", electrons: " + e.Z);
+            if (!_space && fm != null)
+            {
+                // its bond here, by its pull on electrons against its most different neighbour (Pauling's ionic character)
+                Element pe; double ic = IonicCharacter(fm, e, out pe);
+                if (pe != null && e.Ionic > 0 && e.Charge != 0 && ((e.Charge > 0) == (e.Chi < pe.Chi)))
+                    L.Add((ic * 100).ToString("0") + "% ionic with " + pe.Name.ToLowerInvariant() + ": toward the ion " + e.Symbol + (Math.Abs(e.Charge) > 1 ? Math.Abs(e.Charge).ToString() : "") + (e.Charge > 0 ? "+" : "-") + " (" + (e.Z - e.Charge) + " electrons, " + ScaleHud.Words(e.Ionic * 2) + " across)");
+                else if (pe != null) L.Add((ic * 100).ToString("0") + "% ionic with " + pe.Name.ToLowerInvariant() + ": it shares its outer electrons");
+            }
             if (e.HalfLifeS > 0) L.Add("half-life " + Span(e.HalfLifeS) + " (" + e.Decays + "); here half go in " + Span(e.HalfLifeS / _simPerReal));
             if (_picked == null && _focusParent != null) L.Add("decayed " + Span(_focusSince * _simPerReal) + " ago (" + _focusParent.Decays + ") from " + _focusParent.Name.ToLowerInvariant() + "-" + _focusParent.A);
             L.Add("shells: " + string.Join(", ", Array.ConvertAll(e.Shells, x => x.ToString())));

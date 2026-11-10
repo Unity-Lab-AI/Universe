@@ -142,8 +142,8 @@ namespace Universe.Gen
         /// <summary>A solid world's whole make-up by element, as shares of its mass, largest first: its layers (by its ground's
         /// kind) each weighed by its volume and density, each made of its mix (ground: the world's own surface mix).</summary>
         public List<KeyValuePair<string, double>> Bulk(string terrainKind, string groundMix) { return Bulk(terrainKind, groundMix, 0); }
-        /// <summary>The same for one body: each layer's minerals scattered from its kind's by the body's seed, by its mix's own
-        /// spread (content/minerals.unt vary: the logarithm of each share's factor at one sigma), so no two worlds alike.</summary>
+        /// <summary>The same for one body: each layer's minerals scattered from its kind's by the layer's seed in the body, by its
+        /// mix's own spread (content/minerals.unt vary), as the matter view scatters them, so no two worlds alike.</summary>
         public List<KeyValuePair<string, double>> Bulk(string terrainKind, string groundMix, ulong seed)
         {
             string key = (terrainKind ?? "") + "|" + (groundMix ?? "") + "|" + seed; List<KeyValuePair<string, double>> r;
@@ -153,8 +153,11 @@ namespace Universe.Gen
             {
                 string mix = l.Mix == "ground" ? groundMix : l.Mix; var mins = MixMinerals(mix); if (mins.Count == 0) continue;
                 double mass = (l.To * l.To * l.To - l.From * l.From * l.From) * l.MeanDensity, sum = 0;
+                // this body's own shares: the same scatter the matter view takes for this layer (GrainField.Vary by the layer's seed),
+                // so the card's numbers and the grains you dive into are one make-up
                 double vary = seed != 0 ? MixVary(mix) : 0; var shares = new double[mins.Count];
-                for (int i = 0; i < mins.Count; i++) { shares[i] = mins[i].Value * (vary > 0 ? Math.Exp(vary * Gauss(seed, l.Id, mins[i].Key)) : 1); sum += shares[i]; }
+                var gv = vary > 0 ? GrainField.Vary(mix, LayerSeed(seed, l.Id), vary) : null;
+                for (int i = 0; i < mins.Count; i++) { shares[i] = mins[i].Value; if (gv != null && gv.Minerals != null) { int q = Array.IndexOf(gv.Minerals, mins[i].Key); if (q >= 0 && q < gv.Share.Length) shares[i] = gv.Share[q]; } sum += shares[i]; }
                 if (sum <= 0 || mass <= 0) continue;
                 for (int i = 0; i < mins.Count; i++)
                     foreach (var el in MineralEls(mins[i].Key)) { double v; tot.TryGetValue(el.Key, out v); double add = mass * shares[i] / sum * el.Value; tot[el.Key] = v + add; all += add; }
@@ -170,13 +173,11 @@ namespace Universe.Gen
             foreach (var e in _c.OfKind("minerals.unt", "mix")) if (e.Id == id) { double lo, hi; if (e.TryRange("vary", out lo, out hi)) v = lo; break; }
             _vary[id ?? ""] = v; return v;
         }
-        // a standard normal number fixed by the body's seed, the layer and the mineral (Box-Muller from two hashed uniforms)
-        private static double Gauss(ulong seed, string layer, string mineral)
+        /// <summary>A layer's own seed in a body: the body's seed with the layer's name folded in (the card and the matter view both use it).</summary>
+        public static ulong LayerSeed(ulong seed, string layerId)
         {
-            ulong h = seed * 0x9E3779B97F4A7C15UL; foreach (char ch in layer + "/" + mineral) h = (h ^ ch) * 0x100000001B3UL;
-            h ^= h >> 31; h *= 0xBF58476D1CE4E5B9UL; h ^= h >> 29;
-            double u1 = ((h >> 11) + 1) / 9007199254740993.0, u2 = (((h * 0x94D049BB133111EBUL) >> 11)) / 9007199254740992.0;
-            return Math.Sqrt(-2 * Math.Log(u1)) * Math.Cos(2 * Math.PI * u2);
+            ulong h = seed * 0x9E3779B97F4A7C15UL; foreach (char ch in layerId ?? "") h = (h ^ ch) * 0x100000001B3UL;
+            h ^= h >> 31; return h == 0 ? 1 : h;
         }
         /// <summary>The make-up written short: the first few elements with their shares of the mass.</summary>
         public static string Words(List<KeyValuePair<string, double>> bulk, int most)

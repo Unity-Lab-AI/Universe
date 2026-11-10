@@ -546,9 +546,8 @@ namespace Universe.Shell
                 _land.Update(_life, _terrain, cx, cy, cz, _shown, _time);
                 _land.Draw(_pipes, view, proj, _terrain.StarDir, cx, cy, cz, width, height);
             }
-            // the planet has just changed shape (an ice age, a great impact, the continents moved on): a short fade over the swap
-            if (_normal.Swaps != _seenSwaps) { _seenSwaps = _normal.Swaps; _swapFadeUntil = _time + 0.8; }
-            if (_time < _swapFadeUntil) Veil(gpu, view, proj, (float)(0.55 * (_swapFadeUntil - _time) / 0.8), width, height);
+            // the planet has just changed shape (an ice age, a great impact, the continents moved on): shown as it is, no veil over it
+            if (_normal.Swaps != _seenSwaps) { _seenSwaps = _normal.Swaps; _swapFadeUntil = _time; }   // (the at-most-one-change-every-30-seconds pacing still keys on it)
             // on land, below about 5 mm, the view fades to black (down into the soil) before the microbes show
             if (!_underWater && _terrain.Solid && !_terrain.Shell && _shown < 5e-6)
                 Veil(gpu, view, proj, (float)Math.Max(0, Math.Min(0.97, (Math.Log10(5e-6) - Math.Log10(_shown)) / 1.4)), width, height);

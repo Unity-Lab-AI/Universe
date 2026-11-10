@@ -20,6 +20,7 @@ namespace Universe.Shell
             if (_spaceScale > 0 && sk >= 0 && sk <= 6) t = t.In(sk <= 1 ? Rung.Cluster : Rung.Nebula, _tName.Length > 0 ? _tName : sk <= 1 ? "a star cluster" : "a nebula");
             if (_system != null) t = t.In(Rung.Star, "a " + _system.StarName.ToLowerInvariant());
             if (_ground != null) t = t.In(Rung.World, GroundKind());
+            var dl = DepthLayer(); if (dl != null) t = t.In(Rung.Layer, "its " + dl.Name.ToLowerInvariant(), dl.Mix);   // (below a solid world's ground)
             var lay = LayerHere(); if (lay != null) t = t.In(Rung.Layer, "its " + lay.Name.ToLowerInvariant(), lay.Matter);
             var sl = StarLayerHere(); if (sl != null && _spaceScale <= 0) t = t.In(Rung.Layer, "its " + sl.Name.ToLowerInvariant(), sl.MakeUp);
             if (inMatter) t = _matter.Below(t);
@@ -31,6 +32,7 @@ namespace Universe.Shell
         private List<string> MatterCard()
         {
             var L = _matter.Card(); var w = HereWords(); if (w != null && L.Count > 0) L.Insert(1, w);
+            if (L.Count > 0) { var dw = new List<string>(); DepthWords(dw); L.InsertRange(Math.Min(2, L.Count), dw); }   // (below the ground: the layer, how deep, its heat and pressure)
             return L;
         }
     }

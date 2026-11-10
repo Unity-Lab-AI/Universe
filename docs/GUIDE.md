@@ -372,6 +372,10 @@ When a template trait isn't enough, the code is plain **C# 5 on Direct3D 12**, b
 | New controls or camera moves | `UniverseView.Update` (`src/shell/UniverseView.cs`) and the tour's `TourStep` (`src/shell/UniverseView.Tour.cs`) |
 | What the info cards say | `UniverseView.Card` (`src/shell/UniverseView.Card.cs`) |
 | What a body is made of inside | its `@layer` entries (`content/planets.unt`, `content/small-bodies.unt`, `content/stars.unt`, `content/gas-giants.unt`), read by `src/gen/BodyLayers.cs` |
+| Every atom at every size (its electron density, its ion, the light of the matter) | `MatterView.Density` (`src/shell/MatterView.Air.cs`), the card's code 7 (`src/render/Pipeline.cs`), `src/shell/MatterView.Photons.cs` |
+| Down through a world's layers (Page Down, Page Up) | `src/shell/UniverseView.Depth.cs` |
+| A black hole's swarm, disc, jets and torn star, clickable | `src/shell/UniverseView.Swarm.cs` |
+| How bright each planet, moon and star is from where you are | their apparent magnitude in `UniverseView.Draw` (`src/shell/UniverseView.Draw.cs`) |
 | Where you are, from the universe down | the one tree: `src/core/Thing.cs`, `UniverseView.Here` (`src/shell/UniverseView.Tree.cs`), `MatterView.Below` (`src/shell/MatterView.Tree.cs`) |
 
 **The rules that keep it a toolkit:**

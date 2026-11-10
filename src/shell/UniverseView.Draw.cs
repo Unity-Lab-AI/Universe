@@ -222,10 +222,9 @@ namespace Universe.Shell
         private readonly Dictionary<long, int> _nebUsed = new Dictionary<long, int>(); private int _nebFrame;
         private void DrawNebulae(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
-            // only the nebulae you are at: within six of their radii (an emission nebula is hundreds of light-years across, and at a
-            // galaxy's scale hundreds lay within forty), the nearest six of those, a cloud built once and kept (the cache had held twelve
-            // and, with more in reach, thrown them all away and built them again every frame: three thousand points each, dozens a frame,
-            // three hundred milliseconds on the processor and the card idle at four frames a second), at most two new ones a frame
+            // every nebula of the galaxy you are in, at every distance it can be seen from (out to four hundred of its radii), each grown
+            // on the card from its seed (a handful of records, thousands of points made there every frame), its light kept by its size
+            // on screen: no nearest six, no fading in, no marker standing in for it
             if (_near < 0 || _near >= _galaxies.Count || _features == null) return;
             var g = _galaxies[_near]; _nebFrame++;
             var near = _nebNear; near.Clear(); var at = _nebAt; at.Clear();   // (kept and emptied each frame)
@@ -234,79 +233,70 @@ namespace Universe.Shell
                 var fq = _features[q]; int fk = (int)fq[4]; if (fk < 2 || fk > 6) continue;
                 double ux, uy, uz; ToUniverse(g, fq[0], fq[1], fq[2], out ux, out uy, out uz);
                 double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, R = fq[3] * g.Scale, d = Math.Sqrt(dx * dx + dy * dy + dz * dz);
-                if (R <= 0 || d > R * 6) continue;
+                if (R <= 0 || d > R * 400) continue;                                   // (out to where it is a few pixels and its kept light all but nothing)
                 near.Add(new KeyValuePair<double, int>(d / R, q)); at[q] = new[] { dx, dy, dz, R, d };
             }
             if (near.Count == 0) return;
-            near.Sort((p0, p1) => p0.Key.CompareTo(p1.Key)); int built = 0;
-            for (int i = 0; i < near.Count && i < 6; i++)
+            foreach (var kvn in near)
             {
-                int q = near[i].Value; var fq = _features[q]; int fk = (int)fq[4]; var v = at[q]; double dx = v[0], dy = v[1], dz = v[2], R = v[3], d = v[4];
+                int q = kvn.Value; var fq = _features[q]; int fk = (int)fq[4]; var v = at[q]; double dx = v[0], dy = v[1], dz = v[2], R = v[3];
                 long key = (long)(g.Seed % 1000003UL) * 100003L + q; UploadBuffer buf; int n;
                 if (!_nebBufs.TryGetValue(key, out buf))
                 {
-                    if (built >= 2) continue; built++;
-                    if (_nebBufs.Count >= 48)
+                    if (_nebBufs.Count >= 512)
                     {
-                        // the one unused longest let go, never all at once
                         long old = -1; int oldest = int.MaxValue; foreach (var kv in _nebUsed) if (kv.Value < oldest) { oldest = kv.Value; old = kv.Key; }
-                        if (old >= 0) { _nebBufs[old].Dispose(); _nebBufs.Remove(old); _nebNs.Remove(old); _nebUsed.Remove(old); }
+                        if (old >= 0) { _nebBufs[old].Dispose(); _nebBufs.Remove(old); _nebNs.Remove(old); _nebUsed.Remove(old); UploadBuffer ob; if (_nebStarBufs.TryGetValue(old, out ob)) { if (ob != null) ob.Dispose(); _nebStarBufs.Remove(old); _nebStarNs.Remove(old); } }
                     }
-                    var cloud = NebulaCloud(fk, fq.Length > 5 ? fq[5] : 0.5, g.Seed ^ (ulong)(q * 2654435761L));
-                    n = cloud.Count; buf = new UploadBuffer(_gpu.Device, (long)Math.Max(1, n) * Stride); if (n > 0) buf.Write(cloud.ToArray(), n);
+                    var recs = NebulaRecords(fk, fq.Length > 5 ? fq[5] : 0.5, g.Seed ^ (ulong)(q * 2654435761L));
+                    n = recs.Count; buf = new UploadBuffer(_gpu.Device, (long)Math.Max(1, n) * Stride); if (n > 0) buf.Write(recs.ToArray(), n);
                     _nebBufs[key] = buf; _nebNs[key] = n;
                 }
                 _nebUsed[key] = _nebFrame; n = _nebNs[key]; if (n == 0) continue;
-                float fade = (float)Math.Max(0, Math.Min(1, (6 - d / R) / 3));   // (coming in from six of its radii to three; the far marker's points stand for it beyond)
                 var m = Mat4.Identity; m.M11 = (float)R; m.M22 = (float)R; m.M33 = (float)R; m.M41 = (float)dx; m.M42 = (float)dy; m.M43 = (float)dz;
-                DrawPoints(buf, n, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fade * (fk == 6 ? 0.07f : 0.15f));   // (a cloud's brightness: its thousands of soft points add up, and at the old brightness their middles burnt out to white)
+                DrawPoints(buf, n, m * vp, right, up, 1f, 0.0012f, w, h, time, 0, fk == 6 ? 0.07f : 0.15f, 2f, 0, 0, 0, 0, 0, 0, fk == 4 ? 3200 : fk == 5 ? 3700 : fk == 6 ? 1800 : 3000);   // (every point of it grown on the card from its seed: Pipeline.cs code 6)
+                {
+                    // the stars in it: a planetary nebula's white dwarf at its middle, the hot young stars lighting an emission or a
+                    // reflection cloud, each in one of the knots the card grows the cloud's gas in (worked out here by the same hash)
+                    UploadBuffer sb; int sn;
+                    if (!_nebStarBufs.TryGetValue(key, out sb))
+                    {
+                        var st = NebulaStars(fk, g.Seed ^ (ulong)(q * 2654435761L)); sn = st.Count;
+                        sb = sn > 0 ? new UploadBuffer(_gpu.Device, (long)sn * Stride) : null; if (sb != null) sb.Write(st.ToArray(), sn);
+                        _nebStarBufs[key] = sb; _nebStarNs[key] = sn;
+                    }
+                    sn = _nebStarNs[key]; if (sb != null && sn > 0) DrawPoints(sb, sn, m * vp, right, up, 1f, 0.0012f, w, h, time);
+                }
             }
         }
-        // a nebula's cloud in its own units (its radius 1): a planetary nebula a thin shell puffed off its dying star (oxygen's green-blue
-        // within, hydrogen's and nitrogen's red at the rim, the white dwarf at its middle); a supernova's remnant a torn shell of filaments;
-        // an emission nebula knots and pillars of glowing gas with its hot young stars inside, a reflection nebula smaller and blue round
-        // its stars, a dark nebula dim dust; every point's colour from a part of what the nebula is made of, by its share
-        private static List<StarVertex> NebulaCloud(int kind, double mix, ulong seed)
+        private readonly Dictionary<long, UploadBuffer> _nebStarBufs = new Dictionary<long, UploadBuffer>(); private readonly Dictionary<long, int> _nebStarNs = new Dictionary<long, int>();
+        private static List<StarVertex> NebulaStars(int kind, ulong seed)
         {
-            var rng = new Rng(seed); var parts = SpaceGen.Composition(kind, mix); var l = new List<StarVertex>();
-            Func<SpaceGen.Part> part = () => { double u = rng.NextDouble(); foreach (var p in parts) { u -= p.Share; if (u <= 0) return p; } return parts[parts.Length - 1]; };
-            Func<Vec3> dir = () => { double u = rng.NextDouble() * 2 - 1, a = rng.NextDouble() * Math.PI * 2, s = Math.Sqrt(1 - u * u); return new Vec3((float)(s * Math.Cos(a)), (float)u, (float)(s * Math.Sin(a))); };
-            if (kind == 4)
+            var l = new List<StarVertex>(); uint ns = (uint)(seed ^ (seed >> 32));
+            if (kind == 4) { l.Add(new StarVertex { X = 0, Y = 0, Z = 0, Size = 0.012f, R = 0.8f, G = 0.9f, B = 1f, A = 1 }); return l; }   // the white dwarf that puffed it off
+            if (kind != 2 && kind != 3) return l;
+            var rng = new Rng(seed ^ 0x5741UL);
+            Func<uint, uint, uint, double> gauss = (k, a, b) => Math.Sqrt(-2 * Math.Log(Math.Max(1e-6, Oh01(ns + k, a)))) * Math.Cos(6.2832 * Oh01(ns + k, b));
+            for (int k = 0; k < (kind == 2 ? 24 : 6); k++)
             {
-                float squash = (float)(0.6 + 0.4 * rng.NextDouble());
-                for (int k = 0; k < 2600; k++)
-                {
-                    var dv = dir(); double rr = 0.75 + 0.22 * rng.NextDouble() + 0.05 * rng.Gaussian(); var p = part(); bool rim = rr > 0.9;
-                    float br = (float)(0.35 + 0.45 * rng.NextDouble()) * (rim ? 1f : 0.7f), cr = rim ? 1f : p.R, cg = rim ? 0.3f : p.G, cb = rim ? 0.3f : p.B;
-                    l.Add(new StarVertex { X = (float)(dv.X * rr), Y = (float)(dv.Y * rr * squash), Z = (float)(dv.Z * rr), Size = 0.09f, R = cr * br, G = cg * br, B = cb * br, A = 1 });
-                }
-                for (int k = 0; k < 600; k++) { var dv = dir(); double rr = Math.Pow(rng.NextDouble(), 0.5) * 0.7; const float br = 0.18f; l.Add(new StarVertex { X = (float)(dv.X * rr), Y = (float)(dv.Y * rr * squash), Z = (float)(dv.Z * rr), Size = 0.14f, R = 0.2f * br, G = 1f * br, B = 0.75f * br, A = 1 }); }
-                l.Add(new StarVertex { X = 0, Y = 0, Z = 0, Size = 0.012f, R = 0.8f, G = 0.9f, B = 1f, A = 1 });   // the white dwarf that puffed it off
-                return l;
+                uint kq = (uint)rng.Below(28);
+                double kx = gauss(kq, 41, 42) * 0.45, ky = gauss(kq, 43, 44) * 0.3, kz = gauss(kq, 45, 46) * 0.45, ksz = 0.12 + 0.3 * Oh01(ns + kq, 47);   // (the knot's middle and size, as the card has them)
+                l.Add(new StarVertex { X = (float)(kx + rng.Gaussian() * ksz * 0.5), Y = (float)(ky + rng.Gaussian() * ksz * 0.5), Z = (float)(kz + rng.Gaussian() * ksz * 0.5), Size = 0.01f, R = 0.75f, G = 0.85f, B = 1f, A = 1 });   // the hot young stars that light it
             }
-            if (kind == 5)
+            return l;
+        }
+        // a nebula as the records the card grows it from (Pipeline.cs, code 6): one for each part of its gas, its seed in the first
+        // number's bits, its part's colour times its share, its points' size a share of its radius (negative: kept to its middle,
+        // as oxygen's teal is in an emission nebula)
+        private static List<StarVertex> NebulaRecords(int kind, double mix, ulong seed)
+        {
+            var parts = SpaceGen.Composition(kind, mix); var l = new List<StarVertex>(); uint sd = (uint)(seed ^ (seed >> 32));
+            float size = kind == 4 ? 0.09f : kind == 5 ? 0.07f : kind == 3 ? 0.11f : 0.15f;
+            foreach (var p in parts)
             {
-                int fil = 40; var fd = new Vec3[fil]; for (int f = 0; f < fil; f++) fd[f] = dir();
-                for (int k = 0; k < 3200; k++)
-                {
-                    var f0 = fd[rng.Below(fil)]; var jt = dir(); double rr = 0.85 + 0.15 * rng.NextDouble(); var dv = (f0 * 0.75f + jt * 0.35f).Normalized; var p = part(); float br = (float)(0.3 + 0.5 * rng.NextDouble());
-                    l.Add(new StarVertex { X = dv.X * (float)rr, Y = dv.Y * (float)rr, Z = dv.Z * (float)rr, Size = 0.07f, R = p.R * br, G = p.G * br, B = p.B * br, A = 1 });
-                }
-                for (int k = 0; k < 500; k++) { var dv = dir(); double rr = Math.Pow(rng.NextDouble(), 0.4); const float br = 0.12f; l.Add(new StarVertex { X = dv.X * (float)rr, Y = dv.Y * (float)rr, Z = dv.Z * (float)rr, Size = 0.16f, R = 0.9f * br, G = 0.4f * br, B = 0.35f * br, A = 1 }); }
-                return l;
+                if (p.Share <= 0) continue; bool middle = p.El == "O" && kind != 4 && kind != 5;
+                l.Add(new StarVertex { X = BitConverter.ToSingle(BitConverter.GetBytes(sd), 0), Y = 0, Z = 0, Size = middle ? -size : size, R = p.R * (float)p.Share, G = p.G * (float)p.Share, B = p.B * (float)p.Share, A = (6 * 8 + kind + 0.25f) / 64f });
             }
-            int knots = 28; var kc = new Vec3[knots]; var ks = new float[knots];
-            for (int q = 0; q < knots; q++) { kc[q] = new Vec3((float)rng.Gaussian() * 0.45f, (float)rng.Gaussian() * 0.3f, (float)rng.Gaussian() * 0.45f); ks[q] = (float)(0.12 + 0.3 * rng.NextDouble()); }
-            int pts = kind == 6 ? 1800 : 3000;
-            for (int k = 0; k < pts; k++)
-            {
-                int q = rng.Below(knots); var c = kc[q] + new Vec3((float)rng.Gaussian(), (float)rng.Gaussian(), (float)rng.Gaussian()) * ks[q];
-                double cl = Math.Sqrt(c.X * c.X + c.Y * c.Y + c.Z * c.Z); if (cl > 1) continue;
-                var p = part(); if (p.El == "O" && cl > 0.5) continue;                                   // (oxygen's teal toward the middle, hydrogen's red throughout)
-                float br = (float)((0.25 + 0.45 * rng.NextDouble()) * (1 - cl * 0.5)) * (kind == 6 ? 0.45f : 1f);
-                l.Add(new StarVertex { X = c.X, Y = c.Y, Z = c.Z, Size = kind == 3 ? 0.11f : 0.15f, R = p.R * br, G = p.G * br, B = p.B * br, A = 1 });
-            }
-            if (kind == 2 || kind == 3) for (int k = 0; k < (kind == 2 ? 24 : 6); k++) { int q = rng.Below(knots); var c = kc[q] + new Vec3((float)rng.Gaussian(), (float)rng.Gaussian(), (float)rng.Gaussian()) * ks[q] * 0.5f; l.Add(new StarVertex { X = c.X, Y = c.Y, Z = c.Z, Size = 0.01f, R = 0.75f, G = 0.85f, B = 1f, A = 1 }); }   // the hot young stars that light it
             return l;
         }
         private UploadBuffer _structBuf; private int _structCount; private List<double[]> _features = new List<double[]>();   // the near galaxy's clusters and nebulae
@@ -360,8 +350,19 @@ namespace Universe.Shell
                 if (dec != _levelLogged) { _levelLogged = dec; if (ms > 0) ZoomLog("LEVEL " + ScaleHud.Words(ms) + ": " + _matter.CensusWords() + " · " + _matter.Stage(ms)); }
             }
             {
-                double fine = _spaceScale > 0 ? _spaceScale : _matterScale > 0 ? _matterScale : 1;
-                _sky = (float)Math.Max(0, Math.Min(1, Math.Log(fine / 1.7e-8) / Math.Log(1.7e-6 / 1.7e-8)));   // from a millimetre down to 10 microns
+                // the sky is there at every size, never faded for being small: on a grain looking up, or among a thin gas's atoms, the stars
+                // and galaxies still show; it is gone only where something truly stands between: rock all round you below a world's ground,
+                // the opaque plasma inside a star, a neutron star's crust
+                int sk = _spaceScale > 0 ? _matter.SpaceKind : 0;
+                bool blocked = (_matterScale > 0 && _matter.Enclosed) || (_spaceScale > 0 && (sk == 11 || sk == 13));
+                _sky = blocked ? 0f : 1f;
+                if (!blocked && _matterScale > 0 && _ground != null && _ground.HasWater)
+                {
+                    // on a sea bed: the sky's light through the water above, falling off with depth (clear ocean water lets about 1% of daylight
+                    // through 200 m, the euphotic zone's floor: an attenuation length of about 43 m)
+                    double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z), gh = r > 0 ? _ground.GroundAt(x / r, y / r, z / r) : 0;
+                    if (gh < 0) _sky = (float)Math.Exp(-(-gh * 1000) / 43.0);
+                }
             }
             var look = Look;
             Mat4 view = Mat4.LookAt(new Vec3(0, 0, 0), look, ViewUp());
@@ -419,7 +420,7 @@ namespace Universe.Shell
                 if (webFade > 0.01 && !skyHidden)   // (deep inside a galaxy its stars and dust hide the web, and it is not drawn; it fades in as you rise out of it, never popping in)
                 {
                 _web[0] = (float)(2.0e9 / Units.LightYearsPerUnit); _web[1] = (float)_cx; _web[2] = (float)_cy; _web[3] = (float)_cz; _web[4] = (float)_nearUnits;   // (from where the galaxies made in full begin to fade out, the web fades in over the same span: they hand over, never both at once, never a gap)
-                DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f * (0.5f + 0.5f * webNear), w, h, time, 0.007f * (0.5f + 0.5f * webNear), others * webFade * webNear, 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
+                DrawPoints(_glowBuf, _glowCount, gm * vp, right, up, 1f, 0.0035f * (0.5f + 0.5f * webNear), w, h, time, 0.007f * (0.5f + 0.5f * webNear), others * webFade * webNear * WebMatch(h), 0f);   // as bright as the galaxies it stands for where they hand over (never a black wall past the galaxies made in full)
                 _web[0] = 0;
                 }   // each a galaxy at its true size (a pinpoint from afar), faint, so the web shows where they crowd
             }
@@ -440,7 +441,7 @@ namespace Universe.Shell
                 // made in full only near you: past that the web's glow shows them (it stands for the same galaxies); fading out
                 // between the near reach and half again, so nothing pops
                 double ndx = g.X - _cx, ndy = g.Y - _cy, ndz = g.Z - _cz, nd = Math.Sqrt(ndx * ndx + ndy * ndy + ndz * ndz);
-                float nearF = i == _near || (_tKind == 0 && _tIndex == i) ? 1f : (float)Math.Max(0, Math.Min(1, (_nearUnits * 1.5 - nd) / (_nearUnits * 0.5)));
+                float nearF = i == _near || (_tKind == 0 && _tIndex == i) || nd < _nearUnits ? 1f : 0f;   // (in full to the hand-over, the web's light past it: one distance, no fade; the light matched, WebMatch)
                 if (nearF <= 0) continue;
                 float shrink = (float)Math.Sqrt(FarStars / (double)Math.Max(FarStars, count));
                 var buf = i == _near && _nearBuf != null ? _nearBuf : g.Far; if (buf == null) continue;   // (its stars still being made)
@@ -534,19 +535,31 @@ namespace Universe.Shell
                 // the real stars of this space at their real sizes (a small point from afar, never smaller than a dot on screen)
                 // and only while the view is near their own size: wider than a few times the reach they are made in, the galaxy's
                 // own field stands for them (a block of thousands round the eye, each a dot, would be a fuzz of light at those views)
-                double viewLy = ViewDistanceKm() / 9.4607e12, reachLy = LocalReach * 50000.0, far = Math.Max(0, Math.Min(1, (viewLy / reachLy - 3) / 12));
-                float lf = (float)(inside * inside * (3 - 2 * inside) * (1 - far * far * (3 - 2 * far)));
+                // no fading with the view: each star is as bright as it is from where you are (below), so as you pull back from them they dim
+                // as the night sky's stars do with distance, and the galaxy's own field is all that is seen from afar, by physics, not a ramp
+                float lf = 1f;
                 if (lf > 0.003f)
                 {
-                    if (Math.Abs(lf - _localLf) > 0.002f || _localVersion != _localWritten || _localCount != _localWrittenN)   // (put on the card again only when they change)
-                    {
-                        for (int k = 0; k < _localCount; k++) { var v = _localList[k]; v.A = 1; v.R *= lf; v.G *= lf; v.B *= lf; if (_localDead.Contains(k)) { v.R = 0; v.G = 0; v.B = 0; } _localDrawn[k] = v; }   // (a star that died in a supernova: gone)
-                        _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
-                    }
                     // placed from the list's origin: its place in the universe less the camera's worked out in double, so the stars
                     // round you are exact on the card (the galaxy's own frame in float snapped them to a lattice 190 AU wide)
                     var pm = Placement(_galaxies[_near]); double oux, ouy, ouz; ToUniverse(_galaxies[_near], _localOX, _localOY, _localOZ, out oux, out ouy, out ouz);
                     pm.M41 = (float)((oux - _ax) - _ox); pm.M42 = (float)((ouy - _ay) - _oy); pm.M43 = (float)((ouz - _az) - _oz);
+                    {
+                        // each star as bright as it truly is from where you are: its kind's light (solar units) over its distance squared, as
+                        // its apparent magnitude against a star like ours from 1 AU, on the same scale as the planets (full from -1, gone past
+                        // about 7): the night sky's few bright stars and many faint ones, every frame as you move among them
+                        double au = Units.Au(1);
+                        for (int k = 0; k < _localCount; k++)
+                        {
+                            var v = _localList[k]; v.A = 1;
+                            double wx = v.X * pm.M11 + v.Y * pm.M21 + v.Z * pm.M31 + pm.M41, wy = v.X * pm.M12 + v.Y * pm.M22 + v.Z * pm.M32 + pm.M42, wz = v.X * pm.M13 + v.Y * pm.M23 + v.Z * pm.M33 + pm.M43;
+                            double d2 = Math.Max(1e-30, wx * wx + wy * wy + wz * wz), lum = k < _localKind.Count && _localKind[k] >= 0 && _localKind[k] < _kinds.Count ? _kinds[_localKind[k]].Lum : 1;
+                            double mag = -26.74 - 2.5 * Math.Log10(Math.Max(1e-60, lum * au * au / d2));
+                            float kb = lf * (float)Math.Min(1, Math.Pow(10, -0.2 * (mag + 1)));
+                            v.R *= kb; v.G *= kb; v.B *= kb; if (_localDead.Contains(k)) { v.R = 0; v.G = 0; v.B = 0; } _localDrawn[k] = v;   // (a star that died in a supernova: gone)
+                        }
+                        _localBuf.Write(_localDrawn, _localCount); _localLf = lf; _localWritten = _localVersion; _localWrittenN = _localCount;
+                    }
                     DrawPoints(_localBuf, _localCount, pm * vp, right, up, 1f, 0.0022f, w, h, time);
                 }
             }
@@ -578,15 +591,32 @@ namespace Universe.Shell
                 if (st.Length > 0) { _sysStatic.Write(_staticShifted, st.Length); DrawPoints(_sysStatic, st.Length, vp, right, up, 0f, 0.0012f, w, h, time, 0f, (float)belt); }
                 for (int i = 0; i < _bodyCount; i++) { _bodyVerts[i].X = (float)(_bodyVerts[i].X - _ox); _bodyVerts[i].Y = (float)(_bodyVerts[i].Y - _oy); _bodyVerts[i].Z = (float)(_bodyVerts[i].Z - _oz); }
                 // the planet whose real ground is showing is not drawn as a glow too (it showed through its own see-through sea and clouds as a frosted ghost)
-                // the system's planets and moons fade in as you close in on its star (from 2,000 AU to 500 AU), never all at once
-                double sysFade = Math.Max(0, Math.Min(1, (SystemRange - DistToSysStar()) / (SystemRange * 0.75)));
-                for (int i = 1; i < _bodyCount; i++) { _bodyVerts[i].R *= (float)sysFade; _bodyVerts[i].G *= (float)sysFade; _bodyVerts[i].B *= (float)sysFade; }
+                // the system's planets and moons as bright as they truly are from where you are, never faded in by how near the star
+                // you are: each one's light here against a star like ours seen from 1 AU, p (R / d*)^2 q (1 AU / d)^2 (its albedo p, its
+                // radius R, its distance from its star d* and from you d, Lambert's phase q of the angle star-it-you), as its apparent
+                // magnitude m = -26.74 - 2.5 log10 of that; drawn by the eye's own sense of brightness (the square root of the light), full
+                // from magnitude -1 and fading out past about 7, as a planet does in the night sky: Jupiter from Earth at -2.7 full, from
+                // 500 AU about +8 and gone
+                {
+                    var sv = _bodyVerts[0]; double au = Units.Au(1);
+                    for (int i = 1; i < _bodyCount && i - 1 < _system.Bodies.Count; i++)
+                    {
+                        var v = _bodyVerts[i]; var bd = _system.Bodies[i - 1];
+                        double px = v.X, py = v.Y, pz = v.Z, dcp = Math.Sqrt(px * px + py * py + pz * pz);
+                        double sx = sv.X - px, sy = sv.Y - py, sz = sv.Z - pz, dps = Math.Sqrt(sx * sx + sy * sy + sz * sz);
+                        if (dcp <= 0 || dps <= 0) continue;
+                        double ca = Math.Max(-1, Math.Min(1, (sx * -px + sy * -py + sz * -pz) / (dps * dcp))), al = Math.Acos(ca), q = (Math.Sin(al) + (Math.PI - al) * Math.Cos(al)) / Math.PI;
+                        double p = PlanetTerrain.TerrainKind(bd.Terrain ?? DeepView.TerrainKind(bd.Kind)).Albedo, Rb = bd.RadiusUnits;
+                        double ratio = Math.Max(1e-60, _system.Luminosity * p * (Rb / dps) * (Rb / dps) * Math.Max(0, q) * (au / dcp) * (au / dcp)), mag = -26.74 - 2.5 * Math.Log10(ratio);
+                        float k = (float)Math.Min(1, Math.Pow(10, -0.2 * (mag + 1)));
+                        _bodyVerts[i].R *= k; _bodyVerts[i].G *= k; _bodyVerts[i].B *= k;
+                    }
+                }
                 if (_ground != null && _planet >= 0 && _planet + 1 < _bodyCount)   // (a small body's world has no glow among the system's bodies: its slot is not a planet's; indexed at slot minus one it had crashed the first frame its ground was made)
                 {
-                    // its glow fades into its real ground as you come in (from 40 to 20 of its widths), never swapped
-                    double gx0, gy0, gz0; CamFromPlanet(out gx0, out gy0, out gz0);
-                    float gk = (float)Math.Max(0, Math.Min(1, (Math.Sqrt(gx0 * gx0 + gy0 * gy0 + gz0 * gz0) / _ground.Radius - 20) / 20));
-                    _bodyVerts[_planet + 1].R *= gk; _bodyVerts[_planet + 1].G *= gk; _bodyVerts[_planet + 1].B *= gk; if (gk <= 0) _bodyVerts[_planet + 1].Size = 0;
+                    // its glow stands for it only until its real ground is made and ready to draw, then the ground is all there is of it
+                    // (no fading of one into the other: the ground is drawn from forty of its radii)
+                    if (_ground.ReadyStep < 1e30) { _bodyVerts[_planet + 1].R = 0; _bodyVerts[_planet + 1].G = 0; _bodyVerts[_planet + 1].B = 0; _bodyVerts[_planet + 1].Size = 0; }
                 }
                 _sysBodies.Write(_bodyVerts, _bodyCount);
                 DrawPoints(_sysBodies, _bodyCount, vp, right, up, 1f, 0.004f, w, h, time);
@@ -829,8 +859,28 @@ namespace Universe.Shell
         private int _comaN, _tailN; private UploadBuffer _tailBuf;
         private readonly float[] _pointConsts = new float[BillboardPipeline.ConstantCount];
         private int _levelLogged = int.MinValue;
+        // the web's light matched to the galaxies made in full where they hand over (one distance, no fade): just inside it, the real
+        // galaxies per volume times each one's light on screen (its glow, a third of a full point a pixel over its area, at least its
+        // hundred points' floor); just outside, the web's points per volume times each point's light (its brightness over its dot);
+        // the web's points scaled so the two are the same there. Measured from the points and galaxies themselves when the web is
+        // made, written to the zoom log
+        private float _webMatch = 1; private object _webMatchFor;
+        private float WebMatch(int h)
+        {
+            if (_glowAll == null || ReferenceEquals(_webMatchFor, _glowAll)) return _webMatch;
+            _webMatchFor = _glowAll; double nu = _nearUnits, shellW = (Math.Pow(1.5 * nu, 3) - nu * nu * nu) * 4.18879, shellG = (nu * nu * nu - Math.Pow(0.5 * nu, 3)) * 4.18879;
+            int nw = 0; foreach (var v in _glowAll) { double dx = v.X - _cx, dy = v.Y - _cy, dz = v.Z - _cz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (d >= nu && d < 1.5 * nu) nw++; }
+            int ng = 0; double scale = 0; foreach (var g in _galaxies) { double dx = g.X - _cx, dy = g.Y - _cy, dz = g.Z - _cz, d = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (d >= 0.5 * nu && d < nu) { ng++; scale += g.Scale; } }
+            if (nw == 0 || ng == 0) { _webMatch = 1; return 1; }
+            double perRad = h / (2 * Math.Tan(0.45)), dot = Math.Max(1.5, 0.0016 * h), gpx = scale / ng / nu * perRad;
+            double lg = Math.Max(0.35 * Math.PI * gpx * gpx, 100 * 0.015 * dot * dot);   // (a galaxy's light on screen at the hand-over, pixels at full)
+            double wdot = 0.0035 * perRad, lw = 4.0 * Math.Exp(-nu / (2.0e9 / Units.LightYearsPerUnit)) * Math.PI * wdot * wdot;   // (a web point's there)
+            double k = (ng / shellG * lg) / (nw / shellW * lw); _webMatch = (float)Math.Max(1e-3, Math.Min(10, k));
+            ZoomLog("WEBMATCH galaxies " + ng + " per " + shellG.ToString("0.#E+0") + ", web points " + nw + " per " + shellW.ToString("0.#E+0") + ", galaxy light " + lg.ToString("0.#") + " px, point " + lw.ToString("0.#") + " px: web scaled by " + _webMatch.ToString("0.###"));
+            return _webMatch;
+        }
         private readonly List<KeyValuePair<double, int>> _nebNear = new List<KeyValuePair<double, int>>(), _galOrder = new List<KeyValuePair<double, int>>(); private readonly Dictionary<int, double[]> _nebAt = new Dictionary<int, double[]>();
-        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0, float drift = 0)
+        private void DrawPoints(UploadBuffer buf, int count, Mat4 vp, Vec3 right, Vec3 up, float sizeScale, float minSize, int w, int h, double time, float maxSize = 0, float bright = 1, float style = 2, float holeK = 0, float holeMode = 0, float hx = 0, float hy = 0, float hz = 0, float drift = 0, int perRecord = 0)
         {
             if (buf == null || count <= 0) return;
             float b = bright * _sky; if (b <= 0.003f) return;
@@ -842,6 +892,7 @@ namespace Universe.Shell
             c[36] = _lens[0]; c[37] = _lens[1]; c[38] = _lens[2]; c[39] = _lens[3]; c[40] = w / (float)Math.Max(1, h);
             c[43] = _web[0]; c[44] = _web[1]; c[45] = _web[2]; c[46] = _web[3]; c[47] = _web[4];   // the web's light, sifted on the card (0: not the web)
             if (holeK > 0) { c[33] = holeK; c[35] = holeMode; c[43] = 0; c[44] = hx; c[45] = hy; c[46] = hz; c[47] = 0; }   // a feeding black hole's parts: moved on the card in its own frame (the pace, which part, where the camera is in that frame)
+            if (perRecord > 0) { c[41] = 1; c[42] = perRecord; count *= perRecord; }   // (each record grown into its points on the card)
             _dots.Draw(buf, count, c, 0, 0, w, h);
         }
 

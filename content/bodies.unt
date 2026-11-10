@@ -20,7 +20,11 @@
 #   seen); swarm-stars and swarm-rs, stars swept round the hole on tight ellipses of those sizes (as the S stars at the Milky
 #   Way's heart); eating-share, how many feeding holes are tearing a star apart right now: a star that came too close,
 #   stretched along its orbit into a stream of gas that winds in and feeds the disc (a tidal disruption); eating-stars, how many
-#   at once (a supermassive hole's disc can hold several, each on its own stream).
+#   at once (a supermassive hole's disc can hold several, each on its own stream). feeding-eddington: how fast a feeding hole
+#   takes in gas, as a share of the most its own light lets it (the Eddington rate): active galaxies' discs mostly a hundredth to
+#   a few tenths, X-ray binaries in outburst about a tenth; with the hole's mass it sets the disc's heat (a thin disc, Shakura and
+#   Sunyaev 1973: hottest near its inner edge, about 630,000 K times the share to the quarter power over the mass in hundred
+#   millions of solar masses to the quarter power, cooling outward as the radius to the minus three quarters).
 # What each body is made of (its card, and the matter you dive into at its surface) comes from its entry: an asteroid's kind
 #   (content/small-bodies.unt @asteroid, picked by belt-share at its place in the belt), a Kuiper body's, a comet's, a rogue
 #   planet's (content/planets.unt): each with its mix (content/minerals.unt @mix), makeup, density and albedo.
@@ -36,6 +40,7 @@ where: galaxy-heart
 entry: blackhole supermassive
 size-km: 3e9
 disc-rs: 3..60
+feeding-eddington: 0.1
 inner-orbit-seconds: 8
 swarm-stars: 40
 swarm-rs: 12..120
@@ -55,6 +60,7 @@ per-cubic-ly: 4e-6
 entry: blackhole stellar
 size-km: 2e5
 disc-rs: 3..40
+feeding-eddington: 0.1
 inner-orbit-seconds: 5
 swarm-stars: 0
 eating-share: 0

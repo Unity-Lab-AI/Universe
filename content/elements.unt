@@ -4,6 +4,11 @@
 #   stable form, the longest-lived) isotope, so protons = number and neutrons = mass-number - number; melting and boiling points in kelvin at 1 atmosphere
 #   from standard reference tables (CRC Handbook values, rounded); "unknown" where never measured. The in-game uses come from the public Elements page.
 # colour: the atom's usual colour in chemistry drawings (the Jmol CPK colours, Mt and below; none past Mt).
+# ionise-ev: the energy to pull its outermost electron away, in electron-volts (the first ionisation energy, NIST Atomic
+#   Spectra Database): a photon carrying more ionises it (ultraviolet and up for most atoms, visible light for the alkali metals).
+# ion-charge and ionic-a: the charge it most often carries as an ion in minerals and salts, and its size as that ion in angstroms
+#   (Shannon 1976, six neighbours round it): where it gives or takes electrons (an ionic bond, by its pull against its
+#   neighbours'), it is that size; where it shares them, its bonding size; in between, in proportion (Pauling's ionic character).
 # covalent-a: its bonding size in angstroms (Cordero et al. 2008, He to Cm; none measured past Cm): two atoms closer than
 #   their two sizes together (with a fifth more room) are bonded. atomic-a: its own size, the calculated atomic radius in
 #   angstroms (Clementi, Raimondi and Reinhardt 1967: H to Ba, Hf to Rn); where none is given its bonding size stands in.
@@ -24,6 +29,7 @@
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.unt
 
 @element h
+ionise-ev: 13.598
 name: Hydrogen
 real: yes
 number: 1
@@ -44,6 +50,7 @@ melt-k: 14
 boil-k: 20
 
 @element he
+ionise-ev: 24.587
 name: Helium
 real: yes
 number: 2
@@ -63,6 +70,9 @@ melt-k: 1
 boil-k: 4
 
 @element li
+ionise-ev: 5.392
+ion-charge: +1
+ionic-a: 0.76
 name: Lithium
 real: yes
 number: 3
@@ -82,6 +92,9 @@ melt-k: 454
 boil-k: 1615
 
 @element be
+ionise-ev: 9.323
+ion-charge: +2
+ionic-a: 0.45
 name: Beryllium
 real: yes
 number: 4
@@ -101,6 +114,9 @@ melt-k: 1560
 boil-k: 2742
 
 @element b
+ionise-ev: 8.298
+ion-charge: +3
+ionic-a: 0.27
 name: Boron
 real: yes
 number: 5
@@ -121,6 +137,9 @@ melt-k: 2349
 boil-k: 4200
 
 @element c
+ionise-ev: 11.260
+ion-charge: +4
+ionic-a: 0.16
 name: Carbon
 real: yes
 number: 6
@@ -141,6 +160,9 @@ melt-k: 3915
 boil-k: 3915
 
 @element n
+ionise-ev: 14.534
+ion-charge: +5
+ionic-a: 0.13
 name: Nitrogen
 real: yes
 number: 7
@@ -161,6 +183,9 @@ melt-k: 63
 boil-k: 77
 
 @element o
+ionise-ev: 13.618
+ion-charge: -2
+ionic-a: 1.4
 name: Oxygen
 real: yes
 number: 8
@@ -181,6 +206,9 @@ melt-k: 54
 boil-k: 90
 
 @element f
+ionise-ev: 17.423
+ion-charge: -1
+ionic-a: 1.33
 name: Fluorine
 real: yes
 number: 9
@@ -201,6 +229,7 @@ melt-k: 54
 boil-k: 85
 
 @element ne
+ionise-ev: 21.565
 name: Neon
 real: yes
 number: 10
@@ -220,6 +249,9 @@ melt-k: 25
 boil-k: 27
 
 @element na
+ionise-ev: 5.139
+ion-charge: +1
+ionic-a: 1.02
 name: Sodium
 real: yes
 number: 11
@@ -239,6 +271,9 @@ melt-k: 371
 boil-k: 1156
 
 @element mg
+ionise-ev: 7.646
+ion-charge: +2
+ionic-a: 0.72
 name: Magnesium
 real: yes
 number: 12
@@ -258,6 +293,9 @@ melt-k: 923
 boil-k: 1363
 
 @element al
+ionise-ev: 5.986
+ion-charge: +3
+ionic-a: 0.535
 name: Aluminium
 real: yes
 number: 13
@@ -277,6 +315,9 @@ melt-k: 933
 boil-k: 2792
 
 @element si
+ionise-ev: 8.152
+ion-charge: +4
+ionic-a: 0.4
 name: Silicon
 real: yes
 number: 14
@@ -298,6 +339,9 @@ melt-k: 1687
 boil-k: 3538
 
 @element p
+ionise-ev: 10.487
+ion-charge: +5
+ionic-a: 0.38
 name: Phosphorus
 real: yes
 number: 15
@@ -318,6 +362,9 @@ melt-k: 317
 boil-k: 550
 
 @element s
+ionise-ev: 10.360
+ion-charge: -2
+ionic-a: 1.84
 name: Sulfur
 real: yes
 number: 16
@@ -338,6 +385,9 @@ melt-k: 388
 boil-k: 718
 
 @element cl
+ionise-ev: 12.968
+ion-charge: -1
+ionic-a: 1.81
 name: Chlorine
 real: yes
 number: 17
@@ -358,6 +408,7 @@ melt-k: 172
 boil-k: 239
 
 @element ar
+ionise-ev: 15.760
 name: Argon
 real: yes
 number: 18
@@ -377,6 +428,9 @@ melt-k: 84
 boil-k: 87
 
 @element k
+ionise-ev: 4.341
+ion-charge: +1
+ionic-a: 1.38
 name: Potassium
 real: yes
 number: 19
@@ -396,6 +450,9 @@ melt-k: 337
 boil-k: 1032
 
 @element ca
+ionise-ev: 6.113
+ion-charge: +2
+ionic-a: 1.0
 name: Calcium
 real: yes
 number: 20
@@ -434,6 +491,9 @@ melt-k: 1814
 boil-k: 3109
 
 @element ti
+ionise-ev: 6.828
+ion-charge: +4
+ionic-a: 0.605
 name: Titanium
 real: yes
 number: 22
@@ -474,6 +534,9 @@ melt-k: 2183
 boil-k: 3680
 
 @element cr
+ionise-ev: 6.767
+ion-charge: +3
+ionic-a: 0.615
 name: Chromium
 real: yes
 number: 24
@@ -495,6 +558,9 @@ melt-k: 2180
 boil-k: 2944
 
 @element mn
+ionise-ev: 7.434
+ion-charge: +2
+ionic-a: 0.83
 name: Manganese
 real: yes
 number: 25
@@ -514,6 +580,9 @@ melt-k: 1519
 boil-k: 2334
 
 @element fe
+ionise-ev: 7.902
+ion-charge: +2
+ionic-a: 0.78
 name: Iron
 real: yes
 number: 26
@@ -535,6 +604,9 @@ melt-k: 1811
 boil-k: 3134
 
 @element co
+ionise-ev: 7.881
+ion-charge: +2
+ionic-a: 0.745
 name: Cobalt
 real: yes
 number: 27
@@ -556,6 +628,9 @@ melt-k: 1768
 boil-k: 3200
 
 @element ni
+ionise-ev: 7.640
+ion-charge: +2
+ionic-a: 0.69
 name: Nickel
 real: yes
 number: 28
@@ -577,6 +652,9 @@ melt-k: 1728
 boil-k: 3186
 
 @element cu
+ionise-ev: 7.726
+ion-charge: +2
+ionic-a: 0.73
 name: Copper
 real: yes
 number: 29
@@ -598,6 +676,9 @@ melt-k: 1358
 boil-k: 2835
 
 @element zn
+ionise-ev: 9.394
+ion-charge: +2
+ionic-a: 0.74
 name: Zinc
 real: yes
 number: 30
@@ -701,6 +782,9 @@ melt-k: 494
 boil-k: 958
 
 @element br
+ionise-ev: 11.814
+ion-charge: -1
+ionic-a: 1.96
 name: Bromine
 real: yes
 number: 35
@@ -721,6 +805,7 @@ melt-k: 266
 boil-k: 332
 
 @element kr
+ionise-ev: 14.000
 name: Krypton
 real: yes
 number: 36
@@ -741,6 +826,9 @@ melt-k: 116
 boil-k: 120
 
 @element rb
+ionise-ev: 4.177
+ion-charge: +1
+ionic-a: 1.52
 name: Rubidium
 real: yes
 number: 37
@@ -760,6 +848,9 @@ melt-k: 312
 boil-k: 961
 
 @element sr
+ionise-ev: 5.695
+ion-charge: +2
+ionic-a: 1.18
 name: Strontium
 real: yes
 number: 38
@@ -925,6 +1016,7 @@ melt-k: 1828
 boil-k: 3236
 
 @element ag
+ionise-ev: 7.576
 name: Silver
 real: yes
 number: 47
@@ -1041,6 +1133,9 @@ melt-k: 723
 boil-k: 1261
 
 @element i
+ionise-ev: 10.451
+ion-charge: -1
+ionic-a: 2.2
 name: Iodine
 real: yes
 number: 53
@@ -1062,6 +1157,7 @@ melt-k: 387
 boil-k: 457
 
 @element xe
+ionise-ev: 12.130
 name: Xenon
 real: yes
 number: 54
@@ -1081,6 +1177,9 @@ melt-k: 161
 boil-k: 165
 
 @element cs
+ionise-ev: 3.894
+ion-charge: +1
+ionic-a: 1.67
 name: Caesium
 real: yes
 number: 55
@@ -1101,6 +1200,9 @@ melt-k: 302
 boil-k: 944
 
 @element ba
+ionise-ev: 5.212
+ion-charge: +2
+ionic-a: 1.35
 name: Barium
 real: yes
 number: 56
@@ -1507,6 +1609,7 @@ melt-k: 2041
 boil-k: 4098
 
 @element au
+ionise-ev: 9.226
 name: Gold
 real: yes
 number: 79
@@ -1566,6 +1669,9 @@ melt-k: 577
 boil-k: 1746
 
 @element pb
+ionise-ev: 7.417
+ion-charge: +2
+ionic-a: 1.19
 name: Lead
 real: yes
 number: 82
@@ -1767,6 +1873,7 @@ melt-k: 1841
 boil-k: 4300
 
 @element u
+ionise-ev: 6.194
 name: Uranium
 real: yes
 number: 92

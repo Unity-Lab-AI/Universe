@@ -93,7 +93,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         else { uint kk = asuint(s.pos.x) ^ (asuint(s.pos.y) * 7919u) ^ (asuint(s.pos.z) * 104729u); tv = normalize(float3(oh01(kk, 1u), oh01(kk, 2u), oh01(kk, 3u)) * 2 - 1); }
         s.pos += tv * dd;
     }
-    bool webOut = false; float orbR = -1, nebSprite = -1;   // (orbR: an orbital's or an atom's reach, for keeping its light by its size on screen)
+    bool webOut = false; float orbR = -1, nebSprite = -1, nebGlow = 1;   // (orbR: an orbital's or an atom's reach, for keeping its light by its size on screen)
     if (lensB.w > 0)
     {
         // a point of the web's light: left out near you (the galaxies made in full stand there) and past three fade distances;
@@ -119,7 +119,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             // each part (one ion of one element) its own points (its salt in pos.z: every part had sat on the very same points, one
             // even mix), its own knots for part of its gas besides the cloud's shared ones, and its zone (pos.y: 1 round the hot
             // middle, 2 the edges, 0 throughout)
-            uint salt = asuint(s.pos.z) * 2654435761u; float zone = s.pos.y;
+            uint salt = asuint(s.pos.z) * 2654435761u; float zone = floor(s.pos.y); nebGlow = max(0.02, frac(s.pos.y) * 2);   // (its glow: drawn at that brightness near and far, content/nebulas glow)
             uint ns0 = asuint(s.pos.x), ns = ns0, pt = sub + salt; float br = 1; float3 q = float3(0, 0, 0);
             float g1 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 21u)))) * cos(6.2832 * oh01(ns + pt, 22u));
             float g2 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 23u)))) * cos(6.2832 * oh01(ns + pt, 24u));
@@ -130,6 +130,11 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
                 float squash = 0.6 + 0.4 * oh01(ns, 1u), rr = 0.75 + 0.22 * oh01(ns + pt, 29u) + 0.05 * g1;
                 if (oh01(ns + pt, 30u) < 0.19) { rr = sqrt(oh01(ns + pt, 31u)) * 0.7; br = 0.4; } else br = rr > 0.9 ? 1 : 0.7;
                 rr *= zone > 0.5 && zone < 1.5 ? 0.6 : zone > 1.5 ? 1.08 : 1;          // (the high ions inside the shell, the low ones at its rim)
+                // its own kind of shape, as planetary nebulae are seen: round, elliptical, a ring seen face on, or two lobes (an hourglass
+                // pinched at its waist)
+                float pshape = oh01(ns0, 65u);
+                if (pshape < 0.3) { rr *= 0.35 + 0.65 * pow(abs(dv.y), 0.6); dv.y *= 1.9; }
+                else if (pshape < 0.45) { dv.y *= 0.25; }
                 q = float3(dv.x * rr, dv.y * rr * squash, dv.z * rr);
             }
             else if (m == 5u)
@@ -141,7 +146,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             }
             else
             {
-                uint kq = (uint)(oh01(ns + pt, 38u) * 28); float3 kc = float3(0, 0, 0);
+                uint kq = (uint)(oh01(ns + pt, 38u) * (6 + 34 * oh01(ns0, 66u))); float3 kc = float3(0, 0, 0);   // (its own number of knots: a few big ones to forty)
                 if (oh01(ns + pt, 49u) < 0.4) ns = ns0 ^ salt;                            // (two in five of its points in its own knots)
                 float k1 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 41u)))) * cos(6.2832 * oh01(ns + kq, 42u)), k2 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 43u)))) * cos(6.2832 * oh01(ns + kq, 44u)), k3 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 45u)))) * cos(6.2832 * oh01(ns + kq, 46u));
                 kc = float3(k1 * 0.45, k2 * 0.3, k3 * 0.45); float ksz = 0.12 + 0.3 * oh01(ns + kq, 47u);
@@ -151,6 +156,14 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
                 br = (1 - cl * 0.5) * (m == 6u ? 0.45 : 1);
             }
             br *= 0.35 + 0.45 * oh01(ns + pt, 48u);
+            {
+                // every cloud its own stretch on three axes and its own tilt (from its own seed): none the same size and shape
+                float a1 = 0.45 + 1.1 * oh01(ns0, 61u), a2 = 0.3 + 0.9 * oh01(ns0, 62u), a3 = 0.45 + 1.1 * oh01(ns0, 63u), an = pow(a1 * a2 * a3, 0.3333);
+                q *= float3(a1, a2, a3) / an;
+                float t1 = 6.2832 * oh01(ns0, 67u), t2 = 3.1416 * oh01(ns0, 68u), c1 = cos(t1), s1 = sin(t1), c2 = cos(t2), s2 = sin(t2);
+                q = float3(q.x * c1 + q.z * s1, q.y, -q.x * s1 + q.z * c1);
+                q = float3(q.x, q.y * c2 - q.z * s2, q.y * s2 + q.z * c2);
+            }
             orbR = abs(s.size); nebSprite = abs(s.size);                                  // (its points' own size, a share of its radius)
             s.pos = q; s.size = abs(s.size); s.color.rgb *= br; s.color.a = 1; best = 3;
         }
@@ -282,7 +295,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
         // a nebula's light kept by its size on screen: each point's own glow is a share of the cloud's radius; once that is smaller
         // than the smallest dot, the dot carries only the light of the glow it stands for (their sizes squared), so a far cloud
         // shrinks and dims together and is never a white ball
-        float sp = nebSprite * misc.y, dotR2 = cc0.w * screen.z; s.color.rgb *= saturate((sp * sp) / max(1e-30, dotR2 * dotR2));
+        float sp = nebSprite * misc.y, dotR2 = cc0.w * screen.z; s.color.rgb *= min(1, saturate((sp * sp) / max(1e-30, dotR2 * dotR2)) / nebGlow);   // (its colour carries its glow: near, that glow; far, dimmed as before, never brighter)
     }
     else if (orbR >= 0)
     {

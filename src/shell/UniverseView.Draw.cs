@@ -314,7 +314,7 @@ namespace Universe.Shell
                 // its zone (1 round the hot middle, 2 the edges, 0 throughout) and its own salt (its own knots besides the cloud's)
                 // ride in y and z, read by the card (Pipeline.cs, l 6); each part as bright as its real share of the light
                 uint salt = p.Salt == 0 ? (uint)(p.El.GetHashCode()) : p.Salt;
-                l.Add(new StarVertex { X = BitConverter.ToSingle(BitConverter.GetBytes(sd), 0), Y = p.Zone, Z = BitConverter.ToSingle(BitConverter.GetBytes(salt & 0x3FFFFFFFu | 0x3F800000u), 0), Size = size, R = p.R * (float)p.Share, G = p.G * (float)p.Share, B = p.B * (float)p.Share, A = (6 * 8 + kind + 0.25f) / 64f });
+                l.Add(new StarVertex { X = BitConverter.ToSingle(BitConverter.GetBytes(sd), 0), Y = p.Zone + (float)(Math.Max(0.02, Math.Min(0.98, NebulaGas.Glow)) * 0.5), Z = BitConverter.ToSingle(BitConverter.GetBytes(salt & 0x3FFFFFFFu | 0x3F800000u), 0), Size = size, R = p.R * (float)(p.Share * NebulaGas.Glow), G = p.G * (float)(p.Share * NebulaGas.Glow), B = p.B * (float)(p.Share * NebulaGas.Glow), A = (6 * 8 + kind + 0.25f) / 64f });
             }
             return l;
         }

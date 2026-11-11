@@ -63,7 +63,9 @@ namespace Universe.Gen
         // a nebula's colour: its parts' colours by their shares
         public static void Colour(int kind, double u, out float r, out float g, out float b)
         {
-            r = g = b = 0; foreach (var q in Composition(kind, u)) { r += q.R * (float)q.Share; g += q.G * (float)q.Share; b += q.B * (float)q.Share; }
+            var parts = (kind == 2 || kind == 4 || kind == 5) && NebulaGas.Loaded ? NebulaGas.Parts(kind, u, 16, false) : null; if (parts == null || parts.Length == 0) parts = Composition(kind, u);   // (no names: worked out for every nebula of a galaxy)
+            double tot = 0; foreach (var q in parts) tot += q.Share; if (tot <= 0) tot = 1;
+            r = g = b = 0; foreach (var q in parts) { q.Share /= tot; r += q.R * (float)q.Share; g += q.G * (float)q.Share; b += q.B * (float)q.Share; }
             float m = Math.Max(0.01f, Math.Max(r, Math.Max(g, b))); r /= m; g /= m; b /= m;
         }
 
@@ -123,7 +125,7 @@ namespace Universe.Gen
                 for (int i = 0; i < 8; i++)
                 {
                     // each part of it glows in its own part's colour (oxygen's teal toward its middle, hydrogen's red throughout)
-                    var parts = Composition(emission ? 2 : 3, mix); var pp = parts[(int)(rng.NextDouble() * parts.Length) % parts.Length];
+                    var parts = emission && NebulaGas.Loaded ? NebulaGas.Parts(2, mix, 16, false) : Composition(emission ? 2 : 3, mix); if (parts == null || parts.Length == 0) parts = Composition(emission ? 2 : 3, mix); /* (no names: a galaxy holds thousands) */ var pp = parts[(int)(rng.NextDouble() * parts.Length) % parts.Length];
                     float wr = (cr + pp.R) * 0.5f, wg = (cg + pp.G) * 0.5f, wb = (cb + pp.B) * 0.5f;
                     list.Add(Star(c + new Vec3(rng.Gaussian(), rng.Gaussian() * 0.5f, rng.Gaussian()) * r * (pp.El == "O" ? 0.6f : 1f), r * 2.5f, wr, wg, wb, 0.03f));
                 }

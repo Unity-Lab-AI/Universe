@@ -131,7 +131,13 @@ namespace Universe.Shell
             {
                 // the orbitals' clouds: each record drawn as its points, placed by the card
                 Put(_orbRecs, ref _orbArr, ref _orbBuf);
-                int per = Math.Max(6, Math.Min(OrbitalPoints, 4000000 / Math.Max(1, _orbRecs.Count)));   // with many atoms on screen, fewer points to each orbital: the shapes stay, the frame rate too
+                // with many atoms on screen, fewer points to each orbital (the shapes stay): never more than the card can paint in a frame,
+                // counted in pixels, not points: each point a glow at least 0.28% of the view across, about 130 pixels on a 4K screen, and
+                // 4 million of them (over 500 million pixels a frame) had hung the card the moment the electrons appeared (Windows reset
+                // it: 0x887A0005)
+                double dotPx = 2 * 0.0028 * h, pxEach = Math.Max(16, dotPx * dotPx), budget = 6e7 * Math.Max(0.2, Math.Min(2, Universe.Platform.Window.Detail));
+                int most = (int)Math.Max(20000, Math.Min(4000000, budget / pxEach));
+                int per = Math.Max(6, Math.Min(OrbitalPoints, most / Math.Max(1, _orbRecs.Count)));
                 var oc = _k2; Array.Copy(c, oc, oc.Length); oc[41] = 1; oc[42] = per; oc[30] = 0.0028f;
                 _dots.Draw(_orbBuf, _orbRecs.Count * per, oc, 0, 0, w, h);
             }

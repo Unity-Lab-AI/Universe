@@ -24,7 +24,8 @@ namespace Universe.Shell
                 double x = (rx - _px) / k, y = (ry - _py) / k, z = (rz - _pz) / k, r = Math.Sqrt(x * x + y * y + z * z);
                 if (r < _ground.Radius * 40 && r > 0)
                 {
-                    double h = r - _ground.Radius;
+                    double h = r - _ground.Radius - (_ground.Solid ? Math.Max(_ground.HasWater ? 0 : -1e9, _ground.GroundAt(x / r, y / r, z / r)) : 0);   // (from its ground, or its sea: never from its sea level under a mountain)
+                    if (_matterScale > 0 && _spaceScale <= 0) h = _matterScale * 0.6;   // (in the matter: your height over the grain)
                     return "on " + GroundKind() + ": " + LatLong(y / r, Math.Atan2(z, x)) + ", " + (h >= 0 ? ScaleHud.Words(h) + " up" : ScaleHud.Words(-h) + " down");
                 }
             }

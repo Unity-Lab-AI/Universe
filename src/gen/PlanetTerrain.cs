@@ -1334,6 +1334,8 @@ namespace Universe.Gen
         private readonly Dictionary<PKey, int> _wantedAt = new Dictionary<PKey, int>();   // the last frame each piece was asked for
         private bool Wanted(PKey k) { int fr; return _wantedAt.TryGetValue(k, out fr) && _frame - fr <= 3; }   // (under _askLock)
         /// <summary>For the log: pieces wished for, being built, built so far, their mean build time, and finished pieces thrown away as out of date.</summary>
+        /// <summary>How many pieces have been built so far (for telling a queue that is getting on from one that is stuck).</summary>
+        public int BuiltCount { get { return _builtCount; } }
         public string BuildStats { get { lock (_askLock) return "asked " + _asks.Count + " building " + _inFlight.Count + " built " + _builtCount + " at " + (_builtCount > 0 ? (_builtMs / _builtCount).ToString("0.0") : "0") + " ms each, old " + _droppedOld + ", unwanted " + _droppedUnwanted + ", cached " + _cache.Count + ", workers " + _workersBusy; } }
 
         private void Tri(ref int v, int a, int b, int c)

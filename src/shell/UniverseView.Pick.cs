@@ -784,6 +784,9 @@ namespace Universe.Shell
                         // over the sea: the water's surface is the floor until you are a metre from it, then the sea bed is (the dive)
                         if (_ground.HasWater && !_underSea && _ground.GroundAt(cx0 / r0, cy0 / r0, cz0 / r0) < 0) floorKm = Math.Max(floorKm, 5e-7);
                     }
+                    // the floor holds you up but never lifts you: never above where you were before this step (over coarse pieces after
+                    // the ground was remade it had thrown the camera back up hundreds of km, again and again on the way down)
+                    floorKm = Math.Min(floorKm, Math.Max(altBefore, 1e-9));
                     if (AboveGround() < Units.Km(floorKm))
                     {
                         double x, y, z; CamFromPlanet(out x, out y, out z);

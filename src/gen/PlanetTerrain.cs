@@ -449,9 +449,10 @@ namespace Universe.Gen
         {
             foreach (var kv in _pending) { Patch old; if (_cache.TryGetValue(kv.Key, out old)) Release(old); _cache[kv.Key] = kv.Value; }
             _pending.Clear();
-            // pieces of the old shape that were out of view are dropped, so they are made fresh in the new shape when needed
-            var stale = new List<PKey>(); foreach (var kv in _cache) if (kv.Value.Gen != Generation) stale.Add(kv.Key);
-            foreach (var k in stale) { Release(_cache[k]); _cache.Remove(k); }
+            // pieces of the old shape not yet rebuilt are kept and drawn until their new form is made (each rebuilt in place when it
+            // is next needed): dropping them had left the ground under you at its coarsest level after every swap (the local streams
+            // remake it each time you come down about three times lower), a plain coloured sheet, and the floor over those coarse
+            // pieces had thrown the camera back up hundreds of km
             DrawnGeneration = Generation; _framesWaiting = 0; Swaps++;
         }
 
@@ -1323,7 +1324,7 @@ namespace Universe.Gen
                 var a = d.Key; var np = d.Value;
                 if (a.Gen != Generation) { _droppedOld++; continue; }             // built for a shape the planet no longer has
                 Upload(np); np.LastUsed = _frame; np.Gen = a.Gen;
-                if (a.Pending) _pending[a.Key] = np;
+                if (a.Pending && Generation != DrawnGeneration) _pending[a.Key] = np;   // (a swap under way: held for it; after the swap, an old piece's rebuild goes straight in)
                 else { Patch old; if (_cache.TryGetValue(a.Key, out old)) Release(old); _cache[a.Key] = np; }
             }
             _uploadsLast = ti;
@@ -1381,7 +1382,7 @@ namespace Universe.Gen
                 {
                     if (_pending.ContainsKey(key)) return p;
                     if (mayMake) AskFor(key, layer, f, level, i, j, true);
-                    _missing++;
+                    if (Generation != DrawnGeneration) _missing++;
                 }
                 return p;
             }

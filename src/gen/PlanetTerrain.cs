@@ -253,7 +253,7 @@ namespace Universe.Gen
 
         /// <summary>Fine roughness: from layer <paramref name="from"/> to <paramref name="to"/>, each layer's bumps are about a
         /// fifth of their own width tall, so the ground looks just as rough at a metre, a millimetre or a micrometre.</summary>
-        private double _grainKm { get { var m = GrainMix(1, 0, 0); return m != null ? m.Size : 0; } }
+        private double _grainKmC = -1; private double _grainKm { get { if (_grainKmC < 0) { var m = Solid ? GrainField.For(MixId ?? Kind) ?? GrainField.For("desert") : null; _grainKmC = m != null ? m.Size : 0; } return _grainKmC; } }   // (the world's own grain, worked out once: never through the ice check, which reads the ground and would come back here)
         private double Micro(double x, double y, double z, uint seed, int from, int to)
         {
             double sum = 0, f = 48 * Math.Pow(2, from);
@@ -372,7 +372,7 @@ namespace Universe.Gen
             if (h > 0) line -= 0.05 + Math.Min(0.12, 0.025 * h);            // (land, and the higher the colder)
             else if (HasWater)
             {
-                if (_basin == null) lock (_basinLock) if (_basin == null) MakeBasins();
+                if (_basin == null) { if (_makingBasins) return line + BandWobble(x, y, z); lock (_basinLock) if (_basin == null) MakeBasins(); }   // (while the basins are being mapped, which reads the ground: the line without them, never mapping them again inside)
                 double l = Math.Sqrt(x * x + y * y + z * z), lat = Math.Asin(Math.Max(-1, Math.Min(1, y / l))), lo = Math.Atan2(z, x);
                 int j = Math.Max(0, Math.Min(BasinH - 1, (int)((lat / Math.PI + 0.5) * BasinH))), i = Math.Max(0, Math.Min(BasinW - 1, (int)((lo + Math.PI) / (2 * Math.PI) * BasinW)));
                 float share = _basin[j * BasinW + i]; if (share >= 0) line += 0.05 * (1 - 2 * share);   // (warm in the west of its basin, cold in the east)
@@ -940,7 +940,12 @@ namespace Universe.Gen
         // (westward intensification: the Gulf Stream, the Kuroshio), a deep warm blue; along a subtropical eastern shore the deep cold
         // water rises (Ekman's transport), and at the equator where the trade winds part the water, greener with the life it feeds ──
         private float[] _basin; private readonly object _basinLock = new object(); private const int BasinW = 720, BasinH = 360;
+        private volatile bool _makingBasins;
         private void MakeBasins()
+        {
+            _makingBasins = true; try { MakeBasinsNow(); } finally { _makingBasins = false; }
+        }
+        private void MakeBasinsNow()
         {
             var m = new float[BasinW * BasinH]; var land = new bool[BasinW]; float rr, gg, bb, ll;
             for (int j = 0; j < BasinH; j++)
@@ -958,7 +963,7 @@ namespace Universe.Gen
         }
         private void SeaTint(double x, double y, double z, ref float r, ref float g, ref float b)
         {
-            if (_basin == null) lock (_basinLock) if (_basin == null) MakeBasins();
+            if (_basin == null) { if (_makingBasins) return; lock (_basinLock) if (_basin == null) MakeBasins(); }
             double l = Math.Sqrt(x * x + y * y + z * z), lat = Math.Asin(Math.Max(-1, Math.Min(1, y / l))), lo = Math.Atan2(z, x);
             int j = Math.Max(0, Math.Min(BasinH - 1, (int)((lat / Math.PI + 0.5) * BasinH))), i = Math.Max(0, Math.Min(BasinW - 1, (int)((lo + Math.PI) / (2 * Math.PI) * BasinW)));
             float share = _basin[j * BasinW + i]; if (share < 0) return; double la = Math.Abs(lat) * 180 / Math.PI;

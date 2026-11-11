@@ -307,8 +307,11 @@ namespace Universe.Shell
             float size = kind == 4 ? 0.09f : kind == 5 ? 0.07f : kind == 3 ? 0.11f : 0.15f;
             foreach (var p in parts)
             {
-                if (p.Share <= 0) continue; bool middle = p.El == "O" && kind != 4 && kind != 5;
-                l.Add(new StarVertex { X = BitConverter.ToSingle(BitConverter.GetBytes(sd), 0), Y = 0, Z = 0, Size = middle ? -size : size, R = p.R * (float)p.Share, G = p.G * (float)p.Share, B = p.B * (float)p.Share, A = (6 * 8 + kind + 0.25f) / 64f });
+                if (p.Share <= 0) continue;
+                // its zone (1 round the hot middle, 2 the edges, 0 throughout) and its own salt (its own knots besides the cloud's)
+                // ride in y and z, read by the card (Pipeline.cs, l 6); each part as bright as its real share of the light
+                uint salt = p.Salt == 0 ? (uint)(p.El.GetHashCode()) : p.Salt;
+                l.Add(new StarVertex { X = BitConverter.ToSingle(BitConverter.GetBytes(sd), 0), Y = p.Zone, Z = BitConverter.ToSingle(BitConverter.GetBytes(salt & 0x3FFFFFFFu | 0x3F800000u), 0), Size = size, R = p.R * (float)p.Share, G = p.G * (float)p.Share, B = p.B * (float)p.Share, A = (6 * 8 + kind + 0.25f) / 64f });
             }
             return l;
         }

@@ -101,3 +101,26 @@ says: star-forming nebulas sit mostly in a galaxy's spiral arms
 @rule nebula-travel
 real: rule
 says: thick nebulas block sight and slow travel; they are also rich in gas resources
+
+# ── the gas's light, from the elements ──
+# nebula-gas: every element in a glowing nebula by its cosmic abundance (content/elements.unt abundance), each nebula its own
+#   scatter about it (scatter-dex) and its galaxy's metals; a planetary nebula's own by the measured averages of 58 of them
+#   (Kingsburgh & Barlow 1994, as tabled by Kwitter & Henry 2022: helium, carbon and nitrogen dredged up by the dying star).
+#   Each element glows in its own lines (lines: recombination, as hydrogen's and helium's; nebular-lines: the forbidden lines
+#   that cool the gas, made brighter per atom by forbidden-boost, measured against Orion's [O III] 5007 at about three times
+#   H-beta), each line its own colour by its wavelength, so the gas is the sum of every element's real spectrum. How hard it
+#   is lit (excitation, from 0 for a cool gas to 1 for a planetary nebula's hottest) sets which ions there are: neutral and
+#   once-ionised atoms at its edges, twice-ionised and more round the hot star in its middle. Its density (log electrons per
+#   cubic cm) puts out the forbidden lines whose levels are emptied by collisions first ([S II], [O II] in a dense gas). Every
+#   ion of every element lies in its own knots as well as the cloud's shared ones, so no two parts lie the same.
+@law nebula-gas
+name: The gas's light
+forbidden-boost: 2700
+scatter-dex: 0.15
+emission-density: 2..4
+emission-excitation: 0.1..0.65
+planetary-density: 3..4.5
+planetary-excitation: 0.35..1
+remnant-density: 2..3.3
+remnant-excitation: 0.15..0.55
+planetary-abundance: He 11.05, C 8.60, N 8.24, O 8.66, Ne 8.04, S 6.87, Ar 6.27

@@ -40,10 +40,13 @@ namespace Universe.Gen
         /// sulfur and nitrogen deeper reds; planetary: oxygen green-blue strongest, hydrogen and nitrogen red rims; supernova
         /// remnants: hydrogen with the star's own oxygen, sulfur, silicon and iron; dark clouds: molecular hydrogen, carbon monoxide,
         /// water ice, ammonia, methanol and ethanol (alcohols), formaldehyde, hydrogen cyanide, and dust; reflection: dust scattering blue.</summary>
-        public sealed class Part { public string Name, El; public double Share; public float R, G, B; public Part(string n, string e, double s, float r, float g, float b) { Name = n; El = e; Share = s; R = r; G = g; B = b; } }
+        public sealed class Part { public int Zone; public uint Salt; public string Name, El; public double Share; public float R, G, B; public Part(string n, string e, double s, float r, float g, float b) { Name = n; El = e; Share = s; R = r; G = g; B = b; } }
         public static Part[] Composition(int kind, double u)
         {
             Part[] p;
+            // a glowing nebula (emission, planetary, a supernova's remnant): its gas from every element by its cosmic abundance,
+            // each ion in its own real lines (src/gen/NebulaGas.cs); the cold and the dusty kinds below
+            if ((kind == 2 || kind == 4 || kind == 5) && NebulaGas.Loaded) { var g = NebulaGas.Parts(kind, u); if (g != null && g.Length > 0) { double s0 = 0; foreach (var q in g) s0 += q.Share; foreach (var q in g) q.Share /= s0; return g; } }
             switch (kind)
             {
                 case 2: p = new[] { new Part("hydrogen (glowing red)", "H", 0.55 + 0.25 * (1 - u), 1f, 0.18f, 0.25f), new Part("oxygen (teal-green)", "O", 0.05 + 0.3 * u, 0.15f, 1f, 0.8f), new Part("sulfur (deep red)", "S", 0.02 + 0.06 * (1 - u), 0.75f, 0.08f, 0.1f), new Part("nitrogen (red)", "N", 0.03 + 0.07 * u, 1f, 0.3f, 0.3f), new Part("helium", "He", 0.09, 0.9f, 0.85f, 1f) }; break;

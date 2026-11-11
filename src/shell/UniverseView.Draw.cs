@@ -607,10 +607,16 @@ namespace Universe.Shell
                 // the small bodies are each on their own tilted oval (the belts, the Kuiper belt's crowds, the Oort cloud): each point
                 // where its orbit has it now (Kepler's equation at its mean motion); the orbit lines stand
                 var sr = _system.StaticRate; var se = _system.StaticEl; double yrs = _simYears;
+                // the orbits worked out again only when time has moved the fastest of them a ten-thousandth of a turn, or gravity
+                // changed (each frame they had cost the frame eight milliseconds more, at a minute a second barely moving)
+                if (_smallX == null || _smallX.Length != st.Length || _smallFor != _system) { _smallX = new double[st.Length]; _smallY = new double[st.Length]; _smallZ = new double[st.Length]; _smallFor = _system; _smallYrs = double.NaN; _smallMax = 0; if (sr != null) foreach (var q in sr) _smallMax = Math.Max(_smallMax, q); }
+                bool redo = double.IsNaN(_smallYrs) || Math.Abs(yrs - _smallYrs) * _smallMax > 6e-4 || (Flown && yrs > _gravityOffYear) || _smallGrav != Window.GravityOn;
+                if (redo) { _smallYrs = yrs; _smallGrav = Window.GravityOn; }
                 for (int i = 0; i < st.Length; i++)
                 {
                     var v = st[i]; double px0 = st[i].X, py0 = st[i].Y, pz0 = st[i].Z; float rate = sr != null && i < sr.Length ? sr[i] : 0;
-                    if (rate != 0 && se != null && i * 6 + 5 < se.Length)
+                    if (rate != 0 && !redo) { px0 = _smallX[i]; py0 = _smallY[i]; pz0 = _smallZ[i]; }
+                    else if (rate != 0 && se != null && i * 6 + 5 < se.Length)
                     {
                         // with gravity off, each body goes straight on from where it was when gravity went, at the velocity it had
                         bool off = Flown && yrs > _gravityOffYear;
@@ -628,6 +634,7 @@ namespace Universe.Shell
                             }
                         }
                     }
+                    if (rate != 0) { _smallX[i] = px0; _smallY[i] = py0; _smallZ[i] = pz0; }
                     v.X = (float)(px0 - _ox); v.Y = (float)(py0 - _oy); v.Z = (float)(pz0 - _oz); v.R *= stFade; v.G *= stFade; v.B *= stFade; _staticShifted[i] = v;
                 }
                 // the belt's points dimmed by how many share its patch of screen (as a galaxy's stars are): from afar three thousand
@@ -908,6 +915,7 @@ namespace Universe.Shell
             _hud.Draw(_meshes, viewKm / Math.Max(1, w), w, h);
         }
 
+        private double[] _smallX, _smallY, _smallZ; private object _smallFor; private double _smallYrs, _smallMax; private bool _smallGrav;   // the small bodies' places, kept between the times they are worked out
         private float _sky = 1;                                                           // how much of space shows behind (fades away at the very small)
         private int _comaN, _tailN; private UploadBuffer _tailBuf;
         private readonly float[] _pointConsts = new float[BillboardPipeline.ConstantCount];

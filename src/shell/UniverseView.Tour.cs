@@ -57,7 +57,7 @@ namespace Universe.Shell
             switch (k) { case 0x20: return "Space"; case 0x0D: return "Enter"; case 0x1B: return "Esc"; case 0x08: return "Backspace"; case 0x09: return "Tab"; case 0x25: case 0x26: case 0x27: case 0x28: return "an arrow key"; case 0xBC: return "the , key"; case 0xBE: return "the . key"; }
             return "a key";
         }
-        private double _tourH0, _tourLookFrom; private bool _tourWaiting, _pickFailed;   // (a pick that found nothing: the stops that depend on it are skipped, never shown with the wrong thing in view)
+        private double _tourH0, _tourLookFrom; private bool _tourWaiting, _pickFailed; private double _offCourseT, _tourNoCloser; private int _tourBuiltSeen;   // (a pick that found nothing: the stops that depend on it are skipped, never shown with the wrong thing in view)
         // the director's choices for the shot under way, made afresh for each shot of each viewing (so no two tours are the same):
         // which way it circles, how fast (a little either side of the script's own), and a slow crane up or down as it goes;
         // the last galaxy's kind, so the next is another kind
@@ -235,7 +235,13 @@ namespace Universe.Shell
                         double aim = Math.Max(target * ramp, Math.Min(target, _tourRate));                                 // (a rate carried in from the stop before is kept, never dropped to ramp again)
                         _tourRate += (aim - _tourRate) * (1 - Math.Exp(-dt * 1.5));
                         double notches = _tourRate * Math.Log(10) / Math.Log(1 / 0.87) * dt;       // a wheel notch is 13% of the way
-                        input.Wheel = OnCourse() * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
+                        // off course for more than three seconds (the view held off what it flies to by something else turning it): the
+                        // view is set on it and the zoom goes on regardless, as it flies straight at what is picked whatever the view (it
+                        // had waited without end at 1,009 km over a world, the wheel at nought, the spot 1,309 km off the view)
+                        if (OnCourse() < 0.5 && _tKind >= 0) _offCourseT += dt; else _offCourseT = 0;
+                        double course = OnCourse();
+                        if (_offCourseT > 3) { double odx, ody, odz, orr; if (TargetFromCamera(out odx, out ody, out odz, out orr)) { double ol = Math.Sqrt(odx * odx + ody * ody + odz * odz); if (ol > 0) SetLook(odx / ol, ody / ol, odz / ol); } course = Math.Max(course, 0.5); }
+                        input.Wheel = course * OverPick() * sign * notches;   // never moving one way while looking another; in the matter, never past what is picked (only once over it)
                         // a zoom back out of the matter (and on up off the ground, to a kilometre) looks down at what it leaves, eased back to
                         // the way the dive came in (85 degrees down): the circling at the electron, the nucleus and the quark had left the view
                         // facing wherever it stopped, often across or up into the dark, and the atoms, the crystal and the grain went by unseen
@@ -276,13 +282,19 @@ namespace Universe.Shell
                         }
                         else if (st.Pan != 0 && (_tKind >= 0 || _matterScale > 0 || _spaceScale > 0)) TourTurn(st.Pan * Math.PI / 180 * dt * Math.Min(1, _tourT / 2), 0);   // circling what it flies to as it goes (in the matter too, where the eye goes round the point you dive into)
                         // going nowhere (nothing nearer to fly at) for six seconds: on to the next stop
-                        if (Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05 || (_spaceScale > 0 && _matter.SpaceKind == 12 && _fallShare < 1) || (_ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm)) || WebNotMade) { _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
+                        bool moved = Math.Abs(Math.Log10(Math.Max(1e-40, d) / Math.Max(1e-40, _tourLastD))) > 0.05;
+                        // the ground's building excuses waiting only while it is getting on with it (the world's clouds ask every frame, so a
+                        // queue never empty had held the stop for good), and never past forty-five seconds without coming closer
+                        bool building = _ground != null && _ground.Backlog > 0 && AboveGround() > Units.Km(MatterView.OverlayKm) && _ground.BuiltCount != _tourBuiltSeen;
+                        if (_ground != null) _tourBuiltSeen = _ground.BuiltCount;
+                        if (moved) _tourNoCloser = 0; else _tourNoCloser += dt;
+                        if (moved || ((_spaceScale > 0 && _matter.SpaceKind == 12 && _fallShare < 1) || building || WebNotMade) && _tourNoCloser < 45) { if (moved) _tourLastD = d; _tourStall = 0; } else _tourStall += dt;   // (below the overlay the ground's queue means nothing: the grains cover it)   // (held back by ground still being built, or the web's light: waiting, never given up on)
                         // a zoom in aimed below the hand-over into the matter is not over until you are in the matter: a step onto the
                         // ground had read the height as a nanometre for one frame, the stop called itself done at its two micrometres, the
                         // floor lifted the camera back before the hand-over could come, and every stop below (the crystal, the lattice,
                         // the atoms, the quark) was skipped as not in any body's matter
                         bool intoMatter = sign > 0 && _ground != null && _matterScale <= 0 && _spaceScale <= 0 && want < HandoffKm();
-                        if ((sign > 0 && d <= want * 1.02 && !intoMatter) || (sign < 0 && !st.Out && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; if (!chain) _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; }
+                        if ((sign > 0 && d <= want * 1.02 && !intoMatter) || (sign < 0 && !st.Out && d >= want * 0.98) || _tourT > 240 || (_tourStall > 20 && _tourT > 20) || (st.Out && _tourT > 0.5 && _spaceScale <= 0 && _matterScale <= 0)) { done = true; if (!chain) _tourRate = 0; input.Wheel = 0; _tourStall = 0; _tourLastD = 0; _tourNoCloser = 0; _offCourseT = 0; }
                     }
                     break;
                 case "shot":

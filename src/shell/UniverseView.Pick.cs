@@ -93,6 +93,17 @@ namespace Universe.Shell
         }
 
         // pick what is under the mouse: the planet's ground if you are at one, else the nearest planet or moon, star or galaxy to the line
+        // a click on a nebula or cluster aims where you clicked in it, never only its middle: the point where the line under the
+        // mouse passes deepest through the cloud (nearest its middle), flown to and dived into there, anywhere across its whole
+        // expanse; a line that misses the cloud's sphere (the click on its glow's edge) keeps its middle
+        private void CloudAim(Vec3 dir, double dx, double dy, double dz, double radius, ref double tx, ref double ty, ref double tz, ref double trad)
+        {
+            double t = dx * dir.X + dy * dir.Y + dz * dir.Z; if (t <= 0) return;
+            double px = dx - dir.X * t, py = dy - dir.Y * t, pz = dz - dir.Z * t, perp = Math.Sqrt(px * px + py * py + pz * pz);
+            if (perp >= radius * 0.95) return;
+            double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l < radius) t = Math.Max(Units.Km(10), t);   // (inside it already: the point ahead under the mouse)
+            tx = _ax + _ox + dir.X * t; ty = _ay + _oy + dir.Y * t; tz = _az + _oz + dir.Z * t; trad = 0;
+        }
         private void Pick(Vec3 dir, int mx, int my)
         {
             _tSn = null;
@@ -127,7 +138,7 @@ namespace Universe.Shell
                 var ex = _extras[q]; double d2 = near(RelX(ex) - _ox, RelY(ex) - _oy, RelZ(ex) - _oz);
                 if (d2 < best) { best = d2; kind = 6; idx = q; tx = ex.X; ty = ex.Y; tz = ex.Z; trad = ex.R; name = ex.Name; }
             }
-            if (_tKind == 5 && _near >= 0 && _tGal == _near && _tIndex >= 0 && _tIndex < _features.Count && _ground == null)
+            if (_tKind == 5 && _near >= 0 && _tGal == _near && _tIndex >= 0 && _tIndex < _features.Count && _ground == null && kind != 6)   // (a body under the mouse inside the cloud is picked as itself: the cloud never blocks it)
             {
                 // inside a picked nebula or cluster: a click is a point in its gas, right where you click, at the depth you are at
                 // (a star only if you click right on it), so the wheel flies there and on into its atoms
@@ -232,7 +243,7 @@ namespace Universe.Shell
                     var ft = g.Features[q]; double ux, uy, uz; ToUniverse(g, ft[0], ft[1], ft[2], out ux, out uy, out uz);
                     double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     double sizePx = ft[3] * g.Scale / Math.Max(1e-12, l) / Math.Tan(0.45) * _lastH * 0.5, d2 = near(dx, dy, dz), allow = Math.Max(reachPx, sizePx);
-                    if (d2 < allow * allow && kind != 1 && (kind < 0 || d2 < best)) { best = d2; kind = 5; idx = q; tx = ux; ty = uy; tz = uz; trad = ft[3] * g.Scale; name = nm[(int)ft[4]] + " of " + g.Name; pickGal = gi; }
+                    if (d2 < allow * allow && kind != 1 && (kind < 0 || d2 < best)) { best = d2; kind = 5; idx = q; tx = ux; ty = uy; tz = uz; trad = ft[3] * g.Scale; name = nm[(int)ft[4]] + " of " + g.Name; pickGal = gi; CloudAim(dir, dx, dy, dz, trad, ref tx, ref ty, ref tz, ref trad); }
                 }
             }
             if (_near >= 0 && (kind < 0 || kind == 1) && NearShare() > 0.2)
@@ -244,7 +255,7 @@ namespace Universe.Shell
                     var ft = _features[q]; double ux, uy, uz; ToUniverse(g, ft[0], ft[1], ft[2], out ux, out uy, out uz);
                     double dx = (ux - _ax) - _ox, dy = (uy - _ay) - _oy, dz = (uz - _az) - _oz, l = Math.Sqrt(dx * dx + dy * dy + dz * dz);
                     double sizePx = ft[3] * g.Scale / Math.Max(1e-12, l) / Math.Tan(0.45) * _lastH * 0.5, d2 = near(dx, dy, dz), allow = Math.Max(reachPx, sizePx);
-                    if (d2 < allow * allow && kind != 1 && (kind < 0 || d2 < best)) { best = d2; kind = 5; idx = q; tx = ux; ty = uy; tz = uz; trad = ft[3] * g.Scale; name = names[(int)ft[4]]; pickGal = _near; }
+                    if (d2 < allow * allow && kind != 1 && (kind < 0 || d2 < best)) { best = d2; kind = 5; idx = q; tx = ux; ty = uy; tz = uz; trad = ft[3] * g.Scale; name = names[(int)ft[4]]; pickGal = _near; CloudAim(dir, dx, dy, dz, trad, ref tx, ref ty, ref tz, ref trad); }
                 }
             }
             if (kind < 0)

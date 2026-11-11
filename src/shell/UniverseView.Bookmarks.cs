@@ -217,6 +217,13 @@ namespace Universe.Shell
         // last bookmark note at the foot of the screen for a few seconds
         private void DrawMarks(int w, int h, double dt)
         {
+            // these lines are placed where they belong (each waypoint at its place, your coordinates under the scale bar): the whole
+            // screen is their room, never the pick card's (its bottom had pushed your coordinates up into the middle, over the card)
+            float keepTop = _hud.CardTop, keepBottom = _hud.CardBottom; _hud.CardTop = 2; _hud.CardBottom = h - 2;
+            try { DrawMarksIn(w, h, dt); } finally { _hud.CardTop = keepTop; _hud.CardBottom = keepBottom; }
+        }
+        private void DrawMarksIn(int w, int h, double dt)
+        {
             float u = (float)Math.Max(1, h / 1080.0);
             if (WaypointsOn && _matterScale <= 0 && _spaceScale <= 0)
                 for (int i = 0; i < Marks.Count; i++)

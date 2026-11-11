@@ -228,6 +228,12 @@ namespace Universe.Shell
                     _hud.DrawRing(_meshes, sx, sy, 7 * u, w, h);
                     _hud.DrawCard(_meshes, new[] { (i + 1) + ". " + b.Name, Units.Describe(d) + " away" }, sx + 10 * u, sy - 8 * u, w, h, 0.75f);
                 }
+            // your own coordinates, on screen at the foot of the view every frame (in the frame of the smallest thing you are in;
+            // in the matter, where on the world it is): never only in the window's title, which a full screen hides
+            {
+                string cw = _matterScale > 0 || _spaceScale > 0 ? "you: " + ScaleHud.Words(ViewDistanceKm()) + " across" + (_ground != null && _spaceScale <= 0 ? ", " + CoordWords(_ox, _oy, _oz) : "") : "you: " + CameraCoords();
+                _hud.DrawCard(_meshes, new[] { cw }, 24 * u, h - (_tour != null ? h * 0.1 + 34 * u : 34 * u), w, h, 0.85f);
+            }
             if (_markNote != null)
             {
                 _markNoteT += dt; if (_markNoteT > 5) { _markNote = null; return; }

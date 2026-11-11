@@ -116,7 +116,11 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             // a nebula, grown here from its own seed (pos.x's bits; its record at the cloud's middle, its radius 1): a planetary
             // nebula's thin shell (m 4), a supernova remnant's filaments (5), an emission, reflection or dark cloud's knots (2, 3, 6);
             // each point one of its many, the same every frame. Records of one cloud share its seed, one for each part of its gas
-            uint ns = asuint(s.pos.x), pt = sub; float br = 1; float3 q = float3(0, 0, 0);
+            // each part (one ion of one element) its own points (its salt in pos.z: every part had sat on the very same points, one
+            // even mix), its own knots for part of its gas besides the cloud's shared ones, and its zone (pos.y: 1 round the hot
+            // middle, 2 the edges, 0 throughout)
+            uint salt = asuint(s.pos.z) * 2654435761u; float zone = s.pos.y;
+            uint ns0 = asuint(s.pos.x), ns = ns0, pt = sub + salt; float br = 1; float3 q = float3(0, 0, 0);
             float g1 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 21u)))) * cos(6.2832 * oh01(ns + pt, 22u));
             float g2 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 23u)))) * cos(6.2832 * oh01(ns + pt, 24u));
             float g3 = sqrt(-2 * log(max(1e-6, oh01(ns + pt, 25u)))) * cos(6.2832 * oh01(ns + pt, 26u));
@@ -125,6 +129,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             {
                 float squash = 0.6 + 0.4 * oh01(ns, 1u), rr = 0.75 + 0.22 * oh01(ns + pt, 29u) + 0.05 * g1;
                 if (oh01(ns + pt, 30u) < 0.19) { rr = sqrt(oh01(ns + pt, 31u)) * 0.7; br = 0.4; } else br = rr > 0.9 ? 1 : 0.7;
+                rr *= zone > 0.5 && zone < 1.5 ? 0.6 : zone > 1.5 ? 1.08 : 1;          // (the high ions inside the shell, the low ones at its rim)
                 q = float3(dv.x * rr, dv.y * rr * squash, dv.z * rr);
             }
             else if (m == 5u)
@@ -132,14 +137,17 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
                 uint fi = (uint)(oh01(ns + pt, 32u) * 40); float fu = oh01(ns + fi, 33u) * 2 - 1, fa = oh01(ns + fi, 34u) * 6.2832, fs = sqrt(1 - fu * fu);
                 float3 f0 = float3(fs * cos(fa), fu, fs * sin(fa)); float rr = 0.85 + 0.15 * oh01(ns + pt, 35u);
                 if (oh01(ns + pt, 36u) < 0.14) { q = dv * pow(oh01(ns + pt, 37u), 0.4); br = 0.35; } else q = normalize(f0 * 0.75 + dv * 0.35) * rr;
+                if (zone > 0.5 && zone < 1.5) q *= 0.6;                                    // (the high ions inside, the low ones in the filaments)
             }
             else
             {
                 uint kq = (uint)(oh01(ns + pt, 38u) * 28); float3 kc = float3(0, 0, 0);
+                if (oh01(ns + pt, 49u) < 0.4) ns = ns0 ^ salt;                            // (two in five of its points in its own knots)
                 float k1 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 41u)))) * cos(6.2832 * oh01(ns + kq, 42u)), k2 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 43u)))) * cos(6.2832 * oh01(ns + kq, 44u)), k3 = sqrt(-2 * log(max(1e-6, oh01(ns + kq, 45u)))) * cos(6.2832 * oh01(ns + kq, 46u));
                 kc = float3(k1 * 0.45, k2 * 0.3, k3 * 0.45); float ksz = 0.12 + 0.3 * oh01(ns + kq, 47u);
                 q = kc + float3(g1, g2, g3) * ksz; float cl = length(q);
-                if (cl > 1 || (s.size < 0 && cl > 0.5)) webOut = true;                      // (outside the cloud; a gas kept to its middle: oxygen's teal)
+                ns = ns0;
+                if (cl > 1 || (zone > 0.5 && zone < 1.5 && cl > 0.5) || (zone > 1.5 && cl < 0.4)) webOut = true;   // (outside the cloud; the high ions kept to its middle, the low ones to its edges)
                 br = (1 - cl * 0.5) * (m == 6u ? 0.45 : 1);
             }
             br *= 0.35 + 0.45 * oh01(ns + pt, 48u);

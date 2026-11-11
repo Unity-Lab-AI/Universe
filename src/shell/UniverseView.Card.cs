@@ -273,6 +273,7 @@ namespace Universe.Shell
                 L.Add("distance: " + Units.Describe(dist));
             }
             { var w = HereWords(); if (w != null && L.Count > 0) L.Insert(1, w); }   // (where you are in the one tree, under its name)
+            if (L.Count > 0 && _tKind != 3) { double cx, cy, cz, cr; if (TargetFromCamera(out cx, out cy, out cz, out cr)) L.Insert(Math.Min(2, L.Count), "coordinates: " + CoordWords(cx + _ox, cy + _oy, cz + _oz)); }   // (its place in the frame of the smallest thing it is in: UniverseView.Coords.cs; a ground spot's is its place line)
             if (L.Count > 0) GravityLines(L);                                                 // (gravity off: what it is doing here)
             return L;
         }

@@ -873,6 +873,7 @@ namespace Universe.Shell
                 // view, a wall of text over the hole); on the tour too, where the caption at the foot says what the shot is and the card what the thing is
                 if (_hud.Visible && !_matterCardDrawn) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 72 * Math.Max(1, h / 1080.0), w, h);   // (one card at a time: when the matter's is up, the world's waits; on the tour below its top bar)
             }
+            DrawMarks(w, h, _markDt);   // the waypoints and the bookmark note (UniverseView.Bookmarks.cs)
         }
 
         // the scale on screen: how many km one pixel spans at the distance of the nearest thing, in the middle of the view

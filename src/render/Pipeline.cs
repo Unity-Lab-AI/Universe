@@ -165,7 +165,7 @@ VO VS(uint vid : SV_VertexID, uint iid : SV_InstanceID)
             if (sc > best) { best = sc; dir = d; }
             if (sc > 0) break;
         }
-        if (best < 1.5)
+        if (l < 6u)   // (every orbital's point placed: a p or d lobe scores past 1.5 by itself, and the test on the score had left those points unplaced, each a disc the whole shell wide on the nucleus)
         {
             float w = oh01(key + sub * 3u + 1u, tick);
             orbR = s.size; s.pos += dir * s.size * (0.45 + 1.1 * pow(w, 0.7));

@@ -157,3 +157,7 @@ Verbatim: "this and other thing like it arnet done yet: small streams, ice ages,
 ## 2026-11-10 — The crash in the tour (DNA-AND DESIGN 751)
 
 - [x] **The tour no longer closing the app (a stack overflow: the ocean basins and the ice line asking each other without end, and the grain size and the ground):** (DNA-AND DESIGN 751) "something is happening the tour is crashing or the app is or something it just closes it all"
+
+## 2026-11-10 — The atom's rings and the tour's pause (DESIGN 752)
+
+- [x] **The tour no longer paused by a function key (the clip stopping with it), and the atom's orbitals drawn as their clouds, never stacked rainbow discs:** (DNA-AND DESIGN 752) "took some pics prowblems are obvious and time stopped and rec stoipped at atom level at 7:05 in to it. and atoom level doesnt look right and the atom patterning its blah like its trying to show the shells and it turns ourn like a looney toons closing scene like cirular rainbow thneted yellow, looks weird, i took pics"

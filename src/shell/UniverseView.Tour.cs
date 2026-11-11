@@ -209,6 +209,9 @@ namespace Universe.Shell
             var st = _tour[_tourAt]; _tourT += dt; bool done = false;
             if (_pickFailed && st.Do != "pick") { ZoomLog("TOUR stop " + st.Name + " skipped: its pick found nothing"); _tourAt++; _tourT = 0; NewShot(); return; }   // (never a shot of the wrong thing with the caption of the right one)
             if (MatterStop(st.Name) && _matterScale <= 0 && _spaceScale <= 0) { ZoomLog("TOUR stop " + st.Name + " skipped: not in any body's matter (the dive did not come)"); _tourAt++; _tourT = 0; NewShot(); return; }   // (a lattice's caption over open sky, a fly across six million km: never)
+            // a zoom down to the ground or its grains with no ground, matter or pick anywhere near (the stops before it found nothing):
+            // skipped, never a zoom on into empty space with the caption saying grains and stone
+            if (st.Do == "zoom" && st.Rate > 0 && st.UntilKm < 1 && _ground == null && _matterScale <= 0 && _spaceScale <= 0 && _tKind < 0) { ZoomLog("TOUR stop " + st.Name + " skipped: no ground near to go down to"); _tourAt++; _tourT = 0; NewShot(); return; }
             input.MouseX = w / 2; input.MouseY = h / 2;                                    // the controls act at the middle of the view
             switch (st.Do)
             {

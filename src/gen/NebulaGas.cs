@@ -13,7 +13,9 @@ namespace Universe.Gen
         private sealed class Grp { public int Stage; public bool Forbidden; public double Ncr, Str, Wl, Best; public float R, G, B; }
         private sealed class El { public string Sym, Name; public double Ab; public int Z; public bool Rec; public List<Line> Lines = new List<Line>(); public List<Grp> Groups = new List<Grp>(); }
         private static List<El> _bright;
-        private static List<El> _els; private static double _boost = 2700, _scatter = 0.15;
+        private static List<El> _els; private static double _boost = 2700, _scatter = 0.15, _avLo = 0, _avHi = 3, _slLo = 0, _slHi = 0.35, _tkLo = 3500, _tkHi = 40000, _excSpread = 0.25, _colourShare = 0.7;
+        /// <summary>How bright the gas is drawn against the stars, at any distance (content/nebulas.unt glow).</summary>
+        public static double Glow = 0.35;
         private static readonly Dictionary<string, double[]> _range = new Dictionary<string, double[]>();
         private static readonly Dictionary<string, double> _pn = new Dictionary<string, double>();
         public static bool Loaded { get { return _els != null && _els.Count > 0; } }
@@ -45,6 +47,10 @@ namespace Universe.Gen
                 if (law.Id != "nebula-gas") continue;
                 double v; if (double.TryParse(law.Get("forbidden-boost", "2700"), fs, ci, out v)) _boost = v;
                 if (double.TryParse(law.Get("scatter-dex", "0.15"), fs, ci, out v)) _scatter = v;
+                { double lo, hi; if (law.TryRange("dust-av", out lo, out hi)) { _avLo = lo; _avHi = hi; } if (law.TryRange("starlight-share", out lo, out hi)) { _slLo = lo; _slHi = hi; } if (law.TryRange("star-k", out lo, out hi)) { _tkLo = lo; _tkHi = hi; } }
+                if (double.TryParse(law.Get("excitation-spread", "0.25"), fs, ci, out v)) _excSpread = v;
+                if (double.TryParse(law.Get("glow", "0.35"), fs, ci, out v)) Glow = v;
+                if (double.TryParse(law.Get("colour-share", "0.7"), fs, ci, out v)) _colourShare = v;
                 foreach (var k in new[] { "emission", "planetary", "remnant" })
                 {
                     double lo, hi, a, b;
@@ -86,7 +92,12 @@ namespace Universe.Gen
         {
             if (!Loaded) return null;
             string key = kind == 4 ? "planetary" : kind == 5 ? "remnant" : "emission"; double[] rg; if (!_range.TryGetValue(key, out rg)) rg = new[] { 2.0, 4.0, 0.1, 0.65 };
-            double logN = rg[0] + (rg[1] - rg[0]) * Hash(u, 1), exc = rg[2] + (rg[3] - rg[2]) * Hash(u, 2), centre = 1 + 2.5 * exc;
+            double logN = rg[0] + (rg[1] - rg[0]) * Hash(u, 1), exc = Math.Max(0, Math.Min(1, rg[2] - _excSpread + (rg[3] - rg[2] + 2 * _excSpread) * Hash(u, 2))), centre = 1 + 2.5 * exc;
+            // its own dust: how much it dims its light (blue more than red, as one over the wavelength: at 610, 550 and 465 nm for
+            // the eye's red, green and blue), and how much of its light is its star's own scattered by that dust
+            double av = _avLo + (_avHi - _avLo) * Math.Pow(Hash(u, 3), 1.6), tauV = av / 1.086;
+            float er = (float)Math.Exp(-tauV * 550 / 610.0), eg = (float)Math.Exp(-tauV), eb = (float)Math.Exp(-tauV * 550 / 465.0);
+            double starShare = _slLo + (_slHi - _slLo) * Hash(u, 4), starK = Math.Exp(Math.Log(_tkLo) + (Math.Log(_tkHi) - Math.Log(_tkLo)) * Hash(u, 5));
             var parts = new List<SpaceGen.Part>(24); var st = new double[11 * 6];
             // only the elements that can ever glow bright enough to show (worked out once: hydrogen, helium, and those with a
             // forbidden line or common enough); every one of them still counts in the dive's atoms. Each nebula had gone through
@@ -126,9 +137,47 @@ namespace Universe.Gen
                     parts.Add(p);
                 }
             }
+            // the starlight its dust scatters: the star's own colour, bluer for the scattering (as one over the wavelength), a share
+            // of all its light; then every part through the nebula's dust (dimmed, blue most), and each colour a glowing gas's, its
+            // pure line colour partly toward its brightness
+            double total = 0; foreach (var p in parts) total += p.Share;
+            if (starShare > 0 && total > 0)
+            {
+                float sr, sg, sb; Planck(starK, out sr, out sg, out sb); sr *= 550f / 610; sb *= 550f / 465; float sm = Math.Max(1e-4f, Math.Max(sr, Math.Max(sg, sb)));
+                var sp = new SpaceGen.Part(names ? "starlight scattered by its dust (its star about " + ((int)(starK / 100) * 100).ToString(CultureInfo.InvariantCulture) + " K)" : "dust", "Si", total * starShare / (1 - starShare), sr / sm, sg / sm, sb / sm);
+                sp.Salt = 0x5D57u; parts.Add(sp);
+            }
+            foreach (var p in parts)
+            {
+                float r = p.R * er, g = p.G * eg, b = p.B * eb, lum = 0.3f * r + 0.59f * g + 0.11f * b, m0 = Math.Max(p.R, Math.Max(p.G, p.B));
+                float k = (float)_colourShare; r = r * k + lum * (1 - k); g = g * k + lum * (1 - k); b = b * k + lum * (1 - k);
+                float m = Math.Max(1e-4f, Math.Max(r, Math.Max(g, b))); p.Share *= m / Math.Max(1e-4f, m0); p.R = r / m; p.G = g / m; p.B = b / m;
+            }
+            if (names && av > 0.05) foreach (var p in parts) if (p.Name != null && !p.Name.StartsWith("starlight")) { p.Name += ", seen through its dust (" + av.ToString("0.0", CultureInfo.InvariantCulture) + " magnitudes)"; break; }
             parts.Sort((x, y) => y.Share.CompareTo(x.Share));
             if (parts.Count > most) parts.RemoveRange(most, parts.Count - most);
             return parts.ToArray();
+        }
+
+        /// <summary>A reflection nebula: its own lighting star's light scattered by its dust (bluer, as about one over the wavelength
+        /// to the 1.5: small grains), seen through the same dust; blue-white round a hot star, white to gold round a cooler one.</summary>
+        public static SpaceGen.Part[] Reflection(double u)
+        {
+            if (!Loaded) return null;
+            double starK = Math.Exp(Math.Log(_tkLo) + (Math.Log(_tkHi) - Math.Log(_tkLo)) * Hash(u, 5)), tauV = (_avLo + (_avHi - _avLo) * Math.Pow(Hash(u, 3), 1.6)) / 1.086 * 0.5;
+            float r, g, b; Planck(starK, out r, out g, out b);
+            r *= (float)(Math.Pow(550 / 610.0, 1.5) * Math.Exp(-tauV * 550 / 610.0)); g *= (float)Math.Exp(-tauV); b *= (float)(Math.Pow(550 / 465.0, 1.5) * Math.Exp(-tauV * 550 / 465.0));
+            float lum = 0.3f * r + 0.59f * g + 0.11f * b, k = (float)_colourShare; r = r * k + lum * (1 - k); g = g * k + lum * (1 - k); b = b * k + lum * (1 - k);
+            float m = Math.Max(1e-4f, Math.Max(r, Math.Max(g, b)));
+            var p = new SpaceGen.Part("dust (silicate and carbon grains) lit by its star of about " + ((int)(starK / 100) * 100).ToString(CultureInfo.InvariantCulture) + " K", "Si", 1, r / m, g / m, b / m); p.Salt = 0x5D58u;
+            return new[] { p };
+        }
+
+        /// <summary>A star's light's colour from its heat (Planck's law at 610, 550 and 465 nm), brightest channel 1.</summary>
+        public static void Planck(double k, out float r, out float g, out float b)
+        {
+            Func<double, double> bb = nm => { double l = nm * 1e-9; return 1 / (l * l * l * l * l * (Math.Exp(1.4388e-2 / (l * Math.Max(500, k))) - 1)); };
+            double R = bb(610), G = bb(550), B = bb(465), m = Math.Max(R, Math.Max(G, B)); r = (float)(R / m); g = (float)(G / m); b = (float)(B / m);
         }
 
         /// <summary>A glowing nebula's atoms by count, every element with a measured abundance (in this nebula's own scatter, a

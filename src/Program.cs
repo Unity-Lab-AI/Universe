@@ -233,7 +233,7 @@ namespace Universe
 
                 if (deep == null && planet == null && window.Input.WasPressed(Win32.VK_ESCAPE)) window.Close();
                 // the review menu: rebuilt whenever the set or the keepers change
-                if (world != null) { if (menuDirty || world.MenuChanged) { Window.TimeNames = UniverseView.TimeNames; Window.TimeStep = world.TimeStep; window.SetWorldMenu(world.ScaleOn); menuDirty = false; world.MenuChanged = false; } }
+                if (world != null) { if (menuDirty || world.MenuChanged) { Window.TimeNames = UniverseView.TimeNames; Window.TimeStep = world.TimeStep; Window.Bookmarks = world.BookmarkNames; Window.Waypoints = world.WaypointsOn; window.SetWorldMenu(world.ScaleOn); menuDirty = false; world.MenuChanged = false; } }
                 else if (viewer.Set != menuSet || menuDirty) { window.SetReviewMenu(viewer.KeeperLabels(), viewer.KeeperTicks()); menuSet = viewer.Set; menuDirty = false; }
                 int cmd = window.MenuCommand; window.MenuCommand = 0;
                 bool askNow = false;
@@ -282,6 +282,10 @@ namespace Universe
                 else if (cmd == Window.CmdShot) wantShot = true;
                 else if (cmd == Window.CmdRecord) wantRecord = true;
                 else if (cmd == Window.CmdTour) wantTour = true;
+                else if (cmd == Window.CmdMark && world != null) world.MarkHere();
+                else if (cmd == Window.CmdWaypoints && world != null) world.WaypointsOn = !world.WaypointsOn;
+                else if (cmd >= Window.CmdFlyBase && cmd < Window.CmdFlyBase + 200 && world != null) world.FlyToMark(cmd - Window.CmdFlyBase);
+                else if (cmd >= Window.CmdUnmarkBase && cmd < Window.CmdUnmarkBase + 200 && world != null) world.Unmark(cmd - Window.CmdUnmarkBase);
                 else if (cmd == Window.CmdFps) { Settings.Set("show-fps", !Settings.Get("show-fps", true)); menuDirty = true; }
                 else if (cmd == Window.CmdGravity && world != null) { world.ToggleGravity(); menuDirty = true; }
                 else if (cmd == Window.CmdAlwaysDay) { Settings.Set("always-day", !Settings.Get("always-day", true)); menuDirty = true; }

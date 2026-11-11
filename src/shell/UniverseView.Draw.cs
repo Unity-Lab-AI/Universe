@@ -40,6 +40,10 @@ namespace Universe.Shell
         private double OffTarget()
         {
             if (AtGroundBody()) return 0;          // (coming down to the picked world the view looks ahead to its horizon, not at its middle: that is on course)
+            // among the grains the view looks straight down at the point under you and the dive goes there, wherever the picked
+            // spot on the ground lies: it is on course (a spot left two km to one side by a glide had the zoom wait for a turn
+            // toward it that the look down took back each frame, and the tour sat at 201 m for good, the ground never finer)
+            if (_tKind == 3 && _ground != null && _matterScale <= 0 && AboveGround() < Units.Km(MatterView.OverlayKm)) return 0;
             if (_spaceScale > 0) return 0;                                               // (dived into a body or a hole: the zoom goes on wherever you look; the fall is watched looking back at the horizon)
             double dx, dy, dz, r; if (_tKind < 0 || !TargetFromCamera(out dx, out dy, out dz, out r)) return 0;
             double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l <= 0) return 0; var lk = Look;
@@ -600,32 +604,31 @@ namespace Universe.Shell
                 PlaceSystem();
                 var st = _system.Static;
                 float stFade = (float)Math.Max(0, Math.Min(1, (SystemRange - DistToSysStar()) / (SystemRange * 0.75)));   // orbits and belts fade in with the planets
-                // the belts' haze is rubble on its orbits: each point turns about the star at Kepler's rate for its distance (the
-                // orbit lines and the Oort cloud stand); the whole haze had stood still
-                var sr = _system.StaticRate; double yrs = _simYears;
+                // the small bodies are each on their own tilted oval (the belts, the Kuiper belt's crowds, the Oort cloud): each point
+                // where its orbit has it now (Kepler's equation at its mean motion); the orbit lines stand
+                var sr = _system.StaticRate; var se = _system.StaticEl; double yrs = _simYears;
                 for (int i = 0; i < st.Length; i++)
                 {
-                    var v = st[i]; double px0 = st[i].X, pz0 = st[i].Z; float rate = sr != null && i < sr.Length ? sr[i] : 0;
-                    if (rate != 0)
+                    var v = st[i]; double px0 = st[i].X, py0 = st[i].Y, pz0 = st[i].Z; float rate = sr != null && i < sr.Length ? sr[i] : 0;
+                    if (rate != 0 && se != null && i * 6 + 5 < se.Length)
                     {
-                        // with gravity off, each piece of rubble goes straight on along its tangent at its orbital speed (rate times its
-                        // distance) from where it was when gravity went; else round the star at its Kepler rate
+                        // with gravity off, each body goes straight on from where it was when gravity went, at the velocity it had
                         bool off = Flown && yrs > _gravityOffYear;
-                        double tt = off ? _gravityOffYear : yrs, th = (rate * tt) % (2 * Math.PI), ct = Math.Cos(th), snt = Math.Sin(th);
-                        px0 = st[i].X * ct - st[i].Z * snt; pz0 = st[i].X * snt + st[i].Z * ct;
+                        double tt = off ? _gravityOffYear : yrs, vx, vy, vz; int k = i * 6;
+                        SpaceGen.OrbitState(se[k], se[k + 1], se[k + 2], se[k + 3], se[k + 4], se[k + 5] + rate * tt, out px0, out py0, out pz0, out vx, out vy, out vz);
                         if (off)
                         {
-                            double fl = rate * OffYears, vx = -pz0 * rate, vz = px0 * rate; px0 += vx * OffYears; pz0 += vz * OffYears;
+                            vx *= rate; vy *= rate; vz *= rate; px0 += vx * OffYears; py0 += vy * OffYears; pz0 += vz * OffYears;
                             if (Window.GravityOn && !double.IsNaN(_gravityOnYear) && yrs > _gravityOnYear)
                             {
                                 // gravity back: from where it flew to, at the speed it had, falling back on its new orbit round the star (an
                                 // ellipse if still bound, flying free if it went past twice its old distance: the universal Kepler path)
-                                double nx, ny, nz, nvx, nvy, nvz; Kepler.Propagate(GU * Math.Max(0.01, _system.MassSol), px0, 0, pz0, vx, 0, vz, yrs - _gravityOnYear, out nx, out ny, out nz, out nvx, out nvy, out nvz);
-                                px0 = nx; pz0 = nz;
+                                double nx, ny, nz, nvx, nvy, nvz; Kepler.Propagate(GU * Math.Max(0.01, _system.MassSol), px0, py0, pz0, vx, vy, vz, yrs - _gravityOnYear, out nx, out ny, out nz, out nvx, out nvy, out nvz);
+                                px0 = nx; py0 = ny; pz0 = nz;
                             }
                         }
                     }
-                    v.X = (float)(px0 - _ox); v.Y = (float)(st[i].Y - _oy); v.Z = (float)(pz0 - _oz); v.R *= stFade; v.G *= stFade; v.B *= stFade; _staticShifted[i] = v;
+                    v.X = (float)(px0 - _ox); v.Y = (float)(py0 - _oy); v.Z = (float)(pz0 - _oz); v.R *= stFade; v.G *= stFade; v.B *= stFade; _staticShifted[i] = v;
                 }
                 // the belt's points dimmed by how many share its patch of screen (as a galaxy's stars are): from afar three thousand
                 // dots in a thin ring added up to a solid white annulus, a machined pattern round the star; a belt is a haze
@@ -874,6 +877,7 @@ namespace Universe.Shell
                 // view, a wall of text over the hole); on the tour too, where the caption at the foot says what the shot is and the card what the thing is
                 if (_hud.Visible && !_matterCardDrawn) _hud.DrawCard(_meshes, Card(), 24 * Math.Max(1, h / 1080.0), _tour != null ? h * 0.11 : 72 * Math.Max(1, h / 1080.0), w, h);   // (one card at a time: when the matter's is up, the world's waits; on the tour below its top bar)
             }
+            DrawMarks(w, h, _markDt);   // the waypoints and the bookmark note (UniverseView.Bookmarks.cs)
         }
 
         // the scale on screen: how many km one pixel spans at the distance of the nearest thing, in the middle of the view

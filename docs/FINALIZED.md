@@ -153,3 +153,7 @@ Verbatim: "this and other thing like it arnet done yet: small streams, ice ages,
 ## 2026-11-10 — Natural ice lines and bands (DNA-AND DESIGN 747)
 
 - [x] **Polar ice lines and every band by latitude natural shaped, never perfect circles or straight edges:** "make sure polar ice lines and shit are not perfect circles they should be natuaral shapend just like how on earth the north and south poles sured to be not perfect lined circles and straight edfges, nature doesnt build in dstraight lines" (built: src/gen/PlanetTerrain.cs IceLineAt, each place's own ice line: the world's line from its climate moved by land (ice nearer the equator on land than on sea) and height (nearer still on high ground), by the currents (a warm western current pushing the sea ice back, a cold eastern shore letting it out) and a ragged edge at every size (BandWobble: five layers of the world's own noise, bays thousands of km across down to a few hundred metres); used for the sea ice, the ice fields, the ice grains, the ground's grains, the card, the pick and the matter view (IcyAt); the other bands drawn by latitude (the tropics' red soil, the salt pans, the open sea) given the same natural edge)
+
+## 2026-11-10 — The crash in the tour (DNA-AND DESIGN 751)
+
+- [x] **The tour no longer closing the app (a stack overflow: the ocean basins and the ice line asking each other without end, and the grain size and the ground):** (DNA-AND DESIGN 751) "something is happening the tour is crashing or the app is or something it just closes it all"

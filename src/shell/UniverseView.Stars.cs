@@ -410,7 +410,11 @@ namespace Universe.Shell
         {
             if (_ground == null || !_ground.Solid) return 2e-9;
             double x, y, z; CamFromPlanet(out x, out y, out z); double r = Math.Sqrt(x * x + y * y + z * z); var gm = r > 0 ? (_underSea ? GrainField.For("ocean") ?? _ground.GrainMix(x / r, y / r, z / r) : _ground.GrainMix(x / r, y / r, z / r)) : null;   // (under the sea: the bed's own grains)
-            return Math.Max(gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9, _ground.ReadyStep < 1e30 ? _ground.ReadyStep * 1.6 : 0);   // (and never later than the drawn pieces' own cell: their flat faces are the floor until then)
+            // (and never later than the drawn pieces' own cell: their flat faces are the floor until then; but never above a
+            // centimetre, where the grains begin to show: with the fine pieces still being made the cell had been hundreds of metres
+            // to kilometres, and you were handed into one grain's face at 1.4 km up, the scale going on down over the same picture
+            // while the ground never grew finer; above a centimetre the floor holds you over the pieces made and asks for finer ones)
+            return Math.Max(gm != null && gm.Size > 0 ? Math.Max(2e-9, gm.Size * 0.3) : 2e-9, _ground.ReadyStep < 1e30 ? Math.Min(MatterView.OverlayKm, _ground.ReadyStep * 1.6) : 0);
         }
         private double _agX = double.NaN, _agY, _agZ, _agCell, _agVal; private object _agGround;
         // for the log: the camera's height above the bare rock (the ground without its grains, at a millimetre cell), beside its height above the grains

@@ -303,7 +303,10 @@ namespace Universe.Shell
         // as oxygen's teal is in an emission nebula)
         private static List<StarVertex> NebulaRecords(int kind, double mix, ulong seed)
         {
-            var parts = SpaceGen.Composition(kind, mix); var l = new List<StarVertex>(); uint sd = (uint)(seed ^ (seed >> 32));
+            // (a glowing nebula's gas without its parts' names: thousands of nebulae are drawn, only the one on the card is named)
+            SpaceGen.Part[] parts = (kind == 2 || kind == 4 || kind == 5) && NebulaGas.Loaded ? NebulaGas.Parts(kind, mix, 16, false) : null;
+            if (parts != null) { double s0 = 0; foreach (var q in parts) s0 += q.Share; if (s0 > 0) foreach (var q in parts) q.Share /= s0; } else parts = SpaceGen.Composition(kind, mix);
+            var l = new List<StarVertex>(); uint sd = (uint)(seed ^ (seed >> 32));
             float size = kind == 4 ? 0.09f : kind == 5 ? 0.07f : kind == 3 ? 0.11f : 0.15f;
             foreach (var p in parts)
             {

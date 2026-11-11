@@ -372,7 +372,13 @@ namespace Universe.Shell
                     if (_matterScale > 0 || _spaceScale > 0) { if (_matter.Pick(input.MouseX, input.MouseY) && !_hud.Visible) { _hud.Visible = true; MenuChanged = true; } }   // in the matter or the gas: what is there (its card shown, even if hidden with H)
                     else if (_ground != null && AboveGround() < Units.Km(MatterView.OverlayKm) && _matter.Pick(input.MouseX, input.MouseY))
                     { if (!_hud.Visible) { _hud.Visible = true; MenuChanged = true; } }   // a grain over the ground: picked, its card shown; the ground itself carries you on down to it (never a second layer of grains)   // a grain over the ground: on into the matter, the same picture, flying to it
-                    else Pick(MouseRay(input.MouseX, input.MouseY, w, h), input.MouseX, input.MouseY);
+                    else
+                    {
+                        // a click that picks while the tour runs pauses it first, always: the tour's shot had gone on round what the
+                        // click picked (a galaxy seen by its light 2.8 billion light-years off), flinging the camera across the universe
+                        if (_tour != null) PauseTour("you clicked");
+                        Pick(MouseRay(input.MouseX, input.MouseY, w, h), input.MouseX, input.MouseY);
+                    }
                 } }
             LevelCamera(dt);
             // the camera turns smoothly to face what you picked

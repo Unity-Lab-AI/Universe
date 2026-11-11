@@ -239,7 +239,8 @@ namespace Universe.Shell
             // in the matter, where on the world it is): never only in the window's title, which a full screen hides
             {
                 string cw = _matterScale > 0 || _spaceScale > 0 ? "you: " + ScaleHud.Words(ViewDistanceKm()) + " across" + (_ground != null && _spaceScale <= 0 ? ", " + CoordWords(_ox, _oy, _oz) : "") : "you: " + CameraCoords();
-                _hud.DrawCard(_meshes, new[] { cw }, 24 * u, h - (_tour != null ? h * 0.1 + 34 * u : 34 * u), w, h, 0.85f);
+                float tpx = Math.Max(1, h / 540f) * ScaleHud.TextScale, tw = cw.Length * 6 * 1.1f * tpx;   // (its width, as the card lays its letters)
+                _hud.DrawCard(_meshes, new[] { cw }, Math.Max(4, w - tw - 30 * tpx), h - _hud.FootInset - 30 * tpx, w, h, 0.85f);   // (bottom right, under the scale bar, above the foot bar)
             }
             if (_markNote != null)
             {

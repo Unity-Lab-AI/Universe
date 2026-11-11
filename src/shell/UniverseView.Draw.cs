@@ -40,6 +40,10 @@ namespace Universe.Shell
         private double OffTarget()
         {
             if (AtGroundBody()) return 0;          // (coming down to the picked world the view looks ahead to its horizon, not at its middle: that is on course)
+            // among the grains the view looks straight down at the point under you and the dive goes there, wherever the picked
+            // spot on the ground lies: it is on course (a spot left two km to one side by a glide had the zoom wait for a turn
+            // toward it that the look down took back each frame, and the tour sat at 201 m for good, the ground never finer)
+            if (_tKind == 3 && _ground != null && _matterScale <= 0 && AboveGround() < Units.Km(MatterView.OverlayKm)) return 0;
             if (_spaceScale > 0) return 0;                                               // (dived into a body or a hole: the zoom goes on wherever you look; the fall is watched looking back at the horizon)
             double dx, dy, dz, r; if (_tKind < 0 || !TargetFromCamera(out dx, out dy, out dz, out r)) return 0;
             double l = Math.Sqrt(dx * dx + dy * dy + dz * dz); if (l <= 0) return 0; var lk = Look;

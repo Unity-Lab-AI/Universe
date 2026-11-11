@@ -521,7 +521,7 @@ namespace Universe.Shell
                 }
             }
             Render.GpuLog.Pass = "supernovae";
-            DrawSupernovae(vp, right, up, w, h, time);
+            if (!skyHidden && _sky > 0.003f) DrawSupernovae(vp, right, up, w, h, time);   // (inside a solid below a micrometre no sky is drawn: its supernovae had still been worked out, a third of each frame at the atoms)
             Render.GpuLog.Pass = "black holes and bodies";
             UpdateExtras();
             DrawShadows(w, h);                                                          // every hole's shadow, black, at its real size from where you stand

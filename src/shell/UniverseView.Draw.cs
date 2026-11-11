@@ -398,6 +398,11 @@ namespace Universe.Shell
                 if (d <= 0) d = ex.R * 0.01;                                        // (beside it or over it: the near plane a hundredth of its radius, never leaping out past the stone; within two radii it had dropped out of the reckoning, the near plane leapt out to the next thing, and the stone was clipped away as you came in)
                 if (d < reach) reach = d;
             }
+            // a supernova going near you counts too (its ejecta's edge, from the frame before): the near plane had been a thousandth of
+            // the way to the nearest star, 885 AU among stars fourteen light-years apart, and cut away the whole fireball and its
+            // cloud at 155 to 308 AU, the card and the log saying it was there and nothing drawn
+            if (_snNear < reach) reach = Math.Max(1e-12, _snNear);
+            _snNear = double.MaxValue;
             Mat4 proj = Mat4.Perspective(0.9f, w / (float)Math.Max(1, h), (float)(reach * 1e-3), (float)(_uRadius * 2.2));   // out to the far side of the visible universe
             Mat4 vp = view * proj;
             if (_ground != null)

@@ -192,6 +192,7 @@ namespace Universe.Shell
         /// so in its own galaxy it outshines every star, as a real one does, and from another galaxy it is one point among that
         /// galaxy's); close in, the fireball itself at its real size and the colour of its heat, then the thinning cloud of its
         /// ejecta with its remnant inside; and in the galaxy you are in, the shells of the old ones, each at its own size by its age.</summary>
+        private double _snNear = double.MaxValue;   // how near the nearest going supernova's edge was last frame (for the near plane)
         private void DrawSupernovae(Mat4 vp, Vec3 right, Vec3 up, int w, int h, double time)
         {
             if (!_snLoaded) LoadSupernovaLaw();
@@ -219,7 +220,7 @@ namespace Universe.Shell
                     if (days < 700)
                     {
                         double L = SnLum(sn, days); if (L < 1e4) continue;
-                        double rPhot = Units.Km(SnPhotKm(sn, days)), rEj = Units.Km(SnEjectaKm(sn, days)); float cr, cg, cb; Blackbody(SnHeatK(sn, days), out cr, out cg, out cb);
+                        double rPhot = Units.Km(SnPhotKm(sn, days)), rEj = Units.Km(SnEjectaKm(sn, days)); { double edge = d - Math.Max(rPhot, rEj) * 1.1; _snNear = Math.Min(_snNear, edge > 0 ? edge : Math.Max(rPhot, rEj) * 0.01); } float cr, cg, cb; Blackbody(SnHeatK(sn, days), out cr, out cg, out cb);
                         bool closeIn = rPhot > 0 && rPhot / Math.Max(1e-30, d) * h > 6;
                         if (!closeIn)
                         {

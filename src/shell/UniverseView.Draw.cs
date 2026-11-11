@@ -921,7 +921,12 @@ namespace Universe.Shell
 
         private void DrawScale(int w, int h)
         {
-            double d = ViewDistanceKm(), viewKm = 2 * d * Math.Tan(0.45) * w / (double)Math.Max(1, h);
+            // the scale of what is in front of you: in the matter or the gas its own size; else the nearest thing (or how far out
+            // you have pulled), never the distance to what the tour goes to next (picking a star 1.1 light-years off as it left an
+            // asteroid had leapt the bar from 50 km to 1.1 light-years in a frame, the view unchanged)
+            double d = _spaceScale > 0 || _matterScale > 0 ? ViewDistanceKm() : Math.Max(1e-30, Math.Max(NearestDistance(), _farScale)) / Units.Km(1);
+            if (_ground != null && _spaceScale <= 0 && _matterScale <= 0) d = Math.Max(1e-30, Math.Min(d, AboveGround() / Units.Km(1)));
+            double viewKm = 2 * d * Math.Tan(0.45) * w / (double)Math.Max(1, h);
             _gpu.ClearDepth();
             _hud.Draw(_meshes, viewKm / Math.Max(1, w), w, h);
         }

@@ -124,3 +124,17 @@ planetary-excitation: 0.35..1
 remnant-density: 2..3.3
 remnant-excitation: 0.15..0.55
 planetary-abundance: He 11.05, C 8.60, N 8.24, O 8.66, Ne 8.04, S 6.87, Ar 6.27
+# dust-av: how much the nebula's own dust dims its light, in magnitudes at visual (0 none; a few in a dusty cloud), blue
+#   dimmed more than red (the dust's extinction falls as about one over the wavelength), so the same gas reads orange, gold,
+#   brown or rust behind its dust; starlight-share: how much of its light is its star's own, scattered by its dust, in its
+#   star's colour (star-k, the lighting star's heat in kelvin: blue-white to orange); excitation-spread: how far a nebula's
+#   lighting strays past its kind's range (some lit so hard the twice-ionised oxygen's green-teal rules, some so softly the
+#   ionised nitrogen's and sulfur's deep red does); glow: how bright the gas is drawn against the stars, at any distance
+#   (the far look, kept up close); colour-share: how much of each line's own pure colour is kept against its brightness
+#   (the rest its brightness in grey: a glowing gas, never a neon tube)
+dust-av: 0..3
+starlight-share: 0..0.35
+star-k: 3500..40000
+excitation-spread: 0.25
+glow: 0.35
+colour-share: 0.7

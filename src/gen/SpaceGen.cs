@@ -46,6 +46,7 @@ namespace Universe.Gen
             Part[] p;
             // a glowing nebula (emission, planetary, a supernova's remnant): its gas from every element by its cosmic abundance,
             // each ion in its own real lines (src/gen/NebulaGas.cs); the cold and the dusty kinds below
+            if (kind == 3 && NebulaGas.Loaded) { var rf = NebulaGas.Reflection(u); if (rf != null) return rf; }
             if ((kind == 2 || kind == 4 || kind == 5) && NebulaGas.Loaded) { var g = NebulaGas.Parts(kind, u); if (g != null && g.Length > 0) { double s0 = 0; foreach (var q in g) s0 += q.Share; foreach (var q in g) q.Share /= s0; return g; } }
             switch (kind)
             {

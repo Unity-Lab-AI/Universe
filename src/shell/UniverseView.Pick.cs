@@ -725,7 +725,7 @@ namespace Universe.Shell
                         int fk = (int)_features[_tIndex][4];
                         var fq = _features[_tIndex]; double cux, cuy, cuz; ToUniverse(gq, fq[0], fq[1], fq[2], out cux, out cuy, out cuz);
                         double fromC = Math.Sqrt((_tx - cux) * (_tx - cux) + (_ty - cuy) * (_ty - cuy) + (_tz - cuz) * (_tz - cuz)) / Math.Max(1e-30, fq[3] * gq.Scale);   // how far from its middle you dive in
-                        _matter.SetSpace(fk, (ulong)(_tIndex * 7919 + 1) ^ gq.Seed, Math.Min(1, fromC), fq.Length > 5 ? ((fk == 2 || fk == 4 || fk == 5) && NebulaGas.Loaded ? NebulaGas.Atoms(fk, fq[5]) : SpaceGen.Composition(fk, fq[5])) : null);   // (a glowing gas's atoms by count, every element: src/gen/NebulaGas.cs)
+                        _matter.SetSpace(fk, (ulong)(_tIndex * 7919 + 1) ^ gq.Seed, Math.Min(1, fromC), fq.Length > 5 ? ((fk == 2 || fk == 3 || fk == 4 || fk == 5) && NebulaGas.Loaded ? NebulaGas.Atoms(fk, fq[5]) : SpaceGen.Composition(fk, fq[5])) : null);   // (a glowing gas's atoms by count, every element: src/gen/NebulaGas.cs)
                     }
                     _spaceScale = Math.Max(MatterView.BottomKm, Math.Sqrt(qx * qx + qy * qy + qz * qz) / Units.Km(1) / 0.6); _spaceTop = _spaceScale * 1.1;
                     return true;

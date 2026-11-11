@@ -39,6 +39,17 @@ Every world turns on its own day, so you can sit on the ground and watch its sta
 
 A **click**, the **wheel** or a **key** pauses the tour, and a note on screen says so and why. Shift, Ctrl, Alt, the Windows keys and shortcuts such as **Alt+Tab** or **Win+Shift+S** never stop it. Every viewing is shot afresh, so no two tours are the same.
 
+## Bookmarks and waypoints
+
+| Control | What it does |
+|---|---|
+| **M** | Keep the view as a bookmark: where you are, the way you look and your scale, at any size from the galaxies down to the atoms |
+| **1 to 9** | Fly to that bookmark: out from where you are, across, and down onto the kept view, arriving where it was kept, facing the way it faced, at its scale |
+
+The **Bookmarks** menu flies to any of them, lets one go, and turns the **waypoints** on or off: each bookmark ringed on screen where it lies, with its number, its name and how far it is. A bookmark on a world is kept against the world, so it is found as the world goes round its star and turns. A click, the wheel or a key stops a flight. Bookmarks are kept for each universe (its seed).
+
+Where you are is written as coordinates in the frame of the smallest thing you are in: on a world its latitude, longitude and height; in a star's system its distance from the star in AU and its longitude and latitude against the planets' plane; in a galaxy its distance from the heart in kiloparsecs and its longitude and latitude against the disc; out among the galaxies the universe's own mesh in megaparsecs. Yours is at the foot of the screen, always, changing as you move; a pick's card gives its.
+
 ## Pictures and clips
 
 | Control | What it does |

@@ -362,6 +362,7 @@ namespace Universe.Shell
                 else if (input.WasPressed(0x08)) { _pausedTour = null; _pausedWhy = null; MenuChanged = true; }
             }
             if (_tour != null && !Loading) TourStep(input, dt, w, h);   // (the tour begins once the universe is made)
+            _markDt = dt; if (!Loading) { if (_fly != null) FlyStep(input, dt, w, h); MarkKeys(input); }   // (bookmarks: UniverseView.Bookmarks.cs)
             _matter.Glide = _tour != null ? 1.2 : 4;                                     // on the tour the matter glides as a film camera would                                  // a tour gives the controls what each stop asks
             // a click (pressed and let go without dragging) picks what is under the mouse
             if (input.LeftClicked) { _pressed = true; _dragged = false; _pressX = input.MouseX; _pressY = input.MouseY; }   // (the click that brings the window to the front picks too: it stops the tour first, so it never sets a spot off to the side as the tour's target)

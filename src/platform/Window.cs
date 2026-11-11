@@ -1,5 +1,6 @@
 // Universe · platform · the game window, made with direct Windows calls.
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace Universe.Platform
@@ -62,7 +63,7 @@ namespace Universe.Platform
             Win32.DrawMenuBar(Handle);
         }
 
-        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220;   // clip size d (1 full, 2 half, 4 quarter) is CmdClipBase + d
+        public const int CmdAbout = 200, CmdReadme = 201, CmdCredits = 202, CmdScaleHud = 203, CmdInvertX = 204, CmdInvertY = 205, CmdHowItWorks = 206, CmdPause = 207, CmdFps = 208, CmdShot = 209, CmdRecord = 210, CmdTour = 211, CmdLanding = 212, CmdAlwaysDay = 213, CmdStats = 214, CmdDocs = 215, CmdCompared = 216, CmdElements = 217, CmdGravity = 230, CmdClipBase = 220, CmdMark = 231, CmdWaypoints = 232, CmdFlyBase = 300, CmdUnmarkBase = 500;   // bookmark i (from 0): CmdFlyBase + i to fly to it, CmdUnmarkBase + i to let it go   // clip size d (1 full, 2 half, 4 quarter) is CmdClipBase + d
         /// <summary>Whether a clip is being recorded, and the panoramic tour is playing (ticked in the View menu).</summary>
         public static bool Recording, Touring;
         /// <summary>Gravity on (the Time menu): off, every body goes straight on at its speed, every star is blown apart by its own pressure, a galaxy's stars fly off (content/physics.unt @law gravity-off).</summary>
@@ -74,6 +75,8 @@ namespace Universe.Platform
         public const int CmdTimeBase = 90;    // time speed i is CmdTimeBase + i
         public static string[] TimeNames = new string[0]; public static int TimeStep;
         /// <summary>The preview's menu bar: Exit; View (the scale on screen, render scale); Help (Readme, Credits, About).</summary>
+        /// <summary>The bookmarks' names, for the Bookmarks menu, and whether the waypoints are shown.</summary>
+        public static List<string> Bookmarks = new List<string>(); public static bool Waypoints = true;
         public void SetWorldMenu(bool scaleOn)
         {
             IntPtr bar = Win32.CreateMenu(), view = Win32.CreatePopupMenu(), help = Win32.CreatePopupMenu(), scale = Win32.CreatePopupMenu();
@@ -129,6 +132,18 @@ namespace Universe.Platform
             Win32.AppendMenu(bar, Win32.MF_STRING, (IntPtr)CmdLanding, "Start page");   // back to the landing page: a new seed, the tour, the clips
             Win32.AppendMenu(bar, Win32.MF_POPUP, view, "View");
             Win32.AppendMenu(bar, Win32.MF_POPUP, timeMenu, "Time");
+            // the bookmarks: keep the view, fly to any kept one, let one go, the waypoints on screen
+            IntPtr marks = Win32.CreatePopupMenu(), letGo = Win32.CreatePopupMenu();
+            Win32.AppendMenu(marks, Win32.MF_STRING, (IntPtr)CmdMark, "Keep this view as a bookmark	M");
+            Win32.AppendMenu(marks, Win32.MF_STRING | (Waypoints ? Win32.MF_CHECKED : 0), (IntPtr)CmdWaypoints, "Show waypoints (every bookmark ringed where it lies)");
+            if (Bookmarks.Count > 0) Win32.AppendMenu(marks, Win32.MF_SEPARATOR, IntPtr.Zero, null);
+            for (int i = 0; i < Bookmarks.Count && i < 200; i++)
+            {
+                Win32.AppendMenu(marks, Win32.MF_STRING, (IntPtr)(CmdFlyBase + i), "Fly to " + (i + 1) + ". " + Bookmarks[i] + (i < 9 ? "	" + (i + 1) : ""));
+                Win32.AppendMenu(letGo, Win32.MF_STRING, (IntPtr)(CmdUnmarkBase + i), (i + 1) + ". " + Bookmarks[i]);
+            }
+            if (Bookmarks.Count > 0) Win32.AppendMenu(marks, Win32.MF_POPUP, letGo, "Let a bookmark go");
+            Win32.AppendMenu(bar, Win32.MF_POPUP, marks, "Bookmarks");
             Win32.AppendMenu(bar, Win32.MF_POPUP, help, "Help");
             Win32.SetMenu(Handle, bar);
             if (_menu != IntPtr.Zero) Win32.DestroyMenu(_menu);

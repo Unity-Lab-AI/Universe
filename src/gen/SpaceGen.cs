@@ -249,7 +249,9 @@ namespace Universe.Gen
             public float SR, SG, SB;
             public readonly List<Body> Bodies = new List<Body>();
             public StarVertex[] Static; // belts, Kuiper belt, Oort cloud, orbit lines
-            public float[] StaticRate;  // each point's turn a year (radians) about the star: the belts' rubble on its orbits (Kepler's rate at its distance); 0 for the orbit lines and the Oort cloud
+            public float[] StaticRate;  // each point's mean motion (radians a year) round the star, Kepler's rate for its orbit's size; 0 for the orbit lines
+            public float[] StaticEl;    // each point's orbit, six to a point: semi-major axis (units), eccentricity, tilt, node, closest point, place at the clock's zero (radians); zeros for the orbit lines
+            public string OortShape;    // "shell", "ring", or null where the system has no Oort cloud
             public int Planets;
             /// <summary>Gravity as a live force once the system is open (src/gen/SystemGravity.cs); made on first use.</summary>
             public SystemGravity Live;
@@ -395,21 +397,56 @@ namespace Universe.Gen
                         double t = rng.NextDouble() * Math.PI * 2;
                         { double ox, oy, oz; b.At(t, out ox, out oy, out oz); stat.Add(Star(new Vec3((float)ox, (float)oy, (float)oz), 0, 0.35f, 0.45f, 0.6f, 0.025f)); rates.Add(0); }   // (faint: a guide to the orbit, never a drawn ring of bodies)
                     }
-            // asteroid belt in the gap between the rocky planets and the giants
+            // the small bodies, each on its own tilted oval round the star (content/physics.unt orbits): the asteroid belt in the
+            // gap between the rocky planets and the giants, the Kuiper belt's three crowds beyond the last planet, and an Oort
+            // cloud only where giants built one; they had been one flat sheet of circles
+            var els = new List<float>(); for (int k = 0; k < stat.Count * 6; k++) els.Add(0);
+            double ms = sys.MassSol;
             if (firstGiant > 0 && lastRocky > 0)
             {
-                Ring(stat, rates, rng, Units.Au(lastRocky * 1.15), Units.Au(firstGiant * 0.85), 3000, 0.02, 0.7f, 0.6f, 0.5f, 0.16f, sys.MassSol);   // (faint: a real belt is rubble spread thin across a huge ring, a haze from afar, never a white annulus)
+                double bes = Orbit(content, "belt-ecc-spread", 0.1), bts = Orbit(content, "belt-tilt-spread", 8);
+                for (int k = 0; k < 3000; k++)
+                {
+                    double a0 = Units.Au(lastRocky * 1.15 + rng.NextDouble() * (firstGiant * 0.85 - lastRocky * 1.15));
+                    Small(stat, rates, els, rng, a0, Math.Min(0.4, Math.Abs(rng.Gaussian()) * bes), Rayleigh(rng, bts), 0.7f, 0.6f, 0.5f, 0.16f, ms);   // (faint: a real belt is rubble spread thin, a haze from afar, never a white annulus)
+                }
                 sys.BeltInAu = lastRocky * 1.15; sys.BeltOutAu = firstGiant * 0.85;
             }
-            // Kuiper belt beyond the last planet, and the Oort cloud far out
-            Ring(stat, rates, rng, Units.Au(outer * 1.3), Units.Au(outer * 2.0), 4000, 0.05, 0.6f, 0.75f, 0.9f, 0.12f, sys.MassSol);
-            sys.KuiperInAu = outer * 1.3; sys.KuiperOutAu = outer * 2.0; sys.OortInAu = 2000 * scale; sys.OortOutAu = 50000 * scale;
-            for (int i = 0; i < 6000; i++)
             {
-                Vec3 d = new Vec3(rng.Gaussian(), rng.Gaussian(), rng.Gaussian()).Normalized;
-                double r = Units.Au(rng.Range(2000, 50000) * scale);
-                stat.Add(Star(d * (float)r, 0, 0.55f, 0.7f, 0.85f, 0.06f)); rates.Add(0);
+                double cold = Orbit(content, "kuiper-cold-share", 0.35), scat = Orbit(content, "scattered-share", 0.2);
+                double ct = Orbit(content, "kuiper-cold-tilt", 2), ce = Orbit(content, "kuiper-cold-ecc", 0.05), ht = Orbit(content, "kuiper-hot-tilt", 13), he0 = Orbit(content, "kuiper-hot-ecc", 0.08), he1 = Orbit(content, "kuiper-hot-ecc", 0.3, true);
+                double se0 = Orbit(content, "scattered-ecc", 0.3), se1 = Orbit(content, "scattered-ecc", 0.8, true), stl = Orbit(content, "scattered-tilt", 20);
+                double ki = outer * 1.3, ko = outer * 2.0;
+                for (int k = 0; k < 4000; k++)
+                {
+                    double u = rng.NextDouble();
+                    if (u < cold) Small(stat, rates, els, rng, Units.Au(ki + rng.NextDouble() * (ko - ki)), Math.Abs(rng.Gaussian()) * ce, Rayleigh(rng, ct), 0.6f, 0.75f, 0.9f, 0.12f, ms);
+                    else if (u < 1 - scat) Small(stat, rates, els, rng, Units.Au(ki + rng.NextDouble() * (ko - ki)), he0 + rng.NextDouble() * (he1 - he0), Rayleigh(rng, ht), 0.6f, 0.75f, 0.9f, 0.12f, ms);
+                    else
+                    {
+                        // the scattered disc: its closest points near the last planet, flung out on long ovals hundreds of AU long
+                        double e = se0 + rng.NextDouble() * (se1 - se0), q = outer * (1 + 0.5 * rng.NextDouble());
+                        Small(stat, rates, els, rng, Units.Au(q / (1 - e)), e, Rayleigh(rng, stl), 0.6f, 0.75f, 0.9f, 0.1f, ms);
+                    }
+                }
+                sys.KuiperInAu = ki; sys.KuiperOutAu = ko;
             }
+            // the Oort cloud: built only where giants flung ice outward, and kept only in a share of systems; a shell with its
+            // inner (Hills) part flattened toward the planets' plane, or, young or stripped, a thick ring
+            sys.OortShape = null; sys.OortInAu = 0; sys.OortOutAu = 0;
+            if (firstGiant > 0 && rng.NextDouble() < Orbit(content, "oort-share", 0.8))
+            {
+                bool ring = rng.NextDouble() < Orbit(content, "oort-ring-share", 0.25);
+                sys.OortShape = ring ? "ring" : "shell"; sys.OortInAu = 2000 * scale; sys.OortOutAu = 50000 * scale;
+                double hills = Units.Au(Orbit(content, "oort-hills-au", 20000) * scale), htl = Orbit(content, "oort-hills-tilt", 30), rtl = Orbit(content, "oort-ring-tilt", 15);
+                for (int i = 0; i < 6000; i++)
+                {
+                    double aa = Units.Au(rng.Range(2000, 50000) * scale);
+                    double tilt = ring ? Rayleigh(rng, rtl) : aa < hills ? Rayleigh(rng, htl) : Math.Acos(1 - 2 * rng.NextDouble()) * 180 / Math.PI;   // (beyond the Hills cloud: any tilt, backwards too)
+                    Small(stat, rates, els, rng, aa, rng.NextDouble() * 0.6, tilt, 0.55f, 0.7f, 0.85f, 0.06f, ms);
+                }
+            }
+            sys.StaticEl = els.ToArray();
             sys.Static = stat.ToArray(); sys.StaticRate = rates.ToArray();
             return sys;
         }
@@ -500,14 +537,31 @@ namespace Universe.Gen
             return fallback;
         }
 
-        private static void Ring(List<StarVertex> list, List<float> rates, Rng rng, double inner, double outer, int n, double thick, float r, float g, float b, float a, double massSol)
+        /// <summary>A tilt in degrees from a Rayleigh spread of <paramref name="sigma"/> degrees (most low, a tail far out of line).</summary>
+        private static double Rayleigh(Rng rng, double sigma) { return Math.Min(179, sigma * Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, rng.NextDouble())))); }
+        /// <summary>A small body on its own orbit: semi-major axis <paramref name="a"/> (units), eccentricity, tilt (degrees), its
+        /// node, closest point and place along it at random; its point placed where it is at the clock's zero, its elements kept
+        /// (six to a body) and its mean motion (radians a year, Kepler's third law) in <paramref name="rates"/>.</summary>
+        private static void Small(List<StarVertex> list, List<float> rates, List<float> els, Rng rng, double a, double e, double tiltDeg, float r, float g, float b, float al, double massSol)
         {
-            for (int i = 0; i < n; i++)
-            {
-                double rad = inner + rng.NextDouble() * (outer - inner), t = rng.NextDouble() * Math.PI * 2;
-                rates.Add((float)(2 * Math.PI / Math.Sqrt(Math.Pow(rad / Units.Au(1), 3) / Math.Max(0.05, massSol))));   // (its turn a year: Kepler's third law at its distance)
-                list.Add(Star(new Vec3((float)(Math.Cos(t) * rad), (float)(rng.Gaussian() * rad * thick), (float)(Math.Sin(t) * rad)), 0, r, g, b, a));
-            }
+            double node = rng.NextDouble() * Math.PI * 2, peri = rng.NextDouble() * Math.PI * 2, m0 = rng.NextDouble() * Math.PI * 2, incl = tiltDeg * Math.PI / 180;
+            e = Math.Max(0, Math.Min(0.95, e));
+            rates.Add((float)(2 * Math.PI / Math.Sqrt(Math.Pow(a / Units.Au(1), 3) / Math.Max(0.05, massSol))));
+            els.Add((float)a); els.Add((float)e); els.Add((float)incl); els.Add((float)node); els.Add((float)peri); els.Add((float)m0);
+            double x, y, z, vx, vy, vz; OrbitState(a, e, incl, node, peri, m0, out x, out y, out z, out vx, out vy, out vz);
+            list.Add(Star(new Vec3((float)x, (float)y, (float)z), 0, r, g, b, al));
+        }
+        /// <summary>Where a body is on its ellipse at mean anomaly <paramref name="m"/>, and its velocity per radian of mean
+        /// anomaly (times the mean motion for per year); y up from the system's plane, the same frame as <see cref="Body.At"/>.</summary>
+        public static void OrbitState(double a, double e, double incl, double node, double peri, double m, out double x, out double y, out double z, out double vx, out double vy, out double vz)
+        {
+            m %= 2 * Math.PI; double E = m + e * Math.Sin(m);
+            for (int it = 0; it < 10; it++) { double dE = (E - e * Math.Sin(E) - m) / (1 - e * Math.Cos(E)); E -= dE; if (Math.Abs(dE) < 1e-10) break; }
+            double cE = Math.Cos(E), sE = Math.Sin(E), q = Math.Sqrt(1 - e * e), px = a * (cE - e), py = a * q * sE, k = a / (1 - e * cE), pvx = -k * sE, pvy = k * q * cE;
+            double cw = Math.Cos(peri), sw = Math.Sin(peri), cn = Math.Cos(node), sn = Math.Sin(node), ci = Math.Cos(incl), si = Math.Sin(incl);
+            double ux = px * cw - py * sw, uy = px * sw + py * cw, wx = pvx * cw - pvy * sw, wy = pvx * sw + pvy * cw;
+            x = cn * ux - sn * uy * ci; y = uy * si; z = sn * ux + cn * uy * ci;
+            vx = cn * wx - sn * wy * ci; vy = wy * si; vz = sn * wx + cn * wy * ci;
         }
 
         /// <summary>A world's mass (kg) from its radius (units) and its density (g/cc): four thirds pi r cubed rho.</summary>

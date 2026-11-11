@@ -256,7 +256,7 @@ namespace Universe.Shell
                 L.Add(_tName.Substring(4, 1).ToUpperInvariant() + _tName.Substring(5) + " of this star");
                 if (ast) { L.Add("from " + sy.BeltInAu.ToString("0.##") + " to " + sy.BeltOutAu.ToString("0.##") + " AU"); L.Add("rocky and metal bodies, dust to dwarf planets"); L.Add("left where a giant's pull kept a planet from forming"); }
                 else if (kui) { L.Add("from " + sy.KuiperInAu.ToString("0.#") + " to " + sy.KuiperOutAu.ToString("0.#") + " AU"); L.Add("icy bodies: frozen water, methane, ammonia"); L.Add("where short-period comets come from"); }
-                else { L.Add("from about " + sy.OortInAu.ToString("N0") + " to " + sy.OortOutAu.ToString("N0") + " AU, all round"); L.Add("a shell of icy bodies, billions of them"); L.Add("where long-period comets come from"); }
+                else { bool oring = sy.OortShape == "ring"; L.Add("from about " + sy.OortInAu.ToString("N0") + " to " + sy.OortOutAu.ToString("N0") + " AU" + (oring ? ", a thick ring" : ", all round")); L.Add(oring ? "a ring of icy bodies, billions of them: young or stripped, not yet stirred round by the galaxy" : "a shell of icy bodies, billions of them, its inner part flatter"); L.Add("where long-period comets come from"); }
                 L.Add("distance: " + Units.Describe(dist));
             }
             else if (_tKind == 3 && _ground != null)
@@ -273,6 +273,7 @@ namespace Universe.Shell
                 L.Add("distance: " + Units.Describe(dist));
             }
             { var w = HereWords(); if (w != null && L.Count > 0) L.Insert(1, w); }   // (where you are in the one tree, under its name)
+            if (L.Count > 0 && _tKind != 3) { double cx, cy, cz, cr; if (TargetFromCamera(out cx, out cy, out cz, out cr)) L.Insert(Math.Min(2, L.Count), "coordinates: " + CoordWords(cx + _ox, cy + _oy, cz + _oz)); }   // (its place in the frame of the smallest thing it is in: UniverseView.Coords.cs; a ground spot's is its place line)
             if (L.Count > 0) GravityLines(L);                                                 // (gravity off: what it is doing here)
             return L;
         }

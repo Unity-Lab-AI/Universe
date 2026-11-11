@@ -92,7 +92,7 @@ namespace Universe.Shell
 
         public UniverseView(Gpu gpu, BillboardPipeline pipe, MeshPipes meshes, ContentLibrary content, ulong seed)
         {
-            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); MatterView.Log = ZoomLog; _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content);   // (the laws of nature, content/physics.unt)
+            _meshes = meshes; _gpu = gpu; _hud = new ScaleHud(gpu.Device); _matter = new MatterView(gpu, pipe, content); MatterView.Log = ZoomLog; _dots = new BillboardDrawer(gpu.CommandList, pipe); _content = content; Physics.Load(content); NebulaGas.Load(content);   // (the laws of nature, content/physics.unt)
             var types = new List<string>(); var names = new List<string>();
             foreach (var e in content.OfKind("galaxies.unt", "galaxy")) { types.Add(e.Id); names.Add(e.Name); }
             if (types.Count == 0) { types.Add("spiral"); names.Add("Spiral galaxy"); }

@@ -26,6 +26,17 @@
 #   nitrogen, the s-process from strontium to lead), exploding massive stars (oxygen to zinc), exploding white dwarfs (the iron peak),
 #   merging neutron stars (the r-process: the heavy rare earths, gold, platinum, thorium, uranium), uranium's and thorium's decay
 #   (polonium to actinium, protactinium), the lab (technetium, promethium, everything past uranium). A body's card says where its elements were forged.
+# abundance: how common it is in the cosmos, 12 + log of its atoms per hydrogen atom (hydrogen 12): the Sun's photosphere, else
+#   CI meteorites (Asplund, Amarsi & Grevesse 2021, A&A 653, A141, Table 2); none where never measured (technetium, promethium,
+#   polonium to protactinium, everything past uranium: none of it lasts in space).
+# lines: its strongest visible lines, 3600 to 7600 angstroms in air, the ion giving each (I neutral, II once ionised, III twice)
+#   and its strength against its own other lines (the NIST Handbook of Basic Atomic Spectroscopic Data, strong lines); none past
+#   einsteinium, never measured.
+# nebular-lines: the forbidden lines it glows in in a thin nebula, where an atom goes untouched long enough to give them (air
+#   angstroms, the ion, the log of the density in electrons per cubic cm above which collisions take that level's energy
+#   before it can shine, and its strength within its set): Keel, University of Alabama, emission-line table; the paired lines by
+#   the fixed ratio of their shared upper level ([O III] 5007 to 4959 about 3, [N II] 6583 to 6548 about 3, [O I] 6300 to 6364
+#   about 3); the auroral lines a few hundredths of the others.
 # Spec: docs/CONTENT-FORMAT.md · wiki/systems/r06-planet.md · content/physics.unt
 
 @element h
@@ -35,6 +46,8 @@ real: yes
 number: 1
 mass-number: 1
 symbol: H
+abundance: 12.00
+lines: 3889.05 I 6, 3970.07 I 8, 4101.74 I 15, 4340.46 I 30, 4861.28 I 30, 4861.29 I 10, 4861.36 I 60, 6562.71 I 90, 6562.72 I 30, 6562.85 I 180
 electronegativity: 2.20
 glow-colour: 0.9 0.4 0.7
 colour: 1 1 1
@@ -56,6 +69,8 @@ real: yes
 number: 2
 mass-number: 4
 symbol: He
+abundance: 10.91
+lines: 3888.60 I 60, 3888.65 I 200, 3888.65 I 300, 4471.48 I 200, 5015.68 I 100, 5875.61 I 500, 5875.64 I 250, 5875.97 I 120, 6678.15 I 200, 7065.18 I 100
 glow-colour: 1 0.75 0.55
 colour: 0.851 1 1
 covalent-a: 0.28
@@ -78,6 +93,8 @@ real: yes
 number: 3
 mass-number: 7
 symbol: Li
+abundance: 0.96
+lines: 3684.32 II 30, 4671.65 II 30, 4678.06 II 80, 4788.36 II 80, 5483.56 II 300, 5484.50 II 500, 5485.11 II 400, 6103.54 I 300, 6707.77 I 500, 6707.93 I 1000
 electronegativity: 0.98
 colour: 0.8 0.502 1
 covalent-a: 1.28
@@ -100,6 +117,8 @@ real: yes
 number: 4
 mass-number: 9
 symbol: Be
+abundance: 1.38
+lines: 3813.45 I 15, 4360.66 II 60, 4360.99 II 100, 4572.66 I 12, 4673.33 II 140, 4673.42 II 200, 4828.16 II 40, 5270.28 II 60, 5270.81 II 100, 6547.89 II 12
 electronegativity: 1.57
 colour: 0.761 1 0
 covalent-a: 0.96
@@ -122,6 +141,8 @@ real: yes
 number: 5
 mass-number: 11
 symbol: B
+abundance: 2.70
+lines: 4121.93 II 300, 4194.79 II 110, 4472.10 II 110, 4472.85 II 110, 4940.38 II 110, 6080.44 II 110
 electronegativity: 2.04
 look: 0.35 0.25 0.2
 colour: 1 0.71 0.71
@@ -145,6 +166,8 @@ real: yes
 number: 6
 mass-number: 12
 symbol: C
+abundance: 8.46
+lines: 3918.98 II 300, 3920.69 II 400, 4267.00 II 400, 5145.16 II 300, 5151.09 II 200, 5889.77 II 300, 6578.05 II 400, 6582.88 II 300, 7231.32 II 400, 7236.42 II 500
 electronegativity: 2.55
 look: 0.12 0.12 0.13
 colour: 0.565 0.565 0.565
@@ -168,6 +191,9 @@ real: yes
 number: 7
 mass-number: 14
 symbol: N
+abundance: 7.83
+lines: 3995.00 II 50, 4630.54 II 40, 4963.98 I 80, 5005.15 II 40, 5679.56 II 40, 5752.50 I 150, 6482.70 I 90, 7423.64 I 150, 7442.29 I 200, 7468.31 I 200
+nebular-lines: 5197.9 I 3.3 1, 5754.6 II 7.5 0.02, 6548.0 II 4.9 0.33, 6583.4 II 4.9 1
 electronegativity: 3.04
 glow-colour: 0.85 0.45 0.95
 colour: 0.188 0.314 0.973
@@ -191,6 +217,9 @@ real: yes
 number: 8
 mass-number: 16
 symbol: O
+abundance: 8.69
+lines: 3749.49 II 300, 3911.96 II 400, 3973.26 II 400, 4075.86 II 400, 4189.79 II 400, 4414.90 II 400, 4590.97 II 300, 4641.81 II 300, 4649.14 II 400, 4661.63 II 300
+nebular-lines: 3726.1 II 3.5 1, 3728.8 II 2.8 1, 4363.2 III 7.5 0.02, 4958.9 III 5.8 0.34, 5006.9 III 5.8 1, 6300.3 I 6.3 1, 6363.8 I 6.3 0.32, 7319.9 II 6.8 0.05, 7330.2 II 6.8 0.05
 electronegativity: 3.44
 glow-colour: 0.55 0.75 1
 colour: 1 0.051 0.051
@@ -214,6 +243,8 @@ real: yes
 number: 9
 mass-number: 19
 symbol: F
+abundance: 4.40
+lines: 3601.39 II 200, 3602.84 II 200, 3847.09 II 250, 3849.99 II 250, 3851.67 II 250, 4024.73 II 250, 4025.49 II 250, 6856.03 I 500, 7037.47 I 500, 7127.89 I 300
 electronegativity: 3.98
 glow-colour: 0.95 0.95 0.55
 colour: 0.565 0.878 0.314
@@ -235,6 +266,9 @@ real: yes
 number: 10
 mass-number: 20
 symbol: Ne
+abundance: 8.06
+lines: 3713.08 II 250, 3766.26 II 800, 3777.13 II 1000, 6929.47 I 1000, 7024.05 I 300, 7032.41 I 800, 7173.94 I 800, 7245.17 I 800, 7488.87 I 300, 7535.77 I 300
+nebular-lines: 3868.8 III 7.0 1, 3967.5 III 7.0 0.3
 glow-colour: 1 0.35 0.1
 colour: 0.702 0.89 0.961
 covalent-a: 0.58
@@ -257,6 +291,8 @@ real: yes
 number: 11
 mass-number: 23
 symbol: Na
+abundance: 6.22
+lines: 3631.27 II 700, 3711.07 II 500, 4113.70 II 150, 4392.81 II 600, 4405.12 II 400, 4455.23 II 500, 4490.87 II 400, 5889.95 I 1000, 5895.92 I 500, 6530.70 II 70
 electronegativity: 0.93
 colour: 0.671 0.361 0.949
 covalent-a: 1.66
@@ -279,6 +315,8 @@ real: yes
 number: 12
 mass-number: 24
 symbol: Mg
+abundance: 7.55
+lines: 3829.36 I 25, 3832.30 I 50, 3838.29 I 80, 4390.57 II 10, 4481.13 II 14, 4481.32 II 13, 5167.32 I 12, 5172.68 I 40, 5183.60 I 70, 6545.97 II 11
 electronegativity: 1.31
 colour: 0.541 1 0
 covalent-a: 1.41
@@ -301,6 +339,8 @@ real: yes
 number: 13
 mass-number: 27
 symbol: Al
+abundance: 6.43
+lines: 3900.68 II 400, 3944.01 I 500, 3961.52 I 1000, 4663.06 II 1000, 4666.80 II 600, 5593.30 II 400, 6006.41 II 400, 6073.20 II 400, 6183.42 II 400, 6201.46 II 400
 electronegativity: 1.61
 colour: 0.749 0.651 0.651
 covalent-a: 1.21
@@ -323,6 +363,8 @@ real: yes
 number: 14
 mass-number: 28
 symbol: Si
+abundance: 7.51
+lines: 3905.52 I 200, 5041.03 II 130, 5055.98 II 130, 5708.40 I 80, 5957.56 II 80, 6347.10 II 130, 6371.36 II 100, 7289.17 I 100, 7405.77 I 90, 7423.50 I 100
 electronegativity: 1.90
 look: 0.45 0.5 0.6
 shiny: yes
@@ -347,6 +389,8 @@ real: yes
 number: 15
 mass-number: 31
 symbol: P
+abundance: 5.41
+lines: 4420.71 II 80, 4588.04 II 110, 4589.86 II 110, 4602.08 II 130, 4943.53 II 110, 6024.18 II 110, 6043.12 II 110, 6459.99 II 130, 6503.46 II 130, 6507.97 II 130
 electronegativity: 2.19
 look: 0.75 0.2 0.15
 colour: 1 0.502 0
@@ -370,6 +414,9 @@ real: yes
 number: 16
 mass-number: 32
 symbol: S
+abundance: 7.12
+lines: 4153.06 II 200, 4162.66 II 250, 5428.67 II 140, 5432.81 II 250, 5453.83 II 400, 5473.62 II 150, 5509.72 II 150, 5606.15 II 150, 5639.97 II 150, 7578.91 II 150
+nebular-lines: 4068.6 II 6.4 0.05, 6312.1 III 7.2 0.05, 6716.4 II 3.2 1, 6730.8 II 3.6 1
 electronegativity: 2.58
 look: 0.95 0.85 0.2
 colour: 1 1 0.188
@@ -393,6 +440,8 @@ real: yes
 number: 17
 mass-number: 35
 symbol: Cl
+abundance: 5.31
+lines: 3860.83 II 140, 4794.55 II 600, 4810.06 II 150, 4896.77 II 400, 4904.78 II 250, 4917.73 II 140, 5078.26 II 140, 5217.94 II 300, 5221.35 II 130, 5423.23 II 600
 electronegativity: 3.16
 glow-colour: 0.7 0.95 0.3
 colour: 0.122 0.941 0.122
@@ -414,6 +463,9 @@ real: yes
 number: 18
 mass-number: 40
 symbol: Ar
+abundance: 6.38
+lines: 4277.53 II 200, 4348.06 II 250, 4609.57 II 200, 4764.86 II 250, 4879.86 II 250, 6965.43 I 300, 7067.22 I 300, 7383.98 I 300, 7503.87 I 600, 7514.65 I 400
+nebular-lines: 4711.3 IV 4.4 1, 4740.0 IV 5.6 1, 7135.4 III 6.7 1
 glow-colour: 0.65 0.4 1
 colour: 0.502 0.82 0.89
 covalent-a: 1.06
@@ -436,6 +488,8 @@ real: yes
 number: 19
 mass-number: 39
 symbol: K
+abundance: 5.07
+lines: 4044.14 I 700, 4047.21 I 700, 5112.25 I 500, 5359.57 I 600, 5782.38 I 600, 5801.75 I 700, 5812.15 I 600, 5831.89 I 700, 6911.08 I 800, 6938.77 I 800
 electronegativity: 0.82
 colour: 0.561 0.251 0.831
 covalent-a: 2.03
@@ -458,6 +512,8 @@ real: yes
 number: 20
 mass-number: 40
 symbol: Ca
+abundance: 6.30
+lines: 3706.03 II 700, 3736.90 II 800, 3933.66 II 1000, 3968.47 II 1000, 4226.73 I 1000, 4454.78 I 600, 6439.07 I 700, 6462.57 I 700, 7148.15 I 700, 7326.15 I 700
 electronegativity: 1.00
 colour: 0.239 1 0
 covalent-a: 1.76
@@ -477,6 +533,8 @@ real: yes
 number: 21
 mass-number: 45
 symbol: Sc
+abundance: 3.14
+lines: 3613.83 II 1000, 3630.74 II 700, 3642.78 II 500, 3645.31 II 250, 3907.48 I 900, 3911.81 I 1000, 3996.60 I 250, 4020.39 I 900, 4023.68 I 900, 4246.82 II 500
 electronegativity: 1.36
 colour: 0.902 0.902 0.902
 covalent-a: 1.70
@@ -499,6 +557,8 @@ real: yes
 number: 22
 mass-number: 48
 symbol: Ti
+abundance: 4.97
+lines: 3635.46 I 600, 3642.67 I 800, 3653.49 I 900, 3752.86 I 700, 3958.20 I 700, 3989.76 I 700, 3998.64 I 1000, 4305.91 I 800, 4533.24 I 800, 4981.73 I 700
 electronegativity: 1.54
 look: 0.6 0.6 0.62
 shiny: yes
@@ -520,6 +580,8 @@ real: yes
 number: 23
 mass-number: 51
 symbol: V
+abundance: 3.90
+lines: 3703.57 I 300, 3855.84 I 250, 4111.78 I 700, 4115.18 I 400, 4379.23 I 1000, 4384.71 I 600, 4389.98 I 400, 4395.22 I 300, 4408.19 I 300, 4408.50 I 400
 electronegativity: 1.63
 colour: 0.651 0.651 0.671
 covalent-a: 1.53
@@ -542,6 +604,8 @@ real: yes
 number: 24
 mass-number: 52
 symbol: Cr
+abundance: 5.62
+lines: 3605.32 I 600, 3919.16 I 90, 3963.69 I 90, 4254.33 I 1000, 4274.81 I 800, 4289.73 I 500, 4351.77 I 120, 5204.51 I 250, 5206.02 I 400, 5208.41 I 600
 electronegativity: 1.66
 look: 0.78 0.8 0.85
 shiny: yes
@@ -566,6 +630,8 @@ real: yes
 number: 25
 mass-number: 55
 symbol: Mn
+abundance: 5.42
+lines: 3806.72 I 120, 3823.51 I 80, 3834.37 I 50, 4018.11 I 60, 4030.76 I 1000, 4033.07 I 700, 4034.49 I 400, 4035.73 I 60, 4041.36 I 200, 4055.55 I 70
 electronegativity: 1.55
 colour: 0.612 0.478 0.78
 covalent-a: 1.39
@@ -588,6 +654,9 @@ real: yes
 number: 26
 mass-number: 56
 symbol: Fe
+abundance: 7.46
+lines: 3719.93 I 600, 3734.86 I 700, 3737.13 I 600, 3745.56 I 600, 3748.26 I 300, 3749.49 I 400, 3758.23 I 300, 3820.43 I 500, 3859.91 I 500, 3886.28 I 300
+nebular-lines: 3760.3 VII 7.6 1, 5159.0 VIII 6.5 1, 5176.4 VI 7.6 1, 5721.1 VII 7.6 1, 6086.9 VII 7.6 1, 6374.6 X 9.7 1
 electronegativity: 1.83
 look: 0.55 0.55 0.57
 shiny: yes
@@ -612,6 +681,8 @@ real: yes
 number: 27
 mass-number: 59
 symbol: Co
+abundance: 4.94
+lines: 3845.47 I 300, 3873.11 I 250, 3873.95 I 130, 3894.08 I 400, 3995.31 I 300, 4118.77 I 130, 4121.32 I 200
 electronegativity: 1.88
 look: 0.55 0.55 0.6
 shiny: yes
@@ -636,6 +707,8 @@ real: yes
 number: 28
 mass-number: 58
 symbol: Ni
+abundance: 6.20
+lines: 3610.46 I 150, 3612.74 I 60, 3619.39 I 800, 3775.57 I 70, 3783.53 I 90, 3807.14 I 90, 3858.30 I 150, 4992.02 II 80
 electronegativity: 1.91
 look: 0.7 0.68 0.62
 shiny: yes
@@ -660,6 +733,8 @@ real: yes
 number: 29
 mass-number: 63
 symbol: Cu
+abundance: 4.18
+lines: 3686.55 II 700, 4909.73 II 700, 4931.70 II 600, 4953.72 II 500, 5051.79 II 600, 6273.35 II 700, 6301.01 II 600, 6423.88 II 600, 6470.17 II 600, 7404.35 II 700
 electronegativity: 1.90
 look: 0.85 0.45 0.3
 shiny: yes
@@ -684,6 +759,8 @@ real: yes
 number: 30
 mass-number: 64
 symbol: Zn
+abundance: 4.56
+lines: 4680.14 I 100, 4722.16 I 250, 4810.53 I 400, 4911.63 II 80, 4924.01 II 120, 5894.36 II 100, 6214.58 II 40, 6362.35 I 30, 7478.77 II 50, 7588.46 II 60
 electronegativity: 1.65
 look: 0.68 0.7 0.75
 shiny: yes
@@ -705,6 +782,8 @@ real: yes
 number: 31
 mass-number: 69
 symbol: Ga
+abundance: 3.02
+lines: 3735.02 II 300, 4032.98 I 500, 4172.04 I 1000, 4262.02 II 300, 5219.65 II 500, 5416.36 II 500, 6334.05 II 1000, 6396.56 I 100, 6419.23 II 900, 6455.89 II 800
 electronegativity: 1.81
 colour: 0.761 0.561 0.561
 covalent-a: 1.22
@@ -724,6 +803,8 @@ real: yes
 number: 32
 mass-number: 74
 symbol: Ge
+abundance: 3.62
+lines: 4741.81 II 1000, 4814.61 II 1000, 5893.39 II 1000, 6021.04 II 500
 electronegativity: 2.01
 look: 0.6 0.6 0.62
 shiny: yes
@@ -745,6 +826,8 @@ real: yes
 number: 33
 mass-number: 75
 symbol: As
+abundance: 2.30
+lines: 4190.08 II 700, 4458.47 II 700, 4466.35 II 700, 4494.23 II 800, 4507.66 II 800, 4543.48 II 700, 6170.27 II 500
 electronegativity: 2.18
 look: 0.5 0.5 0.52
 shiny: yes
@@ -766,6 +849,8 @@ real: yes
 number: 34
 mass-number: 80
 symbol: Se
+abundance: 3.34
+lines: 4175.28 II 800, 4180.90 II 1000, 4730.78 I 600, 4739.03 I 400, 4742.25 I 300, 4844.94 II 800, 5227.53 II 1000, 5305.35 II 800, 6055.84 II 1000, 6444.29 II 800
 electronegativity: 2.55
 look: 0.45 0.45 0.47
 shiny: yes
@@ -790,6 +875,8 @@ real: yes
 number: 35
 mass-number: 79
 symbol: Br
+abundance: 2.54
+lines: 3914.38 II 500, 3980.38 II 500, 4223.89 II 1000, 4365.63 II 1000, 4542.89 II 500, 4678.70 II 500, 4704.92 II 500, 6350.73 I 800, 6559.80 I 700, 6631.62 I 700
 electronegativity: 2.96
 look: 0.55 0.12 0.05
 colour: 0.651 0.161 0.161
@@ -811,6 +898,8 @@ real: yes
 number: 36
 mass-number: 84
 symbol: Kr
+abundance: 3.12
+lines: 4355.48 II 1000, 4475.01 II 250, 4577.21 II 250, 4619.17 II 300, 4633.89 II 250, 4658.88 II 700, 4739.00 II 1000, 4765.74 II 300, 5570.29 I 300, 5870.92 I 500
 electronegativity: 3.00
 glow-colour: 0.85 0.9 1
 colour: 0.361 0.722 0.82
@@ -834,6 +923,8 @@ real: yes
 number: 37
 mass-number: 85
 symbol: Rb
+abundance: 2.32
+lines: 3600.60 II 60, 3600.64 II 110, 3940.51 II 300, 4244.40 II 1000, 4273.14 II 150, 4571.77 II 200, 4648.57 II 110, 4775.95 II 300, 5152.08 II 110, 6458.33 II 110
 electronegativity: 0.82
 colour: 0.439 0.18 0.69
 covalent-a: 2.20
@@ -856,6 +947,8 @@ real: yes
 number: 38
 mass-number: 88
 symbol: Sr
+abundance: 2.83
+lines: 4077.71 II 1000, 4215.52 II 700, 4607.33 I 1000, 4811.88 I 70, 4962.26 I 120, 5256.90 I 70, 5480.84 I 110, 6408.47 I 140, 6504.00 I 80, 7070.10 I 80
 electronegativity: 0.95
 colour: 0 1 0
 covalent-a: 1.95
@@ -875,6 +968,8 @@ real: yes
 number: 39
 mass-number: 89
 symbol: Y
+abundance: 2.21
+lines: 3600.73 II 800, 3710.29 II 1000, 3774.33 II 800, 4077.36 I 900, 4102.36 I 1000, 4128.30 I 900, 4142.84 I 800, 4374.93 II 900, 4883.68 II 700, 5087.42 II 700
 colour: 0.58 1 1
 covalent-a: 1.90
 atomic-a: 2.12
@@ -893,6 +988,8 @@ real: yes
 number: 40
 mass-number: 90
 symbol: Zr
+abundance: 2.59
+lines: 3601.19 I 1000, 3835.96 I 600, 3863.87 I 800, 3890.32 I 800, 3891.38 I 600, 4072.70 I 600, 4081.21 I 600, 4227.75 I 600, 4239.31 I 600, 4687.80 I 700
 colour: 0.58 0.878 0.878
 covalent-a: 1.75
 atomic-a: 2.06
@@ -911,6 +1008,8 @@ real: yes
 number: 41
 mass-number: 93
 symbol: Nb
+abundance: 1.47
+lines: 3713.01 I 200, 3740.71 II 200, 3791.21 I 200, 4079.73 I 800, 4100.92 I 400, 4123.81 I 300, 4152.58 I 300, 4163.66 I 300, 4164.66 I 250, 4168.13 I 200
 colour: 0.451 0.761 0.788
 covalent-a: 1.64
 atomic-a: 1.98
@@ -929,6 +1028,8 @@ real: yes
 number: 42
 mass-number: 98
 symbol: Mo
+abundance: 1.88
+lines: 3798.25 I 1000, 3864.10 I 1000, 3902.95 I 700, 4069.88 I 80, 4143.55 I 100, 4188.32 I 90, 4411.69 I 90, 5506.49 I 250, 5533.03 I 200, 5570.44 I 90
 colour: 0.329 0.71 0.71
 covalent-a: 1.54
 atomic-a: 1.90
@@ -949,6 +1050,7 @@ mass-number: 98
 half-life: 4.2 million years
 decays: beta-minus
 symbol: Tc
+lines: 3684.74 I 500, 3718.86 I 800, 3746.84 I 500, 3768.77 I 500, 4049.11 I 500, 4088.71 I 500, 4095.67 I 700, 4262.27 I 800, 4297.06 I 1000, 4853.59 I 800
 colour: 0.231 0.62 0.62
 covalent-a: 1.47
 atomic-a: 1.83
@@ -967,6 +1069,8 @@ real: yes
 number: 44
 mass-number: 102
 symbol: Ru
+abundance: 1.75
+lines: 3661.36 I 600, 3726.93 I 800, 3728.03 I 1000, 3730.43 I 600, 3790.52 I 500, 3798.90 I 700, 3799.35 I 700, 4080.60 I 500, 4199.89 I 700, 4212.06 I 500
 colour: 0.141 0.561 0.561
 covalent-a: 1.46
 atomic-a: 1.78
@@ -985,6 +1089,8 @@ real: yes
 number: 45
 mass-number: 103
 symbol: Rh
+abundance: 0.78
+lines: 3657.99 I 900, 3692.36 I 1000, 3700.91 I 800, 3793.22 I 400, 3799.31 I 500, 3822.26 I 400, 3856.52 I 600, 3958.86 I 400, 4211.14 I 400, 4374.80 I 400
 colour: 0.0392 0.49 0.549
 covalent-a: 1.42
 atomic-a: 1.73
@@ -1003,6 +1109,8 @@ real: yes
 number: 46
 mass-number: 106
 symbol: Pd
+abundance: 1.57
+lines: 3609.55 I 800, 3634.69 I 800, 3690.34 I 200, 3894.20 I 90, 4212.95 I 100
 colour: 0 0.412 0.522
 covalent-a: 1.39
 atomic-a: 1.69
@@ -1022,6 +1130,8 @@ real: yes
 number: 47
 mass-number: 107
 symbol: Ag
+abundance: 0.96
+lines: 3810.94 I 20, 3840.75 I 9, 3981.58 I 9, 4055.48 I 9, 4212.81 I 9, 4620.04 II 50, 4788.40 II 100, 5027.34 II 50, 5209.08 I 90, 5465.50 I 90
 electronegativity: 1.93
 look: 0.9 0.9 0.92
 shiny: yes
@@ -1043,6 +1153,8 @@ real: yes
 number: 48
 mass-number: 114
 symbol: Cd
+abundance: 1.71
+lines: 3610.51 I 500, 3612.87 I 400, 4415.63 II 1000, 5337.48 II 1000, 5378.13 II 1000, 6354.72 II 400, 6359.98 II 500, 6438.47 I 1000, 6725.78 II 500, 7345.67 I 500
 colour: 1 0.851 0.561
 covalent-a: 1.44
 atomic-a: 1.61
@@ -1061,6 +1173,8 @@ real: yes
 number: 49
 mass-number: 115
 symbol: In
+abundance: 0.80
+lines: 3716.14 II 20, 4056.94 II 25, 4101.75 I 900, 4511.30 I 1000, 4638.16 II 20, 4655.62 II 20, 4656.74 II 20, 4684.80 II 25, 5513.00 II 20, 5903.40 II 25
 colour: 0.651 0.459 0.451
 covalent-a: 1.42
 atomic-a: 1.56
@@ -1079,6 +1193,8 @@ real: yes
 number: 50
 mass-number: 120
 symbol: Sn
+abundance: 2.02
+lines: 3801.01 I 200, 4524.73 I 110, 5332.34 II 30, 5561.91 II 30, 5588.81 II 30, 5631.68 I 60, 5798.86 II 30, 6069.12 I 40, 6149.60 I 40, 6453.54 II 50
 electronegativity: 1.96
 colour: 0.4 0.502 0.502
 covalent-a: 1.39
@@ -1098,6 +1214,8 @@ real: yes
 number: 51
 mass-number: 121
 symbol: Sb
+abundance: 1.01
+lines: 4711.68 II 200, 5568.12 II 400, 5639.77 II 200, 6005.57 II 500, 6079.67 II 200, 6130.00 II 300
 look: 0.68 0.68 0.7
 shiny: yes
 colour: 0.62 0.388 0.71
@@ -1118,6 +1236,8 @@ real: yes
 number: 52
 mass-number: 130
 symbol: Te
+abundance: 2.18
+lines: 4364.00 II 800, 4478.63 II 800, 4654.37 II 900, 4686.91 II 1000, 4831.28 II 800, 4842.90 II 800, 4866.24 II 1000, 5576.35 II 800, 5649.26 II 800, 5708.12 II 1000
 look: 0.62 0.62 0.64
 shiny: yes
 colour: 0.831 0.478 0
@@ -1141,6 +1261,8 @@ real: yes
 number: 53
 mass-number: 127
 symbol: I
+abundance: 1.55
+lines: 5119.29 I 130, 5245.71 II 150, 5338.22 II 500, 5435.83 II 150, 5625.69 II 500, 5690.91 II 100, 5710.53 II 200, 5950.25 II 250, 6074.98 II 100, 6812.57 II 200
 electronegativity: 2.66
 look: 0.3 0.2 0.35
 shiny: yes
@@ -1163,6 +1285,8 @@ real: yes
 number: 54
 mass-number: 132
 symbol: Xe
+abundance: 2.22
+lines: 4180.10 II 300, 4330.52 II 300, 4844.33 II 700, 5292.22 II 700, 5339.33 II 700, 5419.15 II 1000, 5976.46 II 700, 6051.15 II 700, 6097.59 II 500, 6990.88 II 700
 glow-colour: 0.45 0.6 1
 colour: 0.259 0.62 0.69
 covalent-a: 1.40
@@ -1185,6 +1309,8 @@ real: yes
 number: 55
 mass-number: 133
 symbol: Cs
+abundance: 1.08
+lines: 4603.79 II 1000, 4830.19 II 250, 4952.85 II 400, 5043.80 II 250, 5227.04 II 800, 5249.38 II 300, 5563.02 II 400, 5831.14 II 250, 5925.63 II 500, 6955.50 II 400
 look: 0.95 0.85 0.55
 shiny: yes
 colour: 0.341 0.0902 0.561
@@ -1208,6 +1334,8 @@ real: yes
 number: 56
 mass-number: 138
 symbol: Ba
+abundance: 2.27
+lines: 4554.03 II 1000, 4934.08 II 300, 5535.48 I 1000, 6110.78 I 250, 6141.71 II 300, 6496.90 II 200, 6498.76 I 250, 6527.31 I 110, 7059.94 I 200, 7280.30 I 150
 electronegativity: 0.89
 colour: 0 0.788 0
 covalent-a: 2.15
@@ -1227,6 +1355,8 @@ real: yes
 number: 57
 mass-number: 139
 symbol: La
+abundance: 1.11
+lines: 3949.10 II 1000, 4086.72 II 600, 5145.42 I 600, 5177.31 I 800, 5211.86 I 1000, 5234.27 I 700, 5455.15 I 700, 5501.34 I 700, 5791.34 I 600, 6249.93 I 1000
 colour: 0.439 0.831 1
 covalent-a: 2.07
 period: 6
@@ -1244,6 +1374,8 @@ real: yes
 number: 58
 mass-number: 140
 symbol: Ce
+abundance: 1.58
+lines: 3942.75 II 800, 3952.55 II 900, 3999.24 II 800, 4012.39 II 800, 4133.80 II 800, 4186.60 II 1000, 5159.69 I 800, 5161.48 I 800, 5696.99 I 800, 5699.23 I 1000
 colour: 1 1 0.78
 covalent-a: 2.04
 period: 6
@@ -1261,6 +1393,8 @@ real: yes
 number: 59
 mass-number: 141
 symbol: Pr
+abundance: 0.75
+lines: 3959.44 I 500, 4179.39 II 1000, 4222.93 II 700, 4225.35 II 700, 4695.77 I 800, 4736.69 I 700, 4939.74 I 800, 4951.37 I 1000, 5045.52 I 800, 5133.44 I 700
 colour: 0.851 1 0.78
 covalent-a: 2.03
 period: 6
@@ -1278,6 +1412,8 @@ real: yes
 number: 60
 mass-number: 142
 symbol: Nd
+abundance: 1.42
+lines: 4012.25 II 700, 4040.80 II 600, 4061.09 II 900, 4156.08 II 600, 4303.58 II 1000, 4621.94 I 600, 4634.24 I 1000, 4641.10 I 700, 4883.81 I 700, 4924.53 I 900
 colour: 0.78 1 0.78
 covalent-a: 2.01
 period: 6
@@ -1297,6 +1433,7 @@ mass-number: 145
 half-life: 17.7 years
 decays: electron-capture
 symbol: Pm
+lines: 3711.72 II 800, 3877.62 II 800, 3892.15 II 1000, 3910.26 II 1000, 3919.10 II 1000, 3936.48 II 800, 3957.74 II 1000, 4417.96 II 1000, 4453.95 II 800, 4529.21 II 800
 colour: 0.639 1 0.78
 covalent-a: 1.99
 period: 6
@@ -1314,6 +1451,8 @@ real: yes
 number: 62
 mass-number: 152
 symbol: Sm
+abundance: 0.95
+lines: 3609.49 II 800, 3634.29 II 800, 3661.36 II 500, 3854.21 II 600, 3885.29 II 900, 3922.40 II 600, 4296.74 I 1000, 4336.14 I 600, 4424.34 II 700, 4841.70 I 600
 colour: 0.561 1 0.78
 covalent-a: 1.98
 period: 6
@@ -1331,6 +1470,8 @@ real: yes
 number: 63
 mass-number: 153
 symbol: Eu
+abundance: 0.52
+lines: 3688.42 II 110, 4522.57 II 50, 4594.03 I 1000, 4627.22 I 900, 4661.88 I 800, 5215.10 I 70, 5271.96 I 40, 5357.61 I 50, 5402.77 I 40, 5967.10 I 40
 colour: 0.38 1 0.78
 covalent-a: 1.98
 period: 6
@@ -1348,6 +1489,8 @@ real: yes
 number: 64
 mass-number: 158
 symbol: Gd
+abundance: 1.08
+lines: 3646.19 II 700, 3743.47 II 500, 3768.39 II 1000, 3783.05 I 600, 3796.37 II 600, 3850.97 II 600, 3852.45 II 500, 4053.64 I 500, 4078.70 I 600, 4225.85 I 1000
 colour: 0.271 1 0.78
 covalent-a: 1.96
 period: 6
@@ -1365,6 +1508,8 @@ real: yes
 number: 65
 mass-number: 159
 symbol: Tb
+abundance: 0.31
+lines: 3650.42 II 400, 3658.89 II 400, 3676.36 II 700, 3702.86 II 800, 3830.26 I 500, 3848.74 II 600, 3901.32 I 500, 4318.85 I 700, 4326.47 I 1000, 4338.44 I 600
 colour: 0.188 1 0.78
 covalent-a: 1.94
 period: 6
@@ -1382,6 +1527,8 @@ real: yes
 number: 66
 mass-number: 164
 symbol: Dy
+abundance: 1.10
+lines: 3645.40 II 500, 3872.10 II 300, 3944.68 II 500, 3968.38 II 600, 4000.45 II 400, 4045.97 I 800, 4167.97 I 400, 4186.82 I 800, 4194.85 I 400, 4211.71 I 1000
 colour: 0.122 1 0.78
 covalent-a: 1.92
 period: 6
@@ -1399,6 +1546,8 @@ real: yes
 number: 67
 mass-number: 165
 symbol: Ho
+abundance: 0.48
+lines: 3662.29 I 200, 3667.97 I 150, 4040.81 I 300, 4053.87 I 900, 4103.80 I 1000, 4108.62 I 300, 4127.16 I 500, 4163.03 I 900, 4173.20 I 300, 4227.13 I 200
 colour: 0 1 0.612
 covalent-a: 1.92
 period: 6
@@ -1416,6 +1565,8 @@ real: yes
 number: 68
 mass-number: 166
 symbol: Er
+abundance: 0.93
+lines: 3616.57 II 300, 3692.65 II 700, 3830.48 II 300, 3862.85 I 500, 3892.68 I 300, 3896.23 II 500, 3906.31 II 1000, 3937.01 I 250, 4007.97 I 1000, 4151.11 I 500
 colour: 0 0.902 0.459
 covalent-a: 1.89
 period: 6
@@ -1433,6 +1584,8 @@ real: yes
 number: 69
 mass-number: 169
 symbol: Tm
+abundance: 0.11
+lines: 3700.26 II 500, 3717.91 I 800, 3761.33 II 700, 3795.75 II 800, 3848.02 II 1000, 3883.13 I 700, 4094.19 I 1000, 4105.84 I 1000, 4187.61 I 900, 4203.73 I 600
 colour: 0 0.831 0.322
 covalent-a: 1.90
 period: 6
@@ -1450,6 +1603,8 @@ real: yes
 number: 70
 mass-number: 174
 symbol: Yb
+abundance: 0.85
+lines: 3694.19 II 1000, 3770.09 I 30, 3987.99 I 1000, 3990.89 I 50, 4089.68 I 25, 4149.07 I 25, 4576.21 I 40, 4935.50 I 40, 5556.47 I 130, 6799.60 I 40
 colour: 0 0.749 0.22
 covalent-a: 1.87
 period: 6
@@ -1467,6 +1622,8 @@ real: yes
 number: 71
 mass-number: 175
 symbol: Lu
+abundance: 0.10
+lines: 3647.77 I 300, 3841.18 I 400, 4124.73 I 400, 4518.57 I 400, 4658.02 I 130, 5001.14 I 110, 5135.09 I 400, 5476.69 II 120, 6004.52 I 200, 6221.87 II 120
 colour: 0 0.671 0.141
 covalent-a: 1.87
 period: 6
@@ -1484,6 +1641,8 @@ real: yes
 number: 72
 mass-number: 180
 symbol: Hf
+abundance: 0.85
+lines: 3616.89 I 400, 3682.24 I 1000, 3717.80 I 500, 3777.64 I 600, 3785.46 I 600, 3800.38 I 400, 3820.73 I 600, 3849.18 I 400, 3899.94 I 300, 4174.34 I 500
 colour: 0.302 0.761 1
 covalent-a: 1.75
 atomic-a: 2.08
@@ -1502,6 +1661,8 @@ real: yes
 number: 73
 mass-number: 181
 symbol: Ta
+abundance: -0.15
+lines: 3607.41 I 300, 3626.62 I 400, 3642.06 I 200, 4061.40 I 150, 4067.91 I 120, 4510.98 I 140, 4574.31 I 130, 4681.88 I 150, 5156.56 I 130, 6485.37 I 150
 colour: 0.302 0.651 1
 covalent-a: 1.70
 atomic-a: 2.00
@@ -1520,6 +1681,8 @@ real: yes
 number: 74
 mass-number: 184
 symbol: W
+abundance: 0.79
+lines: 3617.52 I 200, 3768.45 I 120, 3817.48 I 150, 3835.06 I 130, 3867.99 I 200, 4008.75 I 1000, 4074.36 I 600, 4269.38 I 150, 4294.61 I 500, 4302.11 I 250
 colour: 0.129 0.58 0.839
 covalent-a: 1.62
 atomic-a: 1.93
@@ -1538,6 +1701,8 @@ real: yes
 number: 75
 mass-number: 187
 symbol: Re
+abundance: 0.26
+lines: 3637.84 I 15, 3689.50 I 15, 3691.48 I 25, 3725.76 I 70, 4136.45 I 30, 4227.46 I 70, 4513.31 I 50, 4889.14 I 40, 5270.95 I 25, 5275.56 I 30
 colour: 0.149 0.49 0.671
 covalent-a: 1.51
 atomic-a: 1.88
@@ -1556,6 +1721,8 @@ real: yes
 number: 76
 mass-number: 192
 symbol: Os
+abundance: 1.35
+lines: 3752.52 I 130, 3782.20 I 70, 3963.63 I 30, 4066.69 I 30, 4112.02 I 40, 4135.78 I 90, 4173.23 I 40, 4211.86 I 40, 4260.85 I 150, 4420.47 I 150
 look: 0.6 0.68 0.78
 shiny: yes
 colour: 0.149 0.4 0.588
@@ -1576,6 +1743,8 @@ real: yes
 number: 77
 mass-number: 193
 symbol: Ir
+abundance: 1.32
+lines: 3628.67 I 40, 3731.36 II 30, 3747.20 I 30, 3800.12 I 200, 3976.31 I 30, 4268.10 I 15, 4311.50 I 13
 colour: 0.0902 0.329 0.529
 covalent-a: 1.41
 atomic-a: 1.80
@@ -1594,6 +1763,8 @@ real: yes
 number: 78
 mass-number: 195
 symbol: Pt
+abundance: 1.61
+lines: 3628.11 I 60, 3643.17 I 40, 3665.17 II 50, 3818.69 I 250, 3922.96 I 60, 3966.36 I 100, 4013.71 II 60, 4118.67 I 60, 4164.55 I 50, 4442.55 I 50
 look: 0.85 0.85 0.83
 shiny: yes
 colour: 0.816 0.816 0.878
@@ -1615,6 +1786,8 @@ real: yes
 number: 79
 mass-number: 197
 symbol: Au
+abundance: 0.91
+lines: 3637.91 I 25, 3897.86 I 40, 3909.38 I 25, 4040.93 I 40, 4065.07 I 60, 4488.25 I 25, 4607.51 I 80, 4792.58 I 50, 6278.17 I 50, 7510.73 I 50
 electronegativity: 2.54
 look: 1 0.78 0.25
 shiny: yes
@@ -1636,6 +1809,8 @@ real: yes
 number: 80
 mass-number: 202
 symbol: Hg
+abundance: 1.17
+lines: 3650.15 I 600, 3654.84 I 70, 4046.56 I 400, 4339.22 I 60, 4347.49 I 100, 4358.33 I 1000, 5425.25 II 80, 5460.73 I 500, 5677.10 II 200, 5790.66 I 60
 look: 0.82 0.82 0.85
 shiny: yes
 colour: 0.722 0.722 0.816
@@ -1656,6 +1831,8 @@ real: yes
 number: 81
 mass-number: 205
 symbol: Tl
+abundance: 0.92
+lines: 4274.98 II 700, 4306.80 II 1000, 4737.05 II 700, 4981.35 II 500, 5078.54 II 800, 5152.14 II 800, 5350.46 I 900, 5384.85 II 500, 5949.48 II 800
 colour: 0.651 0.329 0.302
 covalent-a: 1.45
 atomic-a: 1.56
@@ -1677,6 +1854,8 @@ real: yes
 number: 82
 mass-number: 208
 symbol: Pb
+abundance: 1.95
+lines: 3713.98 II 50, 3739.93 I 80, 4057.81 I 1000, 4152.82 II 50, 4352.74 II 50, 4579.05 II 50, 5042.58 II 250, 6075.74 II 200, 6081.41 II 200, 7193.60 II 100
 electronegativity: 2.33
 look: 0.45 0.46 0.52
 shiny: yes
@@ -1700,6 +1879,8 @@ mass-number: 209
 half-life: 2.0e19 years
 decays: alpha
 symbol: Bi
+abundance: 0.65
+lines: 3792.56 II 700, 3864.03 II 300, 4079.07 II 400, 4730.27 II 300, 5270.51 II 400, 5719.14 II 400, 6600.34 II 400, 6809.20 II 500
 look: 0.8 0.6 0.85
 shiny: yes
 colour: 0.62 0.31 0.71
@@ -1722,6 +1903,7 @@ mass-number: 209
 half-life: 124 years
 decays: alpha
 symbol: Po
+lines: 4170.52 I 500, 4493.21 I 300
 colour: 0.671 0.361 0
 covalent-a: 1.40
 atomic-a: 1.35
@@ -1762,6 +1944,7 @@ mass-number: 222
 half-life: 3.82 days
 decays: alpha
 symbol: Rn
+lines: 4307.76 I 250, 4349.60 I 300, 4459.25 I 150, 4508.48 I 150, 4577.72 I 150, 4609.38 I 150, 4721.76 I 100, 7055.42 I 700, 7268.11 I 300, 7450.00 I 1000
 glow-colour: 0.95 0.25 0.2
 colour: 0.259 0.51 0.588
 covalent-a: 1.50
@@ -1783,6 +1966,7 @@ mass-number: 223
 half-life: 22 minutes
 decays: beta-minus
 symbol: Fr
+lines: 4325.36 I 90, 7179.87 I 90
 colour: 0.259 0 0.4
 covalent-a: 2.60
 period: 7
@@ -1802,6 +1986,7 @@ mass-number: 226
 half-life: 1600 years
 decays: alpha
 symbol: Ra
+lines: 3649.55 II 500, 3814.42 II 1000, 4340.64 II 500, 4682.28 II 500, 4825.91 I 1000, 5400.23 I 200, 5406.81 I 200, 5660.81 I 500, 6200.30 I 300, 7141.21 I 500
 look: 0.85 0.88 0.85
 shiny: yes
 colour: 0 0.49 0
@@ -1823,6 +2008,7 @@ mass-number: 227
 half-life: 21.8 years
 decays: beta-minus
 symbol: Ac
+lines: 3885.56 I 400, 4179.98 I 1000, 4183.12 I 500, 4194.40 I 400, 4396.71 I 400, 4462.73 I 400, 4605.45 II 300, 4613.93 I 300, 4716.58 I 500, 4720.16 II 300
 colour: 0.439 0.671 0.98
 covalent-a: 2.15
 period: 7
@@ -1842,6 +2028,8 @@ mass-number: 232
 half-life: 1.40e10 years
 decays: alpha
 symbol: Th
+abundance: 0.03
+lines: 3635.94 I 500, 3669.97 I 500, 3706.77 I 600, 3719.43 I 1000, 3803.07 I 1000, 3828.38 I 800, 3895.42 I 600, 3967.39 I 700, 4012.50 I 500, 4019.13 II 1000
 colour: 0 0.729 1
 covalent-a: 2.06
 period: 7
@@ -1861,6 +2049,7 @@ mass-number: 231
 half-life: 32800 years
 decays: alpha
 symbol: Pa
+lines: 3618.07 I 300, 3636.52 I 1000, 3702.74 I 300, 3752.67 I 300, 3873.35 I 300, 3931.83 I 300, 3952.62 II 300, 3970.07 II 300, 3982.23 I 1000, 6945.72 I 1000
 colour: 0 0.631 1
 covalent-a: 2.00
 period: 7
@@ -1881,6 +2070,8 @@ mass-number: 238
 half-life: 4.47e9 years
 decays: alpha
 symbol: U
+abundance: -0.54
+lines: 3670.07 II 600, 3782.84 II 400, 3811.99 I 600, 3831.46 II 400, 3839.63 I 400, 3854.64 II 500, 3859.57 II 1000, 3865.92 II 400, 3871.04 I 500, 3890.36 II 400
 look: 0.45 0.47 0.45
 shiny: yes
 colour: 0 0.561 1
@@ -1902,6 +2093,7 @@ mass-number: 237
 half-life: 2.14 million years
 decays: alpha
 symbol: Np
+lines: 5380.98 II 1000
 colour: 0 0.502 1
 covalent-a: 1.90
 period: 7
@@ -1922,6 +2114,7 @@ mass-number: 244
 half-life: 80 million years
 decays: alpha
 symbol: Pu
+lines: 3632.21 I 500, 3632.21 II 700, 3720.24 I 800, 3720.24 II 1000, 4206.48 I 1000, 4536.15 II 1000, 6304.66 I 800, 6486.71 I 800, 6488.85 I 1000, 6887.71 I 800
 look: 0.5 0.45 0.42
 shiny: yes
 colour: 0 0.42 1
@@ -1944,6 +2137,7 @@ mass-number: 243
 half-life: 7370 years
 decays: alpha
 symbol: Am
+lines: 3673.12 I 500, 3696.42 II 200, 3952.58 II 200, 4188.12 II 200, 4289.26 I 500, 4324.57 II 400, 4441.36 II 400, 4593.31 II 200, 4699.70 II 400, 4872.22 II 400
 colour: 0.329 0.361 0.949
 covalent-a: 1.80
 period: 7
@@ -1964,6 +2158,7 @@ mass-number: 247
 half-life: 15.6 million years
 decays: alpha
 symbol: Cm
+lines: 3600.61 I 1000, 3639.94 I 1000, 3664.34 I 1000, 3709.43 I 1000, 3729.00 I 1000, 3732.35 I 1000, 3747.86 I 1000, 3763.05 I 1000, 3775.75 I 1000, 3816.30 I 1000
 colour: 0.471 0.361 0.89
 covalent-a: 1.69
 period: 7
@@ -1984,6 +2179,7 @@ mass-number: 247
 half-life: 1380 years
 decays: alpha
 symbol: Bk
+lines: 3601.11 I 1000, 3603.20 II 1000, 3604.78 I 1000, 3609.61 I 1000, 3616.62 I 1000, 3621.80 II 1000, 3627.61 I 1000, 3637.05 I 1000, 3640.26 I 1000, 3640.93 II 1000
 colour: 0.541 0.31 0.89
 period: 7
 group: Actinide
@@ -2003,6 +2199,7 @@ mass-number: 251
 half-life: 898 years
 decays: alpha
 symbol: Cf
+lines: 3605.32 I 1000, 3612.11 I 1000, 3617.49 I 1000, 3659.46 I 1000, 3662.70 I 1000, 3699.49 II 1000, 3739.35 I 1000, 3785.61 I 1000, 3789.04 II 1000, 3893.23 II 1000
 colour: 0.631 0.212 0.831
 period: 7
 group: Actinide
@@ -2022,6 +2219,7 @@ mass-number: 252
 half-life: 472 days
 decays: alpha
 symbol: Es
+lines: 3606.75 II 100, 3720.56 II 100, 3930.77 I 300, 4176.94 I 100
 colour: 0.702 0.122 0.831
 period: 7
 group: Actinide

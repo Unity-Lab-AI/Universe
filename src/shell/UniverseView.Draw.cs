@@ -370,6 +370,10 @@ namespace Universe.Shell
                 int sk = _spaceScale > 0 ? _matter.SpaceKind : 0;
                 bool blocked = (_matterScale > 0 && _matter.Enclosed) || (_spaceScale > 0 && (sk == 11 || sk == 13));
                 _sky = blocked ? 0f : 1f;
+                // inside a solid (a grain, a crystal, a world's rock or ice) the sky goes as you shrink into it: fading from ten micrometres to one,
+                // and below that only the matter is drawn, never the stars, galaxies and nebulae behind an atom (in a gas the sky stays)
+                double solidAt = _matterScale > 0 ? _matterScale : (_spaceScale > 0 && !_matter.InSpace ? _spaceScale : 0);
+                if (solidAt > 0) _sky *= (float)Math.Max(0, Math.Min(1, Math.Log10(solidAt / 1e-9)));
                 if (!blocked && _matterScale > 0 && _ground != null && _ground.HasWater)
                 {
                     // on a sea bed: the sky's light through the water above, falling off with depth (clear ocean water lets about 1% of daylight
@@ -589,7 +593,7 @@ namespace Universe.Shell
                 }
             }
             Render.GpuLog.Pass = "the star system";
-            if (_system != null)
+            if (_system != null && _sky > 0)
             {
                 // the system around its star (the anchor): orbits and belts, then the star, planets and moons as glows at their real sizes
                 _gpu.ClearDepth();
@@ -686,9 +690,9 @@ namespace Universe.Shell
             // the solid small bodies (asteroids, comets' nuclei) and worlds' rings last of everything in space: after every star,
             // belt and orbit behind them, so nothing shows through a solid body (the glows are drawn without looking at what is in front)
             Render.GpuLog.Pass = "asteroids and comets";
-            DrawNebulae(vp, right, up, w, h, time);                                   // the nebulae near you, each a cloud of its own gas (its far marker stands for it beyond forty of its radii)
-            DrawSmallBodies(vp, right, up, w, h, time);
-            DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them
+            if (_sky > 0) DrawNebulae(vp, right, up, w, h, time);                                   // the nebulae near you, each a cloud of its own gas (its far marker stands for it beyond forty of its radii)
+            if (_sky > 0) DrawSmallBodies(vp, right, up, w, h, time);
+            if (_sky > 0) DrawRings(vp, right, up, w, h, time);                                       // the rings of the worlds that have them
             Render.GpuLog.Pass = "a world's ground";
             if (_ground != null && (_matterScale <= 0 || _matterScale > 1e-7))   // (the ground still drawn behind the matter down to a tenth of a millimetre, so the hand-over to the grains is no cut; below that the grain's own face fills the view)
             {

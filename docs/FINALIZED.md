@@ -161,3 +161,7 @@ Verbatim: "this and other thing like it arnet done yet: small streams, ice ages,
 ## 2026-11-10 — The atom's rings and the tour's pause (DESIGN 752)
 
 - [x] **The tour no longer paused by a function key (the clip stopping with it), and the atom's orbitals drawn as their clouds, never stacked rainbow discs:** (DNA-AND DESIGN 752) "took some pics prowblems are obvious and time stopped and rec stoipped at atom level at 7:05 in to it. and atoom level doesnt look right and the atom patterning its blah like its trying to show the shells and it turns ourn like a looney toons closing scene like cirular rainbow thneted yellow, looks weird, i took pics"
+
+## 2026-11-10 — The sky behind the atom (DNA-AND DESIGN 753)
+
+- [x] **No galaxies, stars or nebulae behind the atom: the sky gone inside a solid below a micrometre:** (DNA-AND DESIGN 753) "and did you she the screen shots its like looking ast the atom the space shit is viewable like galaxies and starts and nebulase, did u notice that"

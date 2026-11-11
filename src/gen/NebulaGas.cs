@@ -10,7 +10,9 @@ namespace Universe.Gen
     internal static class NebulaGas
     {
         private sealed class Line { public double Wl, Ncr, Str; public int Stage; public bool Forbidden; }
-        private sealed class El { public string Sym, Name; public double Ab; public List<Line> Lines = new List<Line>(); }
+        private sealed class Grp { public int Stage; public bool Forbidden; public double Ncr, Str, Wl, Best; public float R, G, B; }
+        private sealed class El { public string Sym, Name; public double Ab; public int Z; public bool Rec; public List<Line> Lines = new List<Line>(); public List<Grp> Groups = new List<Grp>(); }
+        private static List<El> _bright;
         private static List<El> _els; private static double _boost = 2700, _scatter = 0.15;
         private static readonly Dictionary<string, double[]> _range = new Dictionary<string, double[]>();
         private static readonly Dictionary<string, double> _pn = new Dictionary<string, double>();
@@ -53,6 +55,24 @@ namespace Universe.Gen
                     var t = bit.Trim().Split(' '); double ab; if (t.Length == 2 && double.TryParse(t[1], fs, ci, out ab)) _pn[t[0]] = ab;
                 }
             }
+            // each element's lines summed once into groups by ion and by the density that puts them out, their colour summed by
+            // strength; the elements that can ever glow bright enough to show kept apart (a ten-thousandth of hydrogen's light)
+            var bright = new List<El>();
+            foreach (var el in els)
+            {
+                foreach (char ch in el.Sym) el.Z = el.Z * 31 + ch; el.Rec = el.Sym == "H" || el.Sym == "He";
+                foreach (var l in el.Lines)
+                {
+                    Grp gp = null; foreach (var q in el.Groups) if (q.Stage == l.Stage && q.Forbidden == l.Forbidden && q.Ncr == l.Ncr) gp = q;
+                    if (gp == null) { gp = new Grp { Stage = l.Stage, Forbidden = l.Forbidden, Ncr = l.Ncr }; el.Groups.Add(gp); }
+                    float r, g, b; Wavelength(l.Wl, out r, out g, out b); gp.Str += l.Str; gp.R += r * (float)l.Str; gp.G += g * (float)l.Str; gp.B += b * (float)l.Str;
+                    if (l.Str > gp.Best) { gp.Best = l.Str; gp.Wl = l.Wl; }
+                }
+                foreach (var gp in el.Groups) if (gp.Str > 0) { gp.R /= (float)gp.Str; gp.G /= (float)gp.Str; gp.B /= (float)gp.Str; }
+                bool forb = false; foreach (var l in el.Lines) if (l.Forbidden) forb = true;
+                if (Math.Pow(10, el.Ab + 0.3 - 12) * (forb ? _boost : 1) >= 1e-4 || el.Rec) bright.Add(el);
+            }
+            _bright = bright;
             _els = els;
         }
         private static int Roman(string s) { switch (s) { case "I": return 1; case "II": return 2; case "III": return 3; case "IV": return 4; case "V": return 5; case "VI": return 6; case "VII": return 7; case "VIII": return 8; case "IX": return 9; case "X": return 10; default: return 1; } }
@@ -62,43 +82,47 @@ namespace Universe.Gen
         /// <summary>A nebula's glowing gas, each part one ion of one element in its real lines: kind 2 emission, 4 planetary, 5 a
         /// supernova's remnant; <paramref name="u"/> the nebula's own number (0 to 1), which sets how hard it is lit, how dense
         /// it is and its own scatter of every element's share. Null when the elements' data is not loaded.</summary>
-        public static SpaceGen.Part[] Parts(int kind, double u, int most = 16)
+        public static SpaceGen.Part[] Parts(int kind, double u, int most = 16, bool names = true)
         {
             if (!Loaded) return null;
             string key = kind == 4 ? "planetary" : kind == 5 ? "remnant" : "emission"; double[] rg; if (!_range.TryGetValue(key, out rg)) rg = new[] { 2.0, 4.0, 0.1, 0.65 };
-            double logN = rg[0] + (rg[1] - rg[0]) * Hash(u, 1), exc = rg[2] + (rg[3] - rg[2]) * Hash(u, 2);
-            var parts = new List<SpaceGen.Part>();
-            foreach (var el in _els)
+            double logN = rg[0] + (rg[1] - rg[0]) * Hash(u, 1), exc = rg[2] + (rg[3] - rg[2]) * Hash(u, 2), centre = 1 + 2.5 * exc;
+            var parts = new List<SpaceGen.Part>(24); var st = new double[11 * 6];
+            // only the elements that can ever glow bright enough to show (worked out once: hydrogen, helium, and those with a
+            // forbidden line or common enough); every one of them still counts in the dive's atoms. Each nebula had gone through
+            // every element and every line, and named every part, for the thousands of nebulae of a galaxy at once: two to three
+            // seconds a frame, and the watchdog closed the game
+            foreach (var el in _bright)
             {
                 double ab = el.Ab; double pn; if (kind == 4 && _pn.TryGetValue(el.Sym, out pn)) ab = pn;
-                int z = 0; foreach (char ch in el.Sym) z = z * 31 + ch;
-                ab += _scatter * (Hash(u, 100 + z) * 2 - 1) * 1.7;                    // (its own share in this nebula, about the cosmic one)
-                double perH = Math.Pow(10, ab - 12);
-                // each ion of it: its share of the atoms (how hard the gas is lit puts the most at stage 1 + 2.5 x excitation, a spread
-                // of about one stage either side), its lines' light and colour
-                var byStage = new Dictionary<int, double[]>();
-                foreach (var l in el.Lines)
+                ab += _scatter * (Hash(u, 100 + el.Z) * 2 - 1) * 1.7;                  // (its own share in this nebula, about the cosmic one)
+                double perH = Math.Pow(10, ab - 12); Array.Clear(st, 0, st.Length);
+                foreach (var gp in el.Groups)
                 {
-                    // the ion that gives the line: hydrogen's and helium's recombination lines come from atoms recombining, as many
-                    // as are ionised (helium's second ion only round the hottest stars); a metal's own lab lines as its share in that ion
+                    // the ion that gives the light: hydrogen's and helium's recombination lines from as many as are ionised (helium's
+                    // second ion only round the hottest stars); the rest as their share in that ion, most at 1 + 2.5 x excitation
                     double frac;
-                    if (!l.Forbidden && (el.Sym == "H" || el.Sym == "He")) frac = l.Stage == 1 ? (el.Sym == "H" ? 1 : Math.Min(1, 0.3 + 1.2 * exc)) : Math.Pow(exc, 3);
-                    else { double c = 1 + 2.5 * exc, d = l.Stage - c; frac = Math.Exp(-d * d / 0.9); }
-                    double light = perH * frac * l.Str * (l.Forbidden ? _boost / (1 + Math.Pow(10, logN - l.Ncr)) : 1);
-                    if (light <= 0) continue;
-                    float r, g, b; Wavelength(l.Wl, out r, out g, out b);
-                    double[] acc; if (!byStage.TryGetValue(l.Stage, out acc)) { acc = new double[6]; byStage[l.Stage] = acc; }
-                    acc[0] += light; acc[1] += r * light; acc[2] += g * light; acc[3] += b * light; if (light > acc[5]) { acc[5] = light; acc[4] = l.Wl; }
+                    if (!gp.Forbidden && el.Rec) frac = gp.Stage == 1 ? (el.Sym == "H" ? 1 : Math.Min(1, 0.3 + 1.2 * exc)) : exc * exc * exc;
+                    else { double d = gp.Stage - centre; frac = Math.Exp(-d * d / 0.9); }
+                    double light = perH * frac * gp.Str * (gp.Forbidden ? _boost / (1 + Math.Pow(10, logN - gp.Ncr)) : 1);
+                    if (light <= 0) continue; int o = Math.Min(10, gp.Stage) * 6;
+                    st[o] += light; st[o + 1] += gp.R * light; st[o + 2] += gp.G * light; st[o + 3] += gp.B * light;
+                    if (light > st[o + 5]) { st[o + 5] = light; st[o + 4] = gp.Wl * (gp.Forbidden ? -1 : 1); }
                 }
-                foreach (var kv in byStage)
+                for (int k = 1; k <= 10; k++)
                 {
-                    var a = kv.Value; if (a[0] <= 0) continue; float r = (float)(a[1] / a[0]), g = (float)(a[2] / a[0]), b = (float)(a[3] / a[0]), m = Math.Max(1e-4f, Math.Max(r, Math.Max(g, b)));
-                    bool forb = false; foreach (var l in el.Lines) if (l.Stage == kv.Key && l.Forbidden && Math.Abs(l.Wl - a[4]) < 0.01) forb = true;
-                    string ion = kv.Key == 1 ? "neutral " : kv.Key == 2 ? "ionised " : kv.Key == 3 ? "doubly ionised " : "highly ionised ";
-                    string nm = ion + el.Name + " " + (forb ? "[" + el.Sym + " " + RomanOf[Math.Min(10, kv.Key)] + "]" : el.Sym + " " + RomanOf[Math.Min(10, kv.Key)]) + ", brightest at " + (a[4] / 10).ToString("0.0", CultureInfo.InvariantCulture) + " nm";
-                    var p = new SpaceGen.Part(nm, el.Sym, a[0], r / m, g / m, b / m);
-                    p.Zone = kv.Key >= 3 && el.Sym != "H" ? 1 : kv.Key == 1 && el.Sym != "H" && el.Sym != "He" ? 2 : 0;   // (twice-ionised and more round the hot middle; neutral at the edges)
-                    p.Salt = (uint)(z * 977 + kv.Key * 131);
+                    int o = k * 6; if (st[o] <= 0) continue;
+                    float r = (float)(st[o + 1] / st[o]), g = (float)(st[o + 2] / st[o]), b = (float)(st[o + 3] / st[o]), m = Math.Max(1e-4f, Math.Max(r, Math.Max(g, b)));
+                    string nm = null;
+                    if (names)
+                    {
+                        bool forb = st[o + 4] < 0; double wl = Math.Abs(st[o + 4]);
+                        string ion = k == 1 ? "neutral " : k == 2 ? "ionised " : k == 3 ? "doubly ionised " : "highly ionised ";
+                        nm = ion + el.Name + " " + (forb ? "[" + el.Sym + " " + RomanOf[k] + "]" : el.Sym + " " + RomanOf[k]) + ", brightest at " + (wl / 10).ToString("0.0", CultureInfo.InvariantCulture) + " nm";
+                    }
+                    var p = new SpaceGen.Part(nm ?? el.Sym, el.Sym, st[o], r / m, g / m, b / m);
+                    p.Zone = k >= 3 && el.Sym != "H" ? 1 : k == 1 && !el.Rec ? 2 : 0;   // (twice-ionised and more round the hot middle; neutral at the edges)
+                    p.Salt = (uint)(el.Z * 977 + k * 131);
                     parts.Add(p);
                 }
             }

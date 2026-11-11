@@ -256,7 +256,7 @@ namespace Universe.Shell
                 L.Add(_tName.Substring(4, 1).ToUpperInvariant() + _tName.Substring(5) + " of this star");
                 if (ast) { L.Add("from " + sy.BeltInAu.ToString("0.##") + " to " + sy.BeltOutAu.ToString("0.##") + " AU"); L.Add("rocky and metal bodies, dust to dwarf planets"); L.Add("left where a giant's pull kept a planet from forming"); }
                 else if (kui) { L.Add("from " + sy.KuiperInAu.ToString("0.#") + " to " + sy.KuiperOutAu.ToString("0.#") + " AU"); L.Add("icy bodies: frozen water, methane, ammonia"); L.Add("where short-period comets come from"); }
-                else { L.Add("from about " + sy.OortInAu.ToString("N0") + " to " + sy.OortOutAu.ToString("N0") + " AU, all round"); L.Add("a shell of icy bodies, billions of them"); L.Add("where long-period comets come from"); }
+                else { bool oring = sy.OortShape == "ring"; L.Add("from about " + sy.OortInAu.ToString("N0") + " to " + sy.OortOutAu.ToString("N0") + " AU" + (oring ? ", a thick ring" : ", all round")); L.Add(oring ? "a ring of icy bodies, billions of them: young or stripped, not yet stirred round by the galaxy" : "a shell of icy bodies, billions of them, its inner part flatter"); L.Add("where long-period comets come from"); }
                 L.Add("distance: " + Units.Describe(dist));
             }
             else if (_tKind == 3 && _ground != null)

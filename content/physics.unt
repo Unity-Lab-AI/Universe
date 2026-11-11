@@ -77,6 +77,16 @@ earth-g-m-s2: 9.81
 #   planet, captured, stretched). Relativity turns each orbit's closest point round the star by 6 pi G M / (c^2 a (1 - e^2))
 #   an orbit (Mercury: 43 arcseconds a century; near a black hole whole turns each orbit), and clocks run slower deep in a
 #   gravity well by root (1 - 2 G M / (r c^2)).
+#   The small bodies are never one flat ring of circles: each is on its own tilted oval. belt-ecc-spread and belt-tilt-spread
+#   (degrees): the main belt's ovals and tilts (ours: eccentricities 0 to about 0.35, tilts up to about 30, about 10 on
+#   average). The Kuiper belt is three crowds: the cold classical ones (kuiper-cold-share) nearly flat and round
+#   (kuiper-cold-tilt, kuiper-cold-ecc); the hot and resonant ones (Pluto: 17 degrees, 0.25) tilted and oval (kuiper-hot-tilt,
+#   kuiper-hot-ecc); the scattered disc (scattered-share) flung by the giants onto long ovals (scattered-ecc) with their closest
+#   points near the last planet, reaching hundreds of AU, tilted up to 40 degrees and more (scattered-tilt; Eris: 44, 0.44).
+#   The Oort cloud is built only by giant planets flinging ice outward, and kept only where the star's birth cluster and
+#   passing stars let it: oort-share of systems with a giant have one. A settled cloud is a shell, its inner part (the Hills
+#   cloud, inside oort-hills-au times the star's light's root) still flattened toward the planets' plane (oort-hills-tilt);
+#   a young or stripped one (oort-ring-share) not yet stirred round by the galaxy's tide is a thick ring (oort-ring-tilt).
 @law orbits
 name: The shapes of orbits, from their speeds
 planet-speed-spread: 0.06
@@ -85,6 +95,21 @@ wild-speed: 1.15..1.38
 moon-close-speed: 0.02
 moon-far-speed: 1.05..1.3
 moon-far-radii: 25
+belt-ecc-spread: 0.1
+belt-tilt-spread: 8
+kuiper-cold-share: 0.35
+kuiper-cold-tilt: 2
+kuiper-cold-ecc: 0.05
+kuiper-hot-tilt: 13
+kuiper-hot-ecc: 0.08..0.3
+scattered-share: 0.2
+scattered-ecc: 0.3..0.8
+scattered-tilt: 20
+oort-share: 0.8
+oort-ring-share: 0.25
+oort-ring-tilt: 15
+oort-hills-au: 20000
+oort-hills-tilt: 30
 
 @law tidal-lock
 name: Tidal locking

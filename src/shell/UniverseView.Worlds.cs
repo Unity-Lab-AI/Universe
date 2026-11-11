@@ -347,7 +347,7 @@ namespace Universe.Shell
                     var rng = new Rng(_seed ^ (ulong)pl.Id.GetHashCode() ^ (ulong)_system.StarName.GetHashCode());
                     for (int q = 0; q < pl.Shown; q++)
                     {
-                        double au = a0 + (a1 - a0) * rng.NextDouble(), ang = rng.NextDouble() * Math.PI * 2, u = pl.Where == "oort" ? rng.NextDouble() * 2 - 1 : (rng.NextDouble() - 0.5) * 0.1, rr = Math.Sqrt(1 - u * u);
+                        double au = a0 + (a1 - a0) * rng.NextDouble(), ang = rng.NextDouble() * Math.PI * 2, u = pl.Where == "oort" ? (_system.OortShape == "ring" ? Math.Max(-0.5, Math.Min(0.5, rng.Gaussian() * 0.25)) : rng.NextDouble() * 2 - 1) : (rng.NextDouble() - 0.5) * 0.1, rr = Math.Sqrt(1 - u * u);   // (an Oort cloud a shell, or where it is young or stripped a thick ring)
                         double d = Units.Km(au * Units.KmPerAu);
                         // on its own orbit round the star (Kepler's law: its period from its distance and the star's mass), made at its
                         // closest point at the clock's zero, so the same body is the same body every time (its id, its size and its
@@ -357,7 +357,17 @@ namespace Universe.Shell
                         double ecc = pl.Shape == "comet" ? 0.5 + 0.45 * rng.NextDouble() : pl.Where == "kuiper" ? 0.3 * rng.NextDouble() : 0.15 * rng.NextDouble();
                         ex.Orbits = true; ex.OrbE = ecc; ex.OrbQ = d; ex.OrbCx = _ax; ex.OrbCy = _ay; ex.OrbCz = _az;
                         ex.OrbPeriod = Math.Sqrt(Math.Pow(au / (1 - ecc), 3) / Math.Max(0.05, _system.MassSol));
-                        { double hx = Math.Cos(ang) * rr, hy = u, hz = Math.Sin(ang) * rr; ex.OrbE1 = new[] { hx, hy, hz }; double sx = -hz, sz = hx, sl = Math.Sqrt(sx * sx + sz * sz); if (sl < 1e-9) { sx = 1; sz = 0; sl = 1; } ex.OrbE2 = new[] { sx / sl, 0, sz / sl }; }   // (e1: from the star to its closest point; e2: along the orbit from there, level with the system)
+                        {
+                            // e1: from the star to its closest point; e2: along the orbit from there, turned about e1 by its own tilt (content/
+                            // physics.unt orbits: the belt's about 8 degrees, the Kuiper belt's hot crowd 13, a comet from the Oort cloud any
+                            // tilt, backwards too): they had all gone round level with the system, a flat plane
+                            double hx = Math.Cos(ang) * rr, hy = u, hz = Math.Sin(ang) * rr; ex.OrbE1 = new[] { hx, hy, hz };
+                            double sx = -hz, sz = hx, sl = Math.Sqrt(sx * sx + sz * sz); if (sl < 1e-9) { sx = 1; sz = 0; sl = 1; } sx /= sl; sz /= sl;
+                            double nx = hy * sz, ny = hz * sx - hx * sz, nz = -hy * sx;   // (e1 times the level way along: the other way at right angles)
+                            double sig = pl.Where == "kuiper" ? 13 : pl.Where == "oort" ? 0 : 8, tl = pl.Where == "oort" ? Math.Acos(1 - 2 * rng.NextDouble()) : Math.Min(Math.PI, sig * Math.Sqrt(-2 * Math.Log(Math.Max(1e-9, rng.NextDouble()))) * Math.PI / 180);
+                            if (rng.NextDouble() < 0.5) tl = -tl;
+                            ex.OrbE2 = new[] { sx * Math.Cos(tl) + nx * Math.Sin(tl), ny * Math.Sin(tl), sz * Math.Cos(tl) + nz * Math.Sin(tl) };
+                        }
                         ex.Lines.Add("its orbit: closest " + au.ToString("0.##") + " AU, farthest " + (au * (1 + ecc) / (1 - ecc)).ToString("0.##") + " AU, round the star in " + Years(ex.OrbPeriod));
                         Orbit(ex); ex.LX = ex.X; ex.LY = ex.Y; ex.LZ = ex.Z; ex.LOffX = ex.OffX; ex.LOffY = ex.OffY; ex.LOffZ = ex.OffZ; _extras.Add(ex);
                     }

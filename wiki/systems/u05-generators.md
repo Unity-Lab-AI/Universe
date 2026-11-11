@@ -2,7 +2,7 @@
 title: U5 · Generators — every kind a template
 status: verified
 sources: [src/gen/GalaxyGen.cs, StarGen.cs, SpaceGen.cs, PlanetGen.cs, PlanetTerrain.cs, BodyGen.cs, GrainField.cs, ElementGen.cs, IconFont.cs, content/*.unt]
-last-verified: 1591b7f
+last-verified: 95240a6
 ---
 
 # U5 · Generators
@@ -17,7 +17,7 @@ Nothing is stored and nothing is named in code. Every kind is an entry in `conte
 |---|---|---|
 | Galaxies (`GalaxyGen`) | `galaxies.unt` (layout, arms, arm-spread, star-forming-rate, structure-size, globular-clusters, bodies-on-arms, bodies-spread) | Every galaxy's shape, tilt, turn, stars and colour; the cosmic web's regions; dead stars kept out of young arms |
 | Stars (`StarGen`) | `stars.unt` (temp-k, mass-sol, radius-sol, share-of-stars, surface-kind, spots, remnant, makeup, makeup-note) | 26 shining kinds, colour from temperature by Planck's law, brightness from size and temperature, the surface's plasma and corona |
-| Systems (`SpaceGen`) | `solar-systems.unt` (planets, first-orbit-au, spacing, scales-with-star, tilt-spread, wild-tilt) and `terrain.unt` (forms, orbit-hz, orbit-frost, star-brightness, weight, moon-weight) | Which kind of world forms where, the orbits as ellipses from speeds, moons as worlds, rings by rings-chance, belts, the Kuiper belt, the Oort cloud |
+| Systems (`SpaceGen`) | `solar-systems.unt` (planets, first-orbit-au, spacing, scales-with-star, tilt-spread, wild-tilt), `physics.unt` orbits (the small bodies' ovals and tilts, the Kuiper belt's crowds, the Oort cloud's share and shape) and `terrain.unt` (forms, orbit-hz, orbit-frost, star-brightness, weight, moon-weight) | Which kind of world forms where, the orbits as ellipses from speeds, moons as worlds, rings by rings-chance, belts, the Kuiper belt, the Oort cloud |
 | Worlds (`PlanetTerrain`, `PlanetGen`) | `terrain.unt`, `gas-giants.unt`, `moons.unt`, `physics.unt` | A world's ground, seas, air, clouds, rock, temperature and behaviours from its kind; the giants' layers; the living planet's processes |
 | Bodies in space (`UniverseView`, `BodyGen`) | `bodies.unt` (@place: where, share, feeding shares, disc-rs, swarm, eating-stars), `small-bodies.unt`, `black-holes.unt`, `nebulas.unt`, `planets.unt` | Black holes at every galaxy's heart and among the stars, neutron stars, rogue planets, asteroids by class, Kuiper bodies, comets, clusters and nebulae |
 | Grains (`GrainField`) | `minerals.unt` (@mix, @mineral, @surface) | One field of loose rock for a whole world: each grain's size, depth, mineral and shape from its cell |

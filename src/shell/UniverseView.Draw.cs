@@ -490,9 +490,20 @@ namespace Universe.Shell
                 // (its light at a third of a full point a pixel on the average: its dense heart glows, its thin rim fades to nothing, so
                 // from afar it is a soft shape in its own colours with a fine edge, never a solid white disc or a white spiral icon)
                 float crowd = (float)Math.Max(0.015, Math.Min(1, Math.PI * gpx * gpx / (count * dotPx * dotPx) * 0.35)) * nearF * (i == _near ? 1f : others);
+                // a galaxy seen from outside, a few to a few hundred pixels across: its stars' glows grown till they meet their neighbours
+                // (about two and a half times their spacing on screen), its light kept the same (each dimmed by as much as it grew), so it
+                // is one soft shape in its own colours, its yellow heart and bluer disc blended, never hard white specks with black between
+                // them; the galaxy you are in keeps its stars as points
+                float merge = 1;
+                if (i != _near && gpx > 2)
+                {
+                    double spacingPx = 2 * gpx / Math.Sqrt(Math.Max(1, count)), glowPx = 0.006 * gpx * shrink;
+                    merge = (float)Math.Max(1, Math.Min(12, 2.5 * spacingPx / Math.Max(1e-3, glowPx)));
+                    crowd /= merge * merge;
+                }
                 var pg = Placement(g); Stretched(ref pg); float drift = GalaxyDrift(g, ref pg);
                 float trad; float turnD = GalaxyTurn(g, pg, out trad);
-                DrawPoints(buf, count, pg * vp, right, up, 0.006f * g.Scale * shrink * glow, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f, 0, 0, 0, 0, 0, drift, 0, turnD, trad);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
+                DrawPoints(buf, count, pg * vp, right, up, 0.006f * g.Scale * shrink * glow * merge, i == _near ? 0.0016f : 0.0012f, w, h, time, 0.012f, crowd, InsideShare() > 0.5 && i == _near ? 2f : 0f, 0, 0, 0, 0, 0, drift, 0, turnD, trad);   // a galaxy's stars from afar are soft glows that add up to its light (hard discs would merge into a white outline); among them, points
             }
             if (!skyHidden) DrawCollision(vp, right, up, w, h, time);
             double inside = InsideShare();

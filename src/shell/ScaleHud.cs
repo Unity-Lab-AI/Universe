@@ -20,6 +20,8 @@ namespace Universe.Shell
         public int WrapAt = 38;
         /// <summary>The top a card may reach and the bottom (pixels; bottom 0: the screen's), set each frame: on the tour, between its bars.</summary>
         public float CardTop = 4, CardBottom = 0;
+        /// <summary>The height kept clear at the foot of the screen (the tour's bar), in pixels: the scale bar and your coordinates sit above it.</summary>
+        public float FootInset;
 
         public ScaleHud(IntPtr device) { _device = device; }
 
@@ -65,10 +67,11 @@ namespace Universe.Shell
             double km = Round(kmPerPixel * 220 * px);
             float barLen = (float)(km / kmPerPixel);
             var list = new List<StarVertex>();
-            float x0 = 30 * px, y0 = h - 40 * px;
-            // the bar with its two end ticks, and its length above it, all rimmed dark first, then drawn over the rim
+            // the bar with its two end ticks, and its length above it, all rimmed dark first, then drawn over the rim; at the bottom
+            // right, over the foot bar when there is one (the left is kept for a pick's card)
             string label = Words(km).ToUpperInvariant();
-            float cell = 1.6f * px, rim = px;
+            float cell = 1.6f * px, rim = px, labelW = label.Length * 6 * cell;
+            float x0 = w - Math.Max(barLen, labelW) - 30 * px, y0 = h - FootInset - 40 * px;
             Rim(list, x0, y0, barLen, 2 * px, rim); Rim(list, x0, y0 - 6 * px, 2 * px, 8 * px, rim); Rim(list, x0 + barLen - 2 * px, y0 - 6 * px, 2 * px, 8 * px, rim);
             { float cx = x0, cy = y0 - 18 * px; foreach (char ch in label) { if (ch != ' ') foreach (var c in IconFont.Cells(ch)) Rim(list, cx + c[0] * cell, cy + c[1] * cell, cell * 0.9f, cell * 0.9f, cell * 0.5f); cx += 6 * cell; } }
             Quad(list, x0, y0, barLen, 2 * px, TextR, TextG, TextB, 0.001f);

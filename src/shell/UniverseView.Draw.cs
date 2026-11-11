@@ -785,7 +785,7 @@ namespace Universe.Shell
                 }
             }
             _matterCardDrawn = false;
-            _hud.CardTop = _tour != null ? (float)(h * 0.1 + 4) : 4; _hud.CardBottom = (float)Math.Min(_tour != null ? h * 0.9 - 4 : h * 0.66, h - 70 * Math.Max(1, h / 540.0) * ScaleHud.TextScale);   // (and always above the scale bar and your coordinates at the foot: a card had run down over them)   // (never more than two thirds of the screen: a long card is cut short)   // (every card between the tour's bars: a tall one is cut short, never pushed up under the top bar)
+            _hud.CardTop = _tour != null ? (float)(h * 0.1 + 4) : 4; _hud.CardBottom = _tour != null ? (float)(h * 0.9 - 4) : (float)(h * 0.66); _hud.FootInset = _tour != null ? (float)(h * 0.1) : 0;   // (the scale bar and your coordinates at the bottom right, above the tour's foot bar: the left is the pick card's)   // (never more than two thirds of the screen: a long card is cut short)   // (every card between the tour's bars: a tall one is cut short, never pushed up under the top bar)
             double overAlt = _ground != null && _matterScale <= 0 ? AboveGround() / Units.Km(1) : 1e30;
             if (overAlt < MatterView.OverlayKm)
             {

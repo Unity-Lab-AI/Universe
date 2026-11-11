@@ -203,7 +203,7 @@ namespace Universe.Shell
                 // shortcuts such as Alt+Tab or Win+Shift+S never stop it; nor do screenshots and recording)
                 if (input.LeftClicked || input.RightClicked) { PauseTour("you clicked"); return; }   // (the click that brings the window to the front too: a click is a click, it stops the tour and picks as any other; it had picked nothing, and nothing seemed clickable)
                 if (input.Wheel != 0 && !input.JustActivated) { PauseTour("you turned the mouse wheel"); input.Wheel = 0; return; }
-                for (int k = 8; k < 256; k++) if (k != 0x78 && k != 0x7B && input.WasPressed(k) && input.Deliberate(k)) { PauseTour("you pressed " + KeyName(k)); return; }
+                for (int k = 8; k < 256; k++) if (k != 0x78 && k != 0x7B && !(k >= 0x70 && k <= 0x87) && input.WasPressed(k) && input.Deliberate(k)) { PauseTour("you pressed " + KeyName(k)); return; }
             }
             if (_tourAt >= _tour.Count) { PauseTour(null); return; }   // (the end: it says so, and offers it again)
             var st = _tour[_tourAt]; _tourT += dt; bool done = false;
